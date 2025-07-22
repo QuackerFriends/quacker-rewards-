@@ -1,117 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Quacker Friends Rewards</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #fefbf4;
-      color: #333;
-      text-align: center;
-      padding: 2em;
-      position: relative;
-    }
-    button {
-      padding: 12px 24px;
-      font-size: 1.1em;
-      background: #ffd86b;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      margin: 5px;
-    }
-    #walletAddress, #nftInfo {
-      margin-top: 20px;
-      font-weight: bold;
-      font-size: 1.1em;
-    }
-    #disconnectLink {
-      position: absolute;
-      top: 12px;
-      right: 16px;
-      font-size: 0.9em;
-      color: #888;
-      cursor: pointer;
-      text-decoration: underline;
-    }
-    #disconnectLink:hover {
-      color: #000;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>Quacker Friends Shop</title>
+  <script src="wallet.js" defer></script>
+  <script src="shop.js" defer></script>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>🦆 Quacker Friends Rewards</h1>
-  
-  <div id="disconnectLink" onclick="disconnectWallet()" style="display: none;">Disconnect</div>
+  <h1>🧢 Quacker Friends NFT Shop</h1>
 
-  <div id="buttons">
-    <button onclick="connectWallet()" id="connectBtn">Connect Wallet</button>
+  <!-- Wallet Section -->
+  <div id="wallet-section">
+    <button id="connect-button" onclick="connectWallet()">Connect Wallet</button>
+    <button id="switch-button" onclick="switchWallet()" style="display: none;">Switch Wallet</button>
+    <button id="disconnect-button" onclick="disconnectWallet()" style="display: none; float: right;">Disconnect</button>
+    <p id="wallet-address" style="margin-top: 10px;"></p>
   </div>
-  <div id="walletAddress"></div>
-  <div id="nftInfo"></div>
 
-  <script>
-    const CONTRACT_ADDRESS = "0xA2c82Bda5585c1D729E2b4f85dCC9a11ded7DB4c";
-    const ABI = [
-      "function balanceOf(address owner) view returns (uint256)"
-    ];
+  <!-- Shop Section -->
+  <div id="shop" style="margin-top: 30px; display: none;">
+    <h2>🛍️ Quacker Friends Shop</h2>
 
-    let currentAddress = null;
+    <div class="item">
+      <h3>🧢 Quacker Friends Tee</h3>
+      <p id="tee-price">Price: $25.00</p>
+      <button onclick="buyTee()">Buy Now</button>
+    </div>
 
-    async function connectWallet() {
-      if (!window.ethereum) {
-        alert("MetaMask not detected");
-        return;
-      }
-
-      try {
-        // Request permission again — this forces the popup
-        await window.ethereum.request({
-          method: 'wallet_requestPermissions',
-          params: [{ eth_accounts: {} }],
-        });
-
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        const signer = provider.getSigner();
-        const address = await signer.getAddress();
-
-        currentAddress = address;
-        updateUI(address);
-
-        const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-        const balance = await contract.balanceOf(address);
-
-        document.getElementById('nftInfo').innerText =
-          balance.toString() === "0"
-            ? "😢 You don’t own any Quacker Friends NFTs yet."
-            : `🧢 You own ${balance.toString()} Quacker Friend NFT(s)!`;
-
-      } catch (err) {
-        console.error("User rejected or MetaMask error:", err);
-      }
-    }
-
-    function disconnectWallet() {
-      currentAddress = null;
-      document.getElementById('walletAddress').innerText = "";
-      document.getElementById('nftInfo').innerText = "";
-      document.getElementById('buttons').innerHTML = `
-        <button onclick="connectWallet()" id="connectBtn">Connect Wallet</button>
-      `;
-      document.getElementById('disconnectLink').style.display = "none";
-    }
-
-    function updateUI(address) {
-      document.getElementById('walletAddress').innerText = `Wallet: ${address}`;
-      document.getElementById('buttons').innerHTML = `
-        <button onclick="connectWallet()">🔄 Switch Wallet</button>
-      `;
-      document.getElementById('disconnectLink').style.display = "block";
-    }
-  </script>
+    <div class="item">
+      <h3>🎁 Free Keychain</h3>
+      <p id="keychain-status">Eligible: Checking...</p>
+      <button id="claim-button" onclick="claimKeychain()">Claim Keychain</button>
+    </div>
+  </div>
 </body>
 </html>
