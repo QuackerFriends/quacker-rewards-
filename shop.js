@@ -1,12 +1,10 @@
-
 let nftCount = 0;
 
 async function checkEligibility(address) {
   nftCount = await contract.balanceOf(address);
-
   document.getElementById("shop").style.display = "block";
 
-  // Tee pricing
+  // Tee discount
   const teePrice = document.getElementById("tee-price");
   if (nftCount >= 3) {
     teePrice.innerText = "Price: $12.50 (50% off)";
@@ -16,12 +14,12 @@ async function checkEligibility(address) {
     teePrice.innerText = "Price: $25.00";
   }
 
-  // Keychain claim check
+  // Keychain
   const keychainStatus = document.getElementById("keychain-status");
   const claimBtn = document.getElementById("claim-button");
-  const keychainClaimed = localStorage.getItem(address + "-keychain") === "claimed";
+  const claimed = localStorage.getItem(address + "-keychain") === "claimed";
 
-  if (keychainClaimed) {
+  if (claimed) {
     keychainStatus.innerText = "✅ Already Claimed";
     claimBtn.disabled = true;
   } else if (nftCount >= 1) {
@@ -34,12 +32,12 @@ async function checkEligibility(address) {
 }
 
 function claimKeychain() {
-  const address = document.getElementById("wallet-address").innerText.split(": ")[1];
+  const address = userAddress;
   localStorage.setItem(address + "-keychain", "claimed");
   alert("🎁 Keychain claimed!");
-  checkEligibility(address); // Update status
+  checkEligibility(address);
 }
 
 function buyTee() {
-  alert("🧢 Just a demo! Purchase flow coming soon.");
+  alert("🧢 This is just a demo. Checkout integration coming later!");
 }
