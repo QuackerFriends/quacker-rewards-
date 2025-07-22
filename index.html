@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quacker Friends Rewards</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #fefbf4;
+      color: #333;
+      text-align: center;
+      padding: 2em;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 1.1em;
+      background: #ffd86b;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    #walletAddress, #nftInfo {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+  </style>
+</head>
+<body>
+  <h1>🦆 Quacker Friends Rewards</h1>
+  <p>Connect your wallet to unlock exclusive benefits!</p>
+  <button onclick="connectWallet()">Connect Wallet</button>
+  <div id="walletAddress"></div>
+  <div id="nftInfo"></div>
+
+  <script>
+    const CONTRACT_ADDRESS = "0xA2c82Bda5585c1D729E2b4f85dCC9a11ded7DB4c";
+    const ABI = [
+      "function balanceOf(address owner) view returns (uint256)"
+    ];
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner();
+        const address = await signer.getAddress();
+
+        document.getElementById('walletAddress').innerText = `Wallet: ${address}`;
+
+        // Check NFT balance
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+        const balance = await contract.balanceOf(address);
+        document.getElementById('nftInfo').innerText =
+          balance.toString() === "0" ?
+          "😢 You don’t own any Quacker Friends NFTs yet." :
+          `🧢 You own ${balance.toString()} Quacker Friend NFT(s)!`;
+
+        // Later: Show discount or claim button based on balance
+      } else {
+        alert("MetaMask not detected. Please install it to connect.");
+      }
+    }
+  </script>
+</body>
+</html>
