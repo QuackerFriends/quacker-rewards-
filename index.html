@@ -20,6 +20,7 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
+      margin: 5px;
     }
     #walletAddress, #nftInfo {
       margin-top: 20px;
@@ -30,8 +31,9 @@
 </head>
 <body>
   <h1>🦆 Quacker Friends Rewards</h1>
-  <p>Connect your wallet to unlock exclusive benefits!</p>
-  <button onclick="connectWallet()">Connect Wallet</button>
+  <div id="buttons">
+    <button onclick="connectWallet()" id="connectBtn">Connect Wallet</button>
+  </div>
   <div id="walletAddress"></div>
   <div id="nftInfo"></div>
 
@@ -41,27 +43,45 @@
       "function balanceOf(address owner) view returns (uint256)"
     ];
 
+    let currentAddress = null;
+
     async function connectWallet() {
-      if (window.ethereum) {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        const signer = provider.getSigner();
-        const address = await signer.getAddress();
-
-        document.getElementById('walletAddress').innerText = `Wallet: ${address}`;
-
-        // Check NFT balance
-        const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-        const balance = await contract.balanceOf(address);
-        document.getElementById('nftInfo').innerText =
-          balance.toString() === "0" ?
-          "😢 You don’t own any Quacker Friends NFTs yet." :
-          `🧢 You own ${balance.toString()} Quacker Friend NFT(s)!`;
-
-        // Later: Show discount or claim button based on balance
-      } else {
-        alert("MetaMask not detected. Please install it to connect.");
+      if (!window.ethereum) {
+        alert("MetaMask not detected");
+        return;
       }
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const signer = provider.getSigner();
+      const address = await signer.getAddress();
+
+      currentAddress = address;
+      updateUI(address);
+
+      // Check NFT balance
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+      const balance = await contract.balanceOf(address);
+      document.getElementById('nftInfo').innerText =
+        balance.toString() === "0"
+          ? "😢 You don’t own any Quacker Friends NFTs yet."
+          : `🧢 You own ${balance.toString()} Quacker Friend NFT(s)!`;
+    }
+
+    function disconnectWallet() {
+      currentAddress = null;
+      document.getElementById('walletAddress').innerText = "";
+      document.getElementById('nftInfo').innerText = "";
+      document.getElementById('buttons').innerHTML = `
+        <button onclick="connectWallet()" id="connectBtn">Connect Wallet</button>
+      `;
+    }
+
+    function updateUI(address) {
+      document.getElementById('walletAddress').innerText = `Wallet: ${address}`;
+      document.getElementById('buttons').innerHTML = `
+        <button onclick="disconnectWallet()">Disconnect</button>
+      `;
     }
   </script>
 </body>
