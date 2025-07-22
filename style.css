@@ -1,1 +1,24 @@
+body {
+  font-family: Arial, sans-serif;
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  background: #fffdf8;
+}
+
+button {
+  padding: 10px 15px;
+  margin-top: 5px;
+  cursor: pointer;
+}
+
+.item {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 20px;
+  background-color: #f9f9f9;
+}
 
