@@ -3,40 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <title>Quacker Friends Shop</title>
-
-  <!-- Optional: Stylesheet can be loaded anytime before the page renders -->
   <link rel="stylesheet" href="style.css">
-
-  <!-- Scripts -->
-  <script src="wallet.js" defer></script>  <!-- Wallet logic should load first -->
-  <script src="shop.js" defer></script>    <!-- Shop uses wallet info, so comes second -->
+  <script src="wallet.js" defer></script>
+  <script src="shop.js" defer></script>
 </head>
-
 <body>
-  <h1>🧢 Quacker Friends NFT Shop</h1>
+  <div class="container">
+    <h1>🧶 Quacker Friends Crochet Shop</h1>
 
-  <!-- Wallet Section -->
-  <div id="wallet-section">
-    <button id="connect-button" onclick="connectWallet()">Connect Wallet</button>
-    <button id="switch-button" onclick="switchWallet()" style="display: none;">Switch Wallet</button>
-    <button id="disconnect-button" onclick="disconnectWallet()" style="display: none; float: right;">Disconnect</button>
-    <p id="wallet-address" style="margin-top: 10px;"></p>
-  </div>
-
-  <!-- Shop Section -->
-  <div id="shop" style="margin-top: 30px; display: none;">
-    <h2>🛍️ Quacker Friends Shop</h2>
-
-    <div class="item">
-      <h3>🧢 Quacker Friends Tee</h3>
-      <p id="tee-price">Price: $25.00</p>
-      <button onclick="buyTee()">Buy Now</button>
+    <div id="wallet-section">
+      <button id="connect-button" onclick="connectWallet()">Connect Wallet</button>
+      <button id="switch-button" onclick="switchWallet()" style="display:none;">Switch Wallet</button>
+      <button id="disconnect-button" onclick="disconnectWallet()" style="display:none;">Disconnect</button>
+      <p id="wallet-address"></p>
     </div>
 
-    <div class="item">
-      <h3>🎁 Free Keychain</h3>
-      <p id="keychain-status">Eligible: Checking...</p>
-      <button id="claim-button" onclick="claimKeychain()">Claim Keychain</button>
+    <div id="shop" style="display: none;">
+      <h2>🛍️ Shop Items</h2>
+
+      <div class="item">
+        <h3>🧢 Quacker Friends Tee</h3>
+        <p id="tee-price">Price: $25.00</p>
+        <button onclick="buyTee()">Buy Now</button>
+      </div>
+
+      <div class="item">
+        <h3>🎁 Free Keychain</h3>
+        <p id="keychain-status">Eligible: Checking...</p>
+        <button id="claim-button" onclick="claimKeychain()">Claim Keychain</button>
+      </div>
     </div>
   </div>
 </body>
