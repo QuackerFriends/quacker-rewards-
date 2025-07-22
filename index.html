@@ -12,6 +12,7 @@
       color: #333;
       text-align: center;
       padding: 2em;
+      position: relative;
     }
     button {
       padding: 12px 24px;
@@ -27,10 +28,25 @@
       font-weight: bold;
       font-size: 1.1em;
     }
+    #disconnectLink {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      font-size: 0.9em;
+      color: #888;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    #disconnectLink:hover {
+      color: #000;
+    }
   </style>
 </head>
 <body>
   <h1>🦆 Quacker Friends Rewards</h1>
+  
+  <div id="disconnectLink" onclick="disconnectWallet()" style="display: none;">Disconnect</div>
+
   <div id="buttons">
     <button onclick="connectWallet()" id="connectBtn">Connect Wallet</button>
   </div>
@@ -51,21 +67,32 @@
         return;
       }
 
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send("eth_requestAccounts", []);
-      const signer = provider.getSigner();
-      const address = await signer.getAddress();
+      try {
+        // Request permission again — this forces the popup
+        await window.ethereum.request({
+          method: 'wallet_requestPermissions',
+          params: [{ eth_accounts: {} }],
+        });
 
-      currentAddress = address;
-      updateUI(address);
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner();
+        const address = await signer.getAddress();
 
-      // Check NFT balance
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-      const balance = await contract.balanceOf(address);
-      document.getElementById('nftInfo').innerText =
-        balance.toString() === "0"
-          ? "😢 You don’t own any Quacker Friends NFTs yet."
-          : `🧢 You own ${balance.toString()} Quacker Friend NFT(s)!`;
+        currentAddress = address;
+        updateUI(address);
+
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+        const balance = await contract.balanceOf(address);
+
+        document.getElementById('nftInfo').innerText =
+          balance.toString() === "0"
+            ? "😢 You don’t own any Quacker Friends NFTs yet."
+            : `🧢 You own ${balance.toString()} Quacker Friend NFT(s)!`;
+
+      } catch (err) {
+        console.error("User rejected or MetaMask error:", err);
+      }
     }
 
     function disconnectWallet() {
@@ -75,13 +102,15 @@
       document.getElementById('buttons').innerHTML = `
         <button onclick="connectWallet()" id="connectBtn">Connect Wallet</button>
       `;
+      document.getElementById('disconnectLink').style.display = "none";
     }
 
     function updateUI(address) {
       document.getElementById('walletAddress').innerText = `Wallet: ${address}`;
       document.getElementById('buttons').innerHTML = `
-        <button onclick="disconnectWallet()">Disconnect</button>
+        <button onclick="connectWallet()">🔄 Switch Wallet</button>
       `;
+      document.getElementById('disconnectLink').style.display = "block";
     }
   </script>
 </body>
