@@ -3,10 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <title>Quacker Friends Shop</title>
-  <script src="wallet.js" defer></script>
-  <script src="shop.js" defer></script>
+
+  <!-- Optional: Stylesheet can be loaded anytime before the page renders -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- Scripts -->
+  <script src="wallet.js" defer></script>  <!-- Wallet logic should load first -->
+  <script src="shop.js" defer></script>    <!-- Shop uses wallet info, so comes second -->
 </head>
+
 <body>
   <h1>🧢 Quacker Friends NFT Shop</h1>
 
