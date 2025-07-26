@@ -22,19 +22,18 @@
       <div class="item">
         <h3>🧢 Quacker Friends Tee</h3>
         <p id="tee-price">Price: $25.00</p>
-        <button id="buy-tee-button">Buy Now</button>
+        <button onclick="buyTee()">Buy Now</button>
       </div>
 
       <div class="item">
         <h3>🎁 Free Keychain</h3>
         <p id="keychain-status">Eligible: Checking...</p>
-        <button id="claim-button">Claim Keychain</button>
+        <button id="claim-button" onclick="claimKeychain()">Claim Keychain</button>
       </div>
     </div>
   </div>
 
-  <!-- Scripts LAST to ensure HTML loads first -->
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script src="wallet.js"></script>
   <script src="shop.js"></script>
 </body>
