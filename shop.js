@@ -27,34 +27,40 @@ async function submitPurchase() {
     return;
   }
 
-  const priceInEth = discounted ? "0" : "0"; // you can update for real ETH later
+  const priceInEth = discounted ? "0" : "0"; // placeholder
   const ethAmount = ethers.utils.parseEther(priceInEth);
 
   try {
     const tx = await signer.sendTransaction({
-      to: "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D", // your address
+      to: "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D", // your wallet address
       value: ethAmount
     });
 
     await tx.wait();
 
-    // Send info to Google Sheet
-    await fetch("https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec", {
-      method: "POST",
-      body: JSON.stringify({
-        item: "Tapestry",
-        wallet: userAddress,
-        price: discounted ? "0 (50% Off)" : "0",
-        address: shippingAddress
-      }),
-      headers: { "Content-Type": "application/json" }
+    // Get user wallet address
+    const userAddress = await signer.getAddress();
+
+    // Prepare URL with query parameters
+    const baseUrl = "https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec";
+    const params = new URLSearchParams({
+      item: "Tapestry",
+      wallet: userAddress,
+      price: discounted ? "0 (50% Off)" : "0",
+      address: shippingAddress
     });
 
-    alert("Purchase successful and logged!");
+    // Send GET request to Google Sheets Web App
+    const res = await fetch(`${baseUrl}?${params.toString()}`);
+    const text = await res.text();
+    console.log("Google Sheet response:", text);
+
+    alert("✅ Purchase successful and logged!");
     document.getElementById("shipping-form").style.display = "none";
     document.getElementById("shipping-address").value = "";
+
   } catch (err) {
     console.error(err);
-    alert("Transaction failed or cancelled.");
+    alert("❌ Transaction failed or cancelled.");
   }
 }
