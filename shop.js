@@ -1,8 +1,6 @@
 let nftCount = 0;
 
 async function checkEligibility(address) {
-  if (!contract) return;
-
   try {
     nftCount = await contract.balanceOf(address);
     document.getElementById("shop").style.display = "block";
@@ -32,8 +30,8 @@ async function checkEligibility(address) {
       keychainStatus.innerText = "❌ Not eligible";
       claimBtn.disabled = true;
     }
-  } catch (err) {
-    console.error("Eligibility check failed", err);
+  } catch (error) {
+    console.error("Error checking eligibility:", error);
   }
 }
 
@@ -47,9 +45,3 @@ function claimKeychain() {
 function buyTee() {
   alert("🧢 This is just a demo. Checkout integration coming later!");
 }
-
-// Hook buttons after DOM loads
-window.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("claim-button").addEventListener("click", claimKeychain);
-  document.getElementById("buy-tee-button").addEventListener("click", buyTee);
-});
