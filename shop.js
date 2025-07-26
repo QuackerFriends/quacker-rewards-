@@ -1,90 +1,60 @@
-let nftCount = 0;
+let discounted = false;
 
-async function checkEligibility(address) {
-  nftCount = await contract.balanceOf(address);
-  document.getElementById("shop").style.display = "block";
+async function checkEligibility(wallet) {
+  const nftBalance = await contract.balanceOf(wallet);
+  const count = parseInt(nftBalance.toString());
 
-  // Tee discount
-  const teePrice = document.getElementById("tee-price");
-  if (nftCount >= 3) {
-    teePrice.innerText = "Price: $12.50 (50% off)";
-  } else if (nftCount >= 1) {
-    teePrice.innerText = "Price: $22.50 (10% off)";
-  } else {
-    teePrice.innerText = "Price: $25.00";
+  if (count >= 10) {
+    document.getElementById("discount-button").style.display = "inline";
   }
+}
 
-  // Keychain
-  const keychainStatus = document.getElementById("keychain-status");
-  const claimBtn = document.getElementById("claim-button");
-  const claimed = localStorage.getItem(address + "-keychain") === "claimed";
+function claimDiscount() {
+  discounted = true;
+  document.getElementById("tapestry-price").innerText = "Price: 0 ETH (50% OFF)";
+  document.getElementById("discount-button").style.display = "none";
+}
 
-  if (claimed) {
-    keychainStatus.innerText = "✅ Already Claimed";
-    claimBtn.disabled = true;
-  } else if (nftCount >= 1) {
-    keychainStatus.innerText = "🎉 Eligible!";
-    claimBtn.disabled = false;
-  } else {
-    keychainStatus.innerText = "❌ Not eligible";
-    claimBtn.disabled = true;
-  }
-}  async function buyTapestry() {
-  if (!signer || !userAddress) {
-    alert("Please connect your wallet first!");
+function buyTapestry() {
+  document.getElementById("shipping-form").style.display = "block";
+}
+
+async function submitPurchase() {
+  const shippingAddress = document.getElementById("shipping-address").value.trim();
+
+  if (!shippingAddress) {
+    alert("Please enter a shipping address.");
     return;
   }
+
+  const priceInEth = discounted ? "0" : "0"; // you can update for real ETH later
+  const ethAmount = ethers.utils.parseEther(priceInEth);
 
   try {
     const tx = await signer.sendTransaction({
       to: "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D", // your address
-      value: ethers.utils.parseEther("0.0") // for now, 0 ETH
+      value: ethAmount
     });
 
-    alert("Transaction sent! Waiting for confirmation...");
     await tx.wait();
-    alert("✅ Purchase successful! Tapestry bought.");
-  } catch (error) {
-    console.error(error);
-    alert("❌ Transaction failed or was rejected.");
-  }
-}
 
-
-function claimKeychain() {
-  const address = userAddress;
-  localStorage.setItem(address + "-keychain", "claimed");
-  alert("🎁 Keychain claimed!");
-  checkEligibility(address);
-}
-
-async function buyTee() {
-  alert("🧢 This is just a demo. Checkout integration coming later!");
-}
-
-async function buyTapestry() {
-  if (!userAddress || !signer) {
-    alert("Please connect your wallet first.");
-    return;
-  }
-
-  try {
-    // Switch to Base Mainnet
-    await window.ethereum.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: "0x2105" }], // Base Mainnet Chain ID = 8453 = 0x2105
+    // Send info to Google Sheet
+    await fetch("https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec", {
+      method: "POST",
+      body: JSON.stringify({
+        item: "Tapestry",
+        wallet: userAddress,
+        price: discounted ? "0 (50% Off)" : "0",
+        address: shippingAddress
+      }),
+      headers: { "Content-Type": "application/json" }
     });
-  } catch (switchError) {
-    alert("Please switch to Base network manually in MetaMask.");
-    return;
+
+    alert("Purchase successful and logged!");
+    document.getElementById("shipping-form").style.display = "none";
+    document.getElementById("shipping-address").value = "";
+  } catch (err) {
+    console.error(err);
+    alert("Transaction failed or cancelled.");
   }
-
-  const tx = await signer.sendTransaction({
-    to: "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D",
-    value: ethers.utils.parseEther("0"),
-  });
-
-  alert("⏳ Transaction sent! Waiting for confirmation...");
-  await tx.wait();
-  alert("✅ Tapestry purchased!");
 }
