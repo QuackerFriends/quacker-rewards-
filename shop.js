@@ -1,43 +1,55 @@
 let nftCount = 0;
 
 async function checkEligibility(address) {
-  nftCount = await contract.balanceOf(address);
-  document.getElementById("shop").style.display = "block";
+  if (!contract) return;
 
-  // Tee discount
-  const teePrice = document.getElementById("tee-price");
-  if (nftCount >= 3) {
-    teePrice.innerText = "Price: $12.50 (50% off)";
-  } else if (nftCount >= 1) {
-    teePrice.innerText = "Price: $22.50 (10% off)";
-  } else {
-    teePrice.innerText = "Price: $25.00";
-  }
+  try {
+    nftCount = await contract.balanceOf(address);
+    document.getElementById("shop").style.display = "block";
 
-  // Keychain
-  const keychainStatus = document.getElementById("keychain-status");
-  const claimBtn = document.getElementById("claim-button");
-  const claimed = localStorage.getItem(address + "-keychain") === "claimed";
+    // Tee discount
+    const teePrice = document.getElementById("tee-price");
+    if (nftCount >= 3) {
+      teePrice.innerText = "Price: $12.50 (50% off)";
+    } else if (nftCount >= 1) {
+      teePrice.innerText = "Price: $22.50 (10% off)";
+    } else {
+      teePrice.innerText = "Price: $25.00";
+    }
 
-  if (claimed) {
-    keychainStatus.innerText = "✅ Already Claimed";
-    claimBtn.disabled = true;
-  } else if (nftCount >= 1) {
-    keychainStatus.innerText = "🎉 Eligible!";
-    claimBtn.disabled = false;
-  } else {
-    keychainStatus.innerText = "❌ Not eligible";
-    claimBtn.disabled = true;
+    // Keychain
+    const keychainStatus = document.getElementById("keychain-status");
+    const claimBtn = document.getElementById("claim-button");
+    const claimed = localStorage.getItem(address + "-keychain") === "claimed";
+
+    if (claimed) {
+      keychainStatus.innerText = "✅ Already Claimed";
+      claimBtn.disabled = true;
+    } else if (nftCount >= 1) {
+      keychainStatus.innerText = "🎉 Eligible!";
+      claimBtn.disabled = false;
+    } else {
+      keychainStatus.innerText = "❌ Not eligible";
+      claimBtn.disabled = true;
+    }
+  } catch (err) {
+    console.error("Eligibility check failed", err);
   }
 }
 
 function claimKeychain() {
-  const address = userAddress;
-  localStorage.setItem(address + "-keychain", "claimed");
+  if (!userAddress) return;
+  localStorage.setItem(userAddress + "-keychain", "claimed");
   alert("🎁 Keychain claimed!");
-  checkEligibility(address);
+  checkEligibility(userAddress);
 }
 
 function buyTee() {
   alert("🧢 This is just a demo. Checkout integration coming later!");
 }
+
+// Hook buttons after DOM loads
+window.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("claim-button").addEventListener("click", claimKeychain);
+  document.getElementById("buy-tee-button").addEventListener("click", buyTee);
+});
