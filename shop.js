@@ -29,7 +29,27 @@ async function checkEligibility(address) {
     keychainStatus.innerText = "❌ Not eligible";
     claimBtn.disabled = true;
   }
+}  async function buyTapestry() {
+  if (!signer || !userAddress) {
+    alert("Please connect your wallet first!");
+    return;
+  }
+
+  try {
+    const tx = await signer.sendTransaction({
+      to: "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D", // your address
+      value: ethers.utils.parseEther("0.0") // for now, 0 ETH
+    });
+
+    alert("Transaction sent! Waiting for confirmation...");
+    await tx.wait();
+    alert("✅ Purchase successful! Tapestry bought.");
+  } catch (error) {
+    console.error(error);
+    alert("❌ Transaction failed or was rejected.");
+  }
 }
+
 
 function claimKeychain() {
   const address = userAddress;
