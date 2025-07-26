@@ -23,11 +23,15 @@ async function connectWallet() {
     document.getElementById("disconnect-button").style.display = "inline";
     document.getElementById("switch-button").style.display = "inline";
 
+    // ✅ Show the shop once connected
+    document.getElementById("shop").style.display = "block";
+
     checkEligibility(userAddress);
   } else {
     alert("Please install MetaMask!");
   }
 }
+
 
 function disconnectWallet() {
   userAddress = null;
