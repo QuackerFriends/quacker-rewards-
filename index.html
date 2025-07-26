@@ -33,9 +33,16 @@
       </div>
 <div class="item">
   <h3>🪡 Tapestry</h3>
-  <p>Price: 0 ETH (Test Mode)</p>
+  <p id="tapestry-price">Price: 0 ETH</p>
+  <button id="discount-button" onclick="claimDiscount()" style="display:none;">Claim 50% Off</button>
   <button onclick="buyTapestry()">Buy Now</button>
+
+  <div id="shipping-form" style="display:none; margin-top: 10px;">
+    <textarea id="shipping-address" placeholder="Enter your shipping address..." rows="3" cols="30"></textarea><br/>
+    <button onclick="submitPurchase()">Submit Purchase</button>
+  </div>
 </div>
+
     </div>
   </div>
 
