@@ -7,12 +7,16 @@ const contractABI = [
   "function balanceOf(address owner) view returns (uint256)"
 ];
 
+let contract;
+
 async function connectWallet() {
   if (window.ethereum) {
     provider = new ethers.providers.Web3Provider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
     signer = provider.getSigner();
     userAddress = await signer.getAddress();
+
+    contract = new ethers.Contract(contractAddress, contractABI, provider);
 
     document.getElementById("wallet-address").innerText = `Wallet: ${userAddress}`;
     document.getElementById("connect-button").style.display = "none";
@@ -29,6 +33,7 @@ function disconnectWallet() {
   userAddress = null;
   signer = null;
   provider = null;
+  contract = null;
 
   document.getElementById("wallet-address").innerText = "";
   document.getElementById("connect-button").style.display = "inline";
@@ -38,11 +43,20 @@ function disconnectWallet() {
 }
 
 async function switchWallet() {
-  await ethereum.request({
-    method: 'wallet_requestPermissions',
-    params: [{ eth_accounts: {} }]
-  });
-  connectWallet();
+  try {
+    await ethereum.request({
+      method: 'wallet_requestPermissions',
+      params: [{ eth_accounts: {} }]
+    });
+    connectWallet();
+  } catch (err) {
+    console.error("Switch failed", err);
+  }
 }
 
-const contract = new ethers.Contract(contractAddress, contractABI, new ethers.providers.Web3Provider(window.ethereum));
+// Hook buttons after DOM is ready
+window.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("connect-button").addEventListener("click", connectWallet);
+  document.getElementById("disconnect-button").addEventListener("click", disconnectWallet);
+  document.getElementById("switch-button").addEventListener("click", switchWallet);
+});
