@@ -22,16 +22,13 @@ async function connectWallet() {
     document.getElementById("connect-button").style.display = "none";
     document.getElementById("disconnect-button").style.display = "inline";
     document.getElementById("switch-button").style.display = "inline";
-
-    // ✅ Show the shop once connected
     document.getElementById("shop").style.display = "block";
 
-    checkEligibility(userAddress);
+    checkEligibility(userAddress); // Optional function you may implement
   } else {
     alert("Please install MetaMask!");
   }
 }
-
 
 function disconnectWallet() {
   userAddress = null;
@@ -58,9 +55,11 @@ async function switchWallet() {
   }
 }
 
-// Hook buttons after DOM is ready
 window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("connect-button").addEventListener("click", connectWallet);
   document.getElementById("disconnect-button").addEventListener("click", disconnectWallet);
   document.getElementById("switch-button").addEventListener("click", switchWallet);
+
+  // Hide the shop until wallet is connected manually
+  document.getElementById("shop").style.display = "none";
 });
