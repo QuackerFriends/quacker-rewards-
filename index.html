@@ -4,17 +4,15 @@
   <meta charset="UTF-8">
   <title>Quacker Friends Shop</title>
   <link rel="stylesheet" href="style.css">
-  <script src="wallet.js" defer></script>
-  <script src="shop.js" defer></script>
 </head>
 <body>
   <div class="container">
     <h1>🧶 Quacker Friends Crochet Shop</h1>
 
     <div id="wallet-section">
-      <button id="connect-button" onclick="connectWallet()">Connect Wallet</button>
-      <button id="switch-button" onclick="switchWallet()" style="display:none;">Switch Wallet</button>
-      <button id="disconnect-button" onclick="disconnectWallet()" style="display:none;">Disconnect</button>
+      <button id="connect-button">Connect Wallet</button>
+      <button id="switch-button" style="display:none;">Switch Wallet</button>
+      <button id="disconnect-button" style="display:none;">Disconnect</button>
       <p id="wallet-address"></p>
     </div>
 
@@ -24,15 +22,20 @@
       <div class="item">
         <h3>🧢 Quacker Friends Tee</h3>
         <p id="tee-price">Price: $25.00</p>
-        <button onclick="buyTee()">Buy Now</button>
+        <button id="buy-tee-button">Buy Now</button>
       </div>
 
       <div class="item">
         <h3>🎁 Free Keychain</h3>
         <p id="keychain-status">Eligible: Checking...</p>
-        <button id="claim-button" onclick="claimKeychain()">Claim Keychain</button>
+        <button id="claim-button">Claim Keychain</button>
       </div>
     </div>
   </div>
+
+  <!-- Scripts LAST to ensure HTML loads first -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+  <script src="wallet.js"></script>
+  <script src="shop.js"></script>
 </body>
 </html>
