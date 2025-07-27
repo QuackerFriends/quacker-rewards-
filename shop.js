@@ -44,16 +44,7 @@ async function submitPurchase() {
     await tx.wait();
 
     // Log purchase
-    await fetch("https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec", {
-      method: "POST",
-      body: JSON.stringify({
-        item: "Tapestry",
-        wallet: userAddress,
-        price: discounted ? "0 (50% Off)" : "0",
-        address: shippingAddress
-      }),
-      headers: { "Content-Type": "application/json" }
-    });
+    await fetch("https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?item=Tapestry&wallet=" + encodeURIComponent(userAddress) + "&price=" + encodeURIComponent(discounted ? "0 (50% Off)" : "0") + "&address=" + encodeURIComponent(shippingAddress));
 
     alert("Purchase successful and logged!");
     document.getElementById("shipping-form").style.display = "none";
@@ -69,29 +60,32 @@ async function submitPurchase() {
 }
 
 async function showUserProfile(wallet, nftCount) {
-  const response = await fetch("https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec");
-  const data = await response.json();
+  const url = `https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?action=getProfile&wallet=${encodeURIComponent(wallet)}`;
 
-  const userOrders = data.filter(row => row.wallet.toLowerCase() === wallet.toLowerCase());
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
 
-  // Count Keychain claims
-  const keychainClaimed = userOrders.some(order => order.item.toLowerCase().includes("keychain"));
+    const userOrders = data.orders || [];
+    const keychainClaimed = data.claimedKeychain;
 
-  // Build profile section
-  const profileDiv = document.getElementById("user-profile");
-  profileDiv.innerHTML = `
-    <h2>Your Profile</h2>
-    <p><strong>Wallet:</strong> ${wallet}</p>
-    <p><strong>Quacker Friends Held:</strong> ${nftCount}</p>
-    <p><strong>Keychain Claimed:</strong> ${keychainClaimed ? "✅ Yes" : "❌ No"}</p>
-    <h3>Your Orders:</h3>
-    <ul>
-      ${userOrders.map(o => `<li>${o.item} — ${o.price} ETH — ${o.address}</li>`).join("") || "<li>No orders yet</li>"}
-    </ul>
-  `;
+    const profileDiv = document.getElementById("user-profile");
+    profileDiv.innerHTML = `
+      <h2>Your Profile</h2>
+      <p><strong>Wallet:</strong> ${wallet}</p>
+      <p><strong>Quacker Friends Held:</strong> ${nftCount}</p>
+      <p><strong>Keychain Claimed:</strong> ${keychainClaimed ? "✅ Yes" : "❌ No"}</p>
+      <h3>Your Orders:</h3>
+      <ul>
+        ${userOrders.length ? userOrders.map(o => `<li>${o.item} — ${o.price} — ${o.address}</li>`).join("") : "<li>No orders yet</li>"}
+      </ul>
+    `;
+  } catch (err) {
+    console.error("Failed to fetch profile:", err);
+  }
 }
 
-// Connect wallet logic (if you're using something like MetaMask)
+// Connect wallet logic
 async function connectWallet() {
   if (window.ethereum) {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -104,5 +98,4 @@ async function connectWallet() {
   }
 }
 
-// Call connectWallet() once page loads or on button click
 window.onload = connectWallet;
