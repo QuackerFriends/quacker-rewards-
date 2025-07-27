@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Quacker Friends Shop</title>
-  <link rel="stylesheet" href="style.css" />
+ <link rel="stylesheet" href="style.css" />
+ 
 </head>
-<body>
-
+<body>  
   <div class="container">
     <h1>🧶 Quacker Friends Crochet Shop</h1>
 
@@ -16,9 +16,6 @@
       <button id="disconnect-button" style="display:none;">Disconnect</button>
       <p id="wallet-address"></p>
     </div>
-
-    <button id="profile-toggle" style="float: right; margin: 10px;">👤 User Profile</button>
-    <div id="user-profile" style="display:none; margin-top: 20px; padding: 10px; border: 2px dashed #ccc;"></div>
 
     <div id="shop" style="display: none;">
       <h2>🛍️ Shop Items</h2>
@@ -34,18 +31,18 @@
         <p id="keychain-status">Eligible: Checking...</p>
         <button id="claim-button" onclick="claimKeychain()">Claim Keychain</button>
       </div>
+<div class="item">
+  <h3>🪡 Tapestry</h3>
+  <p id="tapestry-price">Price: 0 ETH</p>
+  <button id="discount-button" onclick="claimDiscount()" style="display:none;">Claim 50% Off</button>
+  <button onclick="buyTapestry()">Buy Now</button>
 
-      <div class="item">
-        <h3>🪡 Tapestry</h3>
-        <p id="tapestry-price">Price: 0 ETH</p>
-        <button id="discount-button" onclick="claimDiscount()" style="display:none;">Claim 50% Off</button>
-        <button onclick="buyTapestry()">Buy Now</button>
+  <div id="shipping-form" style="display:none; margin-top: 10px;">
+    <textarea id="shipping-address" placeholder="Enter your shipping address..." rows="3" cols="30"></textarea><br/>
+    <button onclick="submitPurchase()">Submit Purchase</button>
+  </div>
+</div>
 
-        <div id="shipping-form" style="display:none; margin-top: 10px;">
-          <textarea id="shipping-address" placeholder="Enter your shipping address..." rows="3" cols="30"></textarea><br/>
-          <button onclick="submitPurchase()">Submit Purchase</button>
-        </div>
-      </div>
     </div>
   </div>
 
