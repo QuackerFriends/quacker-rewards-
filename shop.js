@@ -64,3 +64,27 @@ async function submitPurchase() {
     alert("❌ Transaction failed or cancelled.");
   }
 }
+document.getElementById("profile-button").addEventListener("click", async () => {
+  const response = await fetch("https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec");
+  const data = await response.json();
+  const lowerWallet = userAddress.toLowerCase();
+  const orders = data.filter(row => row.wallet.toLowerCase() === lowerWallet);
+
+  const keychainClaimed = orders.some(o => o.item.toLowerCase().includes("keychain"));
+
+  const nftBalance = await contract.balanceOf(userAddress);
+  const nftCount = parseInt(nftBalance.toString());
+
+  const section = document.getElementById("profile-section");
+  section.innerHTML = `
+    <h2>User Profile</h2>
+    <p><strong>Wallet:</strong> ${userAddress}</p>
+    <p><strong>Quacker Friends NFTs Held:</strong> ${nftCount}</p>
+    <p><strong>Keychain Claimed:</strong> ${keychainClaimed ? "✅ Yes" : "❌ No"}</p>
+    <h3>Order History:</h3>
+    <ul>
+      ${orders.map(o => `<li>${o.item} - ${o.price} - ${o.address}</li>`).join("") || "<li>No orders yet.</li>"}
+    </ul>
+  `;
+  section.style.display = section.style.display === "none" ? "block" : "none";
+});
