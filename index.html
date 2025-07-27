@@ -1,62 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Quacker Friends Shop</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
-  <script src="shop.js" defer></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #fefbe9;
-      color: #333;
-      padding: 20px;
-    }
-    #shop {
-      margin-top: 20px;
-    }
-    #shipping-form {
-      display: none;
-      margin-top: 20px;
-    }
-    #user-profile {
-      display: none;
-      margin-top: 30px;
-      background: #fff3cd;
-      border: 1px solid #ffeeba;
-      padding: 15px;
-      border-radius: 8px;
-    }
-    #profile-toggle {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: #ffd700;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>🦆 Quacker Friends Shop</h1>
-  <button id="profile-toggle">User Profile</button>
-  <p id="wallet-address"></p>
 
-  <div id="shop">
-    <h2>Tapestry</h2>
-    <p id="tapestry-price">Price: 0 ETH</p>
-    <button onclick="claimDiscount()" id="discount-button" style="display: none;">Claim 50% Discount</button>
-    <button onclick="buyTapestry()">Buy</button>
+  <div class="container">
+    <h1>🧶 Quacker Friends Crochet Shop</h1>
+
+    <div id="wallet-section">
+      <button id="connect-button">Connect Wallet</button>
+      <button id="switch-button" style="display:none;">Switch Wallet</button>
+      <button id="disconnect-button" style="display:none;">Disconnect</button>
+      <p id="wallet-address"></p>
+    </div>
+
+    <button id="profile-toggle" style="float: right; margin: 10px;">👤 User Profile</button>
+    <div id="user-profile" style="display:none; margin-top: 20px; padding: 10px; border: 2px dashed #ccc;"></div>
+
+    <div id="shop" style="display: none;">
+      <h2>🛍️ Shop Items</h2>
+
+      <div class="item">
+        <h3>🧢 Quacker Friends Tee</h3>
+        <p id="tee-price">Price: $25.00</p>
+        <button onclick="buyTee()">Buy Now</button>
+      </div>
+
+      <div class="item">
+        <h3>🎁 Free Keychain</h3>
+        <p id="keychain-status">Eligible: Checking...</p>
+        <button id="claim-button" onclick="claimKeychain()">Claim Keychain</button>
+      </div>
+
+      <div class="item">
+        <h3>🪡 Tapestry</h3>
+        <p id="tapestry-price">Price: 0 ETH</p>
+        <button id="discount-button" onclick="claimDiscount()" style="display:none;">Claim 50% Off</button>
+        <button onclick="buyTapestry()">Buy Now</button>
+
+        <div id="shipping-form" style="display:none; margin-top: 10px;">
+          <textarea id="shipping-address" placeholder="Enter your shipping address..." rows="3" cols="30"></textarea><br/>
+          <button onclick="submitPurchase()">Submit Purchase</button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div id="shipping-form">
-    <label for="shipping-address">Enter Shipping Address:</label><br>
-    <textarea id="shipping-address" rows="4" cols="50"></textarea><br><br>
-    <button onclick="submitPurchase()">Submit</button>
-  </div>
-
-  <div id="user-profile"></div>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="wallet.js"></script>
+  <script src="shop.js"></script>
 </body>
 </html>
