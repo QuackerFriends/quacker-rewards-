@@ -1,193 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
   <title>Quacker Friends Shop</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+  <script src="shop.js" defer></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fefbe9;
+      color: #333;
+      padding: 20px;
+    }
+    #shop {
+      margin-top: 20px;
+    }
+    #shipping-form {
+      display: none;
+      margin-top: 20px;
+    }
+    #user-profile {
+      display: none;
+      margin-top: 30px;
+      background: #fff3cd;
+      border: 1px solid #ffeeba;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    #profile-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #ffd700;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-  <!-- Top-right Profile Button -->
-  <button id="profile-toggle" style="position: absolute; top: 10px; right: 10px;">User Profile</button>
+  <h1>🦆 Quacker Friends Shop</h1>
+  <button id="profile-toggle">User Profile</button>
+  <p id="wallet-address"></p>
 
-  <!-- Profile Section -->
-  <div id="user-profile" style="display:none; margin-top: 30px; padding: 10px; border: 2px dashed #ccc;"></div>
-
-  <div class="container">
-    <h1>🧶 Quacker Friends Crochet Shop</h1>
-
-    <div id="wallet-section">
-      <button id="connect-button">Connect Wallet</button>
-      <button id="switch-button" style="display:none;">Switch Wallet</button>
-      <button id="disconnect-button" style="display:none;">Disconnect</button>
-      <p id="wallet-address"></p>
-    </div>
-
-    <div id="shop" style="display: none;">
-      <h2>🛍️ Shop Items</h2>
-
-      <div class="item">
-        <h3>🧢 Quacker Friends Tee</h3>
-        <p id="tee-price">Price: $25.00</p>
-        <button onclick="buyTee()">Buy Now</button>
-      </div>
-
-      <div class="item">
-        <h3>🎁 Free Keychain</h3>
-        <p id="keychain-status">Eligible: Checking...</p>
-        <button id="claim-button" onclick="claimKeychain()">Claim Keychain</button>
-      </div>
-
-      <div class="item">
-        <h3>🪡 Tapestry</h3>
-        <p id="tapestry-price">Price: 0 ETH</p>
-        <button id="discount-button" onclick="claimDiscount()" style="display:none;">Claim 50% Off</button>
-        <button onclick="buyTapestry()">Buy Now</button>
-
-        <div id="shipping-form" style="display:none; margin-top: 10px;">
-          <textarea id="shipping-address" placeholder="Enter your shipping address..." rows="3" cols="30"></textarea><br/>
-          <button onclick="submitPurchase()">Submit Purchase</button>
-        </div>
-      </div>
-    </div>
+  <div id="shop">
+    <h2>Tapestry</h2>
+    <p id="tapestry-price">Price: 0 ETH</p>
+    <button onclick="claimDiscount()" id="discount-button" style="display: none;">Claim 50% Discount</button>
+    <button onclick="buyTapestry()">Buy</button>
   </div>
 
-<script>
-let discounted = false;
-let userAddress;
-let signer;
+  <div id="shipping-form">
+    <label for="shipping-address">Enter Shipping Address:</label><br>
+    <textarea id="shipping-address" rows="4" cols="50"></textarea><br><br>
+    <button onclick="submitPurchase()">Submit</button>
+  </div>
 
-const contractAddress = "0xYOUR_NFT_CONTRACT"; // Replace with your contract
-const abi = [ /* your ABI */ ];
-const provider = new ethers.providers.Web3Provider(window.ethereum);
-const contract = new ethers.Contract(contractAddress, abi, provider);
-
-async function connectWallet() {
-  if (window.ethereum) {
-    await provider.send("eth_requestAccounts", []);
-    signer = provider.getSigner();
-    userAddress = await signer.getAddress();
-    document.getElementById("wallet-address").innerText = userAddress;
-    document.getElementById("shop").style.display = "block";
-    checkEligibility(userAddress);
-  } else {
-    alert("Please install MetaMask!");
-  }
-}
-
-async function checkEligibility(wallet) {
-  const nftBalance = await contract.balanceOf(wallet);
-  const count = parseInt(nftBalance.toString());
-
-  if (count >= 10) {
-    document.getElementById("discount-button").style.display = "inline";
-  }
-
-  showUserProfile(wallet);
-}
-
-function claimDiscount() {
-  discounted = true;
-  document.getElementById("tapestry-price").innerText = "Price: 0 ETH (50% OFF)";
-  document.getElementById("discount-button").style.display = "none";
-}
-
-function buyTapestry() {
-  document.getElementById("shipping-form").style.display = "block";
-}
-
-async function submitPurchase() {
-  const shippingAddress = document.getElementById("shipping-address").value.trim();
-  if (!shippingAddress) {
-    alert("Please enter a shipping address.");
-    return;
-  }
-
-  const priceInEth = discounted ? "0" : "0";
-  const ethAmount = ethers.utils.parseEther(priceInEth);
-
-  try {
-    const tx = await signer.sendTransaction({
-      to: "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D",
-      value: ethAmount
-    });
-
-    await tx.wait();
-
-    await fetch("https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec", {
-      method: "POST",
-      body: JSON.stringify({
-        item: "Tapestry",
-        wallet: userAddress,
-        price: discounted ? "0 (50% Off)" : "0",
-        address: shippingAddress
-      }),
-      headers: { "Content-Type": "application/json" }
-    });
-
-    alert("Purchase successful and logged!");
-    document.getElementById("shipping-form").style.display = "none";
-    document.getElementById("shipping-address").value = "";
-
-    checkEligibility(userAddress);
-
-  } catch (err) {
-    console.error(err);
-    alert("Transaction failed or cancelled.");
-  }
-}
-
-async function claimKeychain() {
-  try {
-    const tx = await signer.sendTransaction({
-      to: "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D",
-      value: ethers.utils.parseEther("0")
-    });
-
-    await tx.wait();
-
-    await fetch("https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?item=Keychain&wallet=" + encodeURIComponent(userAddress) + "&price=0&address=Claimed from Profile");
-
-    alert("🎉 Keychain claimed!");
-    showUserProfile(userAddress);
-  } catch (err) {
-    console.error("Keychain claim failed", err);
-    alert("Transaction failed or cancelled.");
-  }
-}
-
-async function showUserProfile(wallet) {
-  const url = `https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec`;
-  const response = await fetch(url);
-  const allOrders = await response.json();
-
-  const nftBalance = await contract.balanceOf(wallet);
-  const count = parseInt(nftBalance.toString());
-
-  const userOrders = allOrders.filter(o => o.wallet.toLowerCase() === wallet.toLowerCase());
-  const claimedKeychain = userOrders.some(o => o.item.toLowerCase().includes("keychain"));
-
-  const profileDiv = document.getElementById("user-profile");
-  profileDiv.innerHTML = `
-    <h2>🧑‍💻 Your Quacker Profile</h2>
-    <p><strong>Wallet:</strong> ${wallet}</p>
-    <p><strong>Quacker Friends Held:</strong> ${count}</p>
-    <p><strong>Keychain Claimed:</strong> ${claimedKeychain ? "✅ Yes" : "❌ No"}</p>
-    ${!claimedKeychain ? '<button onclick="claimKeychain()">Claim Free Keychain</button>' : ""}
-  `;
-}
-
-document.getElementById("profile-toggle").addEventListener("click", async () => {
-  const profileDiv = document.getElementById("user-profile");
-  if (profileDiv.style.display === "none") {
-    await showUserProfile(userAddress);
-    profileDiv.style.display = "block";
-  } else {
-    profileDiv.style.display = "none";
-  }
-});
-
-window.onload = connectWallet;
-</script>
+  <div id="user-profile"></div>
 </body>
 </html>
