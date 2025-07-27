@@ -2,22 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Quacker Friends Shop</title>
- <link rel="stylesheet" href="style.css" />
- 
+  <title>Quacker Friends Crochet Shop</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    #user-profile-section {
+      display: none;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 20px;
+      background-color: #f9f9f9;
+    }
+
+    #profile-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>  
   <div class="container">
     <h1>🧶 Quacker Friends Crochet Shop</h1>
 
-    <div id="wallet-section">
-      <div id="profile-section" style="display:none; margin-top: 20px; background:#f9f9f9; padding:10px; border:1px solid #ccc;"></div>
+    <button id="profile-button" onclick="toggleProfile()">User Profile</button>
 
+    <div id="wallet-section">
       <button id="connect-button">Connect Wallet</button>
       <button id="switch-button" style="display:none;">Switch Wallet</button>
       <button id="disconnect-button" style="display:none;">Disconnect</button>
-      <button id="profile-button" style="display:none;">User Profile</button>
-
       <p id="wallet-address"></p>
     </div>
 
@@ -35,19 +49,21 @@
         <p id="keychain-status">Eligible: Checking...</p>
         <button id="claim-button" onclick="claimKeychain()">Claim Keychain</button>
       </div>
-<div class="item">
-  <h3>🪡 Tapestry</h3>
-  <p id="tapestry-price">Price: 0 ETH</p>
-  <button id="discount-button" onclick="claimDiscount()" style="display:none;">Claim 50% Off</button>
-  <button onclick="buyTapestry()">Buy Now</button>
 
-  <div id="shipping-form" style="display:none; margin-top: 10px;">
-    <textarea id="shipping-address" placeholder="Enter your shipping address..." rows="3" cols="30"></textarea><br/>
-    <button onclick="submitPurchase()">Submit Purchase</button>
-  </div>
-</div>
+      <div class="item">
+        <h3>🪡 Tapestry</h3>
+        <p id="tapestry-price">Price: 0 ETH</p>
+        <button id="discount-button" onclick="claimDiscount()" style="display:none;">Claim 50% Off</button>
+        <button onclick="buyTapestry()">Buy Now</button>
 
+        <div id="shipping-form" style="display:none; margin-top: 10px;">
+          <textarea id="shipping-address" placeholder="Enter your shipping address..." rows="3" cols="30"></textarea><br/>
+          <button onclick="submitPurchase()">Submit Purchase</button>
+        </div>
+      </div>
     </div>
+
+    <div id="user-profile-section"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
