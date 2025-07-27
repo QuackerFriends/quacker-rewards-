@@ -7,11 +7,10 @@ async function checkEligibility(wallet) {
   const count = parseInt(nftBalance.toString());
   userNftCount = count;
 
-  document.getElementById("tee-price"); // no changes
-
   if (count >= 10) {
     document.getElementById("discount-button").style.display = "inline";
   }
+
   document.getElementById("keychain-status").innerText =
     count >= 1 ? "Eligible ✅" : "Not eligible ❌";
   document.getElementById("claim-button").disabled = count < 1;
@@ -29,7 +28,10 @@ function buyTapestry() {
 
 async function submitPurchase() {
   const addr = document.getElementById("shipping-address").value.trim();
-  if (!addr) { alert("Please enter shipping address."); return; }
+  if (!addr) {
+    alert("Please enter your shipping address.");
+    return;
+  }
 
   try {
     const tx = await signer.sendTransaction({
@@ -44,39 +46,15 @@ async function submitPurchase() {
       price: discounted ? "0 (50% Off)" : "0",
       address: addr
     });
-    await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
 
-    alert("✅ Purchase successful and logged!");
+    await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
+    alert("✅ Purchase logged!");
     document.getElementById("shipping-form").style.display = "none";
     document.getElementById("shipping-address").value = "";
   } catch (err) {
     console.error(err);
     alert("Transaction failed or cancelled.");
   }
-}
-
-async function claimKeychain() {
-  if (userNftCount < 1) {
-    alert("You must own a Quacker Friend to claim.");
-    return;
-  }
-  const already = await hasClaimedKeychain();
-  if (already) {
-    alert("You already claimed your Keychain.");
-    return;
-  }
-
-  const params = new URLSearchParams({
-    item: "Keychain",
-    wallet: userAddressGlobal,
-    price: "0 (Free)",
-    address: "N/A"
-  });
-  await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
-  alert("🎉 Keychain claimed!");
-
-  document.getElementById("keychain-status").innerText = "Already Claimed";
-  document.getElementById("claim-button").disabled = true;
 }
 
 async function hasClaimedKeychain() {
@@ -86,6 +64,33 @@ async function hasClaimedKeychain() {
     r.wallet.toLowerCase() === userAddressGlobal.toLowerCase() &&
     r.item.toLowerCase().includes("keychain")
   );
+}
+
+async function claimKeychain() {
+  const shippingAddress = document.getElementById("keychain-address").value.trim();
+
+  if (!shippingAddress) {
+    alert("Please enter your shipping address to claim the keychain.");
+    return;
+  }
+
+  const params = new URLSearchParams({
+    item: "Keychain",
+    wallet: userAddressGlobal,
+    price: "0 (Free)",
+    address: shippingAddress
+  });
+
+  await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
+  alert("🎉 Keychain claimed!");
+
+  const modal = document.getElementById("profile-modal");
+  modal.innerHTML = `
+    <h3>🧑‍💻 Your Profile</h3>
+    <p><strong>Wallet:</strong> ${userAddressGlobal}</p>
+    <p><strong>Quacker NFTs Owned:</strong> ${userNftCount}</p>
+    <p><strong>Keychain Claimed:</strong> ✅ Yes</p>
+  `;
 }
 
 async function toggleProfile() {
@@ -102,17 +107,18 @@ async function toggleProfile() {
     <p><strong>Wallet:</strong> ${userAddressGlobal}</p>
     <p><strong>Quacker NFTs Owned:</strong> ${userNftCount}</p>
     <p><strong>Keychain Claimed:</strong> ${claimed ? "✅ Yes" : "❌ No"}</p>
-    ${claimed ? '' : '<button onclick="claimKeychain()">Claim Free Keychain</button>'}
+    ${claimed ? '' : `
+      <textarea id="keychain-address" placeholder="Enter shipping address..." rows="3" style="width: 100%; margin-top: 5px;"></textarea>
+      <button onclick="claimKeychain()">Claim Free Keychain</button>
+    `}
   `;
   modal.style.display = "block";
 }
 
-// Called by wallet.js on connection:
 function setupProfileButton() {
   document.getElementById("profile-button").style.display = "inline";
 }
 
-// Called by wallet.js on disconnect:
 function teardownProfileButton() {
   document.getElementById("profile-button").style.display = "none";
   document.getElementById("profile-modal").style.display = "none";
