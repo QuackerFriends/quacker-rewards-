@@ -17,7 +17,7 @@ async function connectWallet() {
     userAddress = await signer.getAddress();
     userAddressGlobal = userAddress;
 setupProfileButton();
-
+checkEligibility(userAddressGlobal);
 
     contract = new ethers.Contract(contractAddress, contractABI, provider);
 
