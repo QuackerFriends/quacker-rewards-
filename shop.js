@@ -1,46 +1,20 @@
 let discounted = false;
+let userAddressGlobal = null;
+let userNftCount = 0;
 
 async function checkEligibility(wallet) {
   const nftBalance = await contract.balanceOf(wallet);
   const count = parseInt(nftBalance.toString());
+  userNftCount = count;
+
+  document.getElementById("tee-price"); // no changes
 
   if (count >= 10) {
     document.getElementById("discount-button").style.display = "inline";
   }
-
-  // Save for profile use
-  window.nftCount = count;
-  window.currentWallet = wallet;
-
-  // Update keychain status
-  const claimed = await hasClaimedKeychain(wallet);
-  document.getElementById("keychain-status").innerText = claimed ? "Already Claimed" : "Eligible";
-  document.getElementById("claim-button").disabled = claimed;
-}
-
-async function hasClaimedKeychain(wallet) {
-  const response = await fetch("https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec");
-  const data = await response.json();
-  return data.some(entry =>
-    entry.wallet.toLowerCase() === wallet.toLowerCase() &&
-    entry.item.toLowerCase().includes("keychain")
-  );
-}
-
-async function claimKeychain() {
-  const wallet = await signer.getAddress();
-  const alreadyClaimed = await hasClaimedKeychain(wallet);
-
-  if (alreadyClaimed) {
-    alert("You've already claimed your free keychain.");
-    return;
-  }
-
-  const res = await fetch("https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?item=Keychain&wallet=" + wallet + "&price=0&address=Claim");
-  const text = await res.text();
-  alert("🎉 Keychain claimed!");
-  document.getElementById("keychain-status").innerText = "Already Claimed";
-  document.getElementById("claim-button").disabled = true;
+  document.getElementById("keychain-status").innerText =
+    count >= 1 ? "Eligible ✅" : "Not eligible ❌";
+  document.getElementById("claim-button").disabled = count < 1;
 }
 
 function claimDiscount() {
@@ -54,70 +28,92 @@ function buyTapestry() {
 }
 
 async function submitPurchase() {
-  const shippingAddress = document.getElementById("shipping-address").value.trim();
-
-  if (!shippingAddress) {
-    alert("Please enter a shipping address.");
-    return;
-  }
-
-  const priceInEth = discounted ? "0" : "0";
-  const ethAmount = ethers.utils.parseEther(priceInEth);
+  const addr = document.getElementById("shipping-address").value.trim();
+  if (!addr) { alert("Please enter shipping address."); return; }
 
   try {
     const tx = await signer.sendTransaction({
       to: "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D",
-      value: ethAmount
+      value: ethers.utils.parseEther("0")
     });
-
     await tx.wait();
 
-    const userAddress = await signer.getAddress();
-
-    const url = "https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec";
     const params = new URLSearchParams({
       item: "Tapestry",
-      wallet: userAddress,
+      wallet: userAddressGlobal,
       price: discounted ? "0 (50% Off)" : "0",
-      address: shippingAddress
+      address: addr
     });
+    await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
 
-    await fetch(`${url}?${params.toString()}`);
     alert("✅ Purchase successful and logged!");
     document.getElementById("shipping-form").style.display = "none";
     document.getElementById("shipping-address").value = "";
-
   } catch (err) {
     console.error(err);
-    alert("❌ Transaction failed or cancelled.");
+    alert("Transaction failed or cancelled.");
   }
 }
 
-async function toggleProfile() {
-  const profileDiv = document.getElementById("user-profile-section");
-
-  if (profileDiv.style.display === "block") {
-    profileDiv.style.display = "none";
+async function claimKeychain() {
+  if (userNftCount < 1) {
+    alert("You must own a Quacker Friend to claim.");
+    return;
+  }
+  const already = await hasClaimedKeychain();
+  if (already) {
+    alert("You already claimed your Keychain.");
     return;
   }
 
-  const wallet = window.currentWallet;
-  const nftCount = window.nftCount;
-  const response = await fetch("https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec");
-  const data = await response.json();
+  const params = new URLSearchParams({
+    item: "Keychain",
+    wallet: userAddressGlobal,
+    price: "0 (Free)",
+    address: "N/A"
+  });
+  await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
+  alert("🎉 Keychain claimed!");
 
-  const userOrders = data.filter(row => row.wallet.toLowerCase() === wallet.toLowerCase());
-  const claimed = userOrders.some(o => o.item.toLowerCase().includes("keychain"));
+  document.getElementById("keychain-status").innerText = "Already Claimed";
+  document.getElementById("claim-button").disabled = true;
+}
 
-  profileDiv.innerHTML = `
-    <h2>👤 Your Profile</h2>
-    <p><strong>Wallet:</strong> ${wallet}</p>
-    <p><strong>Quacker Friends NFTs Owned:</strong> ${nftCount}</p>
+async function hasClaimedKeychain() {
+  const res = await fetch("https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec");
+  const data = await res.json();
+  return data.some(r =>
+    r.wallet.toLowerCase() === userAddressGlobal.toLowerCase() &&
+    r.item.toLowerCase().includes("keychain")
+  );
+}
+
+async function toggleProfile() {
+  const modal = document.getElementById("profile-modal");
+  if (modal.style.display === "block") {
+    modal.style.display = "none";
+    return;
+  }
+
+  const claimed = await hasClaimedKeychain();
+
+  modal.innerHTML = `
+    <h3>🧑‍💻 Your Profile</h3>
+    <p><strong>Wallet:</strong> ${userAddressGlobal}</p>
+    <p><strong>Quacker NFTs Owned:</strong> ${userNftCount}</p>
     <p><strong>Keychain Claimed:</strong> ${claimed ? "✅ Yes" : "❌ No"}</p>
-    <h3>Your Orders:</h3>
-    <ul>
-      ${userOrders.map(o => `<li>${o.item} — ${o.price} — ${o.address}</li>`).join("") || "<li>No orders yet</li>"}
-    </ul>
+    ${claimed ? '' : '<button onclick="claimKeychain()">Claim Free Keychain</button>'}
   `;
-  profileDiv.style.display = "block";
+  modal.style.display = "block";
+}
+
+// Called by wallet.js on connection:
+function setupProfileButton() {
+  document.getElementById("profile-button").style.display = "inline";
+}
+
+// Called by wallet.js on disconnect:
+function teardownProfileButton() {
+  document.getElementById("profile-button").style.display = "none";
+  document.getElementById("profile-modal").style.display = "none";
 }
