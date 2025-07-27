@@ -15,6 +15,9 @@ async function connectWallet() {
     await provider.send("eth_requestAccounts", []);
     signer = provider.getSigner();
     userAddress = await signer.getAddress();
+    userAddressGlobal = userAddress;
+setupProfileButton();
+
 
     contract = new ethers.Contract(contractAddress, contractABI, provider);
 
@@ -37,6 +40,7 @@ function disconnectWallet() {
   signer = null;
   provider = null;
   contract = null;
+teardownProfileButton();
 
   document.getElementById("profile-button").style.display = "none";
 document.getElementById("profile-section").style.display = "none";
