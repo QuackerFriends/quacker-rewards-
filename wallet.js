@@ -23,6 +23,8 @@ async function connectWallet() {
     document.getElementById("disconnect-button").style.display = "inline";
     document.getElementById("switch-button").style.display = "inline";
     document.getElementById("shop").style.display = "block";
+    document.getElementById("profile-button").style.display = "inline";
+
 
     checkEligibility(userAddress); // Optional function you may implement
   } else {
@@ -35,6 +37,9 @@ function disconnectWallet() {
   signer = null;
   provider = null;
   contract = null;
+
+  document.getElementById("profile-button").style.display = "none";
+document.getElementById("profile-section").style.display = "none";
 
   document.getElementById("wallet-address").innerText = "";
   document.getElementById("connect-button").style.display = "inline";
