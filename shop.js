@@ -11,9 +11,10 @@ async function checkEligibility(wallet) {
     document.getElementById("discount-button").style.display = "inline";
   }
 
-  document.getElementById("keychain-status").innerText =
-    count >= 1 ? "Eligible ✅" : "Not eligible ❌";
-  document.getElementById("claim-button").disabled = count < 1;
+  // Show profile button only if eligible for anything
+  if (count >= 1) {
+    setupProfileButton();
+  }
 }
 
 function claimDiscount() {
@@ -68,7 +69,6 @@ async function hasClaimedKeychain() {
 
 async function claimKeychain() {
   const shippingAddress = document.getElementById("keychain-address").value.trim();
-
   if (!shippingAddress) {
     alert("Please enter your shipping address to claim the keychain.");
     return;
@@ -84,17 +84,12 @@ async function claimKeychain() {
   await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
   alert("🎉 Keychain claimed!");
 
-  const modal = document.getElementById("profile-modal");
-  modal.innerHTML = `
-    <h3>🧑‍💻 Your Profile</h3>
-    <p><strong>Wallet:</strong> ${userAddressGlobal}</p>
-    <p><strong>Quacker NFTs Owned:</strong> ${userNftCount}</p>
-    <p><strong>Keychain Claimed:</strong> ✅ Yes</p>
-  `;
+  await toggleProfile(); // refresh modal content
 }
 
 async function toggleProfile() {
   const modal = document.getElementById("profile-modal");
+
   if (modal.style.display === "block") {
     modal.style.display = "none";
     return;
@@ -107,10 +102,10 @@ async function toggleProfile() {
     <p><strong>Wallet:</strong> ${userAddressGlobal}</p>
     <p><strong>Quacker NFTs Owned:</strong> ${userNftCount}</p>
     <p><strong>Keychain Claimed:</strong> ${claimed ? "✅ Yes" : "❌ No"}</p>
-    ${claimed ? '' : `
+    ${!claimed ? `
       <textarea id="keychain-address" placeholder="Enter shipping address..." rows="3" style="width: 100%; margin-top: 5px;"></textarea>
       <button onclick="claimKeychain()">Claim Free Keychain</button>
-    `}
+    ` : ''}
   `;
   modal.style.display = "block";
 }
