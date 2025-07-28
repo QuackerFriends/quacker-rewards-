@@ -124,27 +124,28 @@
     const CONTRACT_ADDRESS = "YOUR_CONTRACT_ADDRESS_HERE"; // Already present in wallet.js
     const ABI = window.CONTRACT_ABI; // From wallet.js
 
-    async function checkWalletStatus() {
-      if (!window.ethereum) return;
+   async function checkWalletStatus() {
+  if (!window.ethereum) return;
 
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const signer = provider.getSigner();
 
-      try {
-        userAddress = await signer.getAddress();
-        const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-        nftBalance = await contract.balanceOf(userAddress);
-        hasAlreadyClaimed = await contract.hasClaimed(userAddress);
+  try {
+    userAddress = await signer.getAddress();
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+    nftBalance = await contract.balanceOf(userAddress);
+    hasAlreadyClaimed = await contract.hasClaimed(userAddress);
 
-        // Show profile button for all connected users
-        document.getElementById("profile-button").style.display = "inline-block";
+    // ✅ Always show profile button once wallet is connected
+    document.getElementById("profile-button").style.display = "inline-block";
 
-        // Display connected address
-        document.getElementById("wallet-address").textContent = "Connected: " + userAddress;
-      } catch (err) {
-        console.error("Error checking wallet:", err);
-      }
-    }
+    // ✅ Show connected wallet
+    document.getElementById("wallet-address").textContent = "Connected: " + userAddress;
+  } catch (err) {
+    console.error("Error checking wallet:", err);
+  }
+}
+
 
     async function toggleProfile() {
   const modal = document.getElementById("profile-modal");
