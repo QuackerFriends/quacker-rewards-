@@ -5,52 +5,7 @@
   <title>Quacker Friends Crochet Shop</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    #profile-button {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      padding: 8px 12px;
-      font-size: 14px;
-      border: none;
-      background: #ffdf5e;
-      border-radius: 8px;
-      cursor: pointer;
-      display: none;
-    }
-    #profile-modal {
-      display: none;
-      position: fixed;
-      top: 50px;
-      right: 50px;
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      padding: 15px;
-      width: 300px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      z-index: 1000;
-    }
-    #profile-modal h3 {
-      margin-top: 0;
-    }
-    #profile-modal button {
-      margin-top: 10px;
-      padding: 6px 10px;
-      font-size: 13px;
-      border: 1px solid #333;
-      border-radius: 6px;
-      cursor: pointer;
-      background: #ffd700;
-    }
-    #profile-modal textarea {
-      margin-top: 8px;
-      width: 100%;
-      box-sizing: border-box;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      padding: 5px;
-      font-family: inherit;
-    }
+    /* ... your existing styles ... */
   </style>
 </head>
 <body>
@@ -64,23 +19,10 @@
       <p id="wallet-address"></p>
     </div>
 
-    <button id="profile-button" onclick="toggleProfile()">User Profile</button>
+    <button id="profile-button" onclick="toggleProfile()" style="display:none;">User Profile</button>
 
-    <div id="profile-modal">
-      <h3>Your Profile</h3>
-      <p id="profile-wallet"></p>
-      <div id="keychain-section" style="display:none;">
-        <p>You’re eligible for a free Quacker Keychain!</p>
-        <textarea id="shipping-address" placeholder="Enter your shipping address here..." rows="3"></textarea>
-        <button onclick="submitClaim()">Claim Free Keychain</button>
-      </div>
-      <div id="claimed-section" style="display:none;">
-        <p>✅ You've already claimed your free keychain!</p>
-      </div>
-      <div id="not-eligible-section" style="display:none;">
-        <p>⚠️ Sorry, you are not eligible for a free keychain.</p>
-      </div>
-      <button onclick="toggleProfile()">Close</button>
+    <div id="profile-modal" style="display:none;">
+      <!-- modal content dynamically inserted by toggleProfile() -->
     </div>
 
     <div id="shop" style="display: none;">
@@ -96,7 +38,7 @@
         <button id="discount-button" onclick="claimDiscount()" style="display:none;">Claim 50% Off</button>
         <button onclick="buyTapestry()">Buy Now</button>
         <div id="shipping-form" style="display:none; margin-top:10px;">
-          <textarea id="shipping-address-tapestry" placeholder="Enter your shipping address..." rows="3" cols="30"></textarea><br />
+          <textarea id="shipping-address-tapestry" placeholder="Enter your shipping address..." rows="3" cols="30"></textarea><br/>
           <button onclick="submitPurchase()">Submit Purchase</button>
         </div>
       </div>
@@ -105,161 +47,112 @@
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script>
-    // ==== Wallet & Profile Logic ====
+    // Globals to track user state
+    let userNftCount = 0;
+    let userAddressGlobal = null;
+    let userHasClaimed = false;
 
-    const connectBtn = document.getElementById("connect-button");
-    const switchBtn = document.getElementById("switch-button");
-    const disconnectBtn = document.getElementById("disconnect-button");
-    const walletAddressP = document.getElementById("wallet-address");
-    const profileBtn = document.getElementById("profile-button");
-    const profileModal = document.getElementById("profile-modal");
-    const profileWalletP = document.getElementById("profile-wallet");
-    const keychainSection = document.getElementById("keychain-section");
-    const claimedSection = document.getElementById("claimed-section");
-    const notEligibleSection = document.getElementById("not-eligible-section");
+    // Your contract setup and provider setup here
+    // Example placeholders:
+    // const provider = new ethers.providers.Web3Provider(window.ethereum);
+    // const contract = new ethers.Contract(contractAddress, abi, provider);
 
-    let provider;
-    let signer;
-    let userAddress;
+    async function checkEligibility(wallet) {
+      // Example call, replace with your contract call:
+      // const balance = await contract.balanceOf(wallet);
+      // userNftCount = parseInt(balance.toString());
 
-    // Replace with your NFT contract address and ABI
-    const nftContractAddress = "YOUR_NFT_CONTRACT_ADDRESS";
-    const nftContractABI = [
-      // Minimal ABI to check balanceOf
-      "function balanceOf(address owner) view returns (uint256)"
-    ];
+      // For demo, let's assume a fake function:
+      userNftCount = await getFakeNftBalance(wallet); // replace with real call
 
-    // Mock function: check if user has claimed the keychain before
-    // You must replace this with real backend check
-    async function hasClaimedKeychain(address) {
-      // Call your backend or Google Apps Script here to check claim status
-      // For demo, return false (not claimed)
-      return false;
+      if (userNftCount >= 10) {
+        document.getElementById("discount-button").style.display = "inline";
+      } else {
+        document.getElementById("discount-button").style.display = "none";
+      }
+
+      if (userNftCount >= 1) {
+        document.getElementById("profile-button").style.display = "inline";
+      } else {
+        document.getElementById("profile-button").style.display = "none";
+        document.getElementById("profile-modal").style.display = "none"; // hide modal if open
+      }
+
+      // Check if user already claimed keychain
+      userHasClaimed = await hasClaimedKeychain(); // implement accordingly
     }
 
-    // Initialize ethers provider and wallet connection
-    async function connectWallet() {
-      if (!window.ethereum) {
-        alert("MetaMask or compatible wallet not found!");
+    async function toggleProfile() {
+      const modal = document.getElementById("profile-modal");
+
+      if (modal.style.display === "block") {
+        modal.style.display = "none";
         return;
       }
-      try {
-        provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        signer = provider.getSigner();
-        userAddress = await signer.getAddress();
-        walletAddressP.textContent = "Connected: " + userAddress;
-        connectBtn.style.display = "none";
-        switchBtn.style.display = "inline-block";
-        disconnectBtn.style.display = "inline-block";
-        profileBtn.style.display = "inline-block";
-        document.getElementById("shop").style.display = "block";
 
-        profileWalletP.textContent = "Wallet: " + userAddress;
-
-        // Check NFT ownership
-        const nftContract = new ethers.Contract(nftContractAddress, nftContractABI, provider);
-        const balance = await nftContract.balanceOf(userAddress);
-
-        const claimed = await hasClaimedKeychain(userAddress);
-
-        if (balance.gt(0)) {
-          if (claimed) {
-            keychainSection.style.display = "none";
-            claimedSection.style.display = "block";
-            notEligibleSection.style.display = "none";
-          } else {
-            keychainSection.style.display = "block";
-            claimedSection.style.display = "none";
-            notEligibleSection.style.display = "none";
-          }
-        } else {
-          // No NFTs
-          keychainSection.style.display = "none";
-          claimedSection.style.display = "none";
-          notEligibleSection.style.display = "block";
-        }
-      } catch (err) {
-        alert("Error connecting wallet: " + err.message);
-      }
-    }
-
-    connectBtn.addEventListener("click", connectWallet);
-
-    disconnectBtn.addEventListener("click", () => {
-      provider = null;
-      signer = null;
-      userAddress = null;
-      walletAddressP.textContent = "";
-      connectBtn.style.display = "inline-block";
-      switchBtn.style.display = "none";
-      disconnectBtn.style.display = "none";
-      profileBtn.style.display = "none";
-      document.getElementById("shop").style.display = "none";
-      closeProfile();
-    });
-
-    switchBtn.addEventListener("click", async () => {
-      try {
-        await provider.send("wallet_requestPermissions", [{ eth_accounts: {} }]);
-        const accounts = await provider.listAccounts();
-        if (accounts.length > 0) {
-          userAddress = accounts[0];
-          walletAddressP.textContent = "Connected: " + userAddress;
-          profileWalletP.textContent = "Wallet: " + userAddress;
-          // Re-check eligibility on switch
-          await connectWallet();
-        }
-      } catch (err) {
-        alert("Error switching wallet: " + err.message);
-      }
-    });
-
-    function toggleProfile() {
-      if (profileModal.style.display === "none" || profileModal.style.display === "") {
-        profileModal.style.display = "block";
+      let claimSection = "";
+      if (userNftCount >= 1 && !userHasClaimed) {
+        claimSection = `
+          <div id="keychain-section">
+            <p>You’re eligible for a free Quacker Keychain!</p>
+            <textarea id="shipping-address" placeholder="Enter your shipping address here..." rows="3"></textarea>
+            <button onclick="submitClaim()">Claim Free Keychain</button>
+          </div>
+        `;
+      } else if (userHasClaimed) {
+        claimSection = `
+          <div id="claimed-section">
+            <p>✅ You've already claimed your free keychain!</p>
+          </div>
+        `;
       } else {
-        profileModal.style.display = "none";
+        claimSection = `<p>You need to own at least 1 Quacker NFT to claim a keychain.</p>`;
       }
-    }
-    function closeProfile() {
-      profileModal.style.display = "none";
+
+      modal.innerHTML = `
+        <h3>Your Profile</h3>
+        <p><strong>Wallet:</strong> ${userAddressGlobal || "Not connected"}</p>
+        <p><strong>Quacker NFTs Owned:</strong> ${userNftCount}</p>
+        <p><strong>Keychain Claimed:</strong> ${userHasClaimed ? "Yes" : "No"}</p>
+        ${claimSection}
+        <button onclick="toggleProfile()">Close</button>
+      `;
+
+      modal.style.display = "block";
     }
 
     async function submitClaim() {
-      const shippingAddress = document.getElementById("shipping-address").value.trim();
-      if (!shippingAddress) {
-        alert("Please enter your shipping address.");
+      const address = document.getElementById("shipping-address").value.trim();
+      if (!address) {
+        alert("Please enter a shipping address.");
         return;
       }
-      // Disable claim button to prevent multiple clicks
-      keychainSection.querySelector("button").disabled = true;
 
-      // Send claim request to backend here
-      // Example: using fetch to your Google Apps Script endpoint
-      try {
-        const params = new URLSearchParams({
-          item: "Quacker Keychain",
-          wallet: userAddress,
-          price: "0",
-          address: shippingAddress
-        });
-        const response = await fetch(`YOUR_GOOGLE_APPS_SCRIPT_URL?${params.toString()}`);
-        const text = await response.text();
-        if (text === "Success") {
-          alert("Claim successful! Thank you.");
-          keychainSection.style.display = "none";
-          claimedSection.style.display = "block";
-        } else {
-          alert("Claim failed: " + text);
-          keychainSection.querySelector("button").disabled = false;
-        }
-      } catch (err) {
-        alert("Error submitting claim: " + err.message);
-        keychainSection.querySelector("button").disabled = false;
-      }
+      // Call your claim backend function here, e.g., via fetch or ethers.js
+      // After successful claim:
+      alert("Claim submitted! Thank you.");
+      userHasClaimed = true;
+      toggleProfile();
     }
 
+    // Placeholder for testing
+    async function getFakeNftBalance(wallet) {
+      // simulate call: wallet ending with 1 gets 5 NFTs, else 0
+      return wallet && wallet.endsWith("1") ? 5 : 0;
+    }
+
+    async function hasClaimedKeychain() {
+      // replace with your real check via backend API or contract call
+      return false;
+    }
+
+    // Example wallet connection listener, call checkEligibility after connect
+    async function onWalletConnected(wallet) {
+      userAddressGlobal = wallet;
+      await checkEligibility(wallet);
+    }
+
+    // Your wallet.js and shop.js should call onWalletConnected(wallet) after connection
   </script>
 
   <script src="wallet.js"></script>
