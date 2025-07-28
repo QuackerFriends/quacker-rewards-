@@ -20,7 +20,7 @@
     #profile-modal {
       display: none;
       position: fixed;
-      top: 50px;
+      top: 60px;
       right: 50px;
       background: white;
       border: 1px solid #ccc;
@@ -90,5 +90,76 @@
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script src="wallet.js"></script>
   <script src="shop.js"></script>
+
+  <script>
+    let userAddressGlobal = null;
+
+    function toggleProfile() {
+      const modal = document.getElementById("profile-modal");
+      if (modal.style.display === "none") {
+        renderProfileModal();
+        modal.style.display = "block";
+      } else {
+        modal.style.display = "none";
+      }
+    }
+
+    function setupProfileButton() {
+      document.getElementById("profile-button").style.display = "inline";
+    }
+
+    function teardownProfileButton() {
+      document.getElementById("profile-button").style.display = "none";
+      document.getElementById("profile-modal").style.display = "none";
+    }
+
+    async function renderProfileModal() {
+      const modal = document.getElementById("profile-modal");
+      let nftBalance = 0;
+
+      try {
+        const contract = new ethers.Contract("0xA2c82Bda5585c1D729E2b4f85dCC9a11ded7DB4c", ["function balanceOf(address) view returns (uint256)"], provider);
+        nftBalance = await contract.balanceOf(userAddressGlobal);
+      } catch (err) {
+        console.error("Error fetching balance", err);
+      }
+
+      modal.innerHTML = `
+        <h3>👤 User Profile</h3>
+        <p><strong>Wallet:</strong><br/> ${userAddressGlobal}</p>
+        <p><strong>Your NFTs:</strong> ${nftBalance}</p>
+
+        <h4>🎁 Claim Free Keychain</h4>
+        <textarea id="keychain-address" placeholder="Enter shipping address..." rows="3"></textarea>
+        <button onclick="submitKeychain()">Claim Free Keychain</button>
+      `;
+    }
+
+    async function submitKeychain() {
+      const address = document.getElementById("keychain-address").value.trim();
+      if (!address) {
+        alert("Please enter your shipping address.");
+        return;
+      }
+
+      try {
+        const response = await fetch("https://script.google.com/macros/s/AKfycbzT5AxwKZyBtMXaKCU1LWrF3tNUuC6hSxv13m_JDp7A9bAD0Lg8BTzVT5E-yUFi_Ke4/exec", {
+          method: "POST",
+          body: new URLSearchParams({
+            item: "Keychain",
+            wallet: userAddressGlobal,
+            address: address
+          })
+        });
+
+        const result = await response.text();
+        alert("Claim submitted! 🎉");
+        document.getElementById("profile-modal").style.display = "none";
+      } catch (error) {
+        console.error("Claim failed", error);
+        alert("Error submitting claim.");
+      }
+    }
+  </script>
 </body>
 </html>
