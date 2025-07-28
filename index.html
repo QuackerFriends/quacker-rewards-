@@ -121,6 +121,9 @@
     let nftBalance = 0;
     let hasAlreadyClaimed = false;
 
+    const CONTRACT_ADDRESS = "YOUR_CONTRACT_ADDRESS_HERE"; // Already present in wallet.js
+    const ABI = window.CONTRACT_ABI; // From wallet.js
+
     async function checkWalletStatus() {
       if (!window.ethereum) return;
 
@@ -133,10 +136,10 @@
         nftBalance = await contract.balanceOf(userAddress);
         hasAlreadyClaimed = await contract.hasClaimed(userAddress);
 
-        // Always show the profile button after wallet connects
+        // Show profile button for all connected users
         document.getElementById("profile-button").style.display = "inline-block";
 
-        // Show wallet address
+        // Display connected address
         document.getElementById("wallet-address").textContent = "Connected: " + userAddress;
       } catch (err) {
         console.error("Error checking wallet:", err);
@@ -151,7 +154,6 @@
       const walletText = document.getElementById("profile-wallet");
 
       modal.style.display = modal.style.display === "block" ? "none" : "block";
-
       walletText.textContent = `Wallet: ${userAddress} | Quacker NFTs: ${nftBalance.toString()}`;
 
       if (nftBalance > 0) {
@@ -171,7 +173,22 @@
       }
     }
 
-    window.addEventListener("load", checkWalletStatus);
+    document.getElementById("connect-button").addEventListener("click", async () => {
+      if (window.ethereum) {
+        try {
+          await window.ethereum.request({ method: 'eth_requestAccounts' });
+          await checkWalletStatus();
+        } catch (error) {
+          console.error("Wallet connection failed", error);
+        }
+      }
+    });
+
+    window.addEventListener("load", async () => {
+      if (window.ethereum && ethereum.selectedAddress) {
+        await checkWalletStatus();
+      }
+    });
   </script>
 </body>
 </html>
