@@ -11,11 +11,16 @@ async function checkEligibility(wallet) {
     document.getElementById("discount-button").style.display = "inline";
   }
 
-  // Show profile button only if eligible for anything
   if (count >= 1) {
     setupProfileButton();
+    // Show keychain claim form only if eligible
+    document.getElementById("keychain-claim-section").style.display = "block";
+  } else {
+    teardownProfileButton();
+    document.getElementById("keychain-claim-section").style.display = "none";
   }
 }
+
 
 function claimDiscount() {
   discounted = true;
