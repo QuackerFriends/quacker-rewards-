@@ -68,6 +68,11 @@ async function hasClaimedKeychain() {
 }
 
 async function claimKeychain() {
+  if (userNftCount < 1) {
+    alert("❌ Sorry, you must own at least 1 Quacker NFT to claim the keychain.");
+    return;
+  }
+
   const shippingAddress = document.getElementById("keychain-address").value.trim();
   if (!shippingAddress) {
     alert("Please enter your shipping address to claim the keychain.");
@@ -86,6 +91,7 @@ async function claimKeychain() {
 
   await toggleProfile(); // refresh modal content
 }
+
 
 async function toggleProfile() {
   const modal = document.getElementById("profile-modal");
