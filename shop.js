@@ -108,26 +108,18 @@ async function toggleProfile() {
 
   const claimed = await hasClaimedKeychain();
 
-  let claimSection = "";
-  if (userNftCount >= 1 && !claimed) {
-    claimSection = `
-      <div id="keychain-claim-section">
-        <textarea id="keychain-address" placeholder="Enter shipping address..." rows="3" style="width: 100%; margin-top: 5px;"></textarea>
-        <button onclick="claimKeychain()">Claim Free Keychain</button>
-      </div>
-    `;
-  }
-
   modal.innerHTML = `
     <h3>🧑‍💻 Your Profile</h3>
     <p><strong>Wallet:</strong> ${userAddressGlobal}</p>
     <p><strong>Quacker NFTs Owned:</strong> ${userNftCount}</p>
     <p><strong>Keychain Claimed:</strong> ${claimed ? "✅ Yes" : "❌ No"}</p>
-    ${claimSection}
+    ${!claimed ? `
+      <textarea id="keychain-address" placeholder="Enter shipping address..." rows="3" style="width: 100%; margin-top: 5px;"></textarea>
+      <button onclick="claimKeychain()">Claim Free Keychain</button>
+    ` : ''}
   `;
   modal.style.display = "block";
 }
-
 
 function setupProfileButton() {
   document.getElementById("profile-button").style.display = "inline";
