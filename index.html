@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Quacker Friends Crochet Shop</title>
   <link rel="stylesheet" href="style.css" />
   <style>
@@ -51,11 +51,6 @@
       padding: 5px;
       font-family: inherit;
     }
-    #not-eligible-message {
-      color: red;
-      font-size: 14px;
-      margin-top: 10px;
-    }
   </style>
 </head>
 <body>
@@ -85,10 +80,6 @@
         <p>✅ You've already claimed your free keychain!</p>
       </div>
 
-      <div id="not-eligible-message" style="display:none;">
-        ❌ You are not eligible to claim a keychain. You must own a Quacker NFT.
-      </div>
-
       <button onclick="toggleProfile()">Close</button>
     </div>
 
@@ -98,16 +89,6 @@
         <h3>🧢 Quacker Friends Tee</h3>
         <p id="tee-price">Price: $25.00</p>
         <button onclick="buyTee()">Buy Now</button>
-      </div>
-      <div class="item">
-        <h3>🪡 Tapestry</h3>
-        <p id="tapestry-price">Price: 0 ETH</p>
-        <button id="discount-button" onclick="claimDiscount()" style="display:none;">Claim 50% Off</button>
-        <button onclick="buyTapestry()">Buy Now</button>
-        <div id="shipping-form" style="display:none; margin-top:10px;">
-          <textarea id="shipping-address-tapestry" placeholder="Enter your shipping address..." rows="3" cols="30"></textarea><br/>
-          <button onclick="submitPurchase()">Submit Purchase</button>
-        </div>
       </div>
     </div>
   </div>
@@ -121,8 +102,8 @@
     let nftBalance = 0;
     let hasAlreadyClaimed = false;
 
-    const CONTRACT_ADDRESS = "0xYourActualContractAddress"; // Should already match wallet.js
-    const ABI = window.CONTRACT_ABI; // From wallet.js
+    const CONTRACT_ADDRESS = "0x31d59C9639e3ec3fEA15787F089a6e75C841E107"; // your actual contract
+    const ABI = window.CONTRACT_ABI;
 
     async function checkWalletStatus() {
       if (!window.ethereum) return;
@@ -136,10 +117,10 @@
         nftBalance = await contract.balanceOf(userAddress);
         hasAlreadyClaimed = await contract.hasClaimed(userAddress);
 
-        // ✅ Always show profile button after wallet connection
-        document.getElementById("profile-button").style.display = "inline-block";
-
         document.getElementById("wallet-address").textContent = "Connected: " + userAddress;
+
+        // ✅ Show profile button for everyone
+        document.getElementById("profile-button").style.display = "inline-block";
       } catch (err) {
         console.error("Error checking wallet:", err);
       }
@@ -149,15 +130,14 @@
       const modal = document.getElementById("profile-modal");
       const keychainSection = document.getElementById("keychain-section");
       const claimedSection = document.getElementById("claimed-section");
-      const notEligible = document.getElementById("not-eligible-message");
       const walletText = document.getElementById("profile-wallet");
 
       modal.style.display = modal.style.display === "block" ? "none" : "block";
+
       walletText.textContent = `Wallet: ${userAddress} | Quacker NFTs: ${nftBalance.toString()}`;
 
       keychainSection.style.display = "none";
       claimedSection.style.display = "none";
-      notEligible.style.display = "none";
 
       if (parseInt(nftBalance) > 0) {
         if (hasAlreadyClaimed) {
@@ -166,7 +146,7 @@
           keychainSection.style.display = "block";
         }
       }
-      // ✅ If non-holder, show nothing claim-related (no red message either)
+      // else: no claim options shown at all
     }
 
     document.getElementById("connect-button").addEventListener("click", async () => {
