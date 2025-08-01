@@ -51,8 +51,10 @@
       padding: 5px;
       font-family: inherit;
     }
-    .item {
-      margin-bottom: 20px;
+    #not-eligible-message {
+      color: red;
+      font-size: 14px;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -81,6 +83,10 @@
 
       <div id="claimed-section" style="display:none;">
         <p>✅ You've already claimed your free keychain!</p>
+      </div>
+
+      <div id="not-eligible-message" style="display:none;">
+        ❌ You are not eligible to claim a keychain. You must own a Quacker NFT.
       </div>
 
       <button onclick="toggleProfile()">Close</button>
@@ -112,37 +118,26 @@
 
   <script>
     let userAddress = "";
-    let nftBalance = ethers.BigNumber.from(0);
+    let nftBalance = 0;
     let hasAlreadyClaimed = false;
-
-    // Use the same contract address/ABI you already have in wallet.js
-    const CONTRACT_ADDRESS = "0xA2c82Bda5585c1D729E2b4f85dCC9a11ded7DB4c";
-    const ABI = [
-      "function balanceOf(address owner) view returns (uint256)",
-      // hasClaimed may not exist; wrap in try/catch
-      "function hasClaimed(address owner) view returns (bool)"
-    ];
 
     async function checkWalletStatus() {
       if (!window.ethereum) return;
 
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
 
       try {
         userAddress = await signer.getAddress();
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
         nftBalance = await contract.balanceOf(userAddress);
-        try {
-          hasAlreadyClaimed = await contract.hasClaimed(userAddress);
-        } catch (inner) {
-          // If contract doesn't have hasClaimed, default to false
-          hasAlreadyClaimed = false;
-        }
+        hasAlreadyClaimed = await contract.hasClaimed(userAddress);
 
-        document.getElementById("wallet-address").textContent = "Connected: " + userAddress;
+        // Always show the profile button after wallet connects
         document.getElementById("profile-button").style.display = "inline-block";
-        document.getElementById("shop").style.display = "block";
+
+        // Show wallet address
+        document.getElementById("wallet-address").textContent = "Connected: " + userAddress;
       } catch (err) {
         console.error("Error checking wallet:", err);
       }
@@ -152,93 +147,31 @@
       const modal = document.getElementById("profile-modal");
       const keychainSection = document.getElementById("keychain-section");
       const claimedSection = document.getElementById("claimed-section");
+      const notEligible = document.getElementById("not-eligible-message");
       const walletText = document.getElementById("profile-wallet");
 
       modal.style.display = modal.style.display === "block" ? "none" : "block";
+
       walletText.textContent = `Wallet: ${userAddress} | Quacker NFTs: ${nftBalance.toString()}`;
 
-      // Reset visibility
-      keychainSection.style.display = "none";
-      claimedSection.style.display = "none";
-
-      if (nftBalance.gt(0)) {
+      if (nftBalance > 0) {
         if (hasAlreadyClaimed) {
+          keychainSection.style.display = "none";
           claimedSection.style.display = "block";
+          notEligible.style.display = "none";
         } else {
           keychainSection.style.display = "block";
-        }
-      }
-      // non-holders see neither section
-    }
-
-    async function submitClaim() {
-      const addressInput = document.getElementById("shipping-address").value.trim();
-      if (!addressInput) {
-        alert("Enter shipping address.");
-        return;
-      }
-      if (!nftBalance.gt(0)) {
-        alert("You must own at least 1 Quacker Friend NFT to claim.");
-        return;
-      }
-
-      // Example logging to Apps Script (adjust URL as needed)
-      try {
-        const params = new URLSearchParams({
-          item: "Keychain",
-          wallet: userAddress,
-          price: "0 (Free)",
-          address: addressInput
-        });
-        const res = await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params.toString()}`);
-        const text = await res.text();
-        if (text.includes("Success")) {
-          alert("🎉 Keychain claimed!");
-          hasAlreadyClaimed = true;
-          toggleProfile();
-        } else {
-          alert("Claim failed: " + text);
-        }
-      } catch (e) {
-        console.error(e);
-        alert("Error submitting claim.");
-      }
-    }
-
-    function buyTapestry() {
-      document.getElementById("shipping-form").style.display = "block";
-    }
-
-    function claimDiscount() {
-      document.getElementById("tapestry-price").textContent = "Price: 0 ETH (50% OFF)";
-      document.getElementById("discount-button").style.display = "none";
-    }
-
-    function submitPurchase() {
-      alert("Purchase logic placeholder.");
-    }
-
-    document.getElementById("connect-button").addEventListener("click", async () => {
-      if (window.ethereum) {
-        try {
-          await window.ethereum.request({ method: "eth_requestAccounts" });
-          await checkWalletStatus();
-        } catch (e) {
-          console.error("Wallet connection failed", e);
+          claimedSection.style.display = "none";
+          notEligible.style.display = "none";
         }
       } else {
-        alert("Install MetaMask");
+        keychainSection.style.display = "none";
+        claimedSection.style.display = "none";
+        notEligible.style.display = "block";
       }
-    });
+    }
 
-    window.addEventListener("load", async () => {
-      if (window.ethereum) {
-        const accounts = await window.ethereum.request({ method: "eth_accounts" });
-        if (accounts.length > 0) {
-          await checkWalletStatus();
-        }
-      }
-    });
+    window.addEventListener("load", checkWalletStatus);
   </script>
 </body>
 </html>
