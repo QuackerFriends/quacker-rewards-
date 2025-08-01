@@ -51,6 +51,11 @@
       padding: 5px;
       font-family: inherit;
     }
+    #not-eligible-message {
+      color: red;
+      font-size: 14px;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -69,14 +74,21 @@
     <div id="profile-modal">
       <h3>Your Profile</h3>
       <p id="profile-wallet"></p>
+
       <div id="keychain-section" style="display:none;">
         <p>You’re eligible for a free Quacker Keychain!</p>
         <textarea id="shipping-address" placeholder="Enter your shipping address here..." rows="3"></textarea>
         <button onclick="submitClaim()">Claim Free Keychain</button>
       </div>
+
       <div id="claimed-section" style="display:none;">
         <p>✅ You've already claimed your free keychain!</p>
       </div>
+
+      <div id="not-eligible-message" style="display:none;">
+        ❌ You are not eligible to claim a keychain. You must own a Quacker NFT.
+      </div>
+
       <button onclick="toggleProfile()">Close</button>
     </div>
 
@@ -103,5 +115,47 @@
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script src="wallet.js"></script>
   <script src="shop.js"></script>
+
+  <script>
+    async function toggleProfile() {
+      const modal = document.getElementById("profile-modal");
+      const walletDisplay = document.getElementById("profile-wallet");
+      const keychainSection = document.getElementById("keychain-section");
+      const claimedSection = document.getElementById("claimed-section");
+      const notEligible = document.getElementById("not-eligible-message");
+
+      modal.style.display = modal.style.display === "block" ? "none" : "block";
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const address = await signer.getAddress();
+      walletDisplay.textContent = "Wallet: " + address;
+
+      const abi = [
+        "function balanceOf(address) view returns (uint256)",
+        "function hasClaimed(address) view returns (bool)"
+      ];
+      const contract = new ethers.Contract(YOUR_CONTRACT_ADDRESS_HERE, abi, provider);
+      const balance = await contract.balanceOf(address);
+      const alreadyClaimed = await contract.hasClaimed(address);
+
+      if (balance.gt(0)) {
+        if (alreadyClaimed) {
+          claimedSection.style.display = "block";
+          keychainSection.style.display = "none";
+          notEligible.style.display = "none";
+        } else {
+          claimedSection.style.display = "none";
+          keychainSection.style.display = "block";
+          notEligible.style.display = "none";
+        }
+      } else {
+        // Not eligible
+        keychainSection.style.display = "none";
+        claimedSection.style.display = "none";
+        notEligible.style.display = "block";
+      }
+    }
+  </script>
 </body>
 </html>
