@@ -124,18 +124,10 @@
         nftBalance = await contract.balanceOf(userAddress);
         hasAlreadyClaimed = await contract.hasClaimed(userAddress);
 
-        // Always show profile button after wallet connects
         document.getElementById("profile-button").style.display = "inline-block";
-
-        // Show wallet address
         document.getElementById("wallet-address").textContent = "Connected: " + userAddress;
-        document.getElementById("switch-button").style.display = "inline-block";
-        document.getElementById("disconnect-button").style.display = "inline-block";
-        document.getElementById("connect-button").style.display = "none";
-
       } catch (err) {
         console.error("Error checking wallet:", err);
-        document.getElementById("profile-button").style.display = "inline-block";
       }
     }
 
