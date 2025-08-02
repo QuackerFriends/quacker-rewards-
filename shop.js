@@ -11,16 +11,14 @@ async function checkEligibility(wallet) {
     document.getElementById("discount-button").style.display = "inline";
   }
 
+  setupProfileButton(); // Always show profile button
+
   if (count >= 1) {
-    setupProfileButton();
-    // Show keychain claim form only if eligible
     document.getElementById("keychain-claim-section").style.display = "block";
   } else {
-    teardownProfileButton();
     document.getElementById("keychain-claim-section").style.display = "none";
   }
 }
-
 
 function claimDiscount() {
   discounted = true;
@@ -97,7 +95,6 @@ async function claimKeychain() {
   await toggleProfile(); // refresh modal content
 }
 
-
 async function toggleProfile() {
   const modal = document.getElementById("profile-modal");
 
@@ -106,18 +103,28 @@ async function toggleProfile() {
     return;
   }
 
-  const claimed = await hasClaimedKeychain();
+  let claimed = false;
+  if (userNftCount > 0) {
+    claimed = await hasClaimedKeychain();
+  }
 
-  modal.innerHTML = `
+  let profileHtml = `
     <h3>🧑‍💻 Your Profile</h3>
     <p><strong>Wallet:</strong> ${userAddressGlobal}</p>
     <p><strong>Quacker NFTs Owned:</strong> ${userNftCount}</p>
-    <p><strong>Keychain Claimed:</strong> ${claimed ? "✅ Yes" : "❌ No"}</p>
-    ${!claimed ? `
-      <textarea id="keychain-address" placeholder="Enter shipping address..." rows="3" style="width: 100%; margin-top: 5px;"></textarea>
-      <button onclick="claimKeychain()">Claim Free Keychain</button>
-    ` : ''}
   `;
+
+  if (userNftCount > 0) {
+    profileHtml += `
+      <p><strong>Keychain Claimed:</strong> ${claimed ? "✅ Yes" : "❌ No"}</p>
+      ${!claimed ? `
+        <textarea id="keychain-address" placeholder="Enter shipping address..." rows="3" style="width: 100%; margin-top: 5px;"></textarea>
+        <button onclick="claimKeychain()">Claim Free Keychain</button>
+      ` : ''}
+    `;
+  }
+
+  modal.innerHTML = profileHtml;
   modal.style.display = "block";
 }
 
