@@ -16,8 +16,6 @@ async function connectWallet() {
     signer = provider.getSigner();
     userAddress = await signer.getAddress();
     userAddressGlobal = userAddress;
-setupProfileButton();
-checkEligibility(userAddressGlobal);
 
     contract = new ethers.Contract(contractAddress, contractABI, provider);
 
@@ -26,10 +24,8 @@ checkEligibility(userAddressGlobal);
     document.getElementById("disconnect-button").style.display = "inline";
     document.getElementById("switch-button").style.display = "inline";
     document.getElementById("shop").style.display = "block";
-    document.getElementById("profile-button").style.display = "inline";
 
-
-    checkEligibility(userAddress); // Optional function you may implement
+    checkEligibility(userAddressGlobal);
   } else {
     alert("Please install MetaMask!");
   }
@@ -40,10 +36,8 @@ function disconnectWallet() {
   signer = null;
   provider = null;
   contract = null;
-teardownProfileButton();
 
-  document.getElementById("profile-button").style.display = "none";
-document.getElementById("profile-section").style.display = "none";
+  teardownProfileButton();
 
   document.getElementById("wallet-address").innerText = "";
   document.getElementById("connect-button").style.display = "inline";
@@ -69,6 +63,5 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("disconnect-button").addEventListener("click", disconnectWallet);
   document.getElementById("switch-button").addEventListener("click", switchWallet);
 
-  // Hide the shop until wallet is connected manually
   document.getElementById("shop").style.display = "none";
 });
