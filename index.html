@@ -51,6 +51,11 @@
       padding: 5px;
       font-family: inherit;
     }
+    #not-eligible-message {
+      color: red;
+      font-size: 14px;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -80,6 +85,10 @@
         <p>✅ You've already claimed your free keychain!</p>
       </div>
 
+      <div id="not-eligible-message" style="display:none;">
+        ❌ You are not eligible to claim a keychain. You must own a Quacker NFT.
+      </div>
+
       <button onclick="toggleProfile()">Close</button>
     </div>
 
@@ -106,69 +115,55 @@
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script src="wallet.js"></script>
   <script src="shop.js"></script>
-<script>
-  let userAddress = "";
-  let nftBalance = 0;
-  let hasAlreadyClaimed = false;
 
-  async function checkWalletStatus() {
-    if (!window.ethereum) return;
+  <script>
+    let userAddress = "";
+    let nftBalance = 0;
+    let hasAlreadyClaimed = false;
 
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
+    async function checkWalletStatus() {
+      if (!window.ethereum) return;
 
-    try {
-      userAddress = await signer.getAddress();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-
-      const balance = await contract.balanceOf(userAddress);
-      nftBalance = balance.toNumber();
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
 
       try {
+        userAddress = await signer.getAddress();
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+        nftBalance = await contract.balanceOf(userAddress);
         hasAlreadyClaimed = await contract.hasClaimed(userAddress);
-      } catch (claimErr) {
-        console.warn("Claim check failed, maybe user not eligible.");
-        hasAlreadyClaimed = false;
-      }
 
-      // Show wallet address
-      document.getElementById("wallet-address").textContent = "Connected: " + userAddress;
-
-      // ✅ Always show profile button after wallet connects
-      document.getElementById("profile-button").style.display = "inline-block";
-
-    } catch (err) {
-      console.error("Wallet error:", err);
-    }
-  }
-
-  function toggleProfile() {
-    const modal = document.getElementById("profile-modal");
-    const keychainSection = document.getElementById("keychain-section");
-    const claimedSection = document.getElementById("claimed-section");
-    const walletText = document.getElementById("profile-wallet");
-
-    modal.style.display = modal.style.display === "block" ? "none" : "block";
-
-    walletText.textContent = `Wallet: ${userAddress} | Quacker NFTs: ${nftBalance}`;
-
-    // Hide both claim sections by default
-    keychainSection.style.display = "none";
-    claimedSection.style.display = "none";
-
-    if (nftBalance > 0) {
-      if (hasAlreadyClaimed) {
-        claimedSection.style.display = "block";
-      } else {
-        keychainSection.style.display = "block";
+        document.getElementById("profile-button").style.display = "inline-block";
+        document.getElementById("wallet-address").textContent = "Connected: " + userAddress;
+      } catch (err) {
+        console.error("Error checking wallet:", err);
       }
     }
-  }
 
-  window.addEventListener("load", () => {
-    checkWalletStatus();
-  });
-</script>
+    function toggleProfile() {
+      const modal = document.getElementById("profile-modal");
+      const keychainSection = document.getElementById("keychain-section");
+      const claimedSection = document.getElementById("claimed-section");
+      const notEligible = document.getElementById("not-eligible-message");
+      const walletText = document.getElementById("profile-wallet");
 
+      modal.style.display = modal.style.display === "block" ? "none" : "block";
+      walletText.textContent = `Wallet: ${userAddress} | Quacker NFTs: ${nftBalance.toString()}`;
+
+      keychainSection.style.display = "none";
+      claimedSection.style.display = "none";
+      notEligible.style.display = "none";
+
+      if (nftBalance > 0) {
+        if (hasAlreadyClaimed) {
+          claimedSection.style.display = "block";
+        } else {
+          keychainSection.style.display = "block";
+        }
+      }
+    }
+
+    window.addEventListener("load", checkWalletStatus);
+  </script>
 </body>
 </html>
