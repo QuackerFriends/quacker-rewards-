@@ -7,7 +7,7 @@
   <style>
     body { font-family: Arial; padding: 20px; background: #f9f9f9; }
     button { margin: 5px; }
-    #shop, #disconnect-button, #switch-button, #discount-button, #shipping-form, #keychain-claim-section, #profile-button {
+    #shop, #disconnect-button, #switch-button, #discount-button, #shipping-form, #profile-button {
       display: none;
     }
     #profile-modal {
@@ -38,12 +38,6 @@
       <textarea id="shipping-address" placeholder="Enter shipping address..." rows="3" style="width: 300px;"></textarea><br>
       <button onclick="submitPurchase()">Submit</button>
     </div>
-
-    <div id="keychain-claim-section">
-      <h3>🎁 Claim Free Keychain</h3>
-      <textarea id="keychain-address" placeholder="Enter shipping address..." rows="3" style="width: 300px;"></textarea><br>
-      <button onclick="claimKeychain()">Claim</button>
-    </div>
   </div>
 
   <div id="profile-modal"></div>
@@ -52,6 +46,7 @@
     let provider, signer, userAddress = null;
     let userNftCount = 0;
     let discounted = false;
+    let hasClaimed = false;
     const contractAddress = "0xA2c82Bda5585c1D729E2b4f85dCC9a11ded7DB4c";
     const contractABI = ["function balanceOf(address owner) view returns (uint256)"];
     let contract;
@@ -70,6 +65,7 @@
         document.getElementById("disconnect-button").style.display = "inline";
         document.getElementById("switch-button").style.display = "inline";
         document.getElementById("shop").style.display = "block";
+        document.getElementById("profile-button").style.display = "inline";
 
         await checkEligibility(userAddress);
       } else {
@@ -82,13 +78,14 @@
       signer = null;
       provider = null;
       contract = null;
-      teardownProfileButton();
 
       document.getElementById("wallet-address").innerText = "";
       document.getElementById("connect-button").style.display = "inline";
       document.getElementById("disconnect-button").style.display = "none";
       document.getElementById("switch-button").style.display = "none";
       document.getElementById("shop").style.display = "none";
+      document.getElementById("profile-button").style.display = "none";
+      document.getElementById("profile-modal").style.display = "none";
     }
 
     async function switchWallet() {
@@ -111,18 +108,7 @@
         document.getElementById("discount-button").style.display = "inline";
       }
 
-      setupProfileButton();
-
-      if (userNftCount >= 1) {
-        const claimed = await hasClaimedKeychain();
-        if (!claimed) {
-          document.getElementById("keychain-claim-section").style.display = "block";
-        } else {
-          document.getElementById("keychain-claim-section").style.display = "none";
-        }
-      } else {
-        document.getElementById("keychain-claim-section").style.display = "none";
-      }
+      hasClaimed = await hasClaimedKeychain();
     }
 
     function claimDiscount() {
@@ -175,21 +161,49 @@
       );
     }
 
+    async function toggleProfile() {
+      const modal = document.getElementById("profile-modal");
+
+      if (modal.style.display === "block") {
+        modal.style.display = "none";
+        return;
+      }
+
+      let profileHtml = `
+        <h3>🧑‍💻 Your Profile</h3>
+        <p><strong>Wallet:</strong> ${userAddress}</p>
+        <p><strong>Quacker NFTs Owned:</strong> ${userNftCount}</p>
+      `;
+
+      if (userNftCount > 0) {
+        profileHtml += `<p><strong>Keychain Claimed:</strong> ${hasClaimed ? "✅ Yes" : "❌ No"}</p>`;
+
+        if (!hasClaimed) {
+          profileHtml += `
+            <textarea id="keychain-address" placeholder="Enter shipping address..." rows="3" style="width: 100%; margin-top: 5px;"></textarea>
+            <button onclick="claimKeychain()">Claim Free Keychain</button>
+          `;
+        }
+      }
+
+      modal.innerHTML = profileHtml;
+      modal.style.display = "block";
+    }
+
     async function claimKeychain() {
-      const alreadyClaimed = await hasClaimedKeychain();
-      if (alreadyClaimed) {
+      if (hasClaimed) {
         alert("You've already claimed your keychain.");
         return;
       }
 
       if (userNftCount < 1) {
-        alert("❌ You must own at least 1 Quacker NFT to claim.");
+        alert("You must own at least 1 NFT.");
         return;
       }
 
       const shippingAddress = document.getElementById("keychain-address").value.trim();
       if (!shippingAddress) {
-        alert("Please enter your shipping address to claim the keychain.");
+        alert("Please enter your shipping address.");
         return;
       }
 
@@ -203,50 +217,8 @@
       await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
       alert("🎉 Keychain claimed!");
 
-      document.getElementById("keychain-claim-section").style.display = "none";
-      await toggleProfile();
-    }
-
-    async function toggleProfile() {
-      const modal = document.getElementById("profile-modal");
-
-      if (modal.style.display === "block") {
-        modal.style.display = "none";
-        return;
-      }
-
-      let claimed = false;
-      if (userNftCount > 0) {
-        claimed = await hasClaimedKeychain();
-      }
-
-      let profileHtml = `
-        <h3>🧑‍💻 Your Profile</h3>
-        <p><strong>Wallet:</strong> ${userAddress}</p>
-        <p><strong>Quacker NFTs Owned:</strong> ${userNftCount}</p>
-      `;
-
-      if (userNftCount > 0) {
-        profileHtml += `<p><strong>Keychain Claimed:</strong> ${claimed ? "✅ Yes" : "❌ No"}</p>`;
-        if (!claimed) {
-          profileHtml += `
-            <textarea id="keychain-address" placeholder="Enter shipping address..." rows="3" style="width: 100%; margin-top: 5px;"></textarea>
-            <button onclick="claimKeychain()">Claim Free Keychain</button>
-          `;
-        }
-      }
-
-      modal.innerHTML = profileHtml;
-      modal.style.display = "block";
-    }
-
-    function setupProfileButton() {
-      document.getElementById("profile-button").style.display = "inline";
-    }
-
-    function teardownProfileButton() {
-      document.getElementById("profile-button").style.display = "none";
-      document.getElementById("profile-modal").style.display = "none";
+      hasClaimed = true;
+      toggleProfile(); // Re-render profile view with updated status
     }
 
     window.addEventListener("DOMContentLoaded", () => {
