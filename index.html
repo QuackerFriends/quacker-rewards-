@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -68,7 +68,7 @@
 
         contract = new ethers.Contract(contractAddress, contractABI, provider);
 
-        document.getElementById("wallet-address").innerText = Wallet: ${userAddress};
+        document.getElementById("wallet-address").innerText = `Wallet: ${userAddress}`;
         document.getElementById("connect-button").style.display = "none";
         document.getElementById("disconnect-button").style.display = "inline";
         document.getElementById("switch-button").style.display = "inline";
@@ -155,7 +155,7 @@
           address: addr
         });
 
-        await fetch(https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params});
+        await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
         alert("✅ Purchase logged!");
         document.getElementById("shipping-form").style.display = "none";
         document.getElementById("shipping-address").value = "";
@@ -199,7 +199,7 @@
         address: shippingAddress
       });
 
-      await fetch(https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params});
+      await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
       alert("🎉 Keychain claimed!");
       await checkEligibility(userAddress); // Refresh sections
       toggleProfile(); // Update profile modal
@@ -218,21 +218,21 @@
         claimed = await hasClaimedKeychain();
       }
 
-      let profileHtml = 
+      let profileHtml = `
         <h3>🧑‍💻 Your Profile</h3>
         <p><strong>Wallet:</strong> ${userAddress}</p>
         <p><strong>Quacker NFTs Owned:</strong> ${userNftCount}</p>
-      ;
+      `;
 
       if (userNftCount > 0) {
-        profileHtml += 
+        profileHtml += `
           <p><strong>Keychain Claimed:</strong> ${claimed ? "✅ Yes" : "❌ No"}</p>
-        ;
+        `;
         if (!claimed) {
-          profileHtml += 
+          profileHtml += `
             <textarea id="keychain-address" placeholder="Enter shipping address..." rows="3" style="width: 100%; margin-top: 5px;"></textarea>
             <button onclick="claimKeychain()">Claim Free Keychain</button>
-          ;
+          `;
         }
       }
 
