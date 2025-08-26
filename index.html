@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<title>Quacker Friends Shop</title>
-<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-<style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-    button { margin: 5px; padding: 10px 20px; }
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quacker Friends Shop</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
 
     body {
@@ -40,11 +41,10 @@
       font-weight: bold;
     }
 
-#shop, #shipping-form, #keychain-claim-section, #profile-button, #profile-modal {
-display: none;
-      margin-top: 15px;
+    #shop, #shipping-form, #keychain-claim-section, #profile-button, #profile-modal {
+      display: none;
       margin-top: 25px;
-}
+    }
 
     #shop, #profile-modal {
       background: #fff;
@@ -69,9 +69,7 @@ display: none;
       margin: 10px 0;
     }
 
-#profile-modal {
-      background: #fff; padding: 15px; border: 1px solid #ccc;
-      max-width: 400px; margin-top: 10px;
+    #profile-modal {
       background: #fffaf0;
       text-align: left;
     }
@@ -95,51 +93,248 @@ display: none;
       border-radius: 15px;
       padding: 15px;
       margin-top: 20px;
-}
-</style>
+    }
+  </style>
 </head>
-@@ -34,13 +113,14 @@ <h2>🧵 Handmade Tapestry</h2>
-<button onclick="buyTapestry()">Buy Tapestry</button>
-<button id="discount-button" onclick="claimDiscount()">Apply 50% Discount</button>
+<body>
 
-    <div id="shipping-form">
+  <h1>🛍️ Quacker Friends Shop</h1>
+
+  <div>
+    <button id="connect-button">Connect Wallet</button>
+    <button id="disconnect-button">Disconnect</button>
+    <button id="switch-button">Switch Wallet</button>
+    <span id="wallet-address"></span>
+  </div>
+
+  <div id="shop">
+    <h2>🧵 Handmade Tapestry</h2>
+    <p id="tapestry-price">Price: 0 ETH</p>
+    <button onclick="buyTapestry()">Buy Tapestry</button>
+    <button id="discount-button" onclick="claimDiscount()">Apply 50% Discount</button>
+
     <div id="shipping-form" class="card-section">
       <h3>📦 Shipping Info</h3>
-<textarea id="shipping-address" placeholder="Enter your shipping address..." rows="3" style="width:100%;"></textarea>
-<br>
-<button onclick="submitPurchase()">Submit Order</button>
-</div>
+      <textarea id="shipping-address" placeholder="Enter your shipping address..." rows="3" style="width:100%;"></textarea>
+      <br>
+      <button onclick="submitPurchase()">Submit Order</button>
+    </div>
 
-    <div id="keychain-claim-section">
     <div id="keychain-claim-section" class="card-section">
-<h3>🔑 Claim Free Keychain</h3>
-<textarea id="keychain-address" placeholder="Enter your shipping address..." rows="3" style="width:100%;"></textarea>
-<br>
-@@ -201,8 +281,8 @@ <h3>🔑 Claim Free Keychain</h3>
+      <h3>🔑 Claim Free Keychain</h3>
+      <textarea id="keychain-address" placeholder="Enter your shipping address..." rows="3" style="width:100%;"></textarea>
+      <br>
+      <button onclick="claimKeychain()">Claim Keychain</button>
+    </div>
+  </div>
 
-await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
-alert("🎉 Keychain claimed!");
-      await checkEligibility(userAddress); // Refresh sections
-      toggleProfile(); // Update profile modal
+  <button id="profile-button" onclick="toggleProfile()">👤 Profile</button>
+  <div id="profile-modal"></div>
+
+  <script>
+    let provider, signer, userAddress = null;
+    let userNftCount = 0;
+    let discounted = false;
+    const contractAddress = "0xA2c82Bda5585c1D729E2b4f85dCC9a11ded7DB4c";
+    const contractABI = ["function balanceOf(address owner) view returns (uint256)"];
+    let contract;
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        signer = provider.getSigner();
+        userAddress = await signer.getAddress();
+
+        contract = new ethers.Contract(contractAddress, contractABI, provider);
+
+        document.getElementById("wallet-address").innerText = `Wallet: ${userAddress}`;
+        document.getElementById("connect-button").style.display = "none";
+        document.getElementById("disconnect-button").style.display = "inline";
+        document.getElementById("switch-button").style.display = "inline";
+        document.getElementById("shop").style.display = "block";
+
+        checkEligibility(userAddress);
+      } else {
+        alert("Please install MetaMask!");
+      }
+    }
+
+    function disconnectWallet() {
+      userAddress = null;
+      signer = null;
+      provider = null;
+      contract = null;
+      teardownProfileButton();
+
+      document.getElementById("wallet-address").innerText = "";
+      document.getElementById("connect-button").style.display = "inline";
+      document.getElementById("disconnect-button").style.display = "none";
+      document.getElementById("switch-button").style.display = "none";
+      document.getElementById("shop").style.display = "none";
+    }
+
+    async function switchWallet() {
+      try {
+        await ethereum.request({
+          method: 'wallet_requestPermissions',
+          params: [{ eth_accounts: {} }]
+        });
+        connectWallet();
+      } catch (err) {
+        console.error("Switch failed", err);
+      }
+    }
+
+    async function checkEligibility(wallet) {
+      const nftBalance = await contract.balanceOf(wallet);
+      userNftCount = parseInt(nftBalance.toString());
+
+      if (userNftCount >= 10) {
+        document.getElementById("discount-button").style.display = "inline";
+      }
+
+      setupProfileButton();
+
+      if (userNftCount >= 1) {
+        const claimed = await hasClaimedKeychain();
+        document.getElementById("keychain-claim-section").style.display = claimed ? "none" : "block";
+      } else {
+        document.getElementById("keychain-claim-section").style.display = "none";
+      }
+    }
+
+    function claimDiscount() {
+      discounted = true;
+      document.getElementById("tapestry-price").innerText = "Price: 0 ETH (50% OFF)";
+      document.getElementById("discount-button").style.display = "none";
+    }
+
+    function buyTapestry() {
+      document.getElementById("shipping-form").style.display = "block";
+    }
+
+    async function submitPurchase() {
+      const addr = document.getElementById("shipping-address").value.trim();
+      if (!addr) {
+        alert("Please enter your shipping address.");
+        return;
+      }
+
+      try {
+        const tx = await signer.sendTransaction({
+          to: "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D",
+          value: ethers.utils.parseEther("0")
+        });
+        await tx.wait();
+
+        const params = new URLSearchParams({
+          item: "Tapestry",
+          wallet: userAddress,
+          price: discounted ? "0 (50% Off)" : "0",
+          address: addr
+        });
+
+        await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
+        alert("✅ Purchase logged!");
+        document.getElementById("shipping-form").style.display = "none";
+        document.getElementById("shipping-address").value = "";
+      } catch (err) {
+        console.error(err);
+        alert("Transaction failed or cancelled.");
+      }
+    }
+
+    async function hasClaimedKeychain() {
+      const res = await fetch("https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec");
+      const data = await res.json();
+      return data.some(r =>
+        r.wallet.toLowerCase() === userAddress.toLowerCase() &&
+        r.item.toLowerCase().includes("keychain")
+      );
+    }
+
+    async function claimKeychain() {
+      if (userNftCount < 1) {
+        alert("❌ You must own at least 1 Quacker NFT to claim.");
+        return;
+      }
+
+      const alreadyClaimed = await hasClaimedKeychain();
+      if (alreadyClaimed) {
+        alert("❌ You have already claimed your keychain.");
+        return;
+      }
+
+      const shippingAddress = document.getElementById("keychain-address").value.trim();
+      if (!shippingAddress) {
+        alert("Please enter your shipping address to claim the keychain.");
+        return;
+      }
+
+      const params = new URLSearchParams({
+        item: "Keychain",
+        wallet: userAddress,
+        price: "0 (Free)",
+        address: shippingAddress
+      });
+
+      await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
+      alert("🎉 Keychain claimed!");
       await checkEligibility(userAddress);
       toggleProfile();
-}
+    }
 
-async function toggleProfile() {
-@@ -220,13 +300,13 @@ <h3>🔑 Claim Free Keychain</h3>
+    async function toggleProfile() {
+      const modal = document.getElementById("profile-modal");
 
-let profileHtml = `
-       <h3>🧑‍💻 Your Profile</h3>
-        <p><strong>Wallet:</strong> ${userAddress}</p>
-        <p><strong>Quacker NFTs Owned:</strong> ${userNftCount}</p>
+      if (modal.style.display === "block") {
+        modal.style.display = "none";
+        return;
+      }
+
+      let claimed = false;
+      if (userNftCount > 0) {
+        claimed = await hasClaimedKeychain();
+      }
+
+      let profileHtml = `
+        <h3>🧑‍💻 Your Profile</h3>
         <p class="cute-label">Wallet:</p><p>${userAddress}</p>
         <p class="cute-label">Quacker NFTs Owned:</p><p>${userNftCount}</p>
-     `;
+      `;
 
-if (userNftCount > 0) {
-profileHtml += `
-          <p><strong>Keychain Claimed:</strong> ${claimed ? "✅ Yes" : "❌ No"}</p>
+      if (userNftCount > 0) {
+        profileHtml += `
           <p class="cute-label">Keychain Claimed:</p><p>${claimed ? "✅ Yes" : "❌ No"}</p>
-       `;
-if (!claimed) {
-profileHtml += `
+        `;
+        if (!claimed) {
+          profileHtml += `
+            <textarea id="keychain-address" placeholder="Enter shipping address..." rows="3" style="width: 100%; margin-top: 5px;"></textarea>
+            <button onclick="claimKeychain()">Claim Free Keychain</button>
+          `;
+        }
+      }
+
+      modal.innerHTML = profileHtml;
+      modal.style.display = "block";
+    }
+
+    function setupProfileButton() {
+      document.getElementById("profile-button").style.display = "inline";
+    }
+
+    function teardownProfileButton() {
+      document.getElementById("profile-button").style.display = "none";
+      document.getElementById("profile-modal").style.display = "none";
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("connect-button").addEventListener("click", connectWallet);
+      document.getElementById("disconnect-button").addEventListener("click", disconnectWallet);
+      document.getElementById("switch-button").addEventListener("click", switchWallet);
+    });
+  </script>
+
+</body>
+</html>
