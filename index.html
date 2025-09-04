@@ -78,6 +78,11 @@
       display: none;
     }
 
+    #profile-button.loading {
+      background: #bbb;
+      cursor: wait;
+    }
+
     #profile-button:hover {
       background: #e25d73;
     }
@@ -302,10 +307,17 @@
     }
 
     async function toggleProfile() {
+      const button = document.getElementById("profile-button");
       const modal = document.getElementById("profile-modal");
+
+      // Show loading state
+      button.innerText = "⏳ Loading...";
+      button.classList.add("loading");
 
       if (modal.style.display === "block") {
         modal.style.display = "none";
+        button.innerText = "👤 Profile";
+        button.classList.remove("loading");
         return;
       }
 
@@ -334,6 +346,10 @@
 
       modal.innerHTML = profileHtml;
       modal.style.display = "block";
+
+      // Reset button text
+      button.innerText = "👤 Profile";
+      button.classList.remove("loading");
     }
 
     function setupProfileButton() {
