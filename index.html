@@ -41,12 +41,12 @@
       font-weight: bold;
     }
 
-    #shop, #shipping-form, #keychain-claim-section, #profile-modal {
+    #shop, #shipping-form, #keychain-claim-section {
       display: none;
       margin-top: 25px;
     }
 
-    #shop, #profile-modal {
+    #shop {
       background: #fff;
       border-radius: 20px;
       padding: 20px;
@@ -69,31 +69,33 @@
       margin: 10px 0;
     }
 
-    #profile-modal {
-      background: #fffaf0;
-      text-align: left;
-    }
-
-    /* Profile floating button */
+    /* Profile button in top right */
     #profile-button {
-      display: none;
-      position: fixed;
+      position: absolute;
       top: 20px;
       right: 20px;
       background: #ff6b81;
-      border-radius: 50%;
-      width: 55px;
-      height: 55px;
-      font-size: 24px;
-      padding: 0;
-      line-height: 55px;
-      text-align: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-      z-index: 1000;
+      display: none;
     }
 
     #profile-button:hover {
       background: #e25d73;
+    }
+
+    /* Floating profile modal */
+    #profile-modal {
+      display: none;
+      position: absolute;
+      top: 65px;
+      right: 20px;
+      background: #fffaf0;
+      border: 1px solid #ffe3c0;
+      border-radius: 15px;
+      padding: 15px;
+      width: 280px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      text-align: left;
+      z-index: 1000;
     }
 
     .cute-label {
@@ -142,7 +144,7 @@
     </div>
   </div>
 
-  <button id="profile-button" onclick="toggleProfile()">👤</button>
+  <button id="profile-button" onclick="toggleProfile()">👤 Profile</button>
   <div id="profile-modal"></div>
 
   <script>
