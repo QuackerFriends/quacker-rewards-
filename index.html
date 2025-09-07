@@ -9,18 +9,18 @@
 
     body {
       font-family: 'Fredoka', sans-serif;
-      background: #fff9f5;
+      background: #64c4bb; /* brand teal */
       color: #333;
       padding: 30px;
       text-align: center;
     }
 
     h1, h2, h3 {
-      color: #ff9f29;
+      color: #f98e1d; /* brand orange */
     }
 
     button {
-      background: #ff9f29;
+      background: #f98e1d; /* brand orange */
       color: white;
       border: none;
       border-radius: 25px;
@@ -28,14 +28,15 @@
       margin: 8px 5px;
       cursor: pointer;
       font-size: 14px;
-      transition: background 0.3s ease;
+      transition: background 0.3s ease, transform 0.1s;
     }
-    button:hover { background: #e28923; }
+    button:hover { background: #e44e24; transform: scale(1.05); }
 
     #wallet-address {
       display: block;
       margin-top: 10px;
       font-weight: bold;
+      color: #fff;
     }
 
     #shop {
@@ -44,7 +45,7 @@
       padding: 20px;
       max-width: 900px;
       margin: 20px auto;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
 
     /* Product grid */
@@ -56,27 +57,30 @@
     }
 
     .product-card {
-      background: #fffdfb;
-      border: 1px dashed #ffe3c0;
+      background: #ffffff;
+      border: 2px solid #f98e1d;
       border-radius: 15px;
       width: 250px;
       padding: 15px;
       text-align: center;
+      transition: transform 0.2s;
     }
+    .product-card:hover { transform: translateY(-5px); }
 
     .product-card img {
       width: 100%;
       border-radius: 12px;
+      border: 2px solid #64c4bb;
     }
 
     .product-name {
       font-weight: bold;
       margin: 10px 0 5px;
-      color: #444;
+      color: #333;
     }
 
     .product-price {
-      color: #ff6b81;
+      color: #e44e24;
       margin-bottom: 10px;
     }
 
@@ -85,11 +89,11 @@
       position: absolute;
       top: 20px;
       right: 20px;
-      background: #ff6b81;
+      background: #e44e24; /* red-orange */
       display: none;
     }
     #profile-button.loading { background: #bbb; cursor: wait; }
-    #profile-button:hover { background: #e25d73; }
+    #profile-button:hover { background: #c53c1c; }
 
     /* Floating profile modal */
     #profile-modal {
@@ -97,17 +101,17 @@
       position: absolute;
       top: 65px;
       right: 20px;
-      background: #fffaf0;
-      border: 1px solid #ffe3c0;
+      background: #ffffff;
+      border: 2px solid #f98e1d;
       border-radius: 15px;
       padding: 15px;
       width: 280px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       text-align: left;
       z-index: 1000;
     }
 
-    .cute-label { font-weight: bold; color: #444; }
+    .cute-label { font-weight: bold; color: #f98e1d; }
   </style>
 </head>
 <body>
@@ -202,73 +206,4 @@
           params: [{ eth_accounts: {} }]
         });
         connectWallet();
-      } catch (err) { console.error("Switch failed", err); }
-    }
-
-    async function buyItem(itemName, priceEth) {
-      const shipping = prompt(`Enter your shipping address for ${itemName}:`);
-      if (!shipping) return;
-
-      try {
-        const tx = await signer.sendTransaction({
-          to: "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D",
-          value: ethers.utils.parseEther(priceEth)
-        });
-        await tx.wait();
-
-        const params = new URLSearchParams({
-          item: itemName,
-          wallet: userAddress,
-          price: priceEth + " ETH",
-          address: shipping
-        });
-
-        await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
-        alert(`✅ ${itemName} purchased!`);
-      } catch (err) {
-        console.error(err);
-        alert("Transaction failed or cancelled.");
-      }
-    }
-
-    async function toggleProfile() {
-      const button = document.getElementById("profile-button");
-      const modal = document.getElementById("profile-modal");
-
-      button.innerText = "⏳ Loading...";
-      button.classList.add("loading");
-
-      if (modal.style.display === "block") {
-        modal.style.display = "none";
-        button.innerText = "👤 Profile";
-        button.classList.remove("loading");
-        return;
-      }
-
-      modal.innerHTML = `
-        <h3>🧑‍💻 Your Profile</h3>
-        <p class="cute-label">Wallet:</p><p>${userAddress}</p>
-      `;
-      modal.style.display = "block";
-
-      button.innerText = "👤 Profile";
-      button.classList.remove("loading");
-    }
-
-    function setupProfileButton() {
-      document.getElementById("profile-button").style.display = "inline";
-    }
-    function teardownProfileButton() {
-      document.getElementById("profile-button").style.display = "none";
-      document.getElementById("profile-modal").style.display = "none";
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("connect-button").addEventListener("click", connectWallet);
-      document.getElementById("disconnect-button").addEventListener("click", disconnectWallet);
-      document.getElementById("switch-button").addEventListener("click", switchWallet);
-    });
-  </script>
-
-</body>
-</html>
+      } catch (err) { console.error("
