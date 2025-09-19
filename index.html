@@ -4,23 +4,20 @@
   <meta charset="UTF-8" />
   <title>Quacker Friends Shop</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />a<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Quacker Friends Shop</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
 
     body {
+      margin: 0;
       font-family: 'Fredoka', sans-serif;
-      padding: 30px;
+      background: #fff9f5;
+      color: #333;
       text-align: center;
-      transition: background 0.3s, color 0.3s;
     }
 
-    h1, h2, h3 { transition: color 0.3s; }
+    h1, h2, h3 { margin: 15px 0; }
 
     button {
       border: none;
@@ -29,49 +26,36 @@
       margin: 8px 5px;
       cursor: pointer;
       font-size: 14px;
-      transition: background 0.3s, color 0.3s;
+      transition: background 0.3s ease;
     }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    #wallet-address {
-      display: block;
-      margin-top: 10px;
-      font-weight: bold;
-    }
+    #wallet-address { display: block; margin-top: 10px; font-weight: bold; }
 
     #shop {
       border-radius: 20px;
       padding: 20px;
       max-width: 900px;
       margin: 20px auto;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-      transition: background 0.3s, border 0.3s;
     }
 
-    /* Product grid */
     .product-grid {
       display: flex;
       flex-wrap: wrap;
       gap: 20px;
       justify-content: center;
     }
-
     .product-card {
       border-radius: 15px;
       width: 250px;
       padding: 15px;
       text-align: center;
-      transition: background 0.3s, border 0.3s;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.08);
     }
-
-    .product-card img {
-      width: 100%;
-      border-radius: 12px;
-    }
-
+    .product-card img { width: 100%; border-radius: 12px; }
     .product-name { font-weight: bold; margin: 10px 0 5px; }
     .product-price { margin-bottom: 10px; }
 
-    /* Floating profile button */
     #profile-button {
       position: absolute;
       top: 20px;
@@ -80,7 +64,6 @@
     }
     #profile-button.loading { cursor: wait; }
 
-    /* Floating profile modal */
     #profile-modal {
       display: none;
       position: absolute;
@@ -92,104 +75,77 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       text-align: left;
       z-index: 1000;
-      transition: background 0.3s, border 0.3s;
     }
 
-    .cute-label { font-weight: bold; }
+    .cute-label { font-weight: bold; margin-top: 8px; }
 
-    /* THEME SWITCHER */
-    #theme-switcher {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      background: rgba(255,255,255,0.7);
-      padding: 8px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-    }
-    #theme-switcher button {
-      margin: 2px;
-      padding: 6px 10px;
-      font-size: 12px;
-    }
+    /* THEME 1: Pastel Dream */
+    body.theme-pastel { background: #fff9f5; font-family: 'Fredoka', sans-serif; }
+    body.theme-pastel h1, body.theme-pastel h2, body.theme-pastel h3 { color: #ff9f29; }
+    body.theme-pastel button { background: #ff9f29; color: white; }
+    body.theme-pastel button:hover { background: #e28923; }
+    body.theme-pastel .product-card { background: #fffdfb; border: 1px dashed #ffe3c0; }
+    body.theme-pastel #profile-modal { background: #fffaf0; border: 1px solid #ffe3c0; }
+    body.theme-pastel #profile-button { background: #ff6b81; color: #fff; }
 
-    /* ========== THEMES ========== */
+    /* THEME 2: Playful Pop */
+    body.theme-pop { background: #fefefe; font-family: 'Comic Neue', cursive; }
+    body.theme-pop h1, body.theme-pop h2, body.theme-pop h3 { color: #ff4081; }
+    body.theme-pop button { background: #40c4ff; color: #fff; border-radius: 8px; }
+    body.theme-pop button:hover { background: #039be5; }
+    body.theme-pop .product-card { background: #fff; border: 2px solid #40c4ff; }
+    body.theme-pop #profile-modal { background: #fff; border: 2px solid #ff4081; }
+    body.theme-pop #profile-button { background: #ff4081; color: #fff; border-radius: 8px; }
 
-    /* 1. Soft Pastel */
-    .theme-pastel body { background: #fff9f5; color: #333; }
-    .theme-pastel h1, .theme-pastel h2, .theme-pastel h3 { color: #ff9f29; }
-    .theme-pastel button { background: #ff9f29; color: white; }
-    .theme-pastel button:hover { background: #e28923; }
-    .theme-pastel #shop { background: #fff; border: 1px solid #ffe3c0; }
-    .theme-pastel .product-card { background: #fffdfb; border: 1px dashed #ffe3c0; }
-    .theme-pastel #profile-modal { background: #fffaf0; border: 1px solid #ffe3c0; }
-
-    /* 2. Playful Pop */
-    .theme-pop body { background: #fff0f6; color: #222; }
-    .theme-pop h1, .theme-pop h2, .theme-pop h3 { color: #ff4fa0; }
-    .theme-pop button { background: #ff4fa0; color: white; }
-    .theme-pop button:hover { background: #d43c83; }
-    .theme-pop #shop { background: #ffffff; border: 2px solid #ff4fa0; }
-    .theme-pop .product-card { background: #fff9fc; border: 2px solid #ffc2e0; }
-    .theme-pop #profile-modal { background: #fff9fc; border: 2px solid #ffc2e0; }
-
-    /* 3. Cozy Minimal */
-    .theme-minimal body { background: #fafafa; color: #111; }
-    .theme-minimal h1, .theme-minimal h2, .theme-minimal h3 { color: #333; }
-    .theme-minimal button { background: #444; color: white; }
-    .theme-minimal button:hover { background: #000; }
-    .theme-minimal #shop { background: #fff; border: 1px solid #ddd; }
-    .theme-minimal .product-card { background: #fdfdfd; border: 1px solid #ddd; }
-    .theme-minimal #profile-modal { background: #fff; border: 1px solid #ddd; }
-
+    /* THEME 3: Cozy Minimal */
+    body.theme-minimal { background: #fafafa; font-family: 'Nunito', sans-serif; }
+    body.theme-minimal h1, body.theme-minimal h2, body.theme-minimal h3 { color: #333; }
+    body.theme-minimal button { background: #444; color: #fff; border-radius: 4px; }
+    body.theme-minimal button:hover { background: #000; }
+    body.theme-minimal .product-card { background: #fff; border: 1px solid #ddd; }
+    body.theme-minimal #profile-modal { background: #fff; border: 1px solid #ddd; }
+    body.theme-minimal #profile-button { background: #444; color: #fff; border-radius: 4px; }
   </style>
 </head>
 <body class="theme-pastel">
-
-  <div id="theme-switcher">
-    <span>Theme:</span>
-    <button onclick="setTheme('pastel')">🌸 Pastel</button>
-    <button onclick="setTheme('pop')">🎉 Pop</button>
-    <button onclick="setTheme('minimal')">☕ Minimal</button>
-  </div>
 
   <h1>🛍️ Quacker Friends Shop</h1>
 
   <div>
     <button id="connect-button">Connect Wallet</button>
-    <button id="disconnect-button">Disconnect</button>
-    <button id="switch-button">Switch Wallet</button>
+    <button id="disconnect-button" style="display:none;">Disconnect</button>
+    <button id="switch-button" style="display:none;">Switch Wallet</button>
     <span id="wallet-address"></span>
+  </div>
+
+  <!-- Theme Switcher -->
+  <div style="margin: 10px 0;">
+    <button onclick="setTheme('pastel')">🌸 Pastel Dream</button>
+    <button onclick="setTheme('pop')">🎉 Playful Pop</button>
+    <button onclick="setTheme('minimal')">☕ Cozy Minimal</button>
   </div>
 
   <div id="shop">
     <h2>✨ Our Cute Items</h2>
     <div class="product-grid">
-      
-      <!-- Pumpkin Keychain -->
       <div class="product-card">
         <img src="https://source.unsplash.com/250x200/?pumpkin" alt="Pumpkin Keychain">
         <div class="product-name">🎃 Pumpkin Crochet Keychain</div>
         <div class="product-price">0.001 ETH</div>
         <button onclick="buyItem('Pumpkin Keychain', '0.001')">Buy</button>
       </div>
-
-      <!-- Cat Beanie -->
       <div class="product-card">
         <img src="https://source.unsplash.com/250x200/?cat,hat" alt="Cat Beanie">
         <div class="product-name">🐱 Cat Beanie</div>
         <div class="product-price">0.0025 ETH</div>
         <button onclick="buyItem('Cat Beanie', '0.0025')">Buy</button>
       </div>
-
-      <!-- Pumpkin Duck Plushie -->
       <div class="product-card">
         <img src="https://source.unsplash.com/250x200/?duck,plushie" alt="Pumpkin Duck Plushie">
         <div class="product-name">🦆 Pumpkin Duck Plushie</div>
         <div class="product-price">0.005 ETH</div>
         <button onclick="buyItem('Pumpkin Duck Plushie', '0.005')">Buy</button>
       </div>
-
     </div>
   </div>
 
@@ -201,6 +157,8 @@
     const contractAddress = "0xA2c82Bda5585c1D729E2b4f85dCC9a11ded7DB4c";
     const contractABI = ["function balanceOf(address owner) view returns (uint256)"];
     let contract;
+
+    const claimApi = "https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec";
 
     async function connectWallet() {
       if (window.ethereum) {
@@ -264,7 +222,7 @@
           address: shipping
         });
 
-        await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
+        await fetch(`${claimApi}?${params}`);
         alert(`✅ ${itemName} purchased!`);
       } catch (err) {
         console.error(err);
@@ -286,14 +244,54 @@
         return;
       }
 
+      let nftCount = 0, claimInfo = "";
+      try {
+        nftCount = await contract.balanceOf(userAddress);
+        nftCount = nftCount.toString();
+
+        if (parseInt(nftCount) > 0) {
+          const check = await fetch(`${claimApi}?wallet=${userAddress}`);
+          const data = await check.json();
+          if (data.claimed) {
+            claimInfo = "<p>🎁 Keychain already claimed ✅</p>";
+          } else {
+            claimInfo = `<button onclick="claimKeychain()">🎁 Claim Free Keychain</button>`;
+          }
+        }
+      } catch (e) {
+        console.error(e);
+        claimInfo = "<p>⚠️ Could not load claim info.</p>";
+      }
+
       modal.innerHTML = `
         <h3>🧑‍💻 Your Profile</h3>
         <p class="cute-label">Wallet:</p><p>${userAddress}</p>
+        <p class="cute-label">NFTs Owned:</p><p>${nftCount}</p>
+        ${claimInfo}
       `;
       modal.style.display = "block";
 
       button.innerText = "👤 Profile";
       button.classList.remove("loading");
+    }
+
+    async function claimKeychain() {
+      const shipping = prompt("Enter your shipping address for Free Keychain:");
+      if (!shipping) return;
+      try {
+        const params = new URLSearchParams({
+          item: "Free Keychain",
+          wallet: userAddress,
+          address: shipping,
+          free: "true"
+        });
+        await fetch(`${claimApi}?${params}`);
+        alert("🎉 Free Keychain claimed!");
+        toggleProfile();
+      } catch (err) {
+        console.error(err);
+        alert("❌ Claim failed.");
+      }
     }
 
     function setupProfileButton() {
@@ -314,467 +312,5 @@
       document.getElementById("switch-button").addEventListener("click", switchWallet);
     });
   </script>
-
-</body>
-</html>
-
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
-
-    :root{
-      --brand-orange:#ff9f29;
-      --brand-pink:#ff6b81;
-      --muted:#f5f0ea;
-      --accent:#e25d73;
-    }
-
-    body {
-      font-family: 'Fredoka', sans-serif;
-      background: #fff9f5;
-      color: #333;
-      padding: 22px;
-      text-align: center;
-      margin:0;
-    }
-
-    header{ display:flex; align-items:center; justify-content:space-between; gap:12px; max-width:1100px; margin:0 auto 16px; padding:0 10px; }
-    h1{ color:var(--brand-orange); margin:0; font-size:20px; }
-
-    .controls { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-    .controls button{
-      background:var(--brand-orange);
-      color:white;
-      border:none;
-      border-radius:18px;
-      padding:8px 14px;
-      cursor:pointer;
-      font-size:13px;
-    }
-    .controls button:hover{ background:#e28923; }
-    #wallet-address{ font-weight:600; font-size:13px; margin-left:8px; color:#444; }
-
-    #profile-button{
-      position:fixed;
-      top:14px;
-      right:14px;
-      background:var(--brand-pink);
-      color:white;
-      border:none;
-      border-radius:14px;
-      padding:8px 12px;
-      font-size:13px;
-      cursor:pointer;
-      display:none;
-      z-index:1100;
-    }
-    #profile-button.loading{ background:#bbb; cursor:wait; }
-
-    main{ max-width:1000px; margin:20px auto; padding:0 12px; }
-    #shop{
-      background:#fff;
-      border-radius:16px;
-      padding:18px;
-      box-shadow:0 6px 18px rgba(0,0,0,0.06);
-    }
-
-    .product-grid{ display:flex; flex-wrap:wrap; gap:18px; justify-content:center; }
-    .product-card{
-      width:250px;
-      border-radius:12px;
-      background:#fffdfb;
-      border:1px dashed #ffe3c0;
-      padding:12px;
-      text-align:center;
-    }
-    .product-card img{ width:100%; height:150px; object-fit:cover; border-radius:10px; }
-    .product-name{ font-weight:700; margin-top:10px; color:#444; }
-    .product-price{ color:var(--brand-pink); margin:6px 0 10px; font-weight:600; }
-
-    /* Profile modal (floating card) */
-    #profile-modal {
-      display:none;
-      position:fixed;
-      top:64px;
-      right:18px;
-      width:300px;
-      background:#fffaf0;
-      border:1px solid #ffe3c0;
-      border-radius:12px;
-      padding:12px;
-      box-shadow:0 8px 22px rgba(0,0,0,0.12);
-      z-index:1200;
-      text-align:left;
-      font-size:14px;
-    }
-    .cute-label{ font-weight:700; color:#444; margin-top:8px; display:block; }
-    .small{ font-size:13px; color:#555; margin:6px 0; }
-    .claim-btn{ background:var(--brand-orange); border-radius:10px; padding:8px 10px; width:100%; color:white; border:none; }
-    .claim-btn[disabled]{ opacity:.6; cursor:not-allowed; }
-
-    textarea{ width:100%; min-height:70px; border-radius:8px; padding:8px; border:1px solid #ddd; font-family:inherit; }
-
-    @media (max-width:600px){
-      #profile-modal{ right:10px; left:10px; width:auto; top:70px; }
-      .product-card{ width:45%; }
-    }
-  </style>
-</head>
-<body>
-
-  <header>
-    <h1>🛍️ Quacker Friends Shop</h1>
-    <div class="controls">
-      <div>
-        <button id="connect-button">Connect Wallet</button>
-        <button id="disconnect-button" style="display:none">Disconnect</button>
-        <button id="switch-button" style="display:none">Switch Wallet</button>
-        <span id="wallet-address"></span>
-      </div>
-    </div>
-  </header>
-
-  <button id="profile-button" onclick="toggleProfile()">👤 Profile</button>
-  <div id="profile-modal" aria-hidden="true"></div>
-
-  <main>
-    <section id="shop" style="display:none">
-      <h2 style="color:var(--brand-pink)">✨ Our Cute Items</h2>
-
-      <div class="product-grid">
-        <div class="product-card">
-          <img src="https://source.unsplash.com/250x200/?pumpkin" alt="Pumpkin Keychain">
-          <div class="product-name">🎃 Pumpkin Crochet Keychain</div>
-          <div class="product-price">0.001 ETH</div>
-          <button onclick="buyItem('Pumpkin Crochet Keychain','0.001')">Buy</button>
-        </div>
-
-        <div class="product-card">
-          <img src="https://source.unsplash.com/250x200/?cat,beanie" alt="Cat Beanie">
-          <div class="product-name">🐱 Cat Beanie</div>
-          <div class="product-price">0.0025 ETH</div>
-          <button onclick="buyItem('Cat Beanie','0.0025')">Buy</button>
-        </div>
-
-        <div class="product-card">
-          <img src="https://source.unsplash.com/250x200/?duck,plushie" alt="Pumpkin Duck Plushie">
-          <div class="product-name">🦆 Pumpkin Duck Plushie</div>
-          <div class="product-price">0.005 ETH</div>
-          <button onclick="buyItem('Pumpkin Duck Plushie','0.005')">Buy</button>
-        </div>
-      </div>
-    </section>
-  </main>
-
-<script>
-/* ================== CONFIG ================ */
-const contractAddress = "0xA2c82Bda5585c1D729E2b4f85dCC9a11ded7DB4c";
-const contractABI = ["function balanceOf(address owner) view returns (uint256)"];
-const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec";
-const RECEIVER_ADDRESS = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D"; // where payments go (your address)
-
-/* ================== STATE ================ */
-let provider, signer, userAddress = null;
-let contract;
-let userNftCount = 0;
-
-/* ================ UTIL: normalize sheet data ================
- The Apps Script webapp sometimes returns rows as array-of-arrays
- or array-of-objects. Normalize to an array of {item,wallet,price,address}
-*/
-function normalizeSheetData(raw) {
-  if (!raw) return [];
-  if (Array.isArray(raw)) {
-    // if array-of-arrays
-    if (raw.length > 0 && Array.isArray(raw[0])) {
-      return raw.map(row => ({
-        item: (row[0] || "").toString(),
-        wallet: (row[1] || "").toString(),
-        price: (row[2] || "").toString(),
-        address: (row[3] || "").toString()
-      }));
-    }
-    // if array-of-objects with keys
-    if (typeof raw[0] === "object") {
-      return raw.map(o => ({
-        item: (o.item || o.Item || o[0] || "").toString(),
-        wallet: (o.wallet || o.Wallet || o[1] || "").toString(),
-        price: (o.price || o.Price || o[2] || "").toString(),
-        address: (o.address || o.Address || o[3] || "").toString()
-      }));
-    }
-  }
-  return [];
-}
-
-/* ================== FETCH SHEET DATA (tolerant) ================ */
-async function fetchSheetRows() {
-  // try fetching with no params first (many of your earlier scripts returned JSON)
-  try {
-    const r1 = await fetch(CLAIM_SHEET_API, { cache: "no-store" });
-    const txt = await r1.text();
-    // try parse json
-    try {
-      const parsed = JSON.parse(txt);
-      return normalizeSheetData(parsed);
-    } catch (err) {
-      // not JSON - sometimes Google returns CSV/text or "Success"
-      // try calling with action=getAll (some published scripts implement this)
-    }
-  } catch (err) {
-    // ignore — we'll fallback
-    console.warn("fetchSheetRows fallback stage1 err:", err);
-  }
-
-  // fallback: try `?action=getAll` (some scripts expect this)
-  try {
-    const r2 = await fetch(CLAIM_SHEET_API + "?action=getAll", { cache: "no-store" });
-    if (r2.ok) {
-      try {
-        const parsed = await r2.json();
-        return normalizeSheetData(parsed);
-      } catch (err) {
-        const txt = await r2.text();
-        try {
-          const parsed2 = JSON.parse(txt);
-          return normalizeSheetData(parsed2);
-        } catch (err2){
-          console.warn("fetchSheetRows fallback parse failed", err2);
-        }
-      }
-    }
-  } catch (err) {
-    console.warn("fetchSheetRows fallback stage2 err:", err);
-  }
-
-  // if all fails return empty array
-  return [];
-}
-
-/* =================== CHECK if wallet already claimed ================== */
-async function hasClaimedKeychainForWallet(wallet) {
-  if (!wallet) return false;
-  try {
-    const rows = await fetchSheetRows();
-    if (!rows || rows.length === 0) return false;
-    const wl = wallet.toLowerCase();
-    return rows.some(r =>
-      (r.wallet || "").toLowerCase() === wl &&
-      ( (r.item || "").toLowerCase().includes("keychain") || (r.item || "").toLowerCase().includes("key-chain") )
-    );
-  } catch (err) {
-    console.error("hasClaimedKeychainForWallet error:", err);
-    return false;
-  }
-}
-
-/* =================== CONNECT / UI functions ================== */
-async function connectWallet() {
-  if (!window.ethereum) {
-    alert("Please install MetaMask!");
-    return;
-  }
-  try {
-    provider = new ethers.providers.Web3Provider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
-    signer = provider.getSigner();
-    userAddress = await signer.getAddress();
-    contract = new ethers.Contract(contractAddress, contractABI, provider);
-
-    document.getElementById("wallet-address").innerText = `Connected: ${userAddress}`;
-    document.getElementById("connect-button").style.display = "none";
-    document.getElementById("disconnect-button").style.display = "inline-block";
-    document.getElementById("switch-button").style.display = "inline-block";
-    document.getElementById("shop").style.display = "block";
-
-    // always show profile button when wallet connected
-    setupProfileButton();
-
-    // load NFT count
-    await refreshEligibility();
-  } catch (err) {
-    console.error("connectWallet error:", err);
-    alert("Failed to connect wallet.");
-  }
-}
-
-function disconnectWallet() {
-  userAddress = null;
-  signer = null;
-  provider = null;
-  contract = null;
-  userNftCount = 0;
-
-  teardownProfileButton();
-  document.getElementById("wallet-address").innerText = "";
-  document.getElementById("connect-button").style.display = "inline-block";
-  document.getElementById("disconnect-button").style.display = "none";
-  document.getElementById("switch-button").style.display = "none";
-  document.getElementById("shop").style.display = "none";
-  const modal = document.getElementById("profile-modal");
-  modal.style.display = "none";
-}
-
-async function switchWallet() {
-  try {
-    await ethereum.request({ method: 'wallet_requestPermissions', params: [{ eth_accounts: {} }] });
-    await connectWallet();
-  } catch (err) {
-    console.error("switchWallet failed", err);
-  }
-}
-
-/* refresh NFT count and UI bits */
-async function refreshEligibility() {
-  if (!contract || !userAddress) return;
-  try {
-    const bal = await contract.balanceOf(userAddress);
-    userNftCount = parseInt(bal.toString());
-  } catch (err) {
-    console.warn("refreshEligibility: couldn't read balance", err);
-    userNftCount = 0;
-  }
-}
-
-/* ============= BUY flow ============= */
-async function buyItem(itemName, priceEth) {
-  if (!signer || !userAddress) { alert("Connect wallet first"); return; }
-  const shipping = prompt(`Enter shipping address for ${itemName}:`);
-  if (!shipping) return;
-  try {
-    const tx = await signer.sendTransaction({
-      to: RECEIVER_ADDRESS,
-      value: ethers.utils.parseEther(priceEth)
-    });
-    await tx.wait();
-
-    // log to sheet using GET query-string (this worked for you previously)
-    const params = new URLSearchParams({ item: itemName, wallet: userAddress, price: priceEth + " ETH", address: shipping });
-    const resp = await fetch(`${CLAIM_SHEET_API}?${params.toString()}`);
-    // best-effort success check
-    if (!resp.ok) {
-      console.warn("sheet log fetch returned !ok", resp.status);
-    }
-    alert(`${itemName} purchased and logged!`);
-    await refreshEligibility();
-  } catch (err) {
-    console.error("buyItem error:", err);
-    alert("Transaction failed or cancelled.");
-  }
-}
-
-/* ========= PROFILE modal & claim logic ========= */
-async function toggleProfile() {
-  const btn = document.getElementById("profile-button");
-  const modal = document.getElementById("profile-modal");
-
-  // Loading UI
-  btn.innerText = "⏳ Loading...";
-  btn.classList.add("loading");
-
-  // if already visible -> hide
-  if (modal.style.display === "block") {
-    modal.style.display = "none";
-    btn.innerText = "👤 Profile";
-    btn.classList.remove("loading");
-    return;
-  }
-
-  // ensure we have up-to-date balance
-  await refreshEligibility();
-
-  // check if claimed (tolerant)
-  let claimed = false;
-  try { claimed = await hasClaimedKeychainForWallet(userAddress); } catch (err) { console.warn("claim check failed",err); }
-
-  // build modal content
-  let html = `<h3>🧑‍💻 Your Profile</h3>
-    <span class="cute-label">Wallet</span><div class="small">${userAddress || "—"}</div>
-    <span class="cute-label">Quacker NFTs Owned</span><div class="small">${userNftCount}</div>`;
-
-  // Only show claim button if holder and not claimed
-  if (userNftCount > 0) {
-    if (claimed) {
-      html += `<div style="margin-top:10px;color:green;font-weight:600">✅ You already claimed your free keychain.</div>`;
-    } else {
-      html += `<div style="margin-top:10px"><button id="profile-claim-btn" class="claim-btn" onclick="startKeychainClaim()">🎁 Claim Free Keychain</button></div>`;
-    }
-  } else {
-    html += `<div style="margin-top:10px;color:#b23">❌ No Quacker NFTs detected — keychain not available.</div>`;
-  }
-
-  modal.innerHTML = html;
-  modal.style.display = "block";
-
-  // restore button label
-  btn.innerText = "👤 Profile";
-  btn.classList.remove("loading");
-}
-
-/* called when user clicks Claim inside modal - step 1: replace with textarea + submit */
-function startKeychainClaim() {
-  const modal = document.getElementById("profile-modal");
-  // ensure holder
-  if (userNftCount < 1) {
-    alert("You must own at least 1 Quacker Friend NFT to claim.");
-    return;
-  }
-  // Replace claim button with textarea + submit
-  modal.querySelector('#profile-claim-btn').outerHTML = `
-    <div style="margin-top:10px;">
-      <textarea id="profile-keychain-address" placeholder="Enter shipping address..." ></textarea>
-      <div style="margin-top:8px"><button class="claim-btn" onclick="submitKeychainClaim()">Submit Claim</button></div>
-    </div>
-  `;
-}
-
-/* final submit: check again & send to sheet */
-async function submitKeychainClaim(){
-  const addrEl = document.getElementById("profile-keychain-address");
-  if (!addrEl) return;
-  const shipping = addrEl.value.trim();
-  if (!shipping) { alert("Enter a shipping address."); return; }
-
-  // final checks
-  await refreshEligibility();
-  if (userNftCount < 1) { alert("You must own at least 1 Quacker Friend NFT to claim."); return; }
-  const already = await hasClaimedKeychainForWallet(userAddress);
-  if (already) { alert("You already claimed the keychain."); await toggleProfile(); return; }
-
-  // send to sheet
-  try {
-    const params = new URLSearchParams({ item: "Keychain", wallet: userAddress, price: "0 (Free)", address: shipping });
-    const response = await fetch(`${CLAIM_SHEET_API}?${params.toString()}`);
-    // Accept either text or ok
-    if (!response.ok) {
-      console.warn("Sheet write returned !ok", response.status);
-      // try read body anyway
-      const t = await response.text();
-      if (!t || t.toLowerCase().indexOf("success") === -1) throw new Error("sheet write failed");
-    } else {
-      // try read text and check
-      const t = await response.text();
-      if (t && t.toLowerCase().includes("error")) throw new Error("sheet returned error");
-    }
-    alert("🎉 Keychain claimed successfully!");
-    await refreshEligibility();
-    await toggleProfile(); // refresh modal
-  } catch (err) {
-    console.error("submitKeychainClaim error:", err);
-    alert("Claim failed — please try again (check console).");
-  }
-}
-
-/* show/hide profile btn helpers */
-function setupProfileButton(){ document.getElementById("profile-button").style.display = "inline-block"; }
-function teardownProfileButton(){ document.getElementById("profile-button").style.display = "none"; document.getElementById("profile-modal").style.display = "none"; }
-
-/* attach control events */
-window.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("connect-button").addEventListener("click", connectWallet);
-  document.getElementById("disconnect-button").addEventListener("click", disconnectWallet);
-  document.getElementById("switch-button").addEventListener("click", switchWallet);
-});
-</script>
-
 </body>
 </html>
