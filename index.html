@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -161,7 +161,7 @@
     const contractABI = ["function balanceOf(address owner) view returns (uint256)"];
     let contract;
 
-    const claimSheetAPI = "https://script.google.com/macros/s/AKfycbx-99nc43kVUpc1p8rMiDmiyvy5087SGQImJqIePR4mTja8G3QQ_e7r0A07rf4DWfEzxw/exec";
+    const claimSheetAPI = "https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec";
 
     async function connectWallet() {
       if (window.ethereum) {
@@ -247,28 +247,41 @@
         return;
       }
 
-      // Profile content
-      let balance = await contract.balanceOf(userAddress);
-      balance = balance.toString();
+      let nftBalance = 0;
+      let claimed = false;
 
-      let claimStatus = "⏳ Checking claim status...";
       try {
-        const res = await fetch(`${claimSheetAPI}?checkClaim=true&wallet=${userAddress}`);
-        const data = await res.json();
-        if (data.claimed) {
-          claimStatus = "✅ Keychain already claimed!";
-        } else {
-          claimStatus = `<button onclick="claimKeychain()">🎁 Claim Free Keychain</button>`;
+        nftBalance = await contract.balanceOf(userAddress);
+      } catch (err) {
+        console.error("NFT balance error:", err);
+      }
+
+      try {
+        const resp = await fetch(`${claimSheetAPI}?checkClaim=true&wallet=${userAddress}`);
+        let text = await resp.text();
+        text = text.trim();
+
+        try {
+          const parsed = JSON.parse(text);
+          claimed = parsed.claimed === true || parsed.claimed === "true";
+        } catch {
+          claimed = text.toLowerCase().includes("true") || text.toLowerCase().includes("yes");
         }
-      } catch (e) {
-        claimStatus = "⚠️ Could not check claim status.";
+      } catch (err) {
+        console.error("Claim check error:", err);
       }
 
       modal.innerHTML = `
         <h3>🧑‍💻 Your Profile</h3>
         <p class="cute-label">Wallet:</p><p>${userAddress}</p>
-        <p class="cute-label">Quacker NFTs Owned:</p><p>${balance}</p>
-        <div id="claim-section">${claimStatus}</div>
+        <p class="cute-label">NFTs Held:</p><p>${nftBalance}</p>
+        ${
+          nftBalance > 0
+            ? claimed
+              ? "<p>✅ You already claimed your free keychain.</p>"
+              : `<button onclick="claimKeychain()">🎁 Claim Free Keychain</button>`
+            : "<p>❌ No NFTs detected. Claim unavailable.</p>"
+        }
       `;
       modal.style.display = "block";
 
@@ -277,25 +290,21 @@
     }
 
     async function claimKeychain() {
-      const shipping = prompt("Enter your shipping address for free keychain:");
+      const shipping = prompt("Enter your shipping address for the free keychain:");
       if (!shipping) return;
 
       try {
         const params = new URLSearchParams({
-          item: "Free Keychain",
+          claimKeychain: true,
           wallet: userAddress,
-          price: "0 ETH",
-          address: shipping,
-          claim: true
+          address: shipping
         });
-
         await fetch(`${claimSheetAPI}?${params}`);
-        alert("🎉 Free keychain claimed!");
-
-        document.getElementById("claim-section").innerHTML = "✅ Keychain already claimed!";
+        alert("🎁 Keychain claimed successfully!");
+        toggleProfile(); // refresh profile modal
       } catch (err) {
         console.error(err);
-        alert("Failed to claim keychain.");
+        alert("Claim failed.");
       }
     }
 
