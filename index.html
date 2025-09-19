@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -161,6 +161,8 @@
     const contractABI = ["function balanceOf(address owner) view returns (uint256)"];
     let contract;
 
+    const claimSheetAPI = "https://script.google.com/macros/s/AKfycbx-99nc43kVUpc1p8rMiDmiyvy5087SGQImJqIePR4mTja8G3QQ_e7r0A07rf4DWfEzxw/exec";
+
     async function connectWallet() {
       if (window.ethereum) {
         provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -223,28 +225,12 @@
           address: shipping
         });
 
-        await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
+        await fetch(`${claimSheetAPI}?${params}`);
         alert(`✅ ${itemName} purchased!`);
       } catch (err) {
         console.error(err);
         alert("Transaction failed or cancelled.");
       }
-    }
-
-    async function claimKeychain() {
-      const shipping = prompt("Enter your shipping address for Free Pumpkin Keychain:");
-      if (!shipping) return;
-
-      const params = new URLSearchParams({
-        item: "Free Pumpkin Keychain",
-        wallet: userAddress,
-        price: "0 ETH",
-        address: shipping
-      });
-
-      await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
-      alert("🎉 Free Pumpkin Keychain claimed!");
-      toggleProfile(); // refresh profile modal
     }
 
     async function toggleProfile() {
@@ -261,36 +247,56 @@
         return;
       }
 
-      // fetch NFT balance
-      let nftCount = 0;
+      // Profile content
+      let balance = await contract.balanceOf(userAddress);
+      balance = balance.toString();
+
+      let claimStatus = "⏳ Checking claim status...";
       try {
-        nftCount = await contract.balanceOf(userAddress);
-      } catch (e) {
-        console.error("Failed to fetch NFT balance", e);
-      }
-
-      // for demo: check if claimed by localStorage (replace with your GAS check later)
-      const claimed = localStorage.getItem(`claimed_${userAddress}`) === "true";
-
-      let keychainSection = "";
-      if (nftCount > 0n) {
-        if (claimed) {
-          keychainSection = `<p>🎁 Free Keychain: Claimed ✅</p>`;
+        const res = await fetch(`${claimSheetAPI}?checkClaim=true&wallet=${userAddress}`);
+        const data = await res.json();
+        if (data.claimed) {
+          claimStatus = "✅ Keychain already claimed!";
         } else {
-          keychainSection = `<button onclick="claimKeychain()">🎁 Claim Free Keychain</button>`;
+          claimStatus = `<button onclick="claimKeychain()">🎁 Claim Free Keychain</button>`;
         }
+      } catch (e) {
+        claimStatus = "⚠️ Could not check claim status.";
       }
 
       modal.innerHTML = `
         <h3>🧑‍💻 Your Profile</h3>
         <p class="cute-label">Wallet:</p><p>${userAddress}</p>
-        <p class="cute-label">Quacker NFTs:</p><p>${nftCount.toString()}</p>
-        ${keychainSection}
+        <p class="cute-label">Quacker NFTs Owned:</p><p>${balance}</p>
+        <div id="claim-section">${claimStatus}</div>
       `;
       modal.style.display = "block";
 
       button.innerText = "👤 Profile";
       button.classList.remove("loading");
+    }
+
+    async function claimKeychain() {
+      const shipping = prompt("Enter your shipping address for free keychain:");
+      if (!shipping) return;
+
+      try {
+        const params = new URLSearchParams({
+          item: "Free Keychain",
+          wallet: userAddress,
+          price: "0 ETH",
+          address: shipping,
+          claim: true
+        });
+
+        await fetch(`${claimSheetAPI}?${params}`);
+        alert("🎉 Free keychain claimed!");
+
+        document.getElementById("claim-section").innerHTML = "✅ Keychain already claimed!";
+      } catch (err) {
+        console.error(err);
+        alert("Failed to claim keychain.");
+      }
     }
 
     function setupProfileButton() {
