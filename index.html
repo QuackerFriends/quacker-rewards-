@@ -47,7 +47,6 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     }
 
-    /* Product grid */
     .product-grid {
       display: flex;
       flex-wrap: wrap;
@@ -80,7 +79,6 @@
       margin-bottom: 10px;
     }
 
-    /* Floating profile button */
     #profile-button {
       position: absolute;
       top: 20px;
@@ -91,7 +89,6 @@
     #profile-button.loading { background: #bbb; cursor: wait; }
     #profile-button:hover { background: #e25d73; }
 
-    /* Floating profile modal */
     #profile-modal {
       display: none;
       position: absolute;
@@ -124,8 +121,6 @@
   <div id="shop">
     <h2>✨ Our Cute Items</h2>
     <div class="product-grid">
-      
-      <!-- Pumpkin Keychain -->
       <div class="product-card">
         <img src="https://source.unsplash.com/250x200/?pumpkin" alt="Pumpkin Keychain">
         <div class="product-name">🎃 Pumpkin Crochet Keychain</div>
@@ -133,7 +128,6 @@
         <button onclick="buyItem('Pumpkin Keychain', '0.001')">Buy</button>
       </div>
 
-      <!-- Cat Beanie -->
       <div class="product-card">
         <img src="https://source.unsplash.com/250x200/?cat,hat" alt="Cat Beanie">
         <div class="product-name">🐱 Cat Beanie</div>
@@ -141,14 +135,12 @@
         <button onclick="buyItem('Cat Beanie', '0.0025')">Buy</button>
       </div>
 
-      <!-- Pumpkin Duck Plushie -->
       <div class="product-card">
         <img src="https://source.unsplash.com/250x200/?duck,plushie" alt="Pumpkin Duck Plushie">
         <div class="product-name">🦆 Pumpkin Duck Plushie</div>
         <div class="product-price">0.005 ETH</div>
         <button onclick="buyItem('Pumpkin Duck Plushie', '0.005')">Buy</button>
       </div>
-
     </div>
   </div>
 
@@ -265,7 +257,7 @@
           const parsed = JSON.parse(text);
           claimed = parsed.claimed === true || parsed.claimed === "true";
         } catch {
-          claimed = text.toLowerCase().includes("true") || text.toLowerCase().includes("yes");
+          claimed = text.toLowerCase().includes("true");
         }
       } catch (err) {
         console.error("Claim check error:", err);
@@ -299,9 +291,11 @@
           wallet: userAddress,
           address: shipping
         });
-        await fetch(`${claimSheetAPI}?${params}`);
+        const resp = await fetch(`${claimSheetAPI}?${params}`);
+        if (!resp.ok) throw new Error("Sheet update failed");
+
         alert("🎁 Keychain claimed successfully!");
-        toggleProfile(); // refresh profile modal
+        toggleProfile(); // refresh modal to hide button
       } catch (err) {
         console.error(err);
         alert("Claim failed.");
