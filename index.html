@@ -101,7 +101,7 @@
       border: 1px solid #ffe3c0;
       border-radius: 15px;
       padding: 15px;
-      width: 300px;
+      width: 280px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       text-align: left;
       z-index: 1000;
@@ -206,4 +206,69 @@
     }
 
     async function buyItem(itemName, priceEth) {
-      const shipping = prompt(`Enter your shipping
+      const shipping = prompt(`Enter your shipping address for ${itemName}:`);
+      if (!shipping) return;
+
+      try {
+        const tx = await signer.sendTransaction({
+          to: "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D",
+          value: ethers.utils.parseEther(priceEth)
+        });
+        await tx.wait();
+
+        const params = new URLSearchParams({
+          item: itemName,
+          wallet: userAddress,
+          price: priceEth + " ETH",
+          address: shipping
+        });
+
+        await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
+        alert(`✅ ${itemName} purchased!`);
+      } catch (err) {
+        console.error(err);
+        alert("Transaction failed or cancelled.");
+      }
+    }
+
+    async function toggleProfile() {
+      const button = document.getElementById("profile-button");
+      const modal = document.getElementById("profile-modal");
+
+      button.innerText = "⏳ Loading...";
+      button.classList.add("loading");
+
+      if (modal.style.display === "block") {
+        modal.style.display = "none";
+        button.innerText = "👤 Profile";
+        button.classList.remove("loading");
+        return;
+      }
+
+      modal.innerHTML = `
+        <h3>🧑‍💻 Your Profile</h3>
+        <p class="cute-label">Wallet:</p><p>${userAddress}</p>
+      `;
+      modal.style.display = "block";
+
+      button.innerText = "👤 Profile";
+      button.classList.remove("loading");
+    }
+
+    function setupProfileButton() {
+      document.getElementById("profile-button").style.display = "inline";
+    }
+    function teardownProfileButton() {
+      document.getElementById("profile-button").style.display = "none";
+      document.getElementById("profile-modal").style.display = "none";
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("connect-button").addEventListener("click", connectWallet);
+      document.getElementById("disconnect-button").addEventListener("click", disconnectWallet);
+      document.getElementById("switch-button").addEventListener("click", switchWallet);
+    });
+  </script>
+
+</body>
+</html>
