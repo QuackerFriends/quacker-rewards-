@@ -6,6 +6,7 @@
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
+
     body {
       font-family: 'Fredoka', sans-serif;
       background: #fff9f5;
@@ -13,7 +14,11 @@
       padding: 30px;
       text-align: center;
     }
-    h1, h2, h3 { color: #ff9f29; }
+
+    h1, h2, h3 {
+      color: #ff9f29;
+    }
+
     button {
       background: #ff9f29;
       color: white;
@@ -23,10 +28,16 @@
       margin: 8px 5px;
       cursor: pointer;
       font-size: 14px;
-      transition: all 0.3s ease;
+      transition: background 0.3s ease;
     }
-    button:hover { background: #e28923; transform: scale(1.05); }
-    #wallet-address { display: block; margin-top: 10px; font-weight: bold; }
+    button:hover { background: #e28923; }
+
+    #wallet-address {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
     #shop {
       background: #fff;
       border-radius: 20px;
@@ -35,12 +46,15 @@
       margin: 20px auto;
       box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     }
+
+    /* Product grid */
     .product-grid {
       display: flex;
       flex-wrap: wrap;
       gap: 20px;
       justify-content: center;
     }
+
     .product-card {
       background: #fffdfb;
       border: 1px dashed #ffe3c0;
@@ -48,18 +62,25 @@
       width: 250px;
       padding: 15px;
       text-align: center;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    .product-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 8px 18px rgba(0,0,0,0.1);
-    }
+
     .product-card img {
       width: 100%;
       border-radius: 12px;
     }
-    .product-name { font-weight: bold; margin: 10px 0 5px; color: #444; }
-    .product-price { color: #ff6b81; margin-bottom: 10px; }
+
+    .product-name {
+      font-weight: bold;
+      margin: 10px 0 5px;
+      color: #444;
+    }
+
+    .product-price {
+      color: #ff6b81;
+      margin-bottom: 10px;
+    }
+
+    /* Floating profile button */
     #profile-button {
       position: absolute;
       top: 20px;
@@ -68,6 +89,9 @@
       display: none;
     }
     #profile-button.loading { background: #bbb; cursor: wait; }
+    #profile-button:hover { background: #e25d73; }
+
+    /* Floating profile modal */
     #profile-modal {
       display: none;
       position: absolute;
@@ -82,24 +106,14 @@
       text-align: left;
       z-index: 1000;
     }
+
     .cute-label { font-weight: bold; color: #444; }
-    .spinner {
-      border: 3px solid #f3f3f3;
-      border-top: 3px solid #ff6b81;
-      border-radius: 50%;
-      width: 14px;
-      height: 14px;
-      animation: spin 1s linear infinite;
-      display: inline-block;
-      vertical-align: middle;
-      margin-left: 6px;
-    }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
   <h1>🛍️ Quacker Friends Shop</h1>
+
   <div>
     <button id="connect-button">Connect Wallet</button>
     <button id="disconnect-button">Disconnect</button>
@@ -110,24 +124,31 @@
   <div id="shop">
     <h2>✨ Our Cute Items</h2>
     <div class="product-grid">
+      
+      <!-- Pumpkin Keychain -->
       <div class="product-card">
         <img src="https://source.unsplash.com/250x200/?pumpkin" alt="Pumpkin Keychain">
         <div class="product-name">🎃 Pumpkin Crochet Keychain</div>
         <div class="product-price">0.001 ETH</div>
         <button onclick="buyItem('Pumpkin Keychain', '0.001')">Buy</button>
       </div>
+
+      <!-- Cat Beanie -->
       <div class="product-card">
         <img src="https://source.unsplash.com/250x200/?cat,hat" alt="Cat Beanie">
         <div class="product-name">🐱 Cat Beanie</div>
         <div class="product-price">0.0025 ETH</div>
         <button onclick="buyItem('Cat Beanie', '0.0025')">Buy</button>
       </div>
+
+      <!-- Pumpkin Duck Plushie -->
       <div class="product-card">
         <img src="https://source.unsplash.com/250x200/?duck,plushie" alt="Pumpkin Duck Plushie">
         <div class="product-name">🦆 Pumpkin Duck Plushie</div>
         <div class="product-price">0.005 ETH</div>
         <button onclick="buyItem('Pumpkin Duck Plushie', '0.005')">Buy</button>
       </div>
+
     </div>
   </div>
 
@@ -136,10 +157,9 @@
 
   <script>
     let provider, signer, userAddress = null;
-    const contractAddress = "0xA2c82Bda5585c1D729E2b4f85dCC9a11ded7DB4c"; // Quacker ERC721
+    const contractAddress = "0xA2c82Bda5585c1D729E2b4f85dCC9a11ded7DB4c";
     const contractABI = ["function balanceOf(address owner) view returns (uint256)"];
     let contract;
-    const scriptURL = "https://script.google.com/macros/s/AKfycbz6sfYasxikO3KGrwwZ-JvqH4L7TCFNktdoCw5ViTLr9vmSe7XwjkfylLtW6CJeTRLtnQ/exec";
 
     async function connectWallet() {
       if (window.ethereum) {
@@ -148,25 +168,33 @@
         signer = provider.getSigner();
         userAddress = await signer.getAddress();
         contract = new ethers.Contract(contractAddress, contractABI, provider);
+
         document.getElementById("wallet-address").innerText = `Wallet: ${userAddress}`;
         document.getElementById("connect-button").style.display = "none";
         document.getElementById("disconnect-button").style.display = "inline";
         document.getElementById("switch-button").style.display = "inline";
         document.getElementById("shop").style.display = "block";
+
         setupProfileButton();
       } else {
         alert("Please install MetaMask!");
       }
     }
+
     function disconnectWallet() {
-      userAddress = null; signer = null; provider = null; contract = null;
+      userAddress = null;
+      signer = null;
+      provider = null;
+      contract = null;
       teardownProfileButton();
+
       document.getElementById("wallet-address").innerText = "";
       document.getElementById("connect-button").style.display = "inline";
       document.getElementById("disconnect-button").style.display = "none";
       document.getElementById("switch-button").style.display = "none";
       document.getElementById("shop").style.display = "none";
     }
+
     async function switchWallet() {
       try {
         await ethereum.request({
@@ -180,26 +208,34 @@
     async function buyItem(itemName, priceEth) {
       const shipping = prompt(`Enter your shipping address for ${itemName}:`);
       if (!shipping) return;
+
       try {
         const tx = await signer.sendTransaction({
           to: "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D",
           value: ethers.utils.parseEther(priceEth)
         });
         await tx.wait();
+
         const params = new URLSearchParams({
-          item: itemName, wallet: userAddress, price: priceEth + " ETH", address: shipping
+          item: itemName,
+          wallet: userAddress,
+          price: priceEth + " ETH",
+          address: shipping
         });
-        await fetch(`${scriptURL}?${params}`);
+
+        await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
         alert(`✅ ${itemName} purchased!`);
       } catch (err) {
-        console.error(err); alert("Transaction failed or cancelled.");
+        console.error(err);
+        alert("Transaction failed or cancelled.");
       }
     }
 
     async function toggleProfile() {
       const button = document.getElementById("profile-button");
       const modal = document.getElementById("profile-modal");
-      button.innerHTML = `👤 Profile <span class="spinner"></span>`;
+
+      button.innerText = "⏳ Loading...";
       button.classList.add("loading");
 
       if (modal.style.display === "block") {
@@ -209,43 +245,14 @@
         return;
       }
 
-      try {
-        const balance = await contract.balanceOf(userAddress);
-        const nftCount = balance.toString();
-        const res = await fetch(`${scriptURL}?wallet=${userAddress}&checkClaim=true`);
-        const claimData = await res.json();
-
-        modal.innerHTML = `
-          <h3>🧑‍💻 Your Profile</h3>
-          <p class="cute-label">Wallet:</p><p>${userAddress}</p>
-          <p class="cute-label">Quacker NFTs:</p><p>${nftCount}</p>
-          <p class="cute-label">Free Keychain:</p>
-          <p>${claimData.claimed ? "✅ Already Claimed" :
-            `<button onclick="claimKeychain()">Claim Now</button>`}</p>
-        `;
-        modal.style.display = "block";
-      } catch (err) {
-        console.error(err);
-        modal.innerHTML = `<p style="color:red;">⚠️ Error fetching profile data.</p>`;
-        modal.style.display = "block";
-      }
+      modal.innerHTML = `
+        <h3>🧑‍💻 Your Profile</h3>
+        <p class="cute-label">Wallet:</p><p>${userAddress}</p>
+      `;
+      modal.style.display = "block";
 
       button.innerText = "👤 Profile";
       button.classList.remove("loading");
-    }
-
-    async function claimKeychain() {
-      try {
-        const params = new URLSearchParams({
-          item: "Pumpkin Keychain (Free)", wallet: userAddress,
-          price: "0", address: "N/A"
-        });
-        await fetch(`${scriptURL}?${params}`);
-        alert("🎉 Free Keychain claimed!");
-        toggleProfile();
-      } catch (err) {
-        console.error(err); alert("Failed to claim keychain.");
-      }
     }
 
     function setupProfileButton() {
@@ -262,5 +269,6 @@
       document.getElementById("switch-button").addEventListener("click", switchWallet);
     });
   </script>
+
 </body>
 </html>
