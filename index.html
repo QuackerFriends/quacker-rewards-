@@ -9,18 +9,21 @@
 
     body {
       font-family: 'Fredoka', sans-serif;
-      background: #fff9f5;
+      background: #fdfdfd;
       color: #333;
       padding: 30px;
       text-align: center;
     }
 
-    h1, h2, h3 {
-      color: #ff9f29;
+    h1 {
+      color: #f98e1d;
+    }
+    h2, h3 {
+      color: #333;
     }
 
     button {
-      background: #ff9f29;
+      background: #f98e1d;
       color: white;
       border: none;
       border-radius: 25px;
@@ -28,9 +31,9 @@
       margin: 8px 5px;
       cursor: pointer;
       font-size: 14px;
-      transition: background 0.3s ease;
+      transition: background 0.3s ease, transform 0.1s;
     }
-    button:hover { background: #e28923; }
+    button:hover { background: #e44e24; transform: scale(1.05); }
 
     #wallet-address {
       display: block;
@@ -38,67 +41,71 @@
       font-weight: bold;
     }
 
-    #shop {
-      background: #fff;
-      border-radius: 20px;
-      padding: 20px;
-      max-width: 900px;
-      margin: 20px auto;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    #shop, #shipping-form, #keychain-claim-section, #profile-modal {
+      display: none;
+      margin-top: 25px;
     }
 
-    /* Product grid */
+    #shop {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 20px;
+      max-width: 1000px;
+      margin: 20px auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
     .product-grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 20px;
       justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
     }
 
     .product-card {
-      background: #fffdfb;
-      border: 1px dashed #ffe3c0;
+      background: #ffffff;
+      border: 2px solid #f98e1d;
       border-radius: 15px;
       width: 250px;
       padding: 15px;
       text-align: center;
+      transition: transform 0.2s;
     }
+    .product-card:hover { transform: translateY(-5px); }
 
     .product-card img {
       width: 100%;
       border-radius: 12px;
+      border: 2px solid #64c4bb;
     }
 
     .product-name {
       font-weight: bold;
       margin: 10px 0 5px;
-      color: #444;
+      color: #333;
     }
 
     .product-price {
-      color: #ff6b81;
+      color: #f98e1d;
       margin-bottom: 10px;
     }
 
-    /* Floating profile button */
     #profile-button {
       position: absolute;
       top: 20px;
       right: 20px;
-      background: #ff6b81;
-      display: none;
+      background: #f98e1d;
     }
     #profile-button.loading { background: #bbb; cursor: wait; }
-    #profile-button:hover { background: #e25d73; }
+    #profile-button:hover { background: #e44e24; }
 
-    /* Floating profile modal */
     #profile-modal {
-      display: none;
       position: absolute;
-      top: 65px;
+      top: 60px;
       right: 20px;
-      background: #fffaf0;
-      border: 1px solid #ffe3c0;
+      background: #fff;
+      border: 2px solid #f98e1d;
       border-radius: 15px;
       padding: 15px;
       width: 280px;
@@ -107,7 +114,17 @@
       z-index: 1000;
     }
 
-    .cute-label { font-weight: bold; color: #444; }
+    .cute-label { font-weight: bold; color: #f98e1d; }
+
+    textarea {
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      margin-top: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      width: 100%;
+    }
   </style>
 </head>
 <body>
@@ -122,33 +139,40 @@
   </div>
 
   <div id="shop">
-    <h2>✨ Our Cute Items</h2>
+    <h2>✨ Products</h2>
     <div class="product-grid">
-      
-      <!-- Pumpkin Keychain -->
       <div class="product-card">
-        <img src="https://source.unsplash.com/250x200/?pumpkin" alt="Pumpkin Keychain">
-        <div class="product-name">🎃 Pumpkin Crochet Keychain</div>
-        <div class="product-price">0.001 ETH</div>
-        <button onclick="buyItem('Pumpkin Keychain', '0.001')">Buy</button>
+        <img src="https://placekitten.com/250/200" alt="Pumpkin Keychain">
+        <p class="product-name">Pumpkin Crochet Keychain</p>
+        <p class="product-price">0.001 ETH</p>
+        <button onclick="buyItem('Pumpkin Crochet Keychain','0.001')">Buy</button>
       </div>
-
-      <!-- Cat Beanie -->
       <div class="product-card">
-        <img src="https://source.unsplash.com/250x200/?cat,hat" alt="Cat Beanie">
-        <div class="product-name">🐱 Cat Beanie</div>
-        <div class="product-price">0.0025 ETH</div>
-        <button onclick="buyItem('Cat Beanie', '0.0025')">Buy</button>
+        <img src="https://placekitten.com/251/200" alt="Cat Beanie">
+        <p class="product-name">Cat Beanie</p>
+        <p class="product-price">0.0025 ETH</p>
+        <button onclick="buyItem('Cat Beanie','0.0025')">Buy</button>
       </div>
-
-      <!-- Pumpkin Duck Plushie -->
       <div class="product-card">
-        <img src="https://source.unsplash.com/250x200/?duck,plushie" alt="Pumpkin Duck Plushie">
-        <div class="product-name">🦆 Pumpkin Duck Plushie</div>
-        <div class="product-price">0.005 ETH</div>
-        <button onclick="buyItem('Pumpkin Duck Plushie', '0.005')">Buy</button>
+        <img src="https://placekitten.com/252/200" alt="Pumpkin Duck Plushie">
+        <p class="product-name">Pumpkin Duck Plushie</p>
+        <p class="product-price">0.005 ETH</p>
+        <button onclick="buyItem('Pumpkin Duck Plushie','0.005')">Buy</button>
       </div>
+    </div>
 
+    <div id="shipping-form">
+      <h3>📦 Shipping Info</h3>
+      <textarea id="shipping-address" placeholder="Enter your shipping address..." rows="3"></textarea>
+      <br>
+      <button onclick="submitPurchase()">Submit Order</button>
+    </div>
+
+    <div id="keychain-claim-section">
+      <h3>🔑 Claim Free Keychain</h3>
+      <textarea id="keychain-address" placeholder="Enter your shipping address..." rows="3"></textarea>
+      <br>
+      <button onclick="claimKeychain()">Claim Keychain</button>
     </div>
   </div>
 
@@ -157,6 +181,10 @@
 
   <script>
     let provider, signer, userAddress = null;
+    let userNftCount = 0;
+    let discounted = false;
+    let selectedItem = null;
+    let selectedPrice = null;
     const contractAddress = "0xA2c82Bda5585c1D729E2b4f85dCC9a11ded7DB4c";
     const contractABI = ["function balanceOf(address owner) view returns (uint256)"];
     let contract;
@@ -175,7 +203,7 @@
         document.getElementById("switch-button").style.display = "inline";
         document.getElementById("shop").style.display = "block";
 
-        setupProfileButton();
+        checkEligibility(userAddress);
       } else {
         alert("Please install MetaMask!");
       }
@@ -191,84 +219,4 @@
       document.getElementById("wallet-address").innerText = "";
       document.getElementById("connect-button").style.display = "inline";
       document.getElementById("disconnect-button").style.display = "none";
-      document.getElementById("switch-button").style.display = "none";
-      document.getElementById("shop").style.display = "none";
-    }
-
-    async function switchWallet() {
-      try {
-        await ethereum.request({
-          method: 'wallet_requestPermissions',
-          params: [{ eth_accounts: {} }]
-        });
-        connectWallet();
-      } catch (err) { console.error("Switch failed", err); }
-    }
-
-    async function buyItem(itemName, priceEth) {
-      const shipping = prompt(`Enter your shipping address for ${itemName}:`);
-      if (!shipping) return;
-
-      try {
-        const tx = await signer.sendTransaction({
-          to: "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D",
-          value: ethers.utils.parseEther(priceEth)
-        });
-        await tx.wait();
-
-        const params = new URLSearchParams({
-          item: itemName,
-          wallet: userAddress,
-          price: priceEth + " ETH",
-          address: shipping
-        });
-
-        await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
-        alert(`✅ ${itemName} purchased!`);
-      } catch (err) {
-        console.error(err);
-        alert("Transaction failed or cancelled.");
-      }
-    }
-
-    async function toggleProfile() {
-      const button = document.getElementById("profile-button");
-      const modal = document.getElementById("profile-modal");
-
-      button.innerText = "⏳ Loading...";
-      button.classList.add("loading");
-
-      if (modal.style.display === "block") {
-        modal.style.display = "none";
-        button.innerText = "👤 Profile";
-        button.classList.remove("loading");
-        return;
-      }
-
-      modal.innerHTML = `
-        <h3>🧑‍💻 Your Profile</h3>
-        <p class="cute-label">Wallet:</p><p>${userAddress}</p>
-      `;
-      modal.style.display = "block";
-
-      button.innerText = "👤 Profile";
-      button.classList.remove("loading");
-    }
-
-    function setupProfileButton() {
-      document.getElementById("profile-button").style.display = "inline";
-    }
-    function teardownProfileButton() {
-      document.getElementById("profile-button").style.display = "none";
-      document.getElementById("profile-modal").style.display = "none";
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("connect-button").addEventListener("click", connectWallet);
-      document.getElementById("disconnect-button").addEventListener("click", disconnectWallet);
-      document.getElementById("switch-button").addEventListener("click", switchWallet);
-    });
-  </script>
-
-</body>
-</html>
+      document.getElementById("switch-button").
