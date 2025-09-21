@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Quacker Friends Shop</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-  <style>
+<title>Quacker Friends Shop</title>
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+    button { margin: 5px; padding: 10px 20px; }
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
 
     body {
@@ -24,13 +22,16 @@
       color: white;
       border: none;
       border-radius: 25px;
-      padding: 10px 20px;
-      margin: 8px 5px;
+      padding: 12px 25px;
+      margin: 10px 5px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 16px;
       transition: background 0.3s ease;
     }
-    button:hover { background: #e28923; }
+
+    button:hover {
+      background: #e28923;
+    }
 
     #wallet-address {
       display: block;
@@ -38,172 +39,106 @@
       font-weight: bold;
     }
 
-    #shop {
+#shop, #shipping-form, #keychain-claim-section, #profile-button, #profile-modal {
+display: none;
+      margin-top: 15px;
+      margin-top: 25px;
+}
+
+    #shop, #profile-modal {
       background: #fff;
       border-radius: 20px;
       padding: 20px;
-      max-width: 900px;
+      max-width: 600px;
       margin: 20px auto;
       box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     }
 
-    /* Product grid */
-    .product-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
+    textarea {
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      margin-top: 10px;
+      font-family: inherit;
+      font-size: 14px;
     }
 
-    .product-card {
-      background: #fffdfb;
-      border: 1px dashed #ffe3c0;
-      border-radius: 15px;
-      width: 250px;
-      padding: 15px;
-      text-align: center;
+    #tapestry-price {
+      font-size: 18px;
+      margin: 10px 0;
     }
 
-    .product-card img {
-      width: 100%;
-      border-radius: 12px;
+#profile-modal {
+      background: #fff; padding: 15px; border: 1px solid #ccc;
+      max-width: 400px; margin-top: 10px;
+      background: #fffaf0;
+      text-align: left;
     }
 
-    .product-name {
+    #profile-button {
+      background: #ff6b81;
+    }
+
+    #profile-button:hover {
+      background: #e25d73;
+    }
+
+    .cute-label {
       font-weight: bold;
-      margin: 10px 0 5px;
       color: #444;
     }
 
-    .product-price {
-      color: #ff6b81;
-      margin-bottom: 10px;
-    }
-
-    /* Floating profile button */
-    #profile-button {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: #ff6b81;
-      display: none;
-    }
-    #profile-button.loading { background: #bbb; cursor: wait; }
-    #profile-button:hover { background: #e25d73; }
-
-    /* Floating profile modal */
-    #profile-modal {
-      display: none;
-      position: absolute;
-      top: 65px;
-      right: 20px;
-      background: #fffaf0;
-      border: 1px solid #ffe3c0;
+    .card-section {
+      background: #fffdfb;
+      border: 1px dashed #ffe3c0;
       border-radius: 15px;
       padding: 15px;
-      width: 300px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      text-align: left;
-      z-index: 1000;
-    }
-
-    .cute-label { font-weight: bold; color: #444; }
-  </style>
+      margin-top: 20px;
+}
+</style>
 </head>
-<body>
+@@ -34,13 +113,14 @@ <h2>🧵 Handmade Tapestry</h2>
+<button onclick="buyTapestry()">Buy Tapestry</button>
+<button id="discount-button" onclick="claimDiscount()">Apply 50% Discount</button>
 
-  <h1>🛍️ Quacker Friends Shop</h1>
+    <div id="shipping-form">
+    <div id="shipping-form" class="card-section">
+      <h3>📦 Shipping Info</h3>
+<textarea id="shipping-address" placeholder="Enter your shipping address..." rows="3" style="width:100%;"></textarea>
+<br>
+<button onclick="submitPurchase()">Submit Order</button>
+</div>
 
-  <div>
-    <button id="connect-button">Connect Wallet</button>
-    <button id="disconnect-button">Disconnect</button>
-    <button id="switch-button">Switch Wallet</button>
-    <span id="wallet-address"></span>
-  </div>
+    <div id="keychain-claim-section">
+    <div id="keychain-claim-section" class="card-section">
+<h3>🔑 Claim Free Keychain</h3>
+<textarea id="keychain-address" placeholder="Enter your shipping address..." rows="3" style="width:100%;"></textarea>
+<br>
+@@ -201,8 +281,8 @@ <h3>🔑 Claim Free Keychain</h3>
 
-  <div id="shop">
-    <h2>✨ Our Cute Items</h2>
-    <div class="product-grid">
-      
-      <!-- Pumpkin Keychain -->
-      <div class="product-card">
-        <img src="https://source.unsplash.com/250x200/?pumpkin" alt="Pumpkin Keychain">
-        <div class="product-name">🎃 Pumpkin Crochet Keychain</div>
-        <div class="product-price">0.001 ETH</div>
-        <button onclick="buyItem('Pumpkin Keychain', '0.001')">Buy</button>
-      </div>
+await fetch(`https://script.google.com/macros/s/AKfycbxbPGky4ai49yYSjmGiBgKzOuj0Y04ssGWyppzgheZV7vIVtY9BnHH5IW6l9ZpgFbZ0/exec?${params}`);
+alert("🎉 Keychain claimed!");
+      await checkEligibility(userAddress); // Refresh sections
+      toggleProfile(); // Update profile modal
+      await checkEligibility(userAddress);
+      toggleProfile();
+}
 
-      <!-- Cat Beanie -->
-      <div class="product-card">
-        <img src="https://source.unsplash.com/250x200/?cat,hat" alt="Cat Beanie">
-        <div class="product-name">🐱 Cat Beanie</div>
-        <div class="product-price">0.0025 ETH</div>
-        <button onclick="buyItem('Cat Beanie', '0.0025')">Buy</button>
-      </div>
+async function toggleProfile() {
+@@ -220,13 +300,13 @@ <h3>🔑 Claim Free Keychain</h3>
 
-      <!-- Pumpkin Duck Plushie -->
-      <div class="product-card">
-        <img src="https://source.unsplash.com/250x200/?duck,plushie" alt="Pumpkin Duck Plushie">
-        <div class="product-name">🦆 Pumpkin Duck Plushie</div>
-        <div class="product-price">0.005 ETH</div>
-        <button onclick="buyItem('Pumpkin Duck Plushie', '0.005')">Buy</button>
-      </div>
+let profileHtml = `
+       <h3>🧑‍💻 Your Profile</h3>
+        <p><strong>Wallet:</strong> ${userAddress}</p>
+        <p><strong>Quacker NFTs Owned:</strong> ${userNftCount}</p>
+        <p class="cute-label">Wallet:</p><p>${userAddress}</p>
+        <p class="cute-label">Quacker NFTs Owned:</p><p>${userNftCount}</p>
+     `;
 
-    </div>
-  </div>
-
-  <button id="profile-button" onclick="toggleProfile()">👤 Profile</button>
-  <div id="profile-modal"></div>
-
-  <script>
-    let provider, signer, userAddress = null;
-    const contractAddress = "0xA2c82Bda5585c1D729E2b4f85dCC9a11ded7DB4c";
-    const contractABI = ["function balanceOf(address owner) view returns (uint256)"];
-    let contract;
-
-    async function connectWallet() {
-      if (window.ethereum) {
-        provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        signer = provider.getSigner();
-        userAddress = await signer.getAddress();
-        contract = new ethers.Contract(contractAddress, contractABI, provider);
-
-        document.getElementById("wallet-address").innerText = `Wallet: ${userAddress}`;
-        document.getElementById("connect-button").style.display = "none";
-        document.getElementById("disconnect-button").style.display = "inline";
-        document.getElementById("switch-button").style.display = "inline";
-        document.getElementById("shop").style.display = "block";
-
-        setupProfileButton();
-      } else {
-        alert("Please install MetaMask!");
-      }
-    }
-
-    function disconnectWallet() {
-      userAddress = null;
-      signer = null;
-      provider = null;
-      contract = null;
-      teardownProfileButton();
-
-      document.getElementById("wallet-address").innerText = "";
-      document.getElementById("connect-button").style.display = "inline";
-      document.getElementById("disconnect-button").style.display = "none";
-      document.getElementById("switch-button").style.display = "none";
-      document.getElementById("shop").style.display = "none";
-    }
-
-    async function switchWallet() {
-      try {
-        await ethereum.request({
-          method: 'wallet_requestPermissions',
-          params: [{ eth_accounts: {} }]
-        });
-        connectWallet();
-      } catch (err) { console.error("Switch failed", err); }
-    }
-
-    async function buyItem(itemName, priceEth) {
-      const shipping = prompt(`Enter your shipping
+if (userNftCount > 0) {
+profileHtml += `
+          <p><strong>Keychain Claimed:</strong> ${claimed ? "✅ Yes" : "❌ No"}</p>
+          <p class="cute-label">Keychain Claimed:</p><p>${claimed ? "✅ Yes" : "❌ No"}</p>
+       `;
+if (!claimed) {
+profileHtml += `
