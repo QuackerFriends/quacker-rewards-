@@ -92,9 +92,21 @@
       height: auto;
       border-radius: 8px;
     }
+    /* Banner */
+    #networkBanner {
+      display: none;
+      background: #ffcc00;
+      color: #333;
+      text-align: center;
+      padding: 10px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
+  <!-- Network warning banner -->
+  <div id="networkBanner">⚠️ Please switch to the Base network to use Quacker Friends Shop.</div>
+
   <header>
     <h1>Quacker Friends Shop</h1>
     <div>
@@ -134,7 +146,7 @@
   </main>
 
   <script>
-    const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c"; // Your ERC721 contract
+    const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
     const CONTRACT_ABI = [
       {
         "constant": true,
@@ -164,9 +176,8 @@
     let userAddress = null;
     let web3;
 
-    // ✅ Base network parameters
     const BASE_PARAMS = {
-      chainId: "0x2105", // 8453
+      chainId: "0x2105", // Base
       chainName: "Base",
       nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
       rpcUrls: ["https://mainnet.base.org"],
@@ -177,10 +188,14 @@
       try {
         const chainId = await web3.eth.getChainId();
         if (chainId !== 8453) {
+          document.getElementById("networkBanner").style.display = "block";
           await window.ethereum.request({
             method: "wallet_switchEthereumChain",
             params: [{ chainId: BASE_PARAMS.chainId }]
           });
+          document.getElementById("networkBanner").style.display = "none";
+        } else {
+          document.getElementById("networkBanner").style.display = "none";
         }
       } catch (err) {
         if (err.code === 4902) {
@@ -188,9 +203,11 @@
             method: "wallet_addEthereumChain",
             params: [BASE_PARAMS]
           });
+          document.getElementById("networkBanner").style.display = "none";
         } else {
           console.error("Network switch error:", err);
-          alert("⚠️ Please switch your wallet network to Base.");
+          document.getElementById("networkBanner").style.display = "block";
+          throw err;
         }
       }
     }
@@ -201,7 +218,7 @@
         const accounts = await ethereum.request({ method: "eth_requestAccounts" });
         userAddress = accounts[0];
 
-        await ensureBaseNetwork(); // ✅ enforce Base network
+        await ensureBaseNetwork();
 
         document.getElementById("connectWallet").innerText =
           userAddress.slice(0,6)+"..."+userAddress.slice(-4);
@@ -216,6 +233,8 @@
       btn.innerHTML = 'Profile <span class="spinner"></span>';
 
       try {
+        await ensureBaseNetwork();
+
         const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
         const balance = await contract.methods.balanceOf(userAddress).call();
 
@@ -238,7 +257,7 @@
         document.getElementById("profileSection").style.display = "block";
       } catch (err) {
         console.error("Profile error", err);
-        alert("⚠️ Error loading profile.");
+        alert("⚠️ Error loading profile. Make sure you are on Base network.");
       }
 
       btn.innerText = "Profile";
