@@ -92,19 +92,9 @@
       height: auto;
       border-radius: 8px;
     }
-    /* Banner */
-    #networkBanner {
-      display: none;
-      background: #ffcc00;
-      color: #333;
-      text-align: center;
-      padding: 10px;
-      font-weight: bold;
-    }
   </style>
 </head>
 <body>
-
   <header>
     <h1>Quacker Friends Shop</h1>
     <div>
@@ -186,14 +176,10 @@
       try {
         const chainId = await web3.eth.getChainId();
         if (chainId !== 8453) {
-          document.getElementById("networkBanner").style.display = "block";
           await window.ethereum.request({
             method: "wallet_switchEthereumChain",
             params: [{ chainId: BASE_PARAMS.chainId }]
           });
-          document.getElementById("networkBanner").style.display = "none";
-        } else {
-          document.getElementById("networkBanner").style.display = "none";
         }
       } catch (err) {
         if (err.code === 4902) {
@@ -201,10 +187,8 @@
             method: "wallet_addEthereumChain",
             params: [BASE_PARAMS]
           });
-          document.getElementById("networkBanner").style.display = "none";
         } else {
           console.error("Network switch error:", err);
-          document.getElementById("networkBanner").style.display = "block";
           throw err;
         }
       }
@@ -255,7 +239,7 @@
         document.getElementById("profileSection").style.display = "block";
       } catch (err) {
         console.error("Profile error", err);
-        alert("⚠️ Error loading profile. Make sure you are on Base network.");
+        alert("⚠️ Error loading profile.");
       }
 
       btn.innerText = "Profile";
