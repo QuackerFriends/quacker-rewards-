@@ -174,7 +174,6 @@
       rpcUrls: ["https://mainnet.base.org"],
       blockExplorerUrls: ["https://basescan.org"]
     };
-
     async function ensureBaseNetwork() {
       try {
         const chainId = await web3.eth.getChainId();
@@ -222,7 +221,7 @@
         userAddress = accounts[0];
         document.getElementById("connectWallet").innerText =
           userAddress.slice(0,6)+"..."+userAddress.slice(-4);
-        alert("🔄 Switched wallet to " + userAddress);
+        //alert("🔄 Switched wallet to " + userAddress);//
       } catch (err) {
         console.error("Switch wallet error:", err);
         alert("⚠️ Error switching wallet.");
@@ -235,7 +234,7 @@
       document.getElementById("connectWallet").innerText = "Connect Wallet";
       document.getElementById("profileButton").style.display = "none";
       document.getElementById("profileSection").style.display = "none";
-      alert("❌ Wallet disconnected.");
+      //alert("❌ Wallet disconnected.");//
     }
 
     async function fetchProfile() {
