@@ -134,14 +134,27 @@
   </main>
 
   <script>
-    const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c"; // ERC721
-    // ✅ Minimal ABI just for balanceOf
+    const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c"; // Your ERC721 contract
     const CONTRACT_ABI = [
       {
         "constant": true,
-        "inputs": [{ "name": "owner", "type": "address" }],
+        "inputs": [{"name": "owner","type": "address"}],
         "name": "balanceOf",
-        "outputs": [{ "name": "", "type": "uint256" }],
+        "outputs": [{"name": "balance","type": "uint256"}],
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "name",
+        "outputs": [{"name": "","type": "string"}],
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [{"name": "","type": "string"}],
         "type": "function"
       }
     ];
@@ -151,12 +164,47 @@
     let userAddress = null;
     let web3;
 
+    // ✅ Base network parameters
+    const BASE_PARAMS = {
+      chainId: "0x2105", // 8453
+      chainName: "Base",
+      nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+      rpcUrls: ["https://mainnet.base.org"],
+      blockExplorerUrls: ["https://basescan.org"]
+    };
+
+    async function ensureBaseNetwork() {
+      try {
+        const chainId = await web3.eth.getChainId();
+        if (chainId !== 8453) {
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: BASE_PARAMS.chainId }]
+          });
+        }
+      } catch (err) {
+        if (err.code === 4902) {
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [BASE_PARAMS]
+          });
+        } else {
+          console.error("Network switch error:", err);
+          alert("⚠️ Please switch your wallet network to Base.");
+        }
+      }
+    }
+
     async function connectWallet() {
       if (window.ethereum) {
         web3 = new Web3(window.ethereum);
         const accounts = await ethereum.request({ method: "eth_requestAccounts" });
         userAddress = accounts[0];
-        document.getElementById("connectWallet").innerText = userAddress.slice(0,6)+"..."+userAddress.slice(-4);
+
+        await ensureBaseNetwork(); // ✅ enforce Base network
+
+        document.getElementById("connectWallet").innerText =
+          userAddress.slice(0,6)+"..."+userAddress.slice(-4);
         document.getElementById("profileButton").style.display = "inline-block";
       } else {
         alert("Install MetaMask!");
@@ -173,7 +221,6 @@
 
         document.getElementById("nftCount").innerText = "NFTs Owned: " + balance;
 
-        // ✅ check keychain claim from sheet
         const res = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&checkClaim=true`, {cache:"no-store"});
         const data = await res.json();
 
