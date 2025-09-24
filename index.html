@@ -31,7 +31,6 @@
       border-radius: 6px;
       cursor: pointer;
       transition: transform 0.2s ease, background 0.3s ease;
-      margin-left: 5px;
     }
     button:hover {
       transform: scale(1.05);
@@ -101,8 +100,6 @@
     <div>
       <button id="connectWallet">Connect Wallet</button>
       <button id="profileButton" style="display:none;">Profile</button>
-      <button id="switchWallet" style="display:none;">Switch Wallet</button>
-      <button id="disconnectWallet" style="display:none;">Disconnect</button>
     </div>
   </header>
 
@@ -111,6 +108,9 @@
     <p id="nftCount">NFTs Owned: ...</p>
     <p id="keychainStatus">Checking keychain claim...</p>
     <div id="claimSection" style="margin-top:10px;"></div>
+    <hr>
+    <button onclick="switchWallet()">🔄 Switch Wallet</button>
+    <button onclick="disconnectWallet()">❌ Disconnect</button>
   </div>
 
   <main>
@@ -208,30 +208,34 @@
         document.getElementById("connectWallet").innerText =
           userAddress.slice(0,6)+"..."+userAddress.slice(-4);
         document.getElementById("profileButton").style.display = "inline-block";
-        document.getElementById("switchWallet").style.display = "inline-block";
-        document.getElementById("disconnectWallet").style.display = "inline-block";
       } else {
         alert("Install MetaMask!");
       }
     }
 
     async function switchWallet() {
-      if (window.ethereum) {
-        const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+      try {
+        const accounts = await ethereum.request({
+          method: "wallet_requestPermissions",
+          params: [{ eth_accounts: {} }]
+        }).then(() => ethereum.request({ method: "eth_requestAccounts" }));
         userAddress = accounts[0];
         document.getElementById("connectWallet").innerText =
           userAddress.slice(0,6)+"..."+userAddress.slice(-4);
-        alert("🔄 Switched to wallet: " + userAddress);
+        alert("🔄 Switched wallet to " + userAddress);
+      } catch (err) {
+        console.error("Switch wallet error:", err);
+        alert("⚠️ Error switching wallet.");
       }
     }
 
     function disconnectWallet() {
       userAddress = null;
+      web3 = null;
       document.getElementById("connectWallet").innerText = "Connect Wallet";
       document.getElementById("profileButton").style.display = "none";
-      document.getElementById("switchWallet").style.display = "none";
-      document.getElementById("disconnectWallet").style.display = "none";
       document.getElementById("profileSection").style.display = "none";
+      alert("❌ Wallet disconnected.");
     }
 
     async function fetchProfile() {
@@ -307,8 +311,6 @@
 
     document.getElementById("connectWallet").addEventListener("click", connectWallet);
     document.getElementById("profileButton").addEventListener("click", fetchProfile);
-    document.getElementById("switchWallet").addEventListener("click", switchWallet);
-    document.getElementById("disconnectWallet").addEventListener("click", disconnectWallet);
   </script>
 </body>
 </html>
