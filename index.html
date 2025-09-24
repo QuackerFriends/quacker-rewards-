@@ -19,9 +19,10 @@
       padding: 15px 30px;
       background: #ff914d;
       color: white;
-      position: relative;
     }
-    header h1 { margin: 0; }
+    header h1 {
+      margin: 0;
+    }
     button {
       padding: 8px 14px;
       background: #ff914d;
@@ -35,7 +36,9 @@
       transform: scale(1.05);
       background: #ff7b2c;
     }
-    #profileButton { position: relative; }
+    #profileButton {
+      position: relative;
+    }
     .spinner {
       border: 3px solid rgba(255, 255, 255, 0.3);
       border-top: 3px solid white;
@@ -84,33 +87,11 @@
       transform: translateY(-5px);
       box-shadow: 0 6px 15px rgba(0,0,0,0.15);
     }
-    .item img { width: 100%; height: auto; border-radius: 8px; }
-
-    /* Wallet dropdown */
-    .wallet-menu { position: relative; display: inline-block; }
-    .wallet-dropdown {
-      display: none;
-      position: absolute;
-      right: 0;
-      background: white;
-      color: #333;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      min-width: 160px;
-      z-index: 200;
-    }
-    .wallet-dropdown button {
-      background: none;
-      border: none;
-      color: #333;
-      text-align: left;
-      padding: 10px;
+    .item img {
       width: 100%;
-      cursor: pointer;
+      height: auto;
+      border-radius: 8px;
     }
-    .wallet-dropdown button:hover { background: #f0f0f0; }
-    .wallet-menu.open .wallet-dropdown { display: block; }
   </style>
 </head>
 <body>
@@ -118,13 +99,6 @@
     <h1>Quacker Friends Shop</h1>
     <div>
       <button id="connectWallet">Connect Wallet</button>
-      <div class="wallet-menu" id="walletMenu" style="display:none;">
-        <button id="walletDisplay"></button>
-        <div class="wallet-dropdown">
-          <button onclick="switchWallet()">🔄 Switch Wallet</button>
-          <button onclick="disconnectWallet()">🚪 Disconnect</button>
-        </div>
-      </div>
       <button id="profileButton" style="display:none;">Profile</button>
     </div>
   </header>
@@ -162,18 +136,36 @@
   <script>
     const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
     const CONTRACT_ABI = [
-      { "constant": true, "inputs": [{"name":"owner","type":"address"}],
-        "name": "balanceOf","outputs":[{"name":"balance","type":"uint256"}],
-        "type":"function"
+      {
+        "constant": true,
+        "inputs": [{"name": "owner","type": "address"}],
+        "name": "balanceOf",
+        "outputs": [{"name": "balance","type": "uint256"}],
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "name",
+        "outputs": [{"name": "","type": "string"}],
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [{"name": "","type": "string"}],
+        "type": "function"
       }
     ];
-    const CLAIM_SHEET_API = "YOUR_APPSCRIPT_URL"; // replace with your script
+
+    const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbydUVwzeTyypv7qKj2HDDnTr_VZxaE_GWWwX0sKKJ-FbH1MvVh8j4bfRmzkycWcXtYPfA/exec"; 
 
     let userAddress = null;
     let web3;
 
     const BASE_PARAMS = {
-      chainId: "0x2105",
+      chainId: "0x2105", // Base
       chainName: "Base",
       nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
       rpcUrls: ["https://mainnet.base.org"],
@@ -182,21 +174,19 @@
 
     async function ensureBaseNetwork() {
       try {
-        const chainId = await window.ethereum.request({ method: "eth_chainId" });
-        if (chainId !== BASE_PARAMS.chainId) {
+        const chainId = await web3.eth.getChainId();
+        if (chainId !== 8453) {
           await window.ethereum.request({
             method: "wallet_switchEthereumChain",
             params: [{ chainId: BASE_PARAMS.chainId }]
           });
         }
-        web3 = new Web3(window.ethereum); // ✅ always refresh web3
       } catch (err) {
         if (err.code === 4902) {
           await window.ethereum.request({
             method: "wallet_addEthereumChain",
             params: [BASE_PARAMS]
           });
-          web3 = new Web3(window.ethereum);
         } else {
           console.error("Network switch error:", err);
           throw err;
@@ -206,58 +196,30 @@
 
     async function connectWallet() {
       if (window.ethereum) {
-        await ensureBaseNetwork();
+        web3 = new Web3(window.ethereum);
         const accounts = await ethereum.request({ method: "eth_requestAccounts" });
         userAddress = accounts[0];
-        updateWalletUI();
-      } else {
-        alert("Install MetaMask!");
-      }
-    }
 
-    function updateWalletUI() {
-      if (userAddress) {
-        document.getElementById("connectWallet").style.display = "none";
-        document.getElementById("walletMenu").style.display = "inline-block";
-        document.getElementById("walletDisplay").innerText =
+        await ensureBaseNetwork();
+
+        document.getElementById("connectWallet").innerText =
           userAddress.slice(0,6)+"..."+userAddress.slice(-4);
         document.getElementById("profileButton").style.display = "inline-block";
       } else {
-        document.getElementById("connectWallet").style.display = "inline-block";
-        document.getElementById("walletMenu").style.display = "none";
-        document.getElementById("profileButton").style.display = "none";
-        document.getElementById("profileSection").style.display = "none";
-      }
-    }
-
-    function disconnectWallet() {
-      userAddress = null;
-      web3 = null;
-      updateWalletUI();
-    }
-
-    async function switchWallet() {
-      try {
-        const accounts = await ethereum.request({
-          method: "wallet_requestPermissions",
-          params: [{ eth_accounts: {} }]
-        });
-        const newAccounts = await ethereum.request({ method: "eth_requestAccounts" });
-        userAddress = newAccounts[0];
-        await ensureBaseNetwork();
-        updateWalletUI();
-      } catch (err) {
-        console.error("Switch wallet error:", err);
+        alert("Install MetaMask!");
       }
     }
 
     async function fetchProfile() {
       const btn = document.getElementById("profileButton");
       btn.innerHTML = 'Profile <span class="spinner"></span>';
+
       try {
         await ensureBaseNetwork();
+
         const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
         const balance = await contract.methods.balanceOf(userAddress).call();
+
         document.getElementById("nftCount").innerText = "NFTs Owned: " + balance;
 
         const res = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&checkClaim=true`, {cache:"no-store"});
@@ -273,44 +235,54 @@
           document.getElementById("keychainStatus").innerText = "Not eligible for keychain.";
           document.getElementById("claimSection").innerHTML = "";
         }
+
         document.getElementById("profileSection").style.display = "block";
       } catch (err) {
+        console.error("Profile error", err);
         alert("⚠️ Error loading profile.");
       }
+
       btn.innerText = "Profile";
     }
 
     async function claimKeychain() {
       const shipping = prompt("Enter shipping address:");
       if (!shipping) return;
-      const res = await fetch(`${CLAIM_SHEET_API}?item=Pumpkin Crochet Keychain&wallet=${userAddress}&price=0&address=${encodeURIComponent(shipping)}`);
-      const text = await res.text();
-      if (text.includes("Success")) {
-        alert("🎉 Keychain claimed!");
-        document.getElementById("keychainStatus").innerText = "✅ Keychain already claimed!";
-        document.getElementById("claimSection").innerHTML = "";
-      } else {
-        alert("⚠️ Claim failed: " + text);
+      try {
+        const res = await fetch(`${CLAIM_SHEET_API}?item=Pumpkin Crochet Keychain&wallet=${userAddress}&price=0&address=${encodeURIComponent(shipping)}`);
+        const text = await res.text();
+        if (text.includes("Success")) {
+          alert("🎉 Keychain claimed!");
+          document.getElementById("keychainStatus").innerText = "✅ Keychain already claimed!";
+          document.getElementById("claimSection").innerHTML = "";
+        } else {
+          alert("⚠️ Claim failed: " + text);
+        }
+      } catch (err) {
+        console.error("Claim error", err);
+        alert("⚠️ Error claiming keychain.");
       }
     }
 
     async function buyItem(item, price) {
       const shipping = prompt("Enter shipping address:");
       if (!shipping) return;
-      const res = await fetch(`${CLAIM_SHEET_API}?item=${encodeURIComponent(item)}&wallet=${userAddress}&price=${price}&address=${encodeURIComponent(shipping)}`);
-      const text = await res.text();
-      if (text.includes("Success")) {
-        alert("✅ Purchase logged!");
-      } else {
-        alert("⚠️ Failed: " + text);
+      try {
+        const res = await fetch(`${CLAIM_SHEET_API}?item=${encodeURIComponent(item)}&wallet=${userAddress}&price=${price}&address=${encodeURIComponent(shipping)}`);
+        const text = await res.text();
+        if (text.includes("Success")) {
+          alert("✅ Purchase logged!");
+        } else {
+          alert("⚠️ Failed: " + text);
+        }
+      } catch (err) {
+        console.error("Buy error", err);
+        alert("⚠️ Error logging purchase.");
       }
     }
 
     document.getElementById("connectWallet").addEventListener("click", connectWallet);
     document.getElementById("profileButton").addEventListener("click", fetchProfile);
-    document.getElementById("walletDisplay").addEventListener("click", () => {
-      document.getElementById("walletMenu").classList.toggle("open");
-    });
   </script>
 </body>
 </html>
