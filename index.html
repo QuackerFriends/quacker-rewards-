@@ -31,6 +31,7 @@
       border-radius: 6px;
       cursor: pointer;
       transition: transform 0.2s ease, background 0.3s ease;
+      margin-left: 5px;
     }
     button:hover {
       transform: scale(1.05);
@@ -100,6 +101,8 @@
     <div>
       <button id="connectWallet">Connect Wallet</button>
       <button id="profileButton" style="display:none;">Profile</button>
+      <button id="switchWallet" style="display:none;">Switch Wallet</button>
+      <button id="disconnectWallet" style="display:none;">Disconnect</button>
     </div>
   </header>
 
@@ -205,9 +208,30 @@
         document.getElementById("connectWallet").innerText =
           userAddress.slice(0,6)+"..."+userAddress.slice(-4);
         document.getElementById("profileButton").style.display = "inline-block";
+        document.getElementById("switchWallet").style.display = "inline-block";
+        document.getElementById("disconnectWallet").style.display = "inline-block";
       } else {
         alert("Install MetaMask!");
       }
+    }
+
+    async function switchWallet() {
+      if (window.ethereum) {
+        const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+        userAddress = accounts[0];
+        document.getElementById("connectWallet").innerText =
+          userAddress.slice(0,6)+"..."+userAddress.slice(-4);
+        alert("🔄 Switched to wallet: " + userAddress);
+      }
+    }
+
+    function disconnectWallet() {
+      userAddress = null;
+      document.getElementById("connectWallet").innerText = "Connect Wallet";
+      document.getElementById("profileButton").style.display = "none";
+      document.getElementById("switchWallet").style.display = "none";
+      document.getElementById("disconnectWallet").style.display = "none";
+      document.getElementById("profileSection").style.display = "none";
     }
 
     async function fetchProfile() {
@@ -283,6 +307,8 @@
 
     document.getElementById("connectWallet").addEventListener("click", connectWallet);
     document.getElementById("profileButton").addEventListener("click", fetchProfile);
+    document.getElementById("switchWallet").addEventListener("click", switchWallet);
+    document.getElementById("disconnectWallet").addEventListener("click", disconnectWallet);
   </script>
 </body>
 </html>
