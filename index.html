@@ -21,9 +21,7 @@
       color: white;
       position: relative;
     }
-    header h1 {
-      margin: 0;
-    }
+    header h1 { margin: 0; }
     button {
       padding: 8px 14px;
       background: #ff914d;
@@ -37,9 +35,7 @@
       transform: scale(1.05);
       background: #ff7b2c;
     }
-    #profileButton {
-      position: relative;
-    }
+    #profileButton { position: relative; }
     .spinner {
       border: 3px solid rgba(255, 255, 255, 0.3);
       border-top: 3px solid white;
@@ -88,16 +84,10 @@
       transform: translateY(-5px);
       box-shadow: 0 6px 15px rgba(0,0,0,0.15);
     }
-    .item img {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-    }
+    .item img { width: 100%; height: auto; border-radius: 8px; }
+
     /* Wallet dropdown */
-    .wallet-menu {
-      position: relative;
-      display: inline-block;
-    }
+    .wallet-menu { position: relative; display: inline-block; }
     .wallet-dropdown {
       display: none;
       position: absolute;
@@ -119,12 +109,8 @@
       width: 100%;
       cursor: pointer;
     }
-    .wallet-dropdown button:hover {
-      background: #f0f0f0;
-    }
-    .wallet-menu.open .wallet-dropdown {
-      display: block;
-    }
+    .wallet-dropdown button:hover { background: #f0f0f0; }
+    .wallet-menu.open .wallet-dropdown { display: block; }
   </style>
 </head>
 <body>
@@ -181,8 +167,7 @@
         "type":"function"
       }
     ];
-
-    const CLAIM_SHEET_API = "YOUR_APPSCRIPT_URL"; // replace with your script link
+    const CLAIM_SHEET_API = "YOUR_APPSCRIPT_URL"; // replace with your script
 
     let userAddress = null;
     let web3;
@@ -197,20 +182,23 @@
 
     async function ensureBaseNetwork() {
       try {
-        const chainId = await web3.eth.getChainId();
-        if (chainId !== 8453) {
+        const chainId = await window.ethereum.request({ method: "eth_chainId" });
+        if (chainId !== BASE_PARAMS.chainId) {
           await window.ethereum.request({
             method: "wallet_switchEthereumChain",
             params: [{ chainId: BASE_PARAMS.chainId }]
           });
         }
+        web3 = new Web3(window.ethereum); // ✅ always refresh web3
       } catch (err) {
         if (err.code === 4902) {
           await window.ethereum.request({
             method: "wallet_addEthereumChain",
             params: [BASE_PARAMS]
           });
+          web3 = new Web3(window.ethereum);
         } else {
+          console.error("Network switch error:", err);
           throw err;
         }
       }
@@ -218,11 +206,9 @@
 
     async function connectWallet() {
       if (window.ethereum) {
-        web3 = new Web3(window.ethereum);
+        await ensureBaseNetwork();
         const accounts = await ethereum.request({ method: "eth_requestAccounts" });
         userAddress = accounts[0];
-
-        await ensureBaseNetwork();
         updateWalletUI();
       } else {
         alert("Install MetaMask!");
@@ -251,10 +237,18 @@
     }
 
     async function switchWallet() {
-      const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-      userAddress = accounts[0];
-      await ensureBaseNetwork();
-      updateWalletUI();
+      try {
+        const accounts = await ethereum.request({
+          method: "wallet_requestPermissions",
+          params: [{ eth_accounts: {} }]
+        });
+        const newAccounts = await ethereum.request({ method: "eth_requestAccounts" });
+        userAddress = newAccounts[0];
+        await ensureBaseNetwork();
+        updateWalletUI();
+      } catch (err) {
+        console.error("Switch wallet error:", err);
+      }
     }
 
     async function fetchProfile() {
