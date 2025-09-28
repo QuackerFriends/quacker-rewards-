@@ -156,12 +156,19 @@
     /***********************
      * UI helpers: toasts & button spinner
      ***********************/
-    function showToast(message, type = "info", duration = 4000) {
+   function showToast(message, type = "info", duration = 4000) {
   const container = document.getElementById("toast-container");
   const toast = document.createElement("div");
+
+  // if type is unknown, fallback to info
+  if (!["success","error","warn","info"].includes(type)) {
+    type = "info";
+  }
+
   toast.className = `toast ${type}`;
   toast.innerHTML = `<span>${message}</span><span class="close-btn" onclick="this.parentElement.remove()">✕</span>`;
   container.appendChild(toast);
+
   setTimeout(() => { toast.remove(); }, duration);
 }
 
@@ -305,7 +312,8 @@
   userAddress = null;
   web3 = null;
   updateUI();
-  showToast("Disconnected", "error"); // use error not default
+  console.log("Disconnect fired"); // debug
+  showToast("Disconnected", "error"); 
 }
 
 
