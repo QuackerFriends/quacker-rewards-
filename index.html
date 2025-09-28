@@ -45,10 +45,9 @@
     @keyframes fadeIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
 
 
-
 #toast-container {
   position: fixed;
-  top: 1rem;
+  top: 4rem;   /* moved lower so it won’t overlap profile */
   right: 1rem;
   display: flex;
   flex-direction: column;
@@ -63,12 +62,12 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  white-space: nowrap; /* keeps it one line */
+  white-space: nowrap;
 }
-.toast.success { background: #2ecc71; } /* green */
-.toast.error   { background: #e74c3c; } /* red */
-.toast.warn    { background: #e67e22; } /* orange */
-.toast.info    { background: #3498db; } /* blue */
+.toast.success { background: #2ecc71 !important; } /* green */
+.toast.error   { background: #e74c3c !important; } /* red */
+.toast.warn    { background: #e67e22 !important; } /* orange */
+.toast.info    { background: #3498db !important; } /* blue */
 .toast .close-btn {
   margin-left: 0.5rem;
   cursor: pointer;
