@@ -2,142 +2,112 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Quacker Friends Shop</title>
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      --accent1:#ff914d;
-      --accent2:#ff7b2c;
-      --muted:#f5f7fa;
-      --card:#ffffff;
-      --shadow:0 8px 20px rgba(12,12,20,0.06);
-      --radius:14px;
-    }
-    body { font-family:'Poppins',sans-serif;margin:0;background:linear-gradient(180deg,#fbfcff,#f5f7fa);min-height:100vh; }
-    header {display:flex;justify-content:space-between;align-items:center;padding:18px 32px;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:white;}
-    .btn {padding:10px 16px;background:var(--accent1);color:white;border:none;border-radius:999px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:8px;}
-    .btn.secondary {background:transparent;color:white;border:1px solid rgba(255,255,255,0.18);}
-    main {padding:30px 20px;max-width:1100px;margin:0 auto;}
-    #items {display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px;}
-    .item {border-radius:var(--radius);padding:18px;background:var(--card);text-align:center;box-shadow:var(--shadow);}
-    .item img {width:100%;height:180px;object-fit:cover;border-radius:10px;margin-bottom:12px;background:#eee;}
-    .item h3 {margin:6px 0;font-size:16px;font-weight:700;}
-    .price {font-weight:700;color:var(--accent2);}
-
-    /* Toast container */
-    #toastWrap {
-      position: fixed;
-      top: 70px;
-      right: 20px;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .toast {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 14px;
-      color: white;
-      min-width: 200px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      animation: fadein 0.4s, fadeout 0.5s 3.5s;
-    }
-    .toast.success { background: #28a745; }
-    .toast.error   { background: #dc3545; }
-    .toast.warn    { background: #ffc107; color: #222; }
-    .toast.info    { background: #17a2b8; }
-
-    .toast .close-btn {
-      margin-left: auto;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    @keyframes fadein { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }
-    @keyframes fadeout { from {opacity:1;} to {opacity:0; transform:translateY(-10px);} }
+    body { font-family: Arial, sans-serif; margin:0; padding:1rem; background:#fafafa; }
+    button { padding:0.5rem 1rem; margin:0.25rem; border:none; border-radius:6px; cursor:pointer; }
+    #walletInfo { margin-top:1rem; }
+    .hidden { display:none; }
+    .item { border:1px solid #ccc; padding:1rem; margin:0.5rem 0; border-radius:8px; background:#fff; }
+    #toast-container { position:fixed; top:1rem; right:1rem; display:flex; flex-direction:column; gap:0.5rem; z-index:9999; }
+    .toast { padding:0.5rem 0.75rem; border-radius:4px; color:#fff; font-size:0.9rem; display:flex; align-items:center; gap:0.5rem; white-space:nowrap; }
+    .toast.success { background:#2ecc71; } /* green */
+    .toast.error   { background:#e74c3c; } /* red */
+    .toast.warn    { background:#e67e22; } /* orange */
+    .toast.info    { background:#3498db; } /* blue */
+    .toast .close-btn { margin-left:0.5rem; cursor:pointer; font-weight:bold; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🦆 Quacker Friends Shop</h1>
-    <div>
-      <button id="connectWallet" class="btn">Connect Wallet</button>
-      <button id="profileButton" class="btn secondary" style="display:none">Profile</button>
-    </div>
-  </header>
+  <h1>🦆 Quacker Friends Shop</h1>
+  <div id="walletSection">
+    <button id="connectWallet">Connect Wallet</button>
+    <button id="switchWallet" class="hidden">Switch Wallet</button>
+    <button id="disconnectWallet" class="hidden">Disconnect</button>
+    <div id="walletInfo" class="hidden"></div>
+  </div>
 
-  <main>
-    <section id="items"></section>
-  </main>
+  <h2>Items</h2>
+  <div id="items"></div>
 
-  <div id="profileSection"></div>
-  <div id="toastWrap" aria-live="polite"></div>
+  <div id="toast-container"></div>
 
-  <!-- Lucide icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
   <script>
-    /***********************
-     * Toast system with icons
-     ***********************/
-    function showToast(message, type = "info", duration = 4000) {
-      const wrap = document.getElementById("toastWrap");
-      const t = document.createElement("div");
-      t.className = "toast " + type;
+    let web3;
+    let userAddress = null;
 
-      const icon = {
-        success: "check-circle",
-        error: "x-circle",
-        warn: "alert-triangle",
-        info: "info"
-      }[type] || "info";
-
-      t.innerHTML = `
-        <i data-lucide="${icon}" class="icon"></i>
-        <span>${message}</span>
-        <span class="close-btn" onclick="this.parentElement.remove()">✕</span>
-      `;
-
-      wrap.appendChild(t);
-      lucide.createIcons({ icons: { [icon]: lucide.icons[icon] } }); // refresh icons
-
-      if (duration > 0) setTimeout(()=> t.remove(), duration);
+    function showToast(message, type="info", duration=4000) {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `<span>${message}</span><span class="close-btn" onclick="this.parentElement.remove()">✕</span>`;
+      container.appendChild(toast);
+      setTimeout(() => { toast.remove(); }, duration);
     }
 
-    /***********************
-     * Your existing logic (unchanged)
-     ***********************/
-    const PRODUCTS = [
-      { id: "pumpkin-keychain", title: "Pumpkin Crochet Keychain", price: "0.001", img: "https://via.placeholder.com/400x300?text=Pumpkin+Keychain" },
-      { id: "cat-beanie", title: "Cat Beanie", price: "0.0025", img: "https://via.placeholder.com/400x300?text=Cat+Beanie" },
-      { id: "pumpkin-duck", title: "Pumpkin Duck Plushie", price: "0.005", img: "https://via.placeholder.com/400x300?text=Pumpkin+Duck+Plushie" }
-    ];
+    function updateUI() {
+      const info = document.getElementById("walletInfo");
+      const connectBtn = document.getElementById("connectWallet");
+      const switchBtn = document.getElementById("switchWallet");
+      const disconnectBtn = document.getElementById("disconnectWallet");
 
-    function renderItems() {
-      const container = document.getElementById("items");
-      container.innerHTML = "";
-      PRODUCTS.forEach(p => {
-        const el = document.createElement("div");
-        el.className = "item";
-        el.innerHTML = `
-          <img src="${p.img}" alt="${p.title}" />
-          <h3>${p.title}</h3>
-          <p class="price">${p.price} ETH</p>
-          <button class="btn">Buy</button>
-        `;
-        el.querySelector("button").addEventListener("click", () => {
-          showToast("Clicked buy for " + p.title, "success");
-        });
-        container.appendChild(el);
-      });
+      if (userAddress) {
+        info.textContent = `Connected: ${userAddress}`;
+        info.classList.remove("hidden");
+        connectBtn.classList.add("hidden");
+        switchBtn.classList.remove("hidden");
+        disconnectBtn.classList.remove("hidden");
+      } else {
+        info.classList.add("hidden");
+        connectBtn.classList.remove("hidden");
+        switchBtn.classList.add("hidden");
+        disconnectBtn.classList.add("hidden");
+      }
     }
-    renderItems();
+
+    async function connectWallet() {
+      try {
+        if (window.ethereum) {
+          web3 = new Web3(window.ethereum);
+          const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+          userAddress = accounts[0];
+          updateUI();
+          showToast("✅ Connected", "success");
+        } else {
+          showToast("❌ No wallet found", "error");
+        }
+      } catch (err) {
+        showToast("❌ Connection failed", "error");
+      }
+    }
+
+    async function switchWallet() {
+      try {
+        if (window.ethereum) {
+          const accounts = await ethereum.request({ method: "wallet_requestPermissions", params: [{ eth_accounts: {} }] });
+          userAddress = accounts[0];
+          updateUI();
+          showToast("✅ Wallet switched", "success");
+        }
+      } catch (err) {
+        showToast("❌ Switch failed", "error");
+      }
+    }
+
+    function disconnectWallet() {
+      userAddress = null;
+      web3 = null;
+      updateUI();
+      showToast("❌ Disconnected", "error"); // red now
+    }
+
+    document.getElementById("connectWallet").addEventListener("click", connectWallet);
+    document.getElementById("switchWallet").addEventListener("click", switchWallet);
+    document.getElementById("disconnectWallet").addEventListener("click", disconnectWallet);
+
+    updateUI();
   </script>
 </body>
 </html>
