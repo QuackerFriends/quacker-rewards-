@@ -1,71 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Quacker Friends Shop</title>
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    body { font-family:'Poppins',sans-serif;margin:0;padding:0;background:#f5f7fa;color:#333;}
-    header {display:flex;justify-content:space-between;align-items:center;padding:18px 32px;background:linear-gradient(90deg,#ff914d,#ff7b2c);color:white;}
-    header h1{margin:0;font-size:22px;}
-    button {padding:10px 18px;background:#ff914d;color:white;border:none;border-radius:30px;cursor:pointer;font-weight:600;transition:all 0.25s ease;}
-    button:hover{transform:translateY(-2px);background:#ff7b2c;}
-    #profileButton{position:relative;}
-    .spinner{border:3px solid rgba(255,255,255,0.3);border-top:3px solid white;border-radius:50%;width:14px;height:14px;animation:spin 1s linear infinite;display:inline-block;margin-left:8px;vertical-align:middle;}
-    @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
-    #profileSection{display:none;position:absolute;top:70px;right:30px;background:white;border-radius:14px;box-shadow:0 8px 22px rgba(0,0,0,0.15);width:320px;padding:20px;z-index:100;animation:fadeIn 0.3s ease;}
-    #profileSection h3{margin-top:0;font-size:18px;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:12px;}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
-    #items{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:25px;padding:40px;max-width:1100px;margin:auto;}
-    .item{border-radius:14px;padding:20px;background:white;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.08);transition:transform 0.25s ease,box-shadow 0.25s ease;}
-    .item:hover{transform:translateY(-6px);box-shadow:0 10px 22px rgba(0,0,0,0.15);}
-    .item img{width:100%;height:auto;border-radius:12px;margin-bottom:15px;}
-    .item h3{margin:10px 0 5px;font-size:18px;font-weight:600;}
-    .item p{margin:0 0 15px;font-size:15px;color:#555;}
-    hr{margin:15px 0;border:none;border-top:1px solid #eee;}
-    #profileSection button{margin-top:6px;width:100%;background:#eee;color:#333;border-radius:8px;}
-    #profileSection button:hover{background:#ddd;transform:none;}
-
-    /* Toasts */
-    #toastWrap {
-      position: fixed;
-      top: 20px;
-      right: 20px;
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #fdf6e3;
+    }
+    header {
+      background: #ffde59;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 { margin: 0; }
+    .btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+    #items {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+      gap: 1rem;
+      padding: 1rem;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      align-items: center;
+      text-align: center;
+    }
+    .card img {
+      max-width: 100%;
+      border-radius: 6px;
+    }
+    .actionBtn {
+      margin-top: 0.5rem;
+      background: #ffde59;
+    }
+    #profileSection {
+      padding: 1rem;
+      background: #fff3c4;
+      margin: 1rem;
+      border-radius: 8px;
+    }
+    /* Toast container */
+    #toastWrap {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
       z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
     }
     .toast {
       display: flex;
       align-items: center;
-      gap: 8px;
-      background: #333;
+      gap: 0.5rem;
       color: white;
-      padding: 10px 14px;
-      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      min-width: 220px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       font-size: 14px;
-      min-width: 200px;
-      max-width: 280px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-      animation: fadeIn 0.3s ease;
+      animation: fadein 0.3s;
     }
-    .toast.success { background:#4caf50; }
-    .toast.error { background:#e53935; }
-    .toast.warn { background:#fb8c00; }
-    .toast.info { background:#1e88e5; }
-    .toast svg {
-      width: 18px;
-      height: 18px;
-      flex-shrink: 0;
-    }
-    .close-btn {
+    .toast.success { background: #4caf50; }
+    .toast.error { background: #f44336; }
+    .toast.warn { background: #ff9800; }
+    .toast.info { background: #2196f3; }
+    .toast .close-btn {
       margin-left: auto;
       cursor: pointer;
       font-weight: bold;
+    }
+    .toast .icon {
+      width: 18px;
+      height: 18px;
+    }
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
@@ -73,77 +100,37 @@
   <header>
     <h1>🦆 Quacker Friends Shop</h1>
     <div>
-      <button id="connectWallet">Connect Wallet</button>
-      <button id="profileButton" style="display:none;">Profile</button>
+      <button id="connectWallet" class="btn">Connect Wallet</button>
+      <button id="profileButton" class="btn">Profile</button>
     </div>
   </header>
 
-  <div id="profileSection">
-    <h3>User Profile</h3>
-    <p id="nftCount">NFTs Owned: ...</p>
-    <p id="ethBalance">Balance: ...</p>
-    <p id="keychainStatus">Checking keychain claim...</p>
-    <div id="claimSection" style="margin-top:10px;"></div>
-    <hr>
-    <button onclick="switchWallet()">🔄 Switch Wallet</button>
-    <button onclick="disconnectWallet()">❌ Disconnect</button>
-  </div>
+  <div id="items"></div>
+  <div id="profileSection" style="display:none"></div>
 
-  <main>
-    <section id="items"></section>
-  </main>
-
-  <!-- Toast container -->
+  <!-- Toasts -->
   <div id="toastWrap"></div>
 
   <script>
-    const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
-    const CONTRACT_ABI = [
-      {"constant": true,"inputs": [{"name":"owner","type":"address"}],"name": "balanceOf","outputs": [{"name":"balance","type":"uint256"}],"type":"function"}
-    ];
-    const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbydUVwzeTyypv7qKj2HDDnTr_VZxaE_GWWwX0sKKJ-FbH1MvVh8j4bfRmzkycWcXtYPfA/exec"; 
-    const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
-
-    let userAddress = null;
-    let web3;
-
-    const BASE_PARAMS = {
-      chainId: "0x2105",
-      chainName: "Base",
-      nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-      rpcUrls: ["https://mainnet.base.org"],
-      blockExplorerUrls: ["https://basescan.org"]
-    };
-
     /***********************
-     * Toast system with icons
+     * Toasts with icons
      ***********************/
-    function showToast(message, type="info", duration=4000) {
+    function showToast(message, type = "info", duration = 4000) {
       const wrap = document.getElementById("toastWrap");
       const t = document.createElement("div");
       t.className = "toast " + type;
-
-      let icon = "";
-      if (type === "success") icon = lucide.createElement("check-circle");
-      if (type === "error") icon = lucide.createElement("x-circle");
-      if (type === "warn") icon = lucide.createElement("alert-triangle");
-      if (type === "info") icon = lucide.createElement("info");
-
-      const iconDiv = document.createElement("div");
-      iconDiv.innerHTML = icon.outerHTML;
-
-      const msgSpan = document.createElement("span");
-      msgSpan.textContent = message;
-
-      const closeBtn = document.createElement("span");
-      closeBtn.className = "close-btn";
-      closeBtn.textContent = "✕";
-      closeBtn.onclick = () => t.remove();
-
-      t.appendChild(iconDiv);
-      t.appendChild(msgSpan);
-      t.appendChild(closeBtn);
+      t.innerHTML = `
+        <i data-lucide="${
+          type === "success" ? "check-circle" :
+          type === "error"   ? "x-circle" :
+          type === "warn"    ? "alert-triangle" : "info"
+        }" class="icon"></i>
+        <span>${message}</span>
+        <span class="close-btn" onclick="this.parentElement.remove()">✕</span>`;
       wrap.appendChild(t);
+
+      // refresh icons for new toast
+      lucide.createIcons();
 
       if (duration > 0) setTimeout(()=> t.remove(), duration);
     }
@@ -151,56 +138,46 @@
     /***********************
      * Wallet helpers
      ***********************/
-    async function ensureBaseNetwork() {
-      try {
-        const chainId = await web3.eth.getChainId();
-        if (chainId !== 8453) {
-          await window.ethereum.request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: BASE_PARAMS.chainId }]
-          });
-        }
-      } catch (err) {
-        if (err.code === 4902) {
-          await window.ethereum.request({
-            method: "wallet_addEthereumChain",
-            params: [BASE_PARAMS]
-          });
-        }
-      }
-    }
+    let web3;
+    let userAddress = null;
 
     async function connectWallet() {
       if (!window.ethereum) {
-        showToast("Install MetaMask first!", "warn");
+        showToast("⚠️ Install MetaMask (or compatible wallet) first", "warn");
         return;
       }
       try {
         web3 = new Web3(window.ethereum);
-        await ensureBaseNetwork();
         const accounts = await ethereum.request({ method: "eth_requestAccounts" });
         userAddress = accounts[0];
         updateUI();
-        showToast("Wallet connected", "success");
+        showToast("✅ Wallet connected", "success");
       } catch (err) {
         console.error("connectWallet error", err);
-        showToast("Failed to connect wallet", "error");
+        showToast("❌ Failed to connect wallet", "error");
       }
     }
 
     async function switchWallet() {
+      if (!window.ethereum) {
+        showToast("⚠️ No wallet detected", "warn");
+        return;
+      }
       try {
         await ethereum.request({
           method: "wallet_requestPermissions",
           params: [{ eth_accounts: {} }]
         });
+
         const accounts = await ethereum.request({ method: "eth_requestAccounts" });
         userAddress = accounts[0] || null;
         updateUI();
-        if (userAddress) showToast("Wallet switched", "success");
+        if (userAddress) {
+          showToast("🔄 Wallet switched to " + userAddress.slice(0,6) + "..." + userAddress.slice(-4), "success");
+        }
       } catch (err) {
         console.error("switchWallet error", err);
-        showToast("Switch wallet failed", "error");
+        showToast("❌ Switch wallet canceled or failed", "error");
       }
     }
 
@@ -208,123 +185,49 @@
       userAddress = null;
       web3 = null;
       updateUI();
-      showToast("Disconnected", "error");
+      showToast("❌ Disconnected", "error");
     }
 
     function updateUI() {
-      if (userAddress) {
-        document.getElementById("connectWallet").innerText =
-          userAddress.slice(0,6)+"..."+userAddress.slice(-4);
-        document.getElementById("profileButton").style.display = "inline-block";
-      } else {
-        document.getElementById("connectWallet").innerText = "Connect Wallet";
-        document.getElementById("profileButton").style.display = "none";
-        document.getElementById("profileSection").style.display = "none";
-      }
+      document.getElementById("connectWallet").innerText = userAddress ? "Switch Wallet" : "Connect Wallet";
+      document.getElementById("profileSection").style.display = userAddress ? "block" : "none";
     }
 
     /***********************
-     * Profile + Items
+     * Demo items
      ***********************/
-    async function fetchProfile() {
-      const btn = document.getElementById("profileButton");
-      btn.innerHTML = 'Profile <span class="spinner"></span>';
-      try {
-        await ensureBaseNetwork();
-        const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-        const balance = await contract.methods.balanceOf(userAddress).call();
-        document.getElementById("nftCount").innerText = "NFTs Owned: " + balance;
-
-        const wei = await web3.eth.getBalance(userAddress);
-        const eth = web3.utils.fromWei(wei, "ether");
-        document.getElementById("ethBalance").innerText = `Balance: ${parseFloat(eth).toFixed(4)} ETH`;
-
-        const res = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&checkClaim=true`, {cache:"no-store"});
-        const data = await res.json();
-        if (data.claimed) {
-          document.getElementById("keychainStatus").innerText = "✅ Keychain already claimed!";
-          document.getElementById("claimSection").innerHTML = "";
-        } else if (Number(balance) > 0) {
-          document.getElementById("keychainStatus").innerText = "🎁 Eligible for free keychain!";
-          document.getElementById("claimSection").innerHTML = `<button onclick="claimKeychain()">Claim Keychain</button>`;
-        } else {
-          document.getElementById("keychainStatus").innerText = "Not eligible for keychain.";
-          document.getElementById("claimSection").innerHTML = "";
-        }
-
-        document.getElementById("profileSection").style.display = "block";
-      } catch (err) {
-        console.error("Profile error", err);
-        showToast("Error loading profile", "error");
-      }
-      btn.innerText = "Profile";
-    }
-
-    async function claimKeychain() {
-      const shipping = prompt("Enter shipping address:");
-      if (!shipping) return;
-      const res = await fetch(`${CLAIM_SHEET_API}?item=Pumpkin Crochet Keychain&wallet=${userAddress}&price=0&address=${encodeURIComponent(shipping)}`);
-      const text = await res.text();
-      if (text.includes("Success")) {
-        showToast("Keychain claimed!", "success");
-        document.getElementById("keychainStatus").innerText = "✅ Keychain already claimed!";
-        document.getElementById("claimSection").innerHTML = "";
-      } else {
-        showToast("Claim failed: " + text, "error");
-      }
-    }
-
-    async function buyItem(item, price) {
-      const shipping = prompt("Enter shipping address:");
-      if (!shipping) return;
-      try {
-        const valueInWei = web3.utils.toWei(price.toString(), "ether");
-        const tx = await web3.eth.sendTransaction({
-          from: userAddress,
-          to: SHOP_WALLET,
-          value: valueInWei
-        });
-        if (tx.transactionHash) {
-          const res = await fetch(`${CLAIM_SHEET_API}?item=${encodeURIComponent(item)}&wallet=${userAddress}&price=${price}&address=${encodeURIComponent(shipping)}`);
-          const text = await res.text();
-          if (text.includes("Success")) {
-            showToast("Purchase complete!", "success");
-          } else {
-            showToast("Logging failed: " + text, "warn");
-          }
-        }
-      } catch (err) {
-        console.error("Buy error", err);
-        showToast("Payment or logging failed", "error");
-      }
-    }
+    const items = [
+      {name:"Quacker Plush", img:"https://i.imgur.com/360yhy.png", price:"0.01"},
+      {name:"Duck Keychain", img:"https://i.imgur.com/5c51p0.png", price:"0.005"},
+    ];
 
     function renderItems() {
-      const items = [
-        { name:"Pumpkin Crochet Keychain", price:"0.001", img:"https://via.placeholder.com/200" },
-        { name:"Cat Beanie", price:"0.0025", img:"https://via.placeholder.com/200" },
-        { name:"Pumpkin Duck Plushie", price:"0.005", img:"https://via.placeholder.com/200" }
-      ];
       const c = document.getElementById("items");
-      c.innerHTML = items.map(i=>`
-        <div class="item">
-          <img src="${i.img}" alt="${i.name}">
-          <h3>${i.name}</h3>
-          <p>Price: ${i.price} ETH</p>
-          <button onclick="buyItem('${i.name}','${i.price}')">Buy</button>
-        </div>
-      `).join("");
+      c.innerHTML = "";
+      items.forEach(it=>{
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <img src="${it.img}">
+          <h3>${it.name}</h3>
+          <p>${it.price} ETH</p>
+          <button class="btn actionBtn">Buy</button>`;
+        card.querySelector("button").addEventListener("click", ()=> {
+          if (!userAddress) { showToast("⚠️ Connect wallet first", "warn"); return; }
+          showToast("🛒 Buying " + it.name, "info");
+        });
+        c.appendChild(card);
+      });
     }
 
     document.getElementById("connectWallet").addEventListener("click", connectWallet);
-    document.getElementById("profileButton").addEventListener("click", fetchProfile);
-
-    if (window.ethereum) {
-      ethereum.on("accountsChanged", (accounts)=>{ userAddress = accounts[0] || null; updateUI(); });
-      ethereum.on("chainChanged", ()=>window.location.reload());
-    }
+    document.getElementById("profileButton").addEventListener("click", ()=>showToast("Profile coming soon!", "info"));
 
     renderItems();
   </script>
+
+  <!-- Lucide icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script> lucide.createIcons(); </script>
 </body>
 </html>
