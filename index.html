@@ -1,76 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Quacker Friends Shop</title>
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <style>
-    body { font-family:'Poppins',sans-serif;margin:0;padding:0;background:#f5f7fa;color:#333;}
-    header {display:flex;justify-content:space-between;align-items:center;padding:18px 32px;background:linear-gradient(90deg,#ff914d,#ff7b2c);color:white;}
-    header h1{margin:0;font-size:22px;}
-    button {padding:10px 18px;background:#ff914d;color:white;border:none;border-radius:30px;cursor:pointer;font-weight:600;transition:all 0.25s ease;}
-    button:hover{transform:translateY(-2px);background:#ff7b2c;}
+    :root{
+      --accent1:#ff914d;
+      --accent2:#ff7b2c;
+      --muted:#f5f7fa;
+      --card:#ffffff;
+      --shadow: 0 8px 20px rgba(12,12,20,0.06);
+      --glass: rgba(255,255,255,0.7);
+      --radius:14px;
+      --maxWidth:1100px;
+    }
+    *{box-sizing:border-box}
+    body { font-family:'Poppins',sans-serif;margin:0;padding:0;background:linear-gradient(180deg,#fbfcff,#f5f7fa);color:#222;min-height:100vh;}
+    header {display:flex;justify-content:space-between;align-items:center;padding:18px 32px;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:white;box-shadow:0 6px 18px rgba(0,0,0,0.06);}
+    header h1{margin:0;font-size:20px;display:flex;align-items:center;gap:10px}
+    .btn {padding:10px 16px;background:var(--accent1);color:white;border:none;border-radius:999px;cursor:pointer;font-weight:600;transition:all 0.18s ease;display:inline-flex;align-items:center;gap:8px;}
+    .btn.secondary{background:transparent;color:white;border:1px solid rgba(255,255,255,0.18);padding:8px 12px;border-radius:10px}
+    .btn:active{transform:translateY(1px)}
     #profileButton{position:relative;}
-    .spinner{border:3px solid rgba(255,255,255,0.3);border-top:3px solid white;border-radius:50%;width:14px;height:14px;animation:spin 1s linear infinite;display:inline-block;margin-left:8px;vertical-align:middle;}
+    .spinner{border:3px solid rgba(255,255,255,0.3);border-top:3px solid white;border-radius:50%;width:14px;height:14px;animation:spin 1s linear infinite;display:inline-block;vertical-align:middle;}
     @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
-    #profileSection{display:none;position:absolute;top:70px;right:30px;background:white;border-radius:14px;box-shadow:0 8px 22px rgba(0,0,0,0.15);width:320px;padding:20px;z-index:100;animation:fadeIn 0.3s ease;}
-    #profileSection h3{margin-top:0;font-size:18px;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:12px;}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
-    #items{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:25px;padding:40px;max-width:1100px;margin:auto;}
-    .item{border-radius:14px;padding:20px;background:white;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.08);transition:transform 0.25s ease,box-shadow 0.25s ease;}
-    .item:hover{transform:translateY(-6px);box-shadow:0 10px 22px rgba(0,0,0,0.15);}
-    .item img{width:100%;height:auto;border-radius:12px;margin-bottom:15px;}
-    .item h3{margin:10px 0 5px;font-size:18px;font-weight:600;}
-    .item p{margin:0 0 15px;font-size:15px;color:#555;}
-    hr{margin:15px 0;border:none;border-top:1px solid #eee;}
-    #profileSection button{margin-top:6px;width:100%;background:#eee;color:#333;border-radius:8px;}
-    #profileSection button:hover{background:#ddd;transform:none;}
+    main{padding:30px 20px;max-width:var(--maxWidth);margin:0 auto 80px;}
+    #items{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px;}
+    .item{border-radius:var(--radius);padding:18px;background:var(--card);text-align:center;box-shadow:var(--shadow);transition:transform 0.22s ease,box-shadow 0.22s ease;}
+    .item:hover{transform:translateY(-6px);box-shadow:0 16px 36px rgba(12,12,20,0.08);}
+    .item img{width:100%;height:180px;object-fit:cover;border-radius:10px;margin-bottom:12px;background:#eee;}
+    .item h3{margin:6px 0 6px;font-size:16px;font-weight:700;}
+    .item p{margin:0 0 12px;font-size:14px;color:#666;}
+    .price{font-weight:700;color:var(--accent2)}
+    /* profile panel */
+    #profileSection{display:none;position:absolute;top:70px;right:30px;background:var(--card);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.12);width:340px;padding:16px;z-index:100;animation:fadeIn 0.2s ease;}
+    #profileSection h3{margin-top:0;font-size:16px;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:12px;}
+    #profileSection p{margin:6px 0;color:#444}
+    #claimSection{margin-top:10px;}
+    #profileSection .small{font-size:13px;color:#666}
+    #profileSection .actionBtn{width:100%;margin-top:8px;padding:10px;border-radius:10px;border:none;background:#f1f1f1;color:#333;cursor:pointer}
+    #profileSection .actionBtn:hover{background:#e9e9e9}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+
+    /* toast */
+    #toastWrap{position:fixed;right:20px;bottom:22px;z-index:9999;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+    .toast{background:#111;color:white;padding:12px 14px;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,0.2);min-width:220px;max-width:320px;display:flex;align-items:center;gap:10px}
+    .toast.success{background:linear-gradient(90deg,#2ecc71,#27ae60)}
+    .toast.warn{background:linear-gradient(90deg,#f39c12,#e67e22)}
+    .toast .t-close{margin-left:auto;opacity:0.9;cursor:pointer}
+
+    /* small helpers */
+    .muted{color:#666;font-size:13px}
+    .center{display:flex;gap:10px;align-items:center}
+    .hidden{display:none}
+    @media (max-width:520px){
+      header{padding:14px}
+      main{padding:18px 12px}
+      #profileSection{right:12px;left:12px;width:auto}
+    }
   </style>
 </head>
 <body>
   <header>
     <h1>🦆 Quacker Friends Shop</h1>
-    <div>
-      <button id="connectWallet">Connect Wallet</button>
-      <button id="profileButton" style="display:none;">Profile</button>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button id="connectWallet" class="btn">Connect Wallet</button>
+      <button id="profileButton" class="btn secondary" style="display:none">Profile</button>
     </div>
   </header>
 
-  <div id="profileSection">
+  <div id="profileSection" role="dialog" aria-label="User profile">
     <h3>User Profile</h3>
+    <p id="walletAddress" class="muted">Not connected</p>
+    <p id="ethBalance" class="muted">Balance: —</p>
     <p id="nftCount">NFTs Owned: ...</p>
-    <p id="keychainStatus">Checking keychain claim...</p>
+    <p id="keychainStatus" class="small">Checking keychain claim...</p>
     <div id="claimSection" style="margin-top:10px;"></div>
     <hr>
-    <button onclick="switchWallet()">🔄 Switch Wallet</button>
-    <button onclick="disconnectWallet()">❌ Disconnect</button>
+    <button class="actionBtn" onclick="switchWallet()">🔄 Switch Wallet</button>
+    <button class="actionBtn" onclick="disconnectWallet()">❌ Disconnect</button>
   </div>
 
   <main>
-    <section id="items">
-      <div class="item">
-        <img src="https://via.placeholder.com/200" alt="Pumpkin Crochet Keychain">
-        <h3>Pumpkin Crochet Keychain</h3>
-        <p>Price: 0.001 ETH</p>
-        <button onclick="buyItem('Pumpkin Crochet Keychain','0.001')">Buy</button>
-      </div>
-      <div class="item">
-        <img src="https://via.placeholder.com/200" alt="Cat Beanie">
-        <h3>Cat Beanie</h3>
-        <p>Price: 0.0025 ETH</p>
-        <button onclick="buyItem('Cat Beanie','0.0025')">Buy</button>
-      </div>
-      <div class="item">
-        <img src="https://via.placeholder.com/200" alt="Pumpkin Duck Plushie">
-        <h3>Pumpkin Duck Plushie</h3>
-        <p>Price: 0.005 ETH</p>
-        <button onclick="buyItem('Pumpkin Duck Plushie','0.005')">Buy</button>
-      </div>
-    </section>
+    <section id="items"></section>
   </main>
 
+  <div id="toastWrap" aria-live="polite"></div>
+
   <script>
+    /***********************
+     * CONFIG - edit here
+     ***********************/
     const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
     const CONTRACT_ABI = [
       {
@@ -81,11 +103,21 @@
         "type": "function"
       }
     ];
-    const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbydUVwzeTyypv7qKj2HDDnTr_VZxaE_GWWwX0sKKJ-FbH1MvVh8j4bfRmzkycWcXtYPfA/exec"; 
-    const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D"; // 👈 replace with your shop wallet
+    const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbydUVwzeTyypv7qKj2HDDnTr_VZxaE_GWWwX0sKKJ-FbH1MvVh8j4bfRmzkycWcXtYPfA/exec";
+    const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 
+    // Products — change or extend this array
+    const PRODUCTS = [
+      { id: "pumpkin-keychain", title: "Pumpkin Crochet Keychain", price: "0.001", img: "https://via.placeholder.com/400x300?text=Pumpkin+Keychain" },
+      { id: "cat-beanie", title: "Cat Beanie", price: "0.0025", img: "https://via.placeholder.com/400x300?text=Cat+Beanie" },
+      { id: "pumpkin-duck", title: "Pumpkin Duck Plushie", price: "0.005", img: "https://via.placeholder.com/400x300?text=Pumpkin+Duck+Plushie" }
+    ];
+
+    /***********************
+     * STATE
+     ***********************/
     let userAddress = null;
-    let web3;
+    let web3 = null;
 
     const BASE_PARAMS = {
       chainId: "0x2105",
@@ -95,6 +127,71 @@
       blockExplorerUrls: ["https://basescan.org"]
     };
 
+    /***********************
+     * UI helpers: toasts & button spinner
+     ***********************/
+    function showToast(message, type = "default", duration = 4000) {
+      const wrap = document.getElementById("toastWrap");
+      const t = document.createElement("div");
+      t.className = "toast" + (type === "success" ? " success" : (type === "warn" ? " warn" : ""));
+      t.innerHTML = `<div>${message}</div><div class="t-close" onclick="this.parentElement.remove()">✕</div>`;
+      wrap.appendChild(t);
+      if (duration > 0) setTimeout(()=> t.remove(), duration);
+    }
+
+    function setBtnLoading(btn, loading=true) {
+      if (!btn) return;
+      if (loading) {
+        btn.dataset.orig = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner"></span> ${btn.innerText || "Working..."}`;
+      } else {
+        btn.disabled = false;
+        if (btn.dataset.orig) {
+          btn.innerHTML = btn.dataset.orig;
+          delete btn.dataset.orig;
+        }
+      }
+    }
+
+    /***********************
+     * Render products dynamically
+     ***********************/
+    function renderItems() {
+      const container = document.getElementById("items");
+      container.innerHTML = "";
+      PRODUCTS.forEach(p => {
+        const el = document.createElement("div");
+        el.className = "item";
+        el.innerHTML = `
+          <img src="${p.img}" alt="${escapeHtml(p.title)}" />
+          <h3>${escapeHtml(p.title)}</h3>
+          <p class="price">${p.price} ETH</p>
+          <div style="display:flex;gap:8px;justify-content:center">
+            <button class="btn" data-item="${p.id}" data-price="${p.price}">Buy</button>
+          </div>
+        `;
+        container.appendChild(el);
+      });
+
+      // attach listeners
+      document.querySelectorAll('#items .btn').forEach(b=>{
+        b.addEventListener('click', (e)=>{
+          const id = b.dataset.item;
+          const price = b.dataset.price;
+          const product = PRODUCTS.find(x=>x.id===id);
+          buyItem(product.title, price, b);
+        });
+      });
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, (m)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m]));
+    }
+
+    /***********************
+     * Network / wallet helpers
+     ***********************/
     async function ensureBaseNetwork() {
       try {
         const chainId = await web3.eth.getChainId();
@@ -105,22 +202,34 @@
           });
         }
       } catch (err) {
-        if (err.code === 4902) {
+        // if chain not found, try add
+        if (err && err.code === 4902) {
           await window.ethereum.request({
             method: "wallet_addEthereumChain",
             params: [BASE_PARAMS]
           });
+        } else {
+          console.warn("Network switch error", err);
         }
       }
     }
 
     async function connectWallet() {
-      if (!window.ethereum) return alert("Install MetaMask!");
-      web3 = new Web3(window.ethereum);
-      await ensureBaseNetwork();
-      const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-      userAddress = accounts[0];
-      updateUI();
+      if (!window.ethereum) {
+        showToast("Install MetaMask (or compatible wallet) first", "warn");
+        return;
+      }
+      try {
+        web3 = new Web3(window.ethereum);
+        await ensureBaseNetwork();
+        const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+        userAddress = accounts[0];
+        updateUI();
+        showToast("Wallet connected", "success");
+      } catch (err) {
+        console.error("connectWallet error", err);
+        showToast("Failed to connect wallet", "warn");
+      }
     }
 
     function updateUI() {
@@ -128,43 +237,67 @@
         document.getElementById("connectWallet").innerText =
           userAddress.slice(0,6)+"..."+userAddress.slice(-4);
         document.getElementById("profileButton").style.display = "inline-block";
+        document.getElementById("walletAddress").innerText = userAddress;
+        // show profile panel if already visible
       } else {
         document.getElementById("connectWallet").innerText = "Connect Wallet";
         document.getElementById("profileButton").style.display = "none";
         document.getElementById("profileSection").style.display = "none";
+        document.getElementById("walletAddress").innerText = "Not connected";
+        document.getElementById("ethBalance").innerText = "Balance: —";
+        document.getElementById("nftCount").innerText = "NFTs Owned: ...";
+        document.getElementById("keychainStatus").innerText = "Checking keychain claim...";
       }
     }
 
     async function switchWallet() {
-      const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-      userAddress = accounts[0];
-      updateUI();
-      // don’t auto-close profile, keep it visible
+      try {
+        const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+        userAddress = accounts[0];
+        updateUI();
+        showToast("Wallet switched", "success");
+      } catch (err) {
+        console.error("switchWallet error", err);
+        showToast("Could not switch wallet", "warn");
+      }
     }
 
     function disconnectWallet() {
       userAddress = null;
       web3 = null;
       updateUI();
+      showToast("Disconnected", "default");
     }
 
+    /***********************
+     * Profile: fetch ETH balance + NFT count + claim check
+     ***********************/
     async function fetchProfile() {
       const btn = document.getElementById("profileButton");
       btn.innerHTML = 'Profile <span class="spinner"></span>';
       try {
+        if (!userAddress) throw new Error("No wallet");
         await ensureBaseNetwork();
         const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+        // nft balance
         const balance = await contract.methods.balanceOf(userAddress).call();
         document.getElementById("nftCount").innerText = "NFTs Owned: " + balance;
 
+        // eth balance (in ETH)
+        const wei = await web3.eth.getBalance(userAddress);
+        const eth = web3.utils.fromWei(wei, "ether");
+        document.getElementById("ethBalance").innerText = `Balance: ${parseFloat(eth).toFixed(4)} ETH`;
+
+        // check claim
         const res = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&checkClaim=true`, {cache:"no-store"});
         const data = await res.json();
         if (data.claimed) {
           document.getElementById("keychainStatus").innerText = "✅ Keychain already claimed!";
           document.getElementById("claimSection").innerHTML = "";
-        } else if (balance > 0) {
+        } else if (Number(balance) > 0) {
           document.getElementById("keychainStatus").innerText = "🎁 Eligible for free keychain!";
-          document.getElementById("claimSection").innerHTML = `<button onclick="claimKeychain()">Claim Keychain</button>`;
+          document.getElementById("claimSection").innerHTML = `<button id="claimBtn" class="actionBtn">Claim Keychain</button>`;
+          document.getElementById("claimBtn").addEventListener('click', claimKeychain);
         } else {
           document.getElementById("keychainStatus").innerText = "Not eligible for keychain.";
           document.getElementById("claimSection").innerHTML = "";
@@ -173,51 +306,95 @@
         document.getElementById("profileSection").style.display = "block";
       } catch (err) {
         console.error("Profile error", err);
-        alert("⚠️ Error loading profile.");
+        showToast("Error loading profile", "warn");
+      } finally {
+        btn.innerText = "Profile";
       }
-      btn.innerText = "Profile";
     }
 
+    /***********************
+     * Claim keychain
+     ***********************/
     async function claimKeychain() {
       const shipping = prompt("Enter shipping address:");
-      if (!shipping) return;
-      const res = await fetch(`${CLAIM_SHEET_API}?item=Pumpkin Crochet Keychain&wallet=${userAddress}&price=0&address=${encodeURIComponent(shipping)}`);
-      const text = await res.text();
-      if (text.includes("Success")) {
-        alert("🎉 Keychain claimed!");
-        document.getElementById("keychainStatus").innerText = "✅ Keychain already claimed!";
-        document.getElementById("claimSection").innerHTML = "";
-      } else {
-        alert("⚠️ Claim failed: " + text);
+      if (!shipping) {
+        showToast("Claim canceled", "default");
+        return;
+      }
+      try {
+        const claimBtn = document.getElementById("claimBtn");
+        claimBtn.disabled = true;
+        claimBtn.innerText = "Sending...";
+        const res = await fetch(`${CLAIM_SHEET_API}?item=${encodeURIComponent("Pumpkin Crochet Keychain")}&wallet=${userAddress}&price=0&address=${encodeURIComponent(shipping)}`);
+        const text = await res.text();
+        if (text.includes("Success")) {
+          showToast("🎉 Keychain claimed!", "success");
+          document.getElementById("keychainStatus").innerText = "✅ Keychain already claimed!";
+          document.getElementById("claimSection").innerHTML = "";
+        } else {
+          showToast("Claim failed: " + text, "warn");
+        }
+      } catch (err) {
+        console.error("claimKeychain error", err);
+        showToast("Claim failed", "warn");
+      } finally {
+        if (document.getElementById("claimBtn")) {
+          document.getElementById("claimBtn").disabled = false;
+          document.getElementById("claimBtn").innerText = "Claim Keychain";
+        }
       }
     }
 
-    async function buyItem(item, price) {
+    /***********************
+     * Purchase flow
+     ***********************/
+    async function buyItem(item, price, buttonEl=null) {
+      if (!userAddress || !web3) {
+        showToast("Connect wallet first", "warn");
+        return;
+      }
       const shipping = prompt("Enter shipping address:");
-      if (!shipping) return;
+      if (!shipping) {
+        showToast("Purchase canceled", "default");
+        return;
+      }
+
       try {
+        if (buttonEl) setBtnLoading(buttonEl, true);
         const valueInWei = web3.utils.toWei(price.toString(), "ether");
+
+        showToast("Sending transaction...");
+
         const tx = await web3.eth.sendTransaction({
           from: userAddress,
           to: SHOP_WALLET,
           value: valueInWei
         });
-        if (tx.transactionHash) {
+
+        if (tx && tx.transactionHash) {
+          showToast("Payment sent — logging order...");
+          // log to sheet
           const res = await fetch(`${CLAIM_SHEET_API}?item=${encodeURIComponent(item)}&wallet=${userAddress}&price=${price}&address=${encodeURIComponent(shipping)}`);
           const text = await res.text();
           if (text.includes("Success")) {
-            alert("✅ Purchase complete!");
+            showToast("✅ Purchase complete!", "success");
           } else {
-            alert("⚠️ Logging failed: " + text);
+            showToast("⚠️ Logging failed: " + text, "warn");
           }
+        } else {
+          showToast("Transaction failed or was rejected", "warn");
         }
       } catch (err) {
         console.error("Buy error", err);
-        alert("⚠️ Payment or logging failed.");
+        showToast("⚠️ Payment or logging failed.", "warn");
+      } finally {
+        if (buttonEl) setBtnLoading(buttonEl, false);
       }
     }
 
-    // 🔔 Listen for account/network changes
+    /***********************
+     * Account/network listeners
+     ***********************/
     if (window.ethereum) {
       ethereum.on("accountsChanged", (accounts) => {
         userAddress = accounts.length ? accounts[0] : null;
@@ -226,8 +403,20 @@
       ethereum.on("chainChanged", () => window.location.reload());
     }
 
+    /***********************
+     * Init
+     ***********************/
     document.getElementById("connectWallet").addEventListener("click", connectWallet);
     document.getElementById("profileButton").addEventListener("click", fetchProfile);
+
+    // render products on load
+    renderItems();
+
+    /***********************
+     * accessibility tiny helper
+     ***********************/
+    // simple HTML escape already defined above
+
   </script>
 </body>
 </html>
