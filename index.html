@@ -250,17 +250,29 @@
       }
     }
 
-    async function switchWallet() {
-      try {
-        const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-        userAddress = accounts[0];
-        updateUI();
-        showToast("Wallet switched", "success");
-      } catch (err) {
-        console.error("switchWallet error", err);
-        showToast("Could not switch wallet", "warn");
-      }
+  async function switchWallet() {
+  if (!window.ethereum) {
+    showToast("No wallet detected", "warn");
+    return;
+  }
+  try {
+    // Force MetaMask to show account chooser
+    await ethereum.request({
+      method: "wallet_requestPermissions",
+      params: [{ eth_accounts: {} }]
+    });
+
+    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+    userAddress = accounts[0] || null;
+    updateUI();
+    if (userAddress) {
+      showToast("Wallet switched to " + userAddress.slice(0,6) + "..." + userAddress.slice(-4), "success");
     }
+  } catch (err) {
+    console.error("switchWallet error", err);
+    showToast("Switch wallet canceled or failed", "warn");
+  }
+}
 
     function disconnectWallet() {
       userAddress = null;
