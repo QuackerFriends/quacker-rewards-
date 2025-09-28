@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body { font-family:'Poppins',sans-serif;margin:0;padding:0;background:#f5f7fa;color:#333;}
-    header {display:flex;justify-content:space-between;align-items:center;padding:18px 32px;background:linear-gradient(90deg,#ff914d,#ff7b2c);color:white;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+    header {display:flex;justify-content:space-between;align-items:center;padding:18px 32px;background:linear-gradient(90deg,#ff914d,#ff7b2c);color:white;}
     header h1{margin:0;font-size:22px;}
     button {padding:10px 18px;background:#ff914d;color:white;border:none;border-radius:30px;cursor:pointer;font-weight:600;transition:all 0.25s ease;}
     button:hover{transform:translateY(-2px);background:#ff7b2c;}
@@ -82,7 +82,7 @@
       }
     ];
     const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbydUVwzeTyypv7qKj2HDDnTr_VZxaE_GWWwX0sKKJ-FbH1MvVh8j4bfRmzkycWcXtYPfA/exec"; 
-    const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D"; // 👈 replace with your wallet
+    const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D"; // 👈 replace with your shop wallet
 
     let userAddress = null;
     let web3;
@@ -115,38 +115,37 @@
     }
 
     async function connectWallet() {
-      if (window.ethereum) {
-        web3 = new Web3(window.ethereum);
-        const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-        userAddress = accounts[0];
-        await ensureBaseNetwork();
+      if (!window.ethereum) return alert("Install MetaMask!");
+      web3 = new Web3(window.ethereum);
+      await ensureBaseNetwork();
+      const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+      userAddress = accounts[0];
+      updateUI();
+    }
+
+    function updateUI() {
+      if (userAddress) {
         document.getElementById("connectWallet").innerText =
           userAddress.slice(0,6)+"..."+userAddress.slice(-4);
         document.getElementById("profileButton").style.display = "inline-block";
       } else {
-        alert("Install MetaMask!");
+        document.getElementById("connectWallet").innerText = "Connect Wallet";
+        document.getElementById("profileButton").style.display = "none";
+        document.getElementById("profileSection").style.display = "none";
       }
     }
 
     async function switchWallet() {
-      try {
-        const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-        userAddress = accounts[0];
-        document.getElementById("connectWallet").innerText =
-          userAddress.slice(0,6)+"..."+userAddress.slice(-4);
-        // 👇 only close profile AFTER switching
-        document.getElementById("profileSection").style.display = "none";
-      } catch (err) {
-        console.error("Switch wallet error:", err);
-      }
+      const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+      userAddress = accounts[0];
+      updateUI();
+      // don’t auto-close profile, keep it visible
     }
 
     function disconnectWallet() {
       userAddress = null;
       web3 = null;
-      document.getElementById("connectWallet").innerText = "Connect Wallet";
-      document.getElementById("profileButton").style.display = "none";
-      document.getElementById("profileSection").style.display = "none";
+      updateUI();
     }
 
     async function fetchProfile() {
@@ -157,6 +156,7 @@
         const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
         const balance = await contract.methods.balanceOf(userAddress).call();
         document.getElementById("nftCount").innerText = "NFTs Owned: " + balance;
+
         const res = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&checkClaim=true`, {cache:"no-store"});
         const data = await res.json();
         if (data.claimed) {
@@ -169,6 +169,7 @@
           document.getElementById("keychainStatus").innerText = "Not eligible for keychain.";
           document.getElementById("claimSection").innerHTML = "";
         }
+
         document.getElementById("profileSection").style.display = "block";
       } catch (err) {
         console.error("Profile error", err);
@@ -180,30 +181,25 @@
     async function claimKeychain() {
       const shipping = prompt("Enter shipping address:");
       if (!shipping) return;
-      try {
-        const res = await fetch(`${CLAIM_SHEET_API}?item=Pumpkin Crochet Keychain&wallet=${userAddress}&price=0&address=${encodeURIComponent(shipping)}`);
-        const text = await res.text();
-        if (text.includes("Success")) {
-          alert("🎉 Keychain claimed!");
-          document.getElementById("keychainStatus").innerText = "✅ Keychain already claimed!";
-          document.getElementById("claimSection").innerHTML = "";
-        } else {
-          alert("⚠️ Claim failed: " + text);
-        }
-      } catch (err) {
-        console.error("Claim error", err);
-        alert("⚠️ Error claiming keychain.");
+      const res = await fetch(`${CLAIM_SHEET_API}?item=Pumpkin Crochet Keychain&wallet=${userAddress}&price=0&address=${encodeURIComponent(shipping)}`);
+      const text = await res.text();
+      if (text.includes("Success")) {
+        alert("🎉 Keychain claimed!");
+        document.getElementById("keychainStatus").innerText = "✅ Keychain already claimed!";
+        document.getElementById("claimSection").innerHTML = "";
+      } else {
+        alert("⚠️ Claim failed: " + text);
       }
     }
 
     async function buyItem(item, price) {
-      const shipping = prompt("Enter shipping address:");F
+      const shipping = prompt("Enter shipping address:");
       if (!shipping) return;
       try {
-        const valueInWei = web3.utils.toWei(price, "ether");
+        const valueInWei = web3.utils.toWei(price.toString(), "ether");
         const tx = await web3.eth.sendTransaction({
           from: userAddress,
-          to: SHOP_WALLET, // 👈 your shop wallet
+          to: SHOP_WALLET,
           value: valueInWei
         });
         if (tx.transactionHash) {
@@ -219,6 +215,15 @@
         console.error("Buy error", err);
         alert("⚠️ Payment or logging failed.");
       }
+    }
+
+    // 🔔 Listen for account/network changes
+    if (window.ethereum) {
+      ethereum.on("accountsChanged", (accounts) => {
+        userAddress = accounts.length ? accounts[0] : null;
+        updateUI();
+      });
+      ethereum.on("chainChanged", () => window.location.reload());
     }
 
     document.getElementById("connectWallet").addEventListener("click", connectWallet);
