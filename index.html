@@ -45,28 +45,41 @@
     @keyframes fadeIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
 
 
-
 /* Toast message (small bubble) */
 .toast {
   position: fixed;
-  top: 80px;          /* below header */
+  top: 80px;          
   right: 20px;
-  padding: 10px 16px;
+  display: flex;              /* 👈 align text + close button inline */
+  align-items: center;
+  gap: 8px;                   /* space between text & close */
+  padding: 10px 14px;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
   color: white;
-  white-space: nowrap;    /* 👈 keeps it one line */
+  white-space: nowrap;        /* prevent line breaks */
   z-index: 9999;
   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-  animation: fadein 0.5s, fadeout 0.5s 3.5s; /* visible ~3s */
+  animation: fadein 0.5s, fadeout 0.5s 3.5s;
 }
 
 /* Variants */
-.toast.info    { background: #3498db; }  /* Blue */
-.toast.success { background: #2ecc71; }  /* Green */
-.toast.error   { background: #e74c3c; }  /* Red */
-.toast.warn    { background: #f39c12; }  /* Orange */
+.toast.info    { background: #3498db; }
+.toast.success { background: #2ecc71; }
+.toast.error   { background: #e74c3c; }
+.toast.warn    { background: #f39c12; }
+
+/* Close button inside toast */
+.toast .close-btn {
+  cursor: pointer;
+  font-weight: bold;
+  margin-left: auto;          /* pushes ❌ to far right */
+  opacity: 0.8;
+}
+.toast .close-btn:hover {
+  opacity: 1;
+}
 
 /* Animations */
 @keyframes fadein {
@@ -77,7 +90,6 @@
   from { opacity: 1; transform: translateY(0); }
   to   { opacity: 0; transform: translateY(-10px); }
 }
-
 
     /* small helpers */
     .muted{color:#666;font-size:13px}
