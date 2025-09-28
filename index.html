@@ -47,13 +47,14 @@
 
 #toast-container {
   position: fixed;
-  top: 4rem;   /* moved lower so it won’t overlap profile */
+  top: 6rem;   /* lower so it clears profile section */
   right: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   z-index: 9999;
 }
+
 .toast {
   padding: 0.5rem 0.75rem;
   border-radius: 4px;
@@ -300,12 +301,13 @@
   }
 }
 
-    function disconnectWallet() {
-      userAddress = null;
-      web3 = null;
-      updateUI();
-      showToast("Disconnected", "default");
-    }
+   function disconnectWallet() {
+  userAddress = null;
+  web3 = null;
+  updateUI();
+  showToast("Disconnected", "error"); // use error not default
+}
+
 
     /***********************
      * Profile: fetch ETH balance + NFT count + claim check
