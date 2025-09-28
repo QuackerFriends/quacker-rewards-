@@ -49,16 +49,24 @@
 /* Toast message (small bubble) */
 .toast {
   position: fixed;
-  top: 80px;           /* 👈 show near top, below navbar */
-  right: 20px;         /* 👈 keep it tucked top-right */
-  background: rgba(0,0,0,0.8);
-  color: white;
+  top: 80px;          /* below header */
+  right: 20px;
   padding: 10px 16px;
   border-radius: 8px;
   font-size: 14px;
+  font-weight: 500;
+  color: white;
+  white-space: nowrap;    /* 👈 keeps it one line */
   z-index: 9999;
-  animation: fadein 0.5s, fadeout 0.5s 3.5s; /* 👈 stays visible longer */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  animation: fadein 0.5s, fadeout 0.5s 3.5s; /* visible ~3s */
 }
+
+/* Variants */
+.toast.info    { background: #3498db; }  /* Blue */
+.toast.success { background: #2ecc71; }  /* Green */
+.toast.error   { background: #e74c3c; }  /* Red */
+.toast.warn    { background: #f39c12; }  /* Orange */
 
 /* Animations */
 @keyframes fadein {
@@ -69,6 +77,7 @@
   from { opacity: 1; transform: translateY(0); }
   to   { opacity: 0; transform: translateY(-10px); }
 }
+
 
     /* small helpers */
     .muted{color:#666;font-size:13px}
