@@ -180,8 +180,6 @@
 
   <script>
     const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
-    const PAYEE_ADDRESS = "0xYourWalletHere"; // 👈 replace with your ETH/Base receiving address
-
     const CONTRACT_ABI = [
       {
         "constant": true,
@@ -191,14 +189,13 @@
         "type": "function"
       }
     ];
-
     const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbydUVwzeTyypv7qKj2HDDnTr_VZxaE_GWWwX0sKKJ-FbH1MvVh8j4bfRmzkycWcXtYPfA/exec"; 
 
     let userAddress = null;
     let web3;
 
     const BASE_PARAMS = {
-      chainId: "0x2105", // Base
+      chainId: "0x2105",
       chainName: "Base",
       nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
       rpcUrls: ["https://mainnet.base.org"],
@@ -222,36 +219,31 @@
           });
         } else {
           console.error("Network switch error:", err);
-          throw err;
         }
       }
     }
 
     async function connectWallet() {
-      if (!window.ethereum) return alert("Install MetaMask!");
-      web3 = new Web3(window.ethereum);
-      try {
+      if (window.ethereum) {
+        web3 = new Web3(window.ethereum);
         const accounts = await ethereum.request({ method: "eth_requestAccounts" });
         userAddress = accounts[0];
         await ensureBaseNetwork();
         document.getElementById("connectWallet").innerText =
           userAddress.slice(0,6)+"..."+userAddress.slice(-4);
         document.getElementById("profileButton").style.display = "inline-block";
-      } catch (err) {
-        console.error("Connect error:", err);
+      } else {
+        alert("Install MetaMask!");
       }
     }
 
     async function switchWallet() {
       try {
         const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-        if (accounts && accounts[0]) {
-          userAddress = accounts[0];
-          document.getElementById("connectWallet").innerText =
-            userAddress.slice(0,6)+"..."+userAddress.slice(-4);
-          // ✅ close profile only AFTER switching
-          document.getElementById("profileSection").style.display = "none";
-        }
+        userAddress = accounts[0];
+        document.getElementById("connectWallet").innerText =
+          userAddress.slice(0,6)+"..."+userAddress.slice(-4);
+        document.getElementById("profileSection").style.display = "none"; // close after switching
       } catch (err) {
         console.error("Switch wallet error:", err);
         alert("⚠️ Error switching wallet.");
@@ -261,6 +253,7 @@
     function disconnectWallet() {
       userAddress = null;
       web3 = null;
+      ethereum.selectedAddress = null; // clear MM cache
       document.getElementById("connectWallet").innerText = "Connect Wallet";
       document.getElementById("profileButton").style.display = "none";
       document.getElementById("profileSection").style.display = "none";
@@ -317,25 +310,20 @@
       const shipping = prompt("Enter shipping address:");
       if (!shipping) return;
       try {
-        // ✅ sanitize & convert
-        const cleanPrice = String(price).replace(/[^\d.]/g, "");
-        const value = web3.utils.toWei(cleanPrice, "ether");
-
-        await ethereum.request({
-          method: "eth_sendTransaction",
-          params: [{
-            from: userAddress,
-            to: PAYEE_ADDRESS,
-            value: web3.utils.toHex(value)
-          }]
+        const valueInWei = web3.utils.toWei(price.toString(), "ether"); // fix crazy price bug
+        const tx = await web3.eth.sendTransaction({
+          from: userAddress,
+          to: "0xYourWalletAddressHere", // replace with your shop wallet
+          value: valueInWei
         });
-
-        const res = await fetch(`${CLAIM_SHEET_API}?item=${encodeURIComponent(item)}&wallet=${userAddress}&price=${cleanPrice}&address=${encodeURIComponent(shipping)}`);
-        const text = await res.text();
-        if (text.includes("Success")) {
-          alert("✅ Purchase complete!");
-        } else {
-          alert("⚠️ Logging failed: " + text);
+        if (tx.transactionHash) {
+          const res = await fetch(`${CLAIM_SHEET_API}?item=${encodeURIComponent(item)}&wallet=${userAddress}&price=${price}&address=${encodeURIComponent(shipping)}`);
+          const text = await res.text();
+          if (text.includes("Success")) {
+            alert("✅ Purchase complete!");
+          } else {
+            alert("⚠️ Logging failed: " + text);
+          }
         }
       } catch (err) {
         console.error("Buy error", err);
