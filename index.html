@@ -4,99 +4,33 @@
   <meta charset="UTF-8">
   <title>Quacker Friends Shop</title>
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #fafafa;
-      color: #333;
-    }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 30px;
-      background: #ff914d;
-      color: white;
-    }
-    header h1 {
-      margin: 0;
-    }
-    button {
-      padding: 8px 14px;
-      background: #ff914d;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: transform 0.2s ease, background 0.3s ease;
-    }
-    button:hover {
-      transform: scale(1.05);
-      background: #ff7b2c;
-    }
-    #profileButton {
-      position: relative;
-    }
-    .spinner {
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-top: 3px solid white;
-      border-radius: 50%;
-      width: 14px;
-      height: 14px;
-      animation: spin 1s linear infinite;
-      display: inline-block;
-      margin-left: 8px;
-      vertical-align: middle;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    #profileSection {
-      display: none;
-      position: absolute;
-      top: 60px;
-      right: 30px;
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      width: 300px;
-      padding: 15px;
-      z-index: 100;
-    }
-    #items {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-      margin: 30px;
-      flex-wrap: wrap;
-    }
-    .item {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 15px;
-      background: white;
-      text-align: center;
-      width: 220px;
-      transition: transform 0.2s ease, box-shadow 0.3s ease;
-    }
-    .item:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-    }
-    .item img {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-    }
+    body { font-family:'Poppins',sans-serif;margin:0;padding:0;background:#f5f7fa;color:#333;}
+    header {display:flex;justify-content:space-between;align-items:center;padding:18px 32px;background:linear-gradient(90deg,#ff914d,#ff7b2c);color:white;}
+    header h1{margin:0;font-size:22px;}
+    button {padding:10px 18px;background:#ff914d;color:white;border:none;border-radius:30px;cursor:pointer;font-weight:600;transition:all 0.25s ease;}
+    button:hover{transform:translateY(-2px);background:#ff7b2c;}
+    #profileButton{position:relative;}
+    .spinner{border:3px solid rgba(255,255,255,0.3);border-top:3px solid white;border-radius:50%;width:14px;height:14px;animation:spin 1s linear infinite;display:inline-block;margin-left:8px;vertical-align:middle;}
+    @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+    #profileSection{display:none;position:absolute;top:70px;right:30px;background:white;border-radius:14px;box-shadow:0 8px 22px rgba(0,0,0,0.15);width:320px;padding:20px;z-index:100;animation:fadeIn 0.3s ease;}
+    #profileSection h3{margin-top:0;font-size:18px;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:12px;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+    #items{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:25px;padding:40px;max-width:1100px;margin:auto;}
+    .item{border-radius:14px;padding:20px;background:white;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.08);transition:transform 0.25s ease,box-shadow 0.25s ease;}
+    .item:hover{transform:translateY(-6px);box-shadow:0 10px 22px rgba(0,0,0,0.15);}
+    .item img{width:100%;height:auto;border-radius:12px;margin-bottom:15px;}
+    .item h3{margin:10px 0 5px;font-size:18px;font-weight:600;}
+    .item p{margin:0 0 15px;font-size:15px;color:#555;}
+    hr{margin:15px 0;border:none;border-top:1px solid #eee;}
+    #profileSection button{margin-top:6px;width:100%;background:#eee;color:#333;border-radius:8px;}
+    #profileSection button:hover{background:#ddd;transform:none;}
   </style>
 </head>
 <body>
   <header>
-    <h1>Quacker Friends Shop</h1>
+    <h1>🦆 Quacker Friends Shop</h1>
     <div>
       <button id="connectWallet">Connect Wallet</button>
       <button id="profileButton" style="display:none;">Profile</button>
@@ -147,8 +81,8 @@
         "type": "function"
       }
     ];
-
-    const CLAIM_SHEET_API = "YOUR_APPSCRIPT_URL"; // replace
+    const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbydUVwzeTyypv7qKj2HDDnTr_VZxaE_GWWwX0sKKJ-FbH1MvVh8j4bfRmzkycWcXtYPfA/exec"; 
+    const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D"; // 👈 replace with your shop wallet
 
     let userAddress = null;
     let web3;
@@ -176,64 +110,55 @@
             method: "wallet_addEthereumChain",
             params: [BASE_PARAMS]
           });
-        } else {
-          console.error("Network switch error:", err);
-          throw err;
         }
       }
     }
 
     async function connectWallet() {
-      if (window.ethereum) {
-        web3 = new Web3(window.ethereum);
-        const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-        userAddress = accounts[0];
-        await ensureBaseNetwork();
+      if (!window.ethereum) return alert("Install MetaMask!");
+      web3 = new Web3(window.ethereum);
+      await ensureBaseNetwork();
+      const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+      userAddress = accounts[0];
+      updateUI();
+    }
+
+    function updateUI() {
+      if (userAddress) {
         document.getElementById("connectWallet").innerText =
           userAddress.slice(0,6)+"..."+userAddress.slice(-4);
         document.getElementById("profileButton").style.display = "inline-block";
       } else {
-        alert("Install MetaMask!");
+        document.getElementById("connectWallet").innerText = "Connect Wallet";
+        document.getElementById("profileButton").style.display = "none";
+        document.getElementById("profileSection").style.display = "none";
       }
     }
 
     async function switchWallet() {
-      try {
-        const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-        if (accounts.length) {
-          userAddress = accounts[0];
-          document.getElementById("connectWallet").innerText =
-            userAddress.slice(0,6)+"..."+userAddress.slice(-4);
-          fetchProfile(); // refresh profile immediately
-        }
-      } catch (err) {
-        console.error("Switch wallet error:", err);
-        alert("⚠️ Error switching wallet.");
-      }
+      const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+      userAddress = accounts[0];
+      updateUI();
+      // don’t auto-close profile, keep it visible
     }
 
     function disconnectWallet() {
       userAddress = null;
       web3 = null;
-      document.getElementById("connectWallet").innerText = "Connect Wallet";
-      document.getElementById("profileButton").style.display = "none";
-      document.getElementById("profileSection").style.display = "none";
+      updateUI();
     }
 
     async function fetchProfile() {
       const btn = document.getElementById("profileButton");
       btn.innerHTML = 'Profile <span class="spinner"></span>';
-
       try {
         await ensureBaseNetwork();
         const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
         const balance = await contract.methods.balanceOf(userAddress).call();
-
         document.getElementById("nftCount").innerText = "NFTs Owned: " + balance;
 
         const res = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&checkClaim=true`, {cache:"no-store"});
         const data = await res.json();
-
         if (data.claimed) {
           document.getElementById("keychainStatus").innerText = "✅ Keychain already claimed!";
           document.getElementById("claimSection").innerHTML = "";
@@ -250,26 +175,20 @@
         console.error("Profile error", err);
         alert("⚠️ Error loading profile.");
       }
-
       btn.innerText = "Profile";
     }
 
     async function claimKeychain() {
       const shipping = prompt("Enter shipping address:");
       if (!shipping) return;
-      try {
-        const res = await fetch(`${CLAIM_SHEET_API}?item=Pumpkin Crochet Keychain&wallet=${userAddress}&price=0&address=${encodeURIComponent(shipping)}`);
-        const text = await res.text();
-        if (text.includes("Success")) {
-          alert("🎉 Keychain claimed!");
-          document.getElementById("keychainStatus").innerText = "✅ Keychain already claimed!";
-          document.getElementById("claimSection").innerHTML = "";
-        } else {
-          alert("⚠️ Claim failed: " + text);
-        }
-      } catch (err) {
-        console.error("Claim error", err);
-        alert("⚠️ Error claiming keychain.");
+      const res = await fetch(`${CLAIM_SHEET_API}?item=Pumpkin Crochet Keychain&wallet=${userAddress}&price=0&address=${encodeURIComponent(shipping)}`);
+      const text = await res.text();
+      if (text.includes("Success")) {
+        alert("🎉 Keychain claimed!");
+        document.getElementById("keychainStatus").innerText = "✅ Keychain already claimed!";
+        document.getElementById("claimSection").innerHTML = "";
+      } else {
+        alert("⚠️ Claim failed: " + text);
       }
     }
 
@@ -277,35 +196,38 @@
       const shipping = prompt("Enter shipping address:");
       if (!shipping) return;
       try {
-        const res = await fetch(`${CLAIM_SHEET_API}?item=${encodeURIComponent(item)}&wallet=${userAddress}&price=${price}&address=${encodeURIComponent(shipping)}`);
-        const text = await res.text();
-        if (text.includes("Success")) {
-          alert("✅ Purchase logged!");
-        } else {
-          alert("⚠️ Failed: " + text);
+        const valueInWei = web3.utils.toWei(price.toString(), "ether");
+        const tx = await web3.eth.sendTransaction({
+          from: userAddress,
+          to: SHOP_WALLET,
+          value: valueInWei
+        });
+        if (tx.transactionHash) {
+          const res = await fetch(`${CLAIM_SHEET_API}?item=${encodeURIComponent(item)}&wallet=${userAddress}&price=${price}&address=${encodeURIComponent(shipping)}`);
+          const text = await res.text();
+          if (text.includes("Success")) {
+            alert("✅ Purchase complete!");
+          } else {
+            alert("⚠️ Logging failed: " + text);
+          }
         }
       } catch (err) {
         console.error("Buy error", err);
-        alert("⚠️ Error logging purchase.");
+        alert("⚠️ Payment or logging failed.");
       }
+    }
+
+    // 🔔 Listen for account/network changes
+    if (window.ethereum) {
+      ethereum.on("accountsChanged", (accounts) => {
+        userAddress = accounts.length ? accounts[0] : null;
+        updateUI();
+      });
+      ethereum.on("chainChanged", () => window.location.reload());
     }
 
     document.getElementById("connectWallet").addEventListener("click", connectWallet);
     document.getElementById("profileButton").addEventListener("click", fetchProfile);
-
-    // MetaMask account change handling
-    if (window.ethereum) {
-      ethereum.on("accountsChanged", (accounts) => {
-        if (accounts.length === 0) {
-          disconnectWallet();
-        } else {
-          userAddress = accounts[0];
-          document.getElementById("connectWallet").innerText =
-            userAddress.slice(0,6)+"..."+userAddress.slice(-4);
-          fetchProfile();
-        }
-      });
-    }
   </script>
 </body>
 </html>
