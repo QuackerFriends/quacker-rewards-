@@ -46,29 +46,35 @@
 
 
 
-/* Toast message (small bubble) */
-.toast {
+#toast-container {
   position: fixed;
-  top: 80px;           /* 👈 show near top, below navbar */
-  right: 20px;         /* 👈 keep it tucked top-right */
-  background: rgba(0,0,0,0.8);
-  color: white;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-size: 14px;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   z-index: 9999;
-  animation: fadein 0.5s, fadeout 0.5s 3.5s; /* 👈 stays visible longer */
+}
+.toast {
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap; /* keeps it one line */
+}
+.toast.success { background: #2ecc71; } /* green */
+.toast.error   { background: #e74c3c; } /* red */
+.toast.warn    { background: #e67e22; } /* orange */
+.toast.info    { background: #3498db; } /* blue */
+.toast .close-btn {
+  margin-left: 0.5rem;
+  cursor: pointer;
+  font-weight: bold;
 }
 
-/* Animations */
-@keyframes fadein {
-  from { opacity: 0; transform: translateY(-10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeout {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(-10px); }
-}
 
     /* small helpers */
     .muted{color:#666;font-size:13px}
@@ -149,14 +155,15 @@
     /***********************
      * UI helpers: toasts & button spinner
      ***********************/
-    function showToast(message, type = "default", duration = 4000) {
-      const wrap = document.getElementById("toastWrap");
-      const t = document.createElement("div");
-      t.className = "toast" + (type === "success" ? " success" : (type === "warn" ? " warn" : ""));
-      t.innerHTML = `<div>${message}</div><div class="t-close" onclick="this.parentElement.remove()">✕</div>`;
-      wrap.appendChild(t);
-      if (duration > 0) setTimeout(()=> t.remove(), duration);
-    }
+    function showToast(message, type = "info", duration = 4000) {
+  const container = document.getElementById("toast-container");
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span>${message}</span><span class="close-btn" onclick="this.parentElement.remove()">✕</span>`;
+  container.appendChild(toast);
+  setTimeout(() => { toast.remove(); }, duration);
+}
+
 
     function setBtnLoading(btn, loading=true) {
       if (!btn) return;
