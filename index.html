@@ -392,49 +392,45 @@ if(window.ethereum){
 renderItems();
 
 document.getElementById("spinButton").addEventListener("click", async () => {
-  if (!userAddress) { showToast("Connect wallet first!", "warn"); return; }
+  if (!userAddress) { 
+    showToast("Connect wallet first!", "warn"); 
+    return; 
+  }
 
   const today = new Date().toISOString().split("T")[0];
+
   try {
-    // Fetch current quacks from your sheet
-    const res = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&getQuacks=true`);
-    const data = await res.json();
-    console.log("Spin fetch data:", data); // <-- DEBUG
+    // Fetch current quacks
+    const res = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&getQuacks=true`, { cache: "no-store" });
+    const data = await res.json(); // expects { quacks: number, lastSpin: "YYYY-MM-DD" }
 
     if (data.lastSpin === today) {
       showToast("Already spun today! Come back tomorrow.", "info");
       return;
     }
 
-    let spinAmount = 5;
-    const nftBalance = parseInt(document.getElementById("nftCount").innerText.replace(/\D/g,"")) || 0;
-    if (nftBalance > 0) spinAmount = 10;
+    // Determine spin amount based on NFT ownership
+    const nftBalance = parseInt(document.getElementById("nftCount").innerText.replace(/\D/g, "")) || 0;
+    const spinAmount = nftBalance > 0 ? 10 : 5;
 
     const newTotal = (data.quacks || 0) + spinAmount;
 
-    const params = new URLSearchParams();
-    params.append("wallet", userAddress);
-    params.append("updateQuacks", "true");
-    params.append("quacks", newTotal);
-    params.append("lastSpin", today);
+    // Update sheet
+    const updateRes = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`);
+    const updateText = await updateRes.text();
 
-    const updateRes = await fetch(`${SPIN_SHEET_API}?${params.toString()}`);
-    const text = await updateRes.text();
-    console.log("Spin update response:", text); // <-- DEBUG
-
-    if (text.includes("Success")) {
+    if (updateText.includes("Success")) {
       document.getElementById("quacksCount").innerText = `Quacks Collected: ${newTotal}`;
-      showToast(`🎉 You earned ${spinAmount} Quack${spinAmount>1?"s":""}!`, "success");
+      showToast(`🎉 You earned ${spinAmount} Quack${spinAmount > 1 ? "s" : ""}!`, "success");
     } else {
-      showToast("Failed to log Quacks. Check console.", "warn");
-      console.error("Sheet update returned:", text);
+      showToast("Failed to log Quacks, try again later.", "warn");
     }
+
   } catch (err) {
     console.error("Spin error:", err);
-    showToast("Error spinning wheel. Check console.", "warn");
+    showToast("Error spinning wheel. Please try again.", "error");
   }
 });
-
 </script>
 </body>
 </html>
