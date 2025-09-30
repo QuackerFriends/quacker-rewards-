@@ -166,7 +166,7 @@
   <div id="profileSection">
     <h3>User Profile</h3>
     <p id="quacksCount">Quacks Collected: 0</p>
-    <button id="spinButton" class="actionBtn">🎡 Spin the Wheel</button>
+    <button id="spinButton" class="actionBtn btn">🎡 Spin the Wheel</button>
 
     <p id="walletAddress" class="muted">Not connected</p>
     <p id="ethBalance" class="muted">Balance: —</p>
@@ -199,7 +199,7 @@
 <script>
 const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
 const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"}];
-const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbzu2RjvJf8-SyRIekMh53JODYZxoPXQpjJ2aGTqIHd93HgEZpnXcVC_zxoJbJt51zqSuQ/exec";
+const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbx-99nc43kVUpc1p8rMiDmiyvy5087SGQImJqIePR4mTja8G3QQ_e7r0A07rf4DWfEzxw/exec";
 const SPIN_SHEET_API = "https://script.google.com/macros/s/AKfycbwOsIuZi-r_IFGi4F0O7qN9oaLbB6OPbqHfISzpFSi1OXgrW4hhHnpBnk0fCgforU0jTg/exec";
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 
@@ -284,7 +284,6 @@ document.getElementById("checkoutBtn").addEventListener("click", async () => {
 
   let loadingToast = null;
   try {
-    // Show persistent "working" toast
     loadingToast = document.createElement("div");
     loadingToast.className = "toast info";
     loadingToast.innerHTML = `<span>⏳ Purchase in progress, hang tight...</span>`;
@@ -307,11 +306,9 @@ document.getElementById("checkoutBtn").addEventListener("click", async () => {
     console.error(err);
     showToast("⚠️ Checkout failed", "error");
   } finally {
-    // Remove loading toast
     if (loadingToast) loadingToast.remove();
   }
 });
-
 
 async function connectWallet(){
   if(!window.ethereum){showToast("Install MetaMask","warn");return;}
@@ -324,7 +321,7 @@ async function connectWallet(){
 }
 
 async function fetchProfile() {
-  if(!userAddress){showToast("Connect wallet first","warn");return;}
+  if(!userAddress){ showToast("Connect wallet first","warn"); return; }
   const panel=document.getElementById("profileSection");
   panel.style.display=(panel.style.display==="block")?"none":"block";
 
@@ -352,7 +349,7 @@ async function fetchProfile() {
       document.getElementById("keychainStatus").innerText="Not eligible for keychain.";
       document.getElementById("claimSection").innerHTML="";
     }
-  } catch(err){ console.error(err); showToast("Error checking keychain","warn"); }
+  } catch(err){ console.error(err); showToast("Failed to fetch claim status","warn"); }
 
   document.getElementById("walletAddress").innerText=userAddress;
 }
@@ -395,28 +392,24 @@ if(window.ethereum){
 
 renderItems();
 
-// Quacks spin logic
+// ===== SPIN QUACKS =====
 document.getElementById("spinButton").addEventListener("click", async () => {
   if(!userAddress){ showToast("Connect wallet first!","warn"); return; }
   const today = new Date().toISOString().split("T")[0];
-  
+
   try {
-    // Get current quacks
     const res = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&getQuacks=true`, { cache: "no-store" });
-    const data = await res.json(); // expects { quacks: number, lastSpin: "YYYY-MM-DD" }
+    const data = await res.json().catch(()=>({ quacks:0, lastSpin:null }));
 
     if(data.lastSpin === today){
       showToast("Already spun today! Come back tomorrow.","info");
       return;
     }
 
-    let spinAmount = 5; // non-holder default
     const nftBalance = parseInt(document.getElementById("nftCount").innerText.replace(/\D/g,"")) || 0;
-    if(nftBalance > 0) spinAmount = 10;
-
+    const spinAmount = nftBalance > 0 ? 10 : 5;
     const newTotal = (data.quacks || 0) + spinAmount;
 
-    // Update sheet
     const updateRes = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`);
     const updateText = await updateRes.text();
 
@@ -424,12 +417,12 @@ document.getElementById("spinButton").addEventListener("click", async () => {
       document.getElementById("quacksCount").innerText = `Quacks Collected: ${newTotal}`;
       showToast(`🎉 You earned ${spinAmount} Quack${spinAmount>1?"s":""}!`,"success");
     } else {
-      showToast("Failed to log Quacks, try again later","warn");
+      showToast("Failed to log Quacks. Try again later.","warn");
     }
 
   } catch(err){
     console.error("Spin error:", err);
-    showToast("Error spinning wheel","warn");
+    showToast("Error spinning wheel. Check console.","warn");
   }
 });
 </script>
