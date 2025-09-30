@@ -385,6 +385,40 @@ document.getElementById("profileButton").addEventListener("click",fetchProfile);
 document.getElementById("connectWallet").addEventListener("click",connectWallet);
 
 renderItems();
+  
+  document.getElementById("spinButton").addEventListener("click", async () => {
+  if(!userAddress){ showToast("Connect wallet first","warn"); return; }
+
+  const spinBtn = document.getElementById("spinButton");
+  spinBtn.disabled = true;
+  spinBtn.innerHTML = '🎡 Spinning... <span class="spinner"></span>';
+
+  try {
+    // 1. Get current quacks
+    const res = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&getQuacks=true`);
+    const data = await res.json();
+    let currentQuacks = data.quacks || 0;
+
+    // 2. Determine random quacks won (0-10)
+    const won = Math.floor(Math.random()*11);
+    const newQuacks = currentQuacks + won;
+
+    // 3. Update Apps Script
+    await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&updateQuacks=true&quacks=${newQuacks}&lastSpin=${new Date().toISOString()}`);
+
+    // 4. Update UI
+    document.getElementById("quacksCount").innerText = "Quacks Collected: " + newQuacks;
+    showToast(`🦆 You won ${won} quacks!`, "success");
+
+  } catch(err){
+    console.error(err);
+    showToast("Spin failed!","error");
+  } finally {
+    spinBtn.disabled = false;
+    spinBtn.innerText = "🎡 Spin the Wheel";
+  }
+});
+
 </script>
 </body>
 </html>
