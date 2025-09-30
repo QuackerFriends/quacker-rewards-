@@ -386,9 +386,9 @@ document.getElementById("connectWallet").addEventListener("click",connectWallet)
 
 renderItems();
   
- // Spin the Wheel
+ // Quacks spin logic
 document.getElementById("spinButton").addEventListener("click", async () => {
-  if (!userAddress) { 
+  if(!userAddress){ 
     showToast("Connect wallet first!","warn"); 
     return; 
   }
@@ -396,38 +396,38 @@ document.getElementById("spinButton").addEventListener("click", async () => {
   const today = new Date().toISOString().split("T")[0];
 
   try {
-    // Get current quacks from your new Apps Script
-    const res = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&getQuacks=true`);
-    const data = await res.json(); // { quacks: number, lastSpin: "YYYY-MM-DD" }
+    // Get current quacks
+    const res = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&getQuacks=true`, { cache: "no-store" });
+    const data = await res.json(); // expects { quacks: number, lastSpin: "YYYY-MM-DD" }
 
-    if (data.lastSpin === today) {
+    if(data.lastSpin === today){
       showToast("Already spun today! Come back tomorrow.","info");
       return;
     }
 
-    // Determine spin reward
     let spinAmount = 5; // non-holder default
     const nftBalance = parseInt(document.getElementById("nftCount").innerText.replace(/\D/g,"")) || 0;
-    if (nftBalance > 0) spinAmount = 10;
+    if(nftBalance > 0) spinAmount = 10;
 
     const newTotal = (data.quacks || 0) + spinAmount;
 
     // Update sheet
     const updateRes = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`);
-    const updateData = await updateRes.json(); // expects { status: "Success" }
+    const updateData = await updateRes.json(); // expects { success: true }
 
-    if (updateData.status === "Success") {
+    if(updateData.success){
       document.getElementById("quacksCount").innerText = `Quacks Collected: ${newTotal}`;
       showToast(`🎉 You earned ${spinAmount} Quack${spinAmount>1?"s":""}!`,"success");
     } else {
       showToast("Failed to log Quacks, try again later","warn");
     }
 
-  } catch(err) {
+  } catch(err){
     console.error("Spin error:", err);
     showToast("Error spinning wheel","warn");
   }
 });
+
 
 
 </script>
