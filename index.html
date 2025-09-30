@@ -1,290 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Quacker Friends Shop</title>
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/> 
-
+  <meta charset="UTF-8">
+  <title>Shop with Cart & Profile</title>
   <style>
-    :root{
-      --brand-orange:#ff914d;
-      --brand-orange-dark:#ff7b2c;
-      --brand-teal:#66c7c4;
-      --muted:#f5f7fa;
-      --card:#ffffff;
-      --shadow: 0 8px 20px rgba(12,12,20,0.06);
-      --radius:14px;
-      --maxWidth:1100px;
-    }
-    *{box-sizing:border-box}
-    body { 
-      font-family:'Poppins',sans-serif;
-      margin:0;padding:0;
-      background:linear-gradient(180deg,#fbfcff,#f5f7fa);
-      color:#222;
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
     }
     header {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:14px 24px;
-      background:var(--brand-orange);
-      color:white;
-      box-shadow:0 6px 18px rgba(0,0,0,0.08);
-    }
-    header h1{
-      margin:0;font-size:20px;
-      display:flex;align-items:center;gap:10px
-    }
-    .btn {
-      padding:10px 16px;
-      background:var(--brand-orange-dark);
-      color:white;border:none;
-      border-radius:999px;
-      cursor:pointer;
-      font-weight:600;
-      transition:all 0.18s ease;
-      display:inline-flex;align-items:center;gap:8px;
-    }
-    .btn.secondary{
-      background:transparent;
-      color:white;
-      border:1px solid rgba(255,255,255,0.25);
-      padding:8px 12px;border-radius:10px
-    }
-    .btn:active{transform:translateY(1px)}
-    #profileButton{position:relative;}
-    .spinner{border:3px solid rgba(255,255,255,0.3);border-top:3px solid white;border-radius:50%;width:14px;height:14px;animation:spin 1s linear infinite;display:inline-block;vertical-align:middle;}
-    @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
-    main{flex:1;padding:30px 20px;max-width:var(--maxWidth);margin:0 auto 80px;}
-    #items{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px;}
-    .item{border-radius:var(--radius);padding:18px;background:var(--card);text-align:center;box-shadow:var(--shadow);transition:transform 0.22s ease,box-shadow 0.22s ease;}
-    .item:hover{transform:translateY(-6px);box-shadow:0 16px 36px rgba(12,12,20,0.08);}
-    .item img{width:100%;height:180px;object-fit:cover;border-radius:10px;margin-bottom:12px;background:#eee;}
-    .item h3{margin:6px 0 6px;font-size:16px;font-weight:700;}
-    .item p{margin:0 0 12px;font-size:14px;color:#666;}
-    .price{font-weight:700;color:var(--brand-orange-dark)}
-
-    /* popup panels */
-    #profileSection,
-    #cartSection {
-      display:none;
-      position:absolute;
-      top:70px;
-      right:30px;
-      background:var(--card);
-      border-radius:12px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.12);
-      width:340px;
-      padding:16px;
-      z-index:100;
-      animation:fadeIn 0.2s ease;
-    }
-    #profileSection h3,
-    #cartSection h3 {margin-top:0;font-size:16px;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:12px;}
-    #profileSection p{margin:6px 0;color:#444}
-    #cartItems {max-height:200px;overflow-y:auto;margin-bottom:10px;}
-    #cartItems p {margin:4px 0;}
-    #cartTotal {font-weight:bold;margin-top:8px;}
-    #cartSection button {margin-top:8px;width:100%;}
-
-    @keyframes fadeIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
-
-    #toast-container {
-      position: fixed;
-      top: 6rem;
-      right: 1rem;
+      background: #333;
+      color: white;
+      padding: 10px 20px;
       display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      z-index: 9999;
-    }
-    .toast {
-      padding: 0.5rem 0.75rem;
-      border-radius: 4px;
-      color: #fff;
-      font-size: 0.9rem;
-      display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 0.5rem;
-      white-space: nowrap;
     }
-    .toast.success { background: #2ecc71 !important; }
-    .toast.error   { background: #e74c3c !important; }
-    .toast.warn    { background: #e67e22 !important; }
-    .toast.info    { background: #3498db !important; }
-    .toast .close-btn {
-      margin-left: 0.5rem;
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    header .actions {
+      display: flex;
+      gap: 10px;
+    }
+    button {
       cursor: pointer;
-      font-weight: bold;
+      background: #555;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
     }
-
-    .muted{color:#666;font-size:13px}
-    .center{display:flex;gap:10px;align-items:center}
-    .hidden{display:none}
-    @media (max-width:520px){
-      header{padding:14px}
-      main{padding:18px 12px}
-      #profileSection,#cartSection{right:12px;left:12px;width:auto}
+    .popup {
+      position: fixed;
+      top: 0;
+      right: -400px; /* hidden off-screen */
+      width: 350px;
+      height: 100%;
+      background: white;
+      box-shadow: -2px 0 8px rgba(0,0,0,0.2);
+      padding: 20px;
+      overflow-y: auto;
+      transition: right 0.3s ease;
+      z-index: 1000;
     }
-
-    footer {
-      background:var(--brand-teal);
-      padding:20px;
-      text-align:center;
-      color:#fff;
-      margin-top:auto;
+    .popup.open {
+      right: 0;
     }
-    footer a { margin:0 10px;color:#fff;transition:opacity 0.2s; }
-    footer a:hover { opacity:0.7; }
+    .popup h2 {
+      margin-top: 0;
+    }
+    .close-btn {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      float: right;
+      cursor: pointer;
+    }
+    .cart-items, .profile-content {
+      margin-top: 20px;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>🦆 Quacker Friends Shop</h1>
-    <div style="display:flex;gap:10px;align-items:center">
-      <button id="cartButton" class="btn secondary" style="display:none">🛒 Cart (0)</button>
-      <button id="connectWallet" class="btn">Connect Wallet</button>
-      <button id="profileButton" class="btn secondary" style="display:none">Profile</button>
+    <h1>Quacker Friends Shop</h1>
+    <div class="actions">
+      <button id="profileBtn">Profile</button>
+      <button id="cartBtn">Cart (<span id="cartCount">0</span>)</button>
     </div>
   </header>
-  <div id="toast-container"></div>
 
-  <div id="profileSection"></div>
-  <div id="cartSection">
-    <h3>Your Cart</h3>
-    <div id="cartItems"></div>
-    <p id="cartTotal">Total: 0 ETH</p>
-    <button id="checkoutBtn" class="btn">Checkout</button>
-  </div>
-
-  <main>
-    <section id="items"></section>
+  <main style="padding:20px;">
+    <h2>Items</h2>
+    <div>
+      <button onclick="addToCart('Duck Plush', 20)">Add Duck Plush - $20</button>
+      <button onclick="addToCart('Keychain', 5)">Add Keychain - $5</button>
+      <button onclick="addToCart('Sticker Pack', 3)">Add Sticker Pack - $3</button>
+    </div>
   </main>
 
-  <footer>
-    <p>Follow Quacker Friends:</p>
-    <a href="https://x.com/" target="_blank"><i class="fab fa-x fa-lg"></i></a>
-    <a href="https://www.tiktok.com/" target="_blank"><i class="fab fa-tiktok fa-lg"></i></a>
-    <a href="https://www.instagram.com/" target="_blank"><i class="fab fa-instagram fa-lg"></i></a>
-  </footer>
+  <!-- Cart Popup -->
+  <div id="cartPopup" class="popup">
+    <button class="close-btn" onclick="closePopup('cartPopup')">X</button>
+    <h2>Your Cart</h2>
+    <div id="cartItems" class="cart-items"></div>
+    <p><strong>Total: $<span id="cartTotal">0</span></strong></p>
+    <input id="walletInput" placeholder="Enter wallet address" style="width:100%; margin-bottom:10px;">
+    <input id="addressInput" placeholder="Enter shipping address" style="width:100%; margin-bottom:10px;">
+    <button onclick="checkout()">Checkout</button>
+  </div>
+
+  <!-- Profile Popup -->
+  <div id="profilePopup" class="popup">
+    <button class="close-btn" onclick="closePopup('profilePopup')">X</button>
+    <h2>Your Profile</h2>
+    <div class="profile-content">
+      <p><strong>Wallet:</strong> <span id="profileWallet">Not connected</span></p>
+      <p><strong>Claim Status:</strong> <span id="claimStatus">Checking...</span></p>
+    </div>
+  </div>
 
   <script>
-    const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
-    const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"}];
-    const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbzu2RjvJf8-SyRIekMh53JODYZxoPXQpjJ2aGTqIHd93HgEZpnXcVC_zxoJbJt51zqSuQ/exec";
-    const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
+    const scriptUrl = "https://script.google.com/macros/s/AKfycbzu2RjvJf8-SyRIekMh53JODYZxoPXQpjJ2aGTqIHd93HgEZpnXcVC_zxoJbJt51zqSuQ/exec";
 
-    const PRODUCTS = [
-      { id: "pumpkin-keychain", title: "Pumpkin Crochet Keychain", price: "0.001", img: "https://via.placeholder.com/400x300?text=Pumpkin+Keychain" },
-      { id: "cat-beanie", title: "Cat Beanie", price: "0.0025", img: "https://via.placeholder.com/400x300?text=Cat+Beanie" },
-      { id: "pumpkin-duck", title: "Pumpkin Duck Plushie", price: "0.005", img: "https://via.placeholder.com/400x300?text=Pumpkin+Duck+Plushie" }
-    ];
-
-    let userAddress = null;
-    let web3 = null;
     let cart = [];
 
-    function showToast(message, type="info", duration=3000) {
-      const container = document.getElementById("toast-container");
-      const toast = document.createElement("div");
-      toast.className = `toast ${type}`;
-      toast.innerHTML = `<span>${message}</span><span class="close-btn" onclick="this.parentElement.remove()">✕</span>`;
-      container.appendChild(toast);
-      setTimeout(()=>toast.remove(), duration);
-    }
-
-    function renderItems() {
-      const container = document.getElementById("items");
-      container.innerHTML = "";
-      PRODUCTS.forEach(p=>{
-        const el=document.createElement("div");
-        el.className="item";
-        el.innerHTML=`
-          <img src="${p.img}" alt="${p.title}" />
-          <h3>${p.title}</h3>
-          <p class="price">${p.price} ETH</p>
-          <button class="btn" data-id="${p.id}">Add to Cart</button>
-        `;
-        container.appendChild(el);
-      });
-      document.querySelectorAll("#items button").forEach(btn=>{
-        btn.addEventListener("click",()=>{
-          const product=PRODUCTS.find(x=>x.id===btn.dataset.id);
-          cart.push(product);
-          updateCartUI();
-          showToast("🛒 Added to cart","success");
-        });
-      });
-    }
-
-    function updateCartUI() {
-      const btn=document.getElementById("cartButton");
-      btn.style.display="inline-block";
-      btn.innerText=`🛒 Cart (${cart.length})`;
-
-      const itemsDiv=document.getElementById("cartItems");
-      itemsDiv.innerHTML="";
-      let total=0;
-      cart.forEach((p,i)=>{
-        total+=parseFloat(p.price);
-        const row=document.createElement("p");
-        row.innerHTML=`${p.title} - ${p.price} ETH <button onclick="removeFromCart(${i})">❌</button>`;
-        itemsDiv.appendChild(row);
-      });
-      document.getElementById("cartTotal").innerText="Total: "+total+" ETH";
-    }
-
-    function removeFromCart(i){
-      cart.splice(i,1);
+    function addToCart(item, price) {
+      cart.push({ item, price });
       updateCartUI();
     }
 
-    document.getElementById("cartButton").addEventListener("click",()=>{
-      const panel=document.getElementById("cartSection");
-      panel.style.display=(panel.style.display==="block")?"none":"block";
-    });
-
-    document.getElementById("checkoutBtn").addEventListener("click",async()=>{
-      if(!userAddress||!web3){showToast("Connect wallet first","warn");return;}
-      if(cart.length===0){showToast("Cart is empty","warn");return;}
-      const shipping=prompt("Enter shipping address:");
-      if(!shipping){showToast("Checkout canceled","info");return;}
-      const total=cart.reduce((s,p)=>s+parseFloat(p.price),0);
-      try {
-        const valueInWei=web3.utils.toWei(total.toString(),"ether");
-        const tx=await web3.eth.sendTransaction({from:userAddress,to:SHOP_WALLET,value:valueInWei});
-        if(tx&&tx.transactionHash){
-          const itemsStr=cart.map(p=>p.title).join(", ");
-          await fetch(`${CLAIM_SHEET_API}?item=${encodeURIComponent(itemsStr)}&wallet=${userAddress}&price=${total}&address=${encodeURIComponent(shipping)}`);
-          showToast("✅ Checkout complete!","success");
-          cart=[];
-          updateCartUI();
-          document.getElementById("cartSection").style.display="none";
-        }
-      }catch(err){
-        console.error(err);
-        showToast("⚠️ Checkout failed","error");
-      }
-    });
-
-    async function connectWallet(){
-      if(!window.ethereum){showToast("Install MetaMask","warn");return;}
-      web3=new Web3(window.ethereum);
-      const accounts=await ethereum.request({method:"eth_requestAccounts"});
-      userAddress=accounts[0];
-      document.getElementById("connectWallet").innerText=userAddress.slice(0,6)+"..."+userAddress.slice(-4);
-      showToast("Wallet connected","success");
+    function updateCartUI() {
+      document.getElementById('cartCount').innerText = cart.length;
+      const cartItemsDiv = document.getElementById('cartItems');
+      cartItemsDiv.innerHTML = "";
+      let total = 0;
+      cart.forEach((c, i) => {
+        total += c.price;
+        cartItemsDiv.innerHTML += `
+          <div class="cart-item">
+            <span>${c.item} - $${c.price}</span>
+            <button onclick="removeFromCart(${i})">Remove</button>
+          </div>`;
+      });
+      document.getElementById('cartTotal').innerText = total;
     }
 
-    document.getElementById("connectWallet").addEventListener("click",connectWallet);
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      updateCartUI();
+    }
 
-    renderItems();
+    function checkout() {
+      const wallet = document.getElementById('walletInput').value;
+      const address = document.getElementById('addressInput').value;
+      if (!wallet || !address || cart.length === 0) {
+        alert("Please fill wallet, address, and have at least 1 item.");
+        return;
+      }
+      const items = cart.map(c => c.item).join(", ");
+      const total = cart.reduce((sum, c) => sum + c.price, 0);
+      fetch(`${scriptUrl}?wallet=${encodeURIComponent(wallet)}&address=${encodeURIComponent(address)}&item=${encodeURIComponent(items)}&price=${encodeURIComponent(total)}`)
+        .then(res => res.text())
+        .then(data => {
+          alert("Checkout success: " + data);
+          cart = [];
+          updateCartUI();
+          closePopup('cartPopup');
+        })
+        .catch(err => alert("Error: " + err));
+    }
+
+    // Popup controls
+    const cartPopup = document.getElementById('cartPopup');
+    const profilePopup = document.getElementById('profilePopup');
+
+    document.getElementById('cartBtn').onclick = () => {
+      profilePopup.classList.remove('open');
+      cartPopup.classList.toggle('open');
+    };
+    document.getElementById('profileBtn').onclick = () => {
+      cartPopup.classList.remove('open');
+      profilePopup.classList.toggle('open');
+      loadProfile();
+    };
+
+    function closePopup(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+
+    // Load Profile info
+    function loadProfile() {
+      const wallet = document.getElementById('walletInput').value || "Not connected";
+      document.getElementById('profileWallet').innerText = wallet;
+      if (wallet && wallet !== "Not connected") {
+        fetch(`${scriptUrl}?wallet=${encodeURIComponent(wallet)}&checkClaim=true`)
+          .then(res => res.json())
+          .then(data => {
+            document.getElementById('claimStatus').innerText = data.claimed ? "Already claimed" : "Not claimed";
+          })
+          .catch(() => {
+            document.getElementById('claimStatus').innerText = "Error checking";
+          });
+      } else {
+        document.getElementById('claimStatus').innerText = "No wallet";
+      }
+    }
   </script>
 </body>
 </html>
