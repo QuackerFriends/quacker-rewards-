@@ -393,39 +393,47 @@ if(window.ethereum){
 
 renderItems();
 
-  // Quacks spin logic
-let lastSpinDate = null; // in-memory daily check
-let quacks = 0;          // in-memory Quacks total
+  <script>
+const SPIN_SHEET_API = "https://script.google.com/macros/s/AKfycbwOsIuZi-r_IFGi4F0O7qN9oaLbB6OPbqHfISzpFSi1OXgrW4hhHnpBnk0fCgforU0jTg/exec";
 
-document.getElementById("spinButton").addEventListener("click", spinQuacks);
+// Fetch current Quacks for profile display
+async function fetchQuacks() {
+  if (!userAddress) return;
+  try {
+    const res = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&getQuacks=true`, {cache: "no-store"});
+    const data = await res.json(); // { quacks: number, lastSpin: "YYYY-MM-DD" }
+    document.getElementById("quacksCount").innerText = `Quacks Collected: ${data.quacks || 0}`;
+    return data;
+  } catch (err) {
+    console.error("Failed fetching Quacks:", err);
+    document.getElementById("quacksCount").innerText = "Quacks Collected: 0";
+    return { quacks: 0, lastSpin: null };
+  }
+}
 
+// Spin Quacks function
 async function spinQuacks() {
   if (!userAddress) {
     showToast("Connect wallet first to spin!", "warn");
     return;
   }
 
-  const today = new Date().toISOString().split("T")[0];
-
   try {
-    // Get existing data for wallet
-    const res = await fetch(`https://script.google.com/macros/s/AKfycbw2ruBh7L9mLfWZci-CaeuXd0mzic_k207rDypsQBD8dr-a_cbyd5FpswMBITJD4yXbzg/exec?wallet=${userAddress}&getQuacks=true`, {cache:"no-store"});
-    const data = await res.json(); // expects { quacks: number, lastSpin: "YYYY-MM-DD" }
+    const today = new Date().toISOString().split("T")[0];
+    const data = await fetchQuacks();
 
     if (data.lastSpin === today) {
       showToast("You've already spun today! Come back tomorrow.", "info");
       return;
     }
 
-    // Determine spin amount
-    let spinAmount = 5; // default non-holder
+    // Determine spin amount: holders 10, non-holders 5
     const nftBalance = parseInt(document.getElementById("nftCount").innerText.replace(/\D/g,"")) || 0;
-    if (nftBalance > 0) spinAmount = 10; // holder reward
-
+    const spinAmount = nftBalance > 0 ? 10 : 5;
     const newTotal = (data.quacks || 0) + spinAmount;
 
-    // Update sheet via API
-    const updateRes = await fetch(`https://script.google.com/macros/s/AKfycbw2ruBh7L9mLfWZci-CaeuXd0mzic_k207rDypsQBD8dr-a_cbyd5FpswMBITJD4yXbzg/exec?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`);
+    // Update sheet
+    const updateRes = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`);
     const updateText = await updateRes.text();
 
     if (updateText.includes("Success")) {
@@ -440,6 +448,20 @@ async function spinQuacks() {
     showToast("Error spinning wheel", "warn");
   }
 }
+
+// Attach to profile spin button
+document.getElementById("spinButton").addEventListener("click", spinQuacks);
+
+// Ensure Quacks count updates when profile panel opens
+async function fetchProfileWithQuacks() {
+  await fetchProfile();
+  await fetchQuacks();
+}
+
+// Replace profile button click
+document.getElementById("profileButton").addEventListener("click", fetchProfileWithQuacks);
+</script>
+
 
 </script>
 </body>
