@@ -93,6 +93,15 @@
     #cartItems p {margin:4px 0;}
     #cartTotal {font-weight:bold;margin-top:8px;}
     #cartSection button {margin-top:8px;width:100%;}
+    
+/* Fix profile panel buttons text color */
+#profileSection .btn.secondary {
+  color: #333 !important;
+  background: #f1f1f1;
+}
+#profileSection .btn.secondary:hover {
+  background: #e9e9e9;
+}
 
     #toast-container {
       position: fixed;
@@ -260,28 +269,45 @@ document.getElementById("cartButton").addEventListener("click",()=>{
   panel.style.display=(panel.style.display==="block")?"none":"block";
 });
 
-document.getElementById("checkoutBtn").addEventListener("click",async()=>{
-  if(!userAddress||!web3){showToast("Connect wallet first","warn");return;}
-  if(cart.length===0){showToast("Cart is empty","warn");return;}
-  const shipping=prompt("Enter shipping address:");
-  if(!shipping){showToast("Checkout canceled","info");return;}
-  const total=cart.reduce((s,p)=>s+parseFloat(p.price),0);
+document.getElementById("checkoutBtn").addEventListener("click", async () => {
+  if (!userAddress || !web3) { showToast("Connect wallet first","warn"); return; }
+  if (cart.length === 0) { showToast("Cart is empty","warn"); return; }
+
+  const shipping = prompt("Enter shipping address:");
+  if (!shipping) { showToast("Checkout canceled","info"); return; }
+
+  const total = cart.reduce((s,p) => s + parseFloat(p.price), 0);
+
+  let loadingToast = null;
   try {
-    const valueInWei=web3.utils.toWei(total.toString(),"ether");
-    const tx=await web3.eth.sendTransaction({from:userAddress,to:SHOP_WALLET,value:valueInWei});
-    if(tx&&tx.transactionHash){
-      const itemsStr=cart.map(p=>p.title).join(", ");
+    // Show persistent "working" toast
+    loadingToast = document.createElement("div");
+    loadingToast.className = "toast info";
+    loadingToast.innerHTML = `<span>⏳ Purchase in progress, hang tight...</span>`;
+    document.getElementById("toast-container").appendChild(loadingToast);
+
+    const valueInWei = web3.utils.toWei(total.toString(), "ether");
+    const tx = await web3.eth.sendTransaction({ from: userAddress, to: SHOP_WALLET, value: valueInWei });
+
+    if (tx && tx.transactionHash) {
+      const itemsStr = cart.map(p => p.title).join(", ");
       await fetch(`${CLAIM_SHEET_API}?item=${encodeURIComponent(itemsStr)}&wallet=${userAddress}&price=${total}&address=${encodeURIComponent(shipping)}`);
-      showToast("✅ Checkout complete!","success");
-      cart=[];
+      showToast("✅ Checkout complete!", "success");
+      cart = [];
       updateCartUI();
-      document.getElementById("cartSection").style.display="none";
+      document.getElementById("cartSection").style.display = "none";
+    } else {
+      showToast("Transaction failed or rejected", "warn");
     }
-  }catch(err){
+  } catch (err) {
     console.error(err);
-    showToast("⚠️ Checkout failed","error");
+    showToast("⚠️ Checkout failed", "error");
+  } finally {
+    // Remove loading toast
+    if (loadingToast) loadingToast.remove();
   }
 });
+
 
 async function connectWallet(){
   if(!window.ethereum){showToast("Install MetaMask","warn");return;}
