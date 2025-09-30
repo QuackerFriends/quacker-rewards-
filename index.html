@@ -86,6 +86,7 @@
       padding:16px;
       z-index:100;
     }
+    
     #profileSection h3,
     #cartSection h3 {margin-top:0;font-size:16px;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:12px;}
     #profileSection p{margin:6px 0;color:#444}
@@ -165,6 +166,10 @@
 
   <div id="profileSection">
     <h3>User Profile</h3>
+    <!-- Add this inside your profile section -->
+<p id="quacksCount">Quacks Collected: 0</p>
+<button id="spinButton" class="actionBtn">🎡 Spin the Wheel</button>
+
     <p id="walletAddress" class="muted">Not connected</p>
     <p id="ethBalance" class="muted">Balance: —</p>
     <p id="nftCount">NFTs Owned: ...</p>
@@ -387,6 +392,55 @@ if(window.ethereum){
 }
 
 renderItems();
+
+  // Quacks spin logic
+let lastSpinDate = null; // in-memory daily check
+let quacks = 0;          // in-memory Quacks total
+
+document.getElementById("spinButton").addEventListener("click", spinQuacks);
+
+async function spinQuacks() {
+  if (!userAddress) {
+    showToast("Connect wallet first to spin!", "warn");
+    return;
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+
+  try {
+    // Get existing data for wallet
+    const res = await fetch(`https://script.google.com/macros/s/AKfycbw2ruBh7L9mLfWZci-CaeuXd0mzic_k207rDypsQBD8dr-a_cbyd5FpswMBITJD4yXbzg/exec?wallet=${userAddress}&getQuacks=true`, {cache:"no-store"});
+    const data = await res.json(); // expects { quacks: number, lastSpin: "YYYY-MM-DD" }
+
+    if (data.lastSpin === today) {
+      showToast("You've already spun today! Come back tomorrow.", "info");
+      return;
+    }
+
+    // Determine spin amount
+    let spinAmount = 5; // default non-holder
+    const nftBalance = parseInt(document.getElementById("nftCount").innerText.replace(/\D/g,"")) || 0;
+    if (nftBalance > 0) spinAmount = 10; // holder reward
+
+    const newTotal = (data.quacks || 0) + spinAmount;
+
+    // Update sheet via API
+    const updateRes = await fetch(`https://script.google.com/macros/s/AKfycbw2ruBh7L9mLfWZci-CaeuXd0mzic_k207rDypsQBD8dr-a_cbyd5FpswMBITJD4yXbzg/exec?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`);
+    const updateText = await updateRes.text();
+
+    if (updateText.includes("Success")) {
+      document.getElementById("quacksCount").innerText = `Quacks Collected: ${newTotal}`;
+      showToast(`🎉 You earned ${spinAmount} Quack${spinAmount > 1 ? "s" : ""}!`, "success");
+    } else {
+      showToast("Failed to log Quacks, try again later", "warn");
+    }
+
+  } catch (err) {
+    console.error("Spin error:", err);
+    showToast("Error spinning wheel", "warn");
+  }
+}
+
 </script>
 </body>
 </html>
