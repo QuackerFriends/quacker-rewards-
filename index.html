@@ -210,6 +210,9 @@ const PRODUCTS = [
 let userAddress = null;
 let web3 = null;
 let cart = [];
+let spinLocked = false; // 🚫 track if user has already spun today
+
+
 
 // local guard for today's spin to avoid double-hits while server updates propagate
 let lastSpinClient = null;
@@ -411,79 +414,51 @@ renderItems();
   
 // Quacks spin logic - improved guard + loading toast
 document.getElementById("spinButton").addEventListener("click", async () => {
-  const spinBtn = document.getElementById("spinButton");
   if(!userAddress){ 
     showToast("Connect wallet first!","warn"); 
     return; 
   }
 
-  const today = new Date().toISOString().split("T")[0];
-
-  // client-side quick guard
-  if (lastSpinClient === today) {
+  if(spinLocked){ // 🚫 prevent double spin in same session
     showToast("Already spun today! Come back tomorrow.","info");
-    spinBtn.disabled = true;
-    spinBtn.innerText = "🎡 Already spun today";
     return;
   }
 
-  let loadingToast = null;
+  const today = new Date().toISOString().split("T")[0];
+
   try {
-    // persistent loading toast
-    loadingToast = document.createElement("div");
-    loadingToast.className = "toast info";
-    loadingToast.innerHTML = `<span>⏳ Spinning... please wait</span>`;
-    document.getElementById("toast-container").appendChild(loadingToast);
-    spinBtn.disabled = true;
+    const res = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&getQuacks=true`, { cache: "no-store" });
+    const data = await res.json();
 
-    // 1) fetch server record
-    const getRes = await fetch(`${SPIN_SHEET_API}?wallet=${encodeURIComponent(userAddress.toLowerCase())}&getQuacks=true`, { cache: "no-store" });
-    const serverData = await getRes.json();
-
-    // if server says already spun today, update local and bail
-    if (serverData.lastSpin === today) {
-      lastSpinClient = today;
-      document.getElementById("quacksCount").innerText = `Quacks Collected: ${serverData.quacks || 0}`;
+    if(data.lastSpin === today){
+      spinLocked = true; // 🚫 lock for this session
       showToast("Already spun today! Come back tomorrow.","info");
-      spinBtn.innerText = "🎡 Already spun today";
       return;
     }
 
-    // decide reward
+    let spinAmount = 5;
     const nftBalance = parseInt(document.getElementById("nftCount").innerText.replace(/\D/g,"")) || 0;
-    const spinAmount = nftBalance > 0 ? 10 : 5;
-    const newTotal = (serverData.quacks || 0) + spinAmount;
+    if(nftBalance > 0) spinAmount = 10;
 
-    // 2) update server
-    const updateRes = await fetch(`${SPIN_SHEET_API}?wallet=${encodeURIComponent(userAddress.toLowerCase())}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`, { cache: "no-store" });
-    // parse flexible response (JSON preferred)
-    let updateData;
-    try { updateData = await updateRes.json(); } catch(e){ updateData = { success: false }; }
+    const newTotal = (data.quacks || 0) + spinAmount;
 
-    if (updateData && updateData.success) {
-      lastSpinClient = today;
+    const updateRes = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`);
+    const updateData = await updateRes.json();
+
+    if(updateData.success){
       document.getElementById("quacksCount").innerText = `Quacks Collected: ${newTotal}`;
       showToast(`🎉 You earned ${spinAmount} Quack${spinAmount>1?"s":""}!`,"success");
-      spinBtn.innerText = "🎡 Already spun today";
-      spinBtn.disabled = true;
+      spinLocked = true; // 🚫 lock after success
     } else {
-      // if server says reason, show it
-      console.warn("Spin update response:", updateData);
       showToast("Failed to log Quacks, try again later","warn");
-      spinBtn.disabled = false;
-      spinBtn.innerText = "🎡 Spin the Wheel";
     }
 
   } catch(err){
     console.error("Spin error:", err);
     showToast("⚠️ Error spinning wheel","error");
-    // re-enable if not recorded
-    spinBtn.disabled = false;
-    spinBtn.innerText = "🎡 Spin the Wheel";
-  } finally {
-    if (loadingToast) loadingToast.remove();
   }
 });
+
 </script>
 </body>
 </html>
