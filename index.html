@@ -413,50 +413,53 @@ renderItems();
   
 // Quacks spin logic - improved guard + loading toast
 document.getElementById("spinButton").addEventListener("click", async () => {
-  if(!userAddress){ 
-    showToast("Connect wallet first!","warn"); 
-    return; 
-  }
-
-  if(spinLocked){ // 🚫 prevent double spin in same session
-    showToast("Already spun today! Come back tomorrow.","info");
+  if (!userAddress) {
+    showToast("Connect wallet first!", "warn");
     return;
   }
 
   const today = new Date().toISOString().split("T")[0];
 
   try {
+    // 1️⃣ Fetch latest Quacks + lastSpin from sheet
     const res = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&getQuacks=true`, { cache: "no-store" });
     const data = await res.json();
 
-    if(data.lastSpin === today){
-      spinLocked = true; // 🚫 lock for this session
-      showToast("Already spun today! Come back tomorrow.","info");
+    // Prevent spin if already done today
+    if (data.lastSpin === today) {
+      showToast("🎡 Already spun today! Come back tomorrow.", "info");
       return;
     }
 
-    let spinAmount = 5;
-    const nftBalance = parseInt(document.getElementById("nftCount").innerText.replace(/\D/g,"")) || 0;
-    if(nftBalance > 0) spinAmount = 10;
+    // 2️⃣ Determine spin amount
+    const nftBalance = parseInt(document.getElementById("nftCount").innerText.replace(/\D/g, "")) || 0;
+    const spinAmount = nftBalance > 0 ? 10 : 5;
 
     const newTotal = (data.quacks || 0) + spinAmount;
 
-    const updateRes = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`);
+    // 3️⃣ Update sheet with new quacks + lastSpin date
+    const updateRes = await fetch(
+      `${SPIN_SHEET_API}?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`,
+      { cache: "no-store" }
+    );
     const updateData = await updateRes.json();
 
-    if(updateData.success){
+    if (updateData.success) {
+      // ✅ Update frontend immediately
       document.getElementById("quacksCount").innerText = `Quacks Collected: ${newTotal}`;
-      showToast(`🎉 You earned ${spinAmount} Quack${spinAmount>1?"s":""}!`,"success");
-      spinLocked = true; // 🚫 lock after success
+      document.getElementById("spinButton").disabled = true;
+      document.getElementById("spinButton").innerText = "🎡 Already spun today";
+      showToast(`🎉 You earned ${spinAmount} Quack${spinAmount > 1 ? "s" : ""}!`, "success");
     } else {
-      showToast("Failed to log Quacks, try again later","warn");
+      showToast("⚠️ Failed to log Quacks, try again later", "warn");
     }
 
-  } catch(err){
+  } catch (err) {
     console.error("Spin error:", err);
-    showToast("⚠️ Error spinning wheel","error");
+    showToast("⚠️ Error spinning wheel", "error");
   }
 });
+
 
 </script>
 </body>
