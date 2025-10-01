@@ -211,7 +211,9 @@ let userAddress = null;
 let web3 = null;
 let cart = [];
 
-/* ---------------- TOAST ---------------- */
+// local guard for today's spin to avoid double-hits while server updates propagate
+let lastSpinClient = null;
+
 function showToast(message, type="info", duration=3000) {
   const container = document.getElementById("toast-container");
   const toast = document.createElement("div");
@@ -221,7 +223,6 @@ function showToast(message, type="info", duration=3000) {
   setTimeout(()=>toast.remove(), duration);
 }
 
-/* ---------------- SHOP ---------------- */
 function renderItems() {
   const container = document.getElementById("items");
   container.innerHTML = "";
@@ -273,7 +274,6 @@ document.getElementById("cartButton").addEventListener("click",()=>{
   panel.style.display=(panel.style.display==="block")?"none":"block";
 });
 
-/* ---------------- CHECKOUT ---------------- */
 document.getElementById("checkoutBtn").addEventListener("click", async () => {
   if (!userAddress || !web3) { showToast("Connect wallet first","warn"); return; }
   if (cart.length === 0) { showToast("Cart is empty","warn"); return; }
@@ -311,7 +311,7 @@ document.getElementById("checkoutBtn").addEventListener("click", async () => {
   }
 });
 
-/* ---------------- WALLET ---------------- */
+
 async function connectWallet(){
   if(!window.ethereum){showToast("Install MetaMask","warn");return;}
   web3=new Web3(window.ethereum);
@@ -336,9 +336,26 @@ async function fetchProfile() {
   document.getElementById("ethBalance").innerText=`Balance: ${parseFloat(eth).toFixed(4)} ETH`;
 
   try {
-    const res=await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&checkClaim=true`);
-    const data=await res.json();
-    if(data.claimed){
+    // Get quacks + lastSpin from sheet and set local guard
+    const res = await fetch(`${SPIN_SHEET_API}?wallet=${encodeURIComponent((userAddress||"").toLowerCase())}&getQuacks=true`, { cache: "no-store" });
+    const data = await res.json();
+    document.getElementById("quacksCount").innerText = `Quacks Collected: ${data.quacks || 0}`;
+    lastSpinClient = data.lastSpin || null;
+
+    // if already spun today, disable spin button
+    const today = new Date().toISOString().split("T")[0];
+    const spinBtn = document.getElementById("spinButton");
+    if (lastSpinClient === today) {
+      spinBtn.disabled = true;
+      spinBtn.innerText = "🎡 Already spun today";
+    } else {
+      spinBtn.disabled = false;
+      spinBtn.innerText = "🎡 Spin the Wheel";
+    }
+
+    const res2 = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&checkClaim=true`);
+    const data2 = await res2.json();
+    if(data2.claimed){
       document.getElementById("keychainStatus").innerText="✅ Keychain already claimed!";
       document.getElementById("claimSection").innerHTML="";
     } else if(Number(balance)>0){
@@ -349,7 +366,10 @@ async function fetchProfile() {
       document.getElementById("keychainStatus").innerText="Not eligible for keychain.";
       document.getElementById("claimSection").innerHTML="";
     }
-  } catch(err){ console.error(err); showToast("Error checking keychain","warn"); }
+  } catch(err){ 
+    console.error(err); 
+    showToast("Error loading profile / quacks", "warn"); 
+  }
 
   document.getElementById("walletAddress").innerText=userAddress;
 }
@@ -371,62 +391,99 @@ async function claimKeychain(){
 function switchWallet(){
   ethereum.request({method:"wallet_requestPermissions",params:[{eth_accounts:{}}]})
     .then(()=>ethereum.request({method:"eth_requestAccounts"}))
-    .then(a=>{userAddress=a[0];showToast("Wallet switched","info");});
+    .then(accounts=>{ userAddress=accounts[0]; fetchProfile(); showToast("Wallet switched","success"); })
+    .catch(err=>console.error(err));
 }
 
 function disconnectWallet(){
   userAddress=null;
-  document.getElementById("connectWallet").innerText="Connect Wallet";
+  web3=null;
   document.getElementById("profileButton").style.display="none";
+  document.getElementById("connectWallet").innerText="Connect Wallet";
   document.getElementById("profileSection").style.display="none";
   showToast("Wallet disconnected","info");
 }
 
-document.getElementById("connectWallet").addEventListener("click",connectWallet);
 document.getElementById("profileButton").addEventListener("click",fetchProfile);
+document.getElementById("connectWallet").addEventListener("click",connectWallet);
 
-/* ---------------- SPIN WHEEL (fixed daily limit) ---------------- */
+renderItems();
+  
+// Quacks spin logic - improved guard + loading toast
 document.getElementById("spinButton").addEventListener("click", async () => {
-  if (!userAddress) {
-    showToast("Connect wallet first!", "warn");
-    return;
+  const spinBtn = document.getElementById("spinButton");
+  if(!userAddress){ 
+    showToast("Connect wallet first!","warn"); 
+    return; 
   }
 
   const today = new Date().toISOString().split("T")[0];
 
-  try {
-    const res = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&getQuacks=true`, { cache: "no-store" });
-    const data = await res.json(); // { quacks, lastSpin }
+  // client-side quick guard
+  if (lastSpinClient === today) {
+    showToast("Already spun today! Come back tomorrow.","info");
+    spinBtn.disabled = true;
+    spinBtn.innerText = "🎡 Already spun today";
+    return;
+  }
 
-    if (data.lastSpin === today) {
-      showToast("🎡 Already spun today! Come back tomorrow.", "info");
+  let loadingToast = null;
+  try {
+    // persistent loading toast
+    loadingToast = document.createElement("div");
+    loadingToast.className = "toast info";
+    loadingToast.innerHTML = `<span>⏳ Spinning... please wait</span>`;
+    document.getElementById("toast-container").appendChild(loadingToast);
+    spinBtn.disabled = true;
+
+    // 1) fetch server record
+    const getRes = await fetch(`${SPIN_SHEET_API}?wallet=${encodeURIComponent(userAddress.toLowerCase())}&getQuacks=true`, { cache: "no-store" });
+    const serverData = await getRes.json();
+
+    // if server says already spun today, update local and bail
+    if (serverData.lastSpin === today) {
+      lastSpinClient = today;
+      document.getElementById("quacksCount").innerText = `Quacks Collected: ${serverData.quacks || 0}`;
+      showToast("Already spun today! Come back tomorrow.","info");
+      spinBtn.innerText = "🎡 Already spun today";
       return;
     }
 
-    const nftBalance = parseInt(document.getElementById("nftCount").innerText.replace(/\D/g, "")) || 0;
+    // decide reward
+    const nftBalance = parseInt(document.getElementById("nftCount").innerText.replace(/\D/g,"")) || 0;
     const spinAmount = nftBalance > 0 ? 10 : 5;
-    const newTotal = (data.quacks || 0) + spinAmount;
+    const newTotal = (serverData.quacks || 0) + spinAmount;
 
-    const updateRes = await fetch(
-      `${SPIN_SHEET_API}?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`,
-      { cache: "no-store" }
-    );
-    const updateData = await updateRes.json();
+    // 2) update server
+    const updateRes = await fetch(`${SPIN_SHEET_API}?wallet=${encodeURIComponent(userAddress.toLowerCase())}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`, { cache: "no-store" });
+    // parse flexible response (JSON preferred)
+    let updateData;
+    try { updateData = await updateRes.json(); } catch(e){ updateData = { success: false }; }
 
-    if (updateData.success) {
+    if (updateData && updateData.success) {
+      lastSpinClient = today;
       document.getElementById("quacksCount").innerText = `Quacks Collected: ${newTotal}`;
-      showToast(`🎉 You earned ${spinAmount} Quack${spinAmount > 1 ? "s" : ""}!`, "success");
+      showToast(`🎉 You earned ${spinAmount} Quack${spinAmount>1?"s":""}!`,"success");
+      spinBtn.innerText = "🎡 Already spun today";
+      spinBtn.disabled = true;
     } else {
-      showToast("⚠️ Failed to log Quacks, try again later", "warn");
+      // if server says reason, show it
+      console.warn("Spin update response:", updateData);
+      showToast("Failed to log Quacks, try again later","warn");
+      spinBtn.disabled = false;
+      spinBtn.innerText = "🎡 Spin the Wheel";
     }
-  } catch (err) {
+
+  } catch(err){
     console.error("Spin error:", err);
-    showToast("⚠️ Error spinning wheel", "error");
+    showToast("⚠️ Error spinning wheel","error");
+    // re-enable if not recorded
+    spinBtn.disabled = false;
+    spinBtn.innerText = "🎡 Spin the Wheel";
+  } finally {
+    if (loadingToast) loadingToast.remove();
   }
 });
-
-/* ---------------- INIT ---------------- */
-window.addEventListener("load",renderItems);
 </script>
 </body>
 </html>
