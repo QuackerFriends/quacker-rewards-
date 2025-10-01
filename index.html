@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -211,6 +211,7 @@ let userAddress = null;
 let web3 = null;
 let cart = [];
 
+/* ---------------- TOAST ---------------- */
 function showToast(message, type="info", duration=3000) {
   const container = document.getElementById("toast-container");
   const toast = document.createElement("div");
@@ -220,6 +221,7 @@ function showToast(message, type="info", duration=3000) {
   setTimeout(()=>toast.remove(), duration);
 }
 
+/* ---------------- SHOP ---------------- */
 function renderItems() {
   const container = document.getElementById("items");
   container.innerHTML = "";
@@ -271,6 +273,7 @@ document.getElementById("cartButton").addEventListener("click",()=>{
   panel.style.display=(panel.style.display==="block")?"none":"block";
 });
 
+/* ---------------- CHECKOUT ---------------- */
 document.getElementById("checkoutBtn").addEventListener("click", async () => {
   if (!userAddress || !web3) { showToast("Connect wallet first","warn"); return; }
   if (cart.length === 0) { showToast("Cart is empty","warn"); return; }
@@ -308,7 +311,7 @@ document.getElementById("checkoutBtn").addEventListener("click", async () => {
   }
 });
 
-
+/* ---------------- WALLET ---------------- */
 async function connectWallet(){
   if(!window.ethereum){showToast("Install MetaMask","warn");return;}
   web3=new Web3(window.ethereum);
@@ -368,25 +371,21 @@ async function claimKeychain(){
 function switchWallet(){
   ethereum.request({method:"wallet_requestPermissions",params:[{eth_accounts:{}}]})
     .then(()=>ethereum.request({method:"eth_requestAccounts"}))
-    .then(accounts=>{ userAddress=accounts[0]; fetchProfile(); showToast("Wallet switched","success"); })
-    .catch(err=>console.error(err));
+    .then(a=>{userAddress=a[0];showToast("Wallet switched","info");});
 }
 
 function disconnectWallet(){
   userAddress=null;
-  web3=null;
-  document.getElementById("profileButton").style.display="none";
   document.getElementById("connectWallet").innerText="Connect Wallet";
+  document.getElementById("profileButton").style.display="none";
   document.getElementById("profileSection").style.display="none";
   showToast("Wallet disconnected","info");
 }
 
-document.getElementById("profileButton").addEventListener("click",fetchProfile);
 document.getElementById("connectWallet").addEventListener("click",connectWallet);
+document.getElementById("profileButton").addEventListener("click",fetchProfile);
 
-renderItems();
-  
- // Quacks spin logic
+/* ---------------- SPIN WHEEL (fixed daily limit) ---------------- */
 document.getElementById("spinButton").addEventListener("click", async () => {
   if (!userAddress) {
     showToast("Connect wallet first!", "warn");
@@ -396,22 +395,18 @@ document.getElementById("spinButton").addEventListener("click", async () => {
   const today = new Date().toISOString().split("T")[0];
 
   try {
-    // 🔄 Fetch current data from sheet
     const res = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&getQuacks=true`, { cache: "no-store" });
     const data = await res.json(); // { quacks, lastSpin }
 
-    // 🚫 Already spun today
     if (data.lastSpin === today) {
       showToast("🎡 Already spun today! Come back tomorrow.", "info");
       return;
     }
 
-    // 🎁 Spin reward
     const nftBalance = parseInt(document.getElementById("nftCount").innerText.replace(/\D/g, "")) || 0;
     const spinAmount = nftBalance > 0 ? 10 : 5;
     const newTotal = (data.quacks || 0) + spinAmount;
 
-    // ✅ Update quacks + lastSpin in sheet
     const updateRes = await fetch(
       `${SPIN_SHEET_API}?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`,
       { cache: "no-store" }
@@ -424,15 +419,14 @@ document.getElementById("spinButton").addEventListener("click", async () => {
     } else {
       showToast("⚠️ Failed to log Quacks, try again later", "warn");
     }
-
   } catch (err) {
     console.error("Spin error:", err);
     showToast("⚠️ Error spinning wheel", "error");
   }
 });
 
-
-
+/* ---------------- INIT ---------------- */
+window.addEventListener("load",renderItems);
 </script>
 </body>
 </html>
