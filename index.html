@@ -396,16 +396,19 @@ document.getElementById("spinButton").addEventListener("click", async () => {
   const today = new Date().toISOString().split("T")[0];
 
   try {
-    // Get current quacks
+    // Get current quacks + lastSpin
     const res = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&getQuacks=true`, { cache: "no-store" });
-    const data = await res.json(); // expects { quacks: number, lastSpin: "YYYY-MM-DD" }
+    const data = await res.json();
+
+    console.log("Profile fetch:", data); // 🐞 debug
 
     if(data.lastSpin === today){
       showToast("Already spun today! Come back tomorrow.","info");
       return;
     }
 
-    let spinAmount = 5; // non-holder default
+    // Decide spin reward
+    let spinAmount = 5;
     const nftBalance = parseInt(document.getElementById("nftCount").innerText.replace(/\D/g,"")) || 0;
     if(nftBalance > 0) spinAmount = 10;
 
@@ -414,6 +417,8 @@ document.getElementById("spinButton").addEventListener("click", async () => {
     // Update sheet
     const updateRes = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`);
     const updateData = await updateRes.json();
+
+    console.log("Update response:", updateData); // 🐞 debug
 
     if(updateData.success){
       document.getElementById("quacksCount").innerText = `Quacks Collected: ${newTotal}`;
@@ -429,7 +434,6 @@ document.getElementById("spinButton").addEventListener("click", async () => {
     showToast("⚠️ Error spinning wheel","error");
   }
 });
-
 
 
 </script>
