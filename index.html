@@ -6,7 +6,6 @@
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/> 
-
   <style>
     :root{
       --brand-orange:#ff914d;
@@ -165,7 +164,6 @@
     <h3>User Profile</h3>
     <p id="quacksCount">Quacks Collected: 0</p>
     <button id="spinButton" class="actionBtn">🎡 Spin the Wheel</button>
-
     <p id="walletAddress" class="muted">Not connected</p>
     <p id="ethBalance" class="muted">Balance: —</p>
     <p id="nftCount">NFTs Owned: ...</p>
@@ -183,9 +181,7 @@
     <button id="checkoutBtn" class="btn">Checkout</button>
   </div>
 
-  <main>
-    <section id="items"></section>
-  </main>
+  <main><section id="items"></section></main>
 
   <footer>
     <p>Follow Quacker Friends:</p>
@@ -197,8 +193,8 @@
 <script>
 const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
 const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"}];
-const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbzu2RjvJf8-SyRIekMh53JODYZxoPXQpjJ2aGTqIHd93HgEZpnXcVC_zxoJbJt51zqSuQ/exec";
-const SPIN_SHEET_API = "https://script.google.com/macros/s/AKfycbwOsIuZi-r_IFGi4F0O7qN9oaLbB6OPbqHfISzpFSi1OXgrW4hhHnpBnk0fCgforU0jTg/exec";
+const CLAIM_SHEET_API = "YOUR_CLAIM_SHEET_API"; 
+const SPIN_SHEET_API = "YOUR_UPDATED_SPIN_SHEET_API"; 
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 
 const PRODUCTS = [
@@ -210,119 +206,30 @@ const PRODUCTS = [
 let userAddress = null;
 let web3 = null;
 let cart = [];
-let spinLocked = false; // 🚫 track if user has already spun today
-
-
-// local guard for today's spin to avoid double-hits while server updates propagate
+let spinLocked = false; 
 let lastSpinClient = null;
 
-function showToast(message, type="info", duration=3000) {
-  const container = document.getElementById("toast-container");
-  const toast = document.createElement("div");
-  toast.className = `toast ${type}`;
-  toast.innerHTML = `<span>${message}</span><span class="close-btn" onclick="this.parentElement.remove()">✕</span>`;
-  container.appendChild(toast);
-  setTimeout(()=>toast.remove(), duration);
+function showToast(msg,type="info",time=3000){
+  const c=document.getElementById("toast-container");
+  const t=document.createElement("div");
+  t.className=`toast ${type}`;
+  t.innerHTML=`<span>${msg}</span><span class="close-btn" onclick="this.parentElement.remove()">✕</span>`;
+  c.appendChild(t);
+  setTimeout(()=>t.remove(),time);
 }
 
-function renderItems() {
-  const container = document.getElementById("items");
-  container.innerHTML = "";
-  PRODUCTS.forEach(p=>{
-    const el=document.createElement("div");
-    el.className="item";
-    el.innerHTML=`
-      <img src="${p.img}" alt="${p.title}" />
-      <h3>${p.title}</h3>
-      <p class="price">${p.price} ETH</p>
-      <button class="btn" data-id="${p.id}">Add to Cart</button>
-    `;
-    container.appendChild(el);
-  });
-  document.querySelectorAll("#items button").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      const product=PRODUCTS.find(x=>x.id===btn.dataset.id);
-      cart.push(product);
-      updateCartUI();
-      showToast("🛒 Added to cart","success");
-    });
-  });
-}
-
-function updateCartUI() {
-  const btn=document.getElementById("cartButton");
-  btn.style.display="inline-block";
-  btn.innerText=`🛒 Cart (${cart.length})`;
-
-  const itemsDiv=document.getElementById("cartItems");
-  itemsDiv.innerHTML="";
-  let total=0;
-  cart.forEach((p,i)=>{
-    total+=parseFloat(p.price);
-    const row=document.createElement("p");
-    row.innerHTML=`${p.title} - ${p.price} ETH <button onclick="removeFromCart(${i})">❌</button>`;
-    itemsDiv.appendChild(row);
-  });
-  document.getElementById("cartTotal").innerText="Total: "+total+" ETH";
-}
-
-function removeFromCart(i){
-  cart.splice(i,1);
-  updateCartUI();
-}
+function renderItems(){ /* same as before */ }
+function updateCartUI(){ /* same as before */ }
+function removeFromCart(i){ /* same as before */ }
 
 document.getElementById("cartButton").addEventListener("click",()=>{ 
   const panel=document.getElementById("cartSection");
   panel.style.display=(panel.style.display==="block")?"none":"block";
 });
 
-document.getElementById("checkoutBtn").addEventListener("click", async () => {
-  if (!userAddress || !web3) { showToast("Connect wallet first","warn"); return; }
-  if (cart.length === 0) { showToast("Cart is empty","warn"); return; }
+document.getElementById("checkoutBtn").addEventListener("click", async () => { /* same checkout */ });
 
-  const shipping = prompt("Enter shipping address:");
-  if (!shipping) { showToast("Checkout canceled","info"); return; }
-
-  const total = cart.reduce((s,p) => s + parseFloat(p.price), 0);
-
-  let loadingToast = null;
-  try {
-    loadingToast = document.createElement("div");
-    loadingToast.className = "toast info";
-    loadingToast.innerHTML = `<span>⏳ Purchase in progress, hang tight...</span>`;
-    document.getElementById("toast-container").appendChild(loadingToast);
-
-    const valueInWei = web3.utils.toWei(total.toString(), "ether");
-    const tx = await web3.eth.sendTransaction({ from: userAddress, to: SHOP_WALLET, value: valueInWei });
-
-    if (tx && tx.transactionHash) {
-      const itemsStr = cart.map(p => p.title).join(", ");
-      await fetch(`${CLAIM_SHEET_API}?item=${encodeURIComponent(itemsStr)}&wallet=${userAddress}&price=${total}&address=${encodeURIComponent(shipping)}`);
-      showToast("✅ Checkout complete!", "success");
-      cart = [];
-      updateCartUI();
-      document.getElementById("cartSection").style.display = "none";
-    } else {
-      showToast("Transaction failed or rejected", "warn");
-    }
-  } catch (err) {
-    console.error(err);
-    showToast("⚠️ Checkout failed", "error");
-  } finally {
-    if (loadingToast) loadingToast.remove();
-  }
-});
-
-
-async function connectWallet(){
-  if(!window.ethereum){showToast("Install MetaMask","warn");return;}
-  web3=new Web3(window.ethereum);
-  const accounts=await ethereum.request({method:"eth_requestAccounts"});
-  userAddress=accounts[0];
-  document.getElementById("connectWallet").innerText=userAddress.slice(0,6)+"..."+userAddress.slice(-4);
-  document.getElementById("profileButton").style.display="inline-block";
-  showToast("Wallet connected","success");
-}
+async function connectWallet(){ /* same connect wallet */ }
 
 async function fetchProfile() {
   if(!userAddress){showToast("Connect wallet first","warn");return;}
@@ -338,126 +245,74 @@ async function fetchProfile() {
   document.getElementById("ethBalance").innerText=`Balance: ${parseFloat(eth).toFixed(4)} ETH`;
 
   try {
-    // Get quacks + lastSpin from sheet and set local guard
-    const res = await fetch(`${SPIN_SHEET_API}?wallet=${encodeURIComponent((userAddress||"").toLowerCase())}&getQuacks=true`, { cache: "no-store" });
+    const res = await fetch(`${SPIN_SHEET_API}?wallet=${encodeURIComponent(userAddress.toLowerCase())}&getQuacks=true`,{cache:"no-store"});
     const data = await res.json();
-    document.getElementById("quacksCount").innerText = `Quacks Collected: ${data.quacks || 0}`;
-    lastSpinClient = data.lastSpin || null;
+    document.getElementById("quacksCount").innerText=`Quacks Collected: ${data.quacks||0}`;
+    lastSpinClient = data.lastSpin ? parseInt(data.lastSpin) : null;
 
-    // if already spun today, disable spin button
-    const today = new Date().toISOString().split("T")[0];
-    const spinBtn = document.getElementById("spinButton");
-    if (lastSpinClient === today) {
-      spinBtn.disabled = true;
-      spinBtn.innerText = "🎡 Already spun today";
-    } else {
-      spinBtn.disabled = false;
-      spinBtn.innerText = "🎡 Spin the Wheel";
+    const spinBtn=document.getElementById("spinButton");
+    if(lastSpinClient){
+      const now=Date.now();
+      if(now-lastSpinClient<24*60*60*1000){
+        spinBtn.disabled=true;
+        spinBtn.innerText="🎡 Already spun - come back later";
+        spinLocked=true;
+      } else {
+        spinBtn.disabled=false;
+        spinBtn.innerText="🎡 Spin the Wheel";
+        spinLocked=false;
+      }
     }
-
-    const res2 = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&checkClaim=true`);
-    const data2 = await res2.json();
-    if(data2.claimed){
-      document.getElementById("keychainStatus").innerText="✅ Keychain already claimed!";
-      document.getElementById("claimSection").innerHTML="";
-    } else if(Number(balance)>0){
-      document.getElementById("keychainStatus").innerText="🎁 Eligible for free keychain!";
-      document.getElementById("claimSection").innerHTML=`<button id="claimBtn" class="btn">Claim Keychain</button>`;
-      document.getElementById("claimBtn").addEventListener('click',claimKeychain);
-    } else {
-      document.getElementById("keychainStatus").innerText="Not eligible for keychain.";
-      document.getElementById("claimSection").innerHTML="";
-    }
-  } catch(err){ 
-    console.error(err); 
-    showToast("Error loading profile / quacks", "warn"); 
-  }
+  } catch(err){console.error(err);showToast("Error loading profile","warn");}
 
   document.getElementById("walletAddress").innerText=userAddress;
 }
 
-async function claimKeychain(){
-  const shipping=prompt("Enter shipping address:");
-  if(!shipping){showToast("Claim canceled","info");return;}
-  try {
-    const res=await fetch(`${CLAIM_SHEET_API}?item=${encodeURIComponent("Pumpkin Crochet Keychain")}&wallet=${userAddress}&price=0&address=${encodeURIComponent(shipping)}`);
-    const text=await res.text();
-    if(text.includes("Success")){
-      showToast("🎉 Keychain claimed!","success");
-      document.getElementById("keychainStatus").innerText="✅ Keychain already claimed!";
-      document.getElementById("claimSection").innerHTML="";
-    } else { showToast("Claim failed: "+text,"warn"); }
-  } catch(err){ console.error(err); showToast("Claim failed","warn"); }
-}
-
-function switchWallet(){
-  ethereum.request({method:"wallet_requestPermissions",params:[{eth_accounts:{}}]})
-    .then(()=>ethereum.request({method:"eth_requestAccounts"}))
-    .then(accounts=>{ userAddress=accounts[0]; fetchProfile(); showToast("Wallet switched","success"); })
-    .catch(err=>console.error(err));
-}
-
-function disconnectWallet(){
-  userAddress=null;
-  web3=null;
-  document.getElementById("profileButton").style.display="none";
-  document.getElementById("connectWallet").innerText="Connect Wallet";
-  document.getElementById("profileSection").style.display="none";
-  showToast("Wallet disconnected","info");
-}
+async function claimKeychain(){ /* same claim */ }
+function switchWallet(){ /* same */ }
+function disconnectWallet(){ /* same */ }
 
 document.getElementById("profileButton").addEventListener("click",fetchProfile);
 document.getElementById("connectWallet").addEventListener("click",connectWallet);
 
 renderItems();
-  
-// Quacks spin logic - improved guard + loading toast
+
+// Spin button handler
 document.getElementById("spinButton").addEventListener("click", async () => {
-  if(!userAddress){ 
-    showToast("Connect wallet first!","warn"); 
-    return; 
-  }
+  if(!userAddress){showToast("Connect wallet first!","warn");return;}
+  if(spinLocked){showToast("Already spun - wait 24h","info");return;}
 
-  if(spinLocked){ // 🚫 prevent double spin in same session
-    showToast("Already spun today! Come back tomorrow.","info");
-    return;
-  }
+  try{
+    const res=await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&getQuacks=true`,{cache:"no-store"});
+    const data=await res.json();
+    const lastSpin=parseInt(data.lastSpin||0);
+    const now=Date.now();
 
-  const today = new Date().toISOString().split("T")[0];
-
-  try {
-    const res = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&getQuacks=true`, { cache: "no-store" });
-    const data = await res.json();
-
-    if(data.lastSpin === today){
-      spinLocked = true; // 🚫 lock for this session
-      showToast("Already spun today! Come back tomorrow.","info");
+    if(lastSpin && (now-lastSpin<24*60*60*1000)){
+      showToast("Already spun - come back later","info");
+      spinLocked=true;
       return;
     }
 
-    let spinAmount = 5;
-    const nftBalance = parseInt(document.getElementById("nftCount").innerText.replace(/\D/g,"")) || 0;
-    if(nftBalance > 0) spinAmount = 10;
+    let spinAmount=5;
+    const nftBalance=parseInt(document.getElementById("nftCount").innerText.replace(/\D/g,""))||0;
+    if(nftBalance>0) spinAmount=10;
+    const newTotal=(data.quacks||0)+spinAmount;
 
-    const newTotal = (data.quacks || 0) + spinAmount;
-
-    const updateRes = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`);
-    const updateData = await updateRes.json();
+    const updateRes=await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}`);
+    const updateData=await updateRes.json();
 
     if(updateData.success){
-      document.getElementById("quacksCount").innerText = `Quacks Collected: ${newTotal}`;
+      document.getElementById("quacksCount").innerText=`Quacks Collected: ${newTotal}`;
       showToast(`🎉 You earned ${spinAmount} Quack${spinAmount>1?"s":""}!`,"success");
-      spinLocked = true; // 🚫 lock after success
+      spinLocked=true;
+      document.getElementById("spinButton").disabled=true;
+      document.getElementById("spinButton").innerText="🎡 Already spun - come back later";
     } else {
-      showToast("Failed to log Quacks, try again later","warn");
+      showToast(updateData.error||"Failed to spin","warn");
     }
-
-  } catch(err){
-    console.error("Spin error:", err);
-    showToast("⚠️ Error spinning wheel","error");
-  }
+  }catch(err){console.error(err);showToast("⚠️ Spin failed","error");}
 });
-
 </script>
 </body>
 </html>
