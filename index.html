@@ -1,225 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Quacker Friends Shop</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
-  <style>
-    :root{
-      --brand-green:#6DC8BF;
-    }
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{
-      font-family:'Poppins',sans-serif;
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
-      overflow-x:hidden;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Quacker Friends Shop</title>
 
-    /* ---- ENTER PAGE ---- */
-    #enter-screen{
-      background:url('https://files.catbox.moe/yat7tm.png') center center no-repeat;
-      background-size:cover;
-      width:100%;
-      height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      position:relative;
-    }
-    #enter-screen::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:rgba(0,0,0,0.25);
-    }
-    #enterBtn{
-      position:relative;
-      z-index:2;
-      font-size:1.4rem;
-      padding:16px 40px;
-      background:linear-gradient(180deg,#ffb46a,#ff914d);
-      border:none;
-      border-radius:999px;
-      color:white;
-      font-weight:700;
-      box-shadow:0 6px 20px rgba(0,0,0,0.2);
-      cursor:pointer;
-      transition:transform .25s, box-shadow .25s;
-    }
-    #enterBtn:hover{
-      transform:scale(1.08);
-      box-shadow:0 10px 26px rgba(0,0,0,0.3);
-    }
+<!-- Font Awesome for social icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    /* ---- INSIDE SHOP ---- */
-    body.inside-shop{
-      background:url('https://files.catbox.moe/itorbb.png') center center no-repeat;
-      background-size:cover;
-      display:flex;
-      flex-direction:column;
-      min-height:100vh;
-      color:#333;
-    }
-    header{
-      background:rgba(255,255,255,0.9);
-      padding:14px 24px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      box-shadow:0 6px 18px rgba(0,0,0,0.08);
-    }
-    header h1{margin:0;font-size:20px;display:flex;align-items:center;gap:10px;}
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-    main{
-      flex:1;
-      padding:30px 20px;
-      max-width:1100px;
-      margin:0 auto;
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-      gap:22px;
-    }
+body, html {
+  height: 100%;
+  font-family: "Poppins", sans-serif;
+  overflow-x: hidden;
+}
 
-    .item{
-      text-align:center;
-      transition:transform 0.25s ease, filter 0.25s ease;
-      cursor:pointer;
-    }
-    .item img{
-      width:100%;
-      max-width:260px;
-      transition:transform 0.3s ease;
-    }
-    .item:hover img{
-      transform:scale(1.08);
-      filter:drop-shadow(0 10px 12px rgba(0,0,0,0.2));
-    }
+/* ===== LANDING SCREEN ===== */
+#landingScreen {
+  background: url('https://files.catbox.moe/yat7tm.png') no-repeat center center;
+  background-size: cover;
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  transition: all 1s ease-in-out;
+}
 
-    /* ---- PRODUCT CARD POPUP ---- */
-    .product-card{
-      position:fixed;
-      top:0;left:0;
-      width:100%;
-      height:100%;
-      background:rgba(0,0,0,0.5);
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      z-index:1000;
-    }
-    .product-card-content{
-      background:white;
-      border-radius:14px;
-      padding:24px;
-      width:90%;
-      max-width:420px;
-      text-align:center;
-      box-shadow:0 10px 40px rgba(0,0,0,0.25);
-      animation:popUp 0.3s ease forwards;
-      position:relative;
-    }
-    @keyframes popUp{
-      from{transform:scale(0.7);opacity:0;}
-      to{transform:scale(1);opacity:1;}
-    }
-    .product-card-content img{
-      width:100%;
-      border-radius:10px;
-      margin-bottom:12px;
-    }
-    .close-btn{
-      position:absolute;
-      top:12px;
-      right:12px;
-      font-size:1.3rem;
-      cursor:pointer;
-      color:#333;
-    }
-    .price{color:#ff914d;font-weight:700;margin:6px 0 12px;}
+.enter-btn {
+  background-color: #fff;
+  border: none;
+  padding: 16px 36px;
+  font-size: 1.4em;
+  font-weight: bold;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  cursor: pointer;
+  transition: all 0.4s ease;
+}
 
-    /* ---- FOOTER ---- */
-    footer{
-      background:#6DC8BF;
-      color:#fff;
-      text-align:center;
-      padding:20px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      width:100%;
-      margin-top:auto;
-    }
-    footer a{
-      margin:0 10px;
-      color:#fff;
-      transition:opacity 0.2s;
-      text-decoration:none;
-    }
-    footer a:hover{opacity:0.7;}
-    footer i{font-size:1.4rem;}
-  </style>
+.enter-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 25px #fff, 0 0 45px #ffd580;
+}
+
+/* ===== INSIDE SHOP ===== */
+#insideShop {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: url('https://files.catbox.moe/itorbb.png') no-repeat center center fixed;
+  background-size: contain;
+  height: 100vh;
+  position: relative;
+  transition: opacity 1s ease;
+}
+
+/* Header */
+header {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+header button {
+  background-color: #ffcf4d;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+header button:hover {
+  transform: scale(1.1);
+}
+
+/* Product Item PNG */
+.product {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.product:hover {
+  transform: translateX(-50%) scale(1.1);
+}
+
+/* Product Card */
+.product-card {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  width: 320px;
+  text-align: center;
+  padding: 20px;
+  animation: popUp 0.4s ease;
+  z-index: 10;
+}
+
+@keyframes popUp {
+  from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+.product-card img {
+  width: 100%;
+  border-radius: 12px;
+}
+
+.close-card {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 1.3em;
+  cursor: pointer;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 20px;
+  background: #6DC8BF;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: auto;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+}
+
+footer .socials a {
+  color: #333;
+  font-size: 1.5em;
+  margin: 0 10px;
+  transition: all 0.3s ease;
+}
+
+footer .socials a:hover {
+  color: #fff;
+  transform: scale(1.2);
+}
+
+/* Transition Effect */
+.fadeOut {
+  animation: fadeOutZoom 1.2s forwards;
+}
+
+@keyframes fadeOutZoom {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.1); }
+}
+
+.fadeIn {
+  display: flex !important;
+  opacity: 0;
+  animation: fadeInScene 1.2s forwards;
+}
+
+@keyframes fadeInScene {
+  0% { opacity: 0; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+</style>
 </head>
+
 <body>
-  <div id="enter-screen">
-    <button id="enterBtn">ENTER</button>
+  <!-- Landing Screen -->
+  <div id="landingScreen">
+    <button class="enter-btn" onclick="enterShop()">ENTER</button>
   </div>
 
-  <div id="shop" class="hidden">
+  <!-- Inside Shop -->
+  <div id="insideShop" class="inside-shop">
     <header>
-      <h1>🦆 Quacker Friends Shop</h1>
-      <button id="connectWallet" class="btn">Connect Wallet</button>
+      <button>Connect Wallet</button>
     </header>
 
-    <main>
-      <div class="item" id="pumpkin-item">
-        <img src="https://files.catbox.moe/nlii1p.png" alt="Pumpkin Keychain">
-      </div>
-    </main>
+    <!-- Product -->
+    <img src="https://files.catbox.moe/nlii1p.png" class="product" alt="Pumpkin Item" onclick="openProductCard()">
+
+    <!-- Product Card -->
+    <div class="product-card" id="productCard">
+      <span class="close-card" onclick="closeProductCard()">✖</span>
+      <img src="https://via.placeholder.com/300x250.png?text=Your+Product+Photo" alt="Real Product Photo">
+      <h3>Pumpkin Crochet Keychain</h3>
+      <p>$9.99</p>
+      <button style="background:#6DC8BF;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;">Add to Cart</button>
+    </div>
 
     <footer>
-      <p>Follow Quacker Friends:</p>
-      <div>
-        <a href="https://x.com/" target="_blank"><i class="fab fa-x-twitter"></i></a>
-        <a href="https://www.tiktok.com/" target="_blank"><i class="fab fa-tiktok"></i></a>
-        <a href="https://www.instagram.com/" target="_blank"><i class="fab fa-instagram"></i></a>
+      <p>Follow Quacker Friends</p>
+      <div class="socials">
+        <a href="https://x.com/" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
+        <a href="https://www.tiktok.com/" target="_blank"><i class="fa-brands fa-tiktok"></i></a>
+        <a href="https://www.instagram.com/" target="_blank"><i class="fa-brands fa-instagram"></i></a>
       </div>
     </footer>
   </div>
 
   <script>
-    const enterBtn = document.getElementById('enterBtn');
-    const enterScreen = document.getElementById('enter-screen');
-    const shop = document.getElementById('shop');
+  function enterShop() {
+    const landing = document.getElementById("landingScreen");
+    const inside = document.getElementById("insideShop");
+    landing.classList.add("fadeOut");
+    setTimeout(() => {
+      landing.style.display = "none";
+      inside.classList.add("fadeIn");
+    }, 1100);
+  }
 
-    enterBtn.addEventListener('click', () => {
-      document.body.classList.add('inside-shop');
-      enterScreen.style.display = 'none';
-      shop.classList.remove('hidden');
-    });
+  function openProductCard() {
+    document.getElementById("productCard").style.display = "block";
+  }
 
-    // Show product popup
-    const pumpkinItem = document.getElementById('pumpkin-item');
-    pumpkinItem.addEventListener('click', () => {
-      const card = document.createElement('div');
-      card.className = 'product-card';
-      card.innerHTML = `
-        <div class="product-card-content">
-          <span class="close-btn">&times;</span>
-          <img src="https://files.catbox.moe/nlii1p.png" alt="Pumpkin Keychain">
-          <h3>Pumpkin Crochet Keychain</h3>
-          <p class="price">0.001 ETH</p>
-          <button class="btn">Add to Cart</button>
-        </div>
-      `;
-      document.body.appendChild(card);
-
-      card.querySelector('.close-btn').addEventListener('click', () => card.remove());
-      card.addEventListener('click', (e) => { if(e.target === card) card.remove(); });
-    });
+  function closeProductCard() {
+    document.getElementById("productCard").style.display = "none";
+  }
   </script>
 </body>
 </html>
