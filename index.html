@@ -213,6 +213,59 @@
   color: #000;
 }
 
+    /* --- Landing Page (Outside Shop) --- */
+#landing {
+  position: fixed;
+  inset: 0;
+  background: url('https://files.catbox.moe/yat7tm.png') center/cover no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.6s ease;
+}
+
+#enterBtn {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.4rem;
+  padding: 16px 40px;
+  background: #ff914d;
+  border: none;
+  border-radius: 999px;
+  box-shadow: 0 0 18px rgba(255,145,77,0.7);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+#enterBtn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 26px rgba(255,145,77,0.9);
+}
+    /* --- Inside Shop Background Fix --- */
+body.inside-shop {
+  background: url('https://files.catbox.moe/itorbb.png') center center / contain no-repeat;
+  background-color: #f5f7fa;
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+/* Ensure footer stays at bottom */
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+
   </style>
 </head>
 <body>
@@ -242,6 +295,9 @@
 </div>
   <div id="shopContent">
 
+<div id="landing">
+  <button id="enterBtn">ENTER</button>
+</div>
 
   <header>
     <h1>🦆 Quacker Friends Shop</h1>
@@ -606,6 +662,20 @@ document.getElementById("spinButton").addEventListener("click", async () => {
     console.error("Spin error:", err);
     showToast("⚠️ Error spinning wheel","error");
   }
+});
+// --- Landing Page Logic ---
+window.addEventListener("load", () => {
+  const landing = document.getElementById("landing");
+  const enterBtn = document.getElementById("enterBtn");
+
+  // Show landing only until user enters
+  enterBtn.addEventListener("click", () => {
+    landing.style.opacity = "0";
+    setTimeout(() => {
+      landing.style.display = "none";
+      document.body.classList.add("inside-shop");
+    }, 600);
+  });
 });
 
 </script>
