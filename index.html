@@ -1,280 +1,225 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Quacker Friends Shop</title>
-
-  <!-- Font Awesome for social icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
+    :root{
+      --brand-green:#6DC8BF;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'Poppins',sans-serif;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      overflow-x:hidden;
     }
 
-    body {
-      overflow-x: hidden;
+    /* ---- ENTER PAGE ---- */
+    #enter-screen{
+      background:url('https://files.catbox.moe/yat7tm.png') center center no-repeat;
+      background-size:cover;
+      width:100%;
+      height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      position:relative;
+    }
+    #enter-screen::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:rgba(0,0,0,0.25);
+    }
+    #enterBtn{
+      position:relative;
+      z-index:2;
+      font-size:1.4rem;
+      padding:16px 40px;
+      background:linear-gradient(180deg,#ffb46a,#ff914d);
+      border:none;
+      border-radius:999px;
+      color:white;
+      font-weight:700;
+      box-shadow:0 6px 20px rgba(0,0,0,0.2);
+      cursor:pointer;
+      transition:transform .25s, box-shadow .25s;
+    }
+    #enterBtn:hover{
+      transform:scale(1.08);
+      box-shadow:0 10px 26px rgba(0,0,0,0.3);
     }
 
-    /* ===== Landing Screen ===== */
-    #landingScreen {
-      position: fixed;
-      inset: 0;
-      background: #fff url('https://files.catbox.moe/yat7tm.png') center center no-repeat;
-      background-size: cover; /* fills screen perfectly */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      z-index: 9999;
-      opacity: 1;
-      transition: opacity 1s ease, transform 1s ease;
+    /* ---- INSIDE SHOP ---- */
+    body.inside-shop{
+      background:url('https://files.catbox.moe/itorbb.png') center center no-repeat;
+      background-size:cover;
+      display:flex;
+      flex-direction:column;
+      min-height:100vh;
+      color:#333;
+    }
+    header{
+      background:rgba(255,255,255,0.9);
+      padding:14px 24px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    }
+    header h1{margin:0;font-size:20px;display:flex;align-items:center;gap:10px;}
+
+    main{
+      flex:1;
+      padding:30px 20px;
+      max-width:1100px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:22px;
     }
 
-    #enterButton {
-      padding: 18px 48px;
-      font-size: 22px;
-      font-weight: 700;
-      background: linear-gradient(135deg, #ff914d, #ffbb6e);
-      color: white;
-      border: none;
-      border-radius: 999px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25),
-                  0 0 20px rgba(255, 145, 77, 0.8);
-      cursor: pointer;
-      transition: all 0.25s ease;
-      margin-top: 20px;
+    .item{
+      text-align:center;
+      transition:transform 0.25s ease, filter 0.25s ease;
+      cursor:pointer;
+    }
+    .item img{
+      width:100%;
+      max-width:260px;
+      transition:transform 0.3s ease;
+    }
+    .item:hover img{
+      transform:scale(1.08);
+      filter:drop-shadow(0 10px 12px rgba(0,0,0,0.2));
     }
 
-    #enterButton:hover {
-      transform: scale(1.08);
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3),
-                  0 0 28px rgba(255, 145, 77, 0.9);
+    /* ---- PRODUCT CARD POPUP ---- */
+    .product-card{
+      position:fixed;
+      top:0;left:0;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,0.5);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      z-index:1000;
     }
+    .product-card-content{
+      background:white;
+      border-radius:14px;
+      padding:24px;
+      width:90%;
+      max-width:420px;
+      text-align:center;
+      box-shadow:0 10px 40px rgba(0,0,0,0.25);
+      animation:popUp 0.3s ease forwards;
+      position:relative;
+    }
+    @keyframes popUp{
+      from{transform:scale(0.7);opacity:0;}
+      to{transform:scale(1);opacity:1;}
+    }
+    .product-card-content img{
+      width:100%;
+      border-radius:10px;
+      margin-bottom:12px;
+    }
+    .close-btn{
+      position:absolute;
+      top:12px;
+      right:12px;
+      font-size:1.3rem;
+      cursor:pointer;
+      color:#333;
+    }
+    .price{color:#ff914d;font-weight:700;margin:6px 0 12px;}
 
-    /* ===== Inside Shop ===== */
-    body.inside-shop {
-      background: url('https://files.catbox.moe/itorbb.png') center center / cover no-repeat fixed;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
+    /* ---- FOOTER ---- */
+    footer{
+      background:#6DC8BF;
+      color:#fff;
+      text-align:center;
+      padding:20px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      width:100%;
+      margin-top:auto;
     }
-
-    header {
-      padding: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(10px);
+    footer a{
+      margin:0 10px;
+      color:#fff;
+      transition:opacity 0.2s;
+      text-decoration:none;
     }
-
-    header h1 {
-      font-size: 1.8rem;
-      color: #ff914d;
-    }
-
-    main {
-      flex: 1;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* ===== Footer ===== */
-    footer {
-      text-align: center;
-      padding: 20px;
-      background: #A8D5BA; /* Quacker Friends brand green */
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      margin-top: auto;
-    }
-
-    footer p {
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
-
-    footer .socials {
-      display: flex;
-      gap: 16px;
-    }
-
-    footer .socials a {
-      color: #333;
-      font-size: 24px;
-      text-decoration: none;
-      transition: all 0.2s ease;
-    }
-
-    footer .socials a:hover {
-      transform: scale(1.2);
-      color: #ff914d;
-    }
-
-    /* ===== Product Modal ===== */
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.5);
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-    }
-
-    .modal-card {
-      background: white;
-      padding: 20px;
-      border-radius: 20px;
-      max-width: 400px;
-      text-align: center;
-      position: relative;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      animation: fadeIn 0.4s ease;
-    }
-
-    .modal-card img {
-      width: 100%;
-      border-radius: 16px;
-    }
-
-    .modal-close {
-      position: absolute;
-      top: 10px;
-      right: 16px;
-      font-size: 20px;
-      cursor: pointer;
-      color: #ff914d;
-      font-weight: bold;
-    }
-
-    .btn {
-      background: #ff914d;
-      color: white;
-      padding: 10px 24px;
-      border: none;
-      border-radius: 999px;
-      cursor: pointer;
-      font-size: 16px;
-      margin-top: 12px;
-      transition: all 0.2s ease;
-    }
-
-    .btn:hover {
-      transform: scale(1.05);
-      background: #ffa865;
-    }
-
-    /* ===== Enter Transition ===== */
-    .fade-out {
-      opacity: 0;
-      transform: scale(1.05);
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-    }
+    footer a:hover{opacity:0.7;}
+    footer i{font-size:1.4rem;}
   </style>
 </head>
 <body>
-  <!-- Landing Screen -->
-  <div id="landingScreen">
-    <button id="enterButton">ENTER</button>
+  <div id="enter-screen">
+    <button id="enterBtn">ENTER</button>
   </div>
 
-  <!-- Shop Content -->
-  <div id="shopContent" style="display:none;">
+  <div id="shop" class="hidden">
     <header>
       <h1>🦆 Quacker Friends Shop</h1>
-      <div style="display:flex;gap:10px;align-items:center">
-        <button id="cartButton" class="btn secondary" style="display:none">🛒 Cart (0)</button>
-        <button id="connectWallet" class="btn">Connect Wallet</button>
-        <button id="profileButton" class="btn secondary" style="display:none">Profile</button>
-      </div>
+      <button id="connectWallet" class="btn">Connect Wallet</button>
     </header>
 
     <main>
-      <!-- Product Modal -->
-      <div class="modal" id="productModal">
-        <div class="modal-card">
-          <span class="modal-close" id="closeModal">✕</span>
-          <!-- Replace this image with your real product photo -->
-          <img id="modalImage" src="https://placehold.co/400x400?text=Product+Photo" alt="Product">
-          <h3 id="modalTitle"></h3>
-          <div class="price" id="modalPrice"></div>
-          <button class="btn" id="addToCartFromModal">Add to Cart</button>
-        </div>
+      <div class="item" id="pumpkin-item">
+        <img src="https://files.catbox.moe/nlii1p.png" alt="Pumpkin Keychain">
       </div>
-
-      <section id="items">
-        <!-- PNG Shop Item -->
-        <img
-          src="https://files.catbox.moe/nlii1p.png"
-          alt="Pumpkin Crochet Keychain"
-          style="width:180px;cursor:pointer;transition:transform 0.3s ease;"
-          onclick="openProductModal('Pumpkin Crochet Keychain', '$12.00')"
-          onmouseover="this.style.transform='scale(1.1)'"
-          onmouseout="this.style.transform='scale(1)'"
-        >
-      </section>
     </main>
 
     <footer>
-      <p>Follow Quacker Friends</p>
-      <div class="socials">
-        <a href="https://x.com/" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
-        <a href="https://www.tiktok.com/" target="_blank"><i class="fa-brands fa-tiktok"></i></a>
-        <a href="https://www.instagram.com/" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+      <p>Follow Quacker Friends:</p>
+      <div>
+        <a href="https://x.com/" target="_blank"><i class="fab fa-x-twitter"></i></a>
+        <a href="https://www.tiktok.com/" target="_blank"><i class="fab fa-tiktok"></i></a>
+        <a href="https://www.instagram.com/" target="_blank"><i class="fab fa-instagram"></i></a>
       </div>
     </footer>
   </div>
 
   <script>
-    // ===== Enter Animation =====
-    const enterButton = document.getElementById("enterButton");
-    const landing = document.getElementById("landingScreen");
-    const shop = document.getElementById("shopContent");
+    const enterBtn = document.getElementById('enterBtn');
+    const enterScreen = document.getElementById('enter-screen');
+    const shop = document.getElementById('shop');
 
-    enterButton.addEventListener("click", () => {
-      landing.classList.add("fade-out");
-      setTimeout(() => {
-        landing.style.display = "none";
-        shop.style.display = "flex";
-        document.body.classList.add("inside-shop");
-      }, 1000);
+    enterBtn.addEventListener('click', () => {
+      document.body.classList.add('inside-shop');
+      enterScreen.style.display = 'none';
+      shop.classList.remove('hidden');
     });
 
-    // ===== Modal Controls =====
-    function openProductModal(title, price) {
-      document.getElementById("modalTitle").innerText = title;
-      document.getElementById("modalPrice").innerText = price;
-      document.getElementById("productModal").style.display = "flex";
-    }
+    // Show product popup
+    const pumpkinItem = document.getElementById('pumpkin-item');
+    pumpkinItem.addEventListener('click', () => {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.innerHTML = `
+        <div class="product-card-content">
+          <span class="close-btn">&times;</span>
+          <img src="https://files.catbox.moe/nlii1p.png" alt="Pumpkin Keychain">
+          <h3>Pumpkin Crochet Keychain</h3>
+          <p class="price">0.001 ETH</p>
+          <button class="btn">Add to Cart</button>
+        </div>
+      `;
+      document.body.appendChild(card);
 
-    document.getElementById("closeModal").onclick = () => {
-      document.getElementById("productModal").style.display = "none";
-    };
-
-    document.getElementById("addToCartFromModal").onclick = () => {
-      alert("Added to cart!");
-      document.getElementById("productModal").style.display = "none";
-    };
+      card.querySelector('.close-btn').addEventListener('click', () => card.remove());
+      card.addEventListener('click', (e) => { if(e.target === card) card.remove(); });
+    });
   </script>
 </body>
 </html>
