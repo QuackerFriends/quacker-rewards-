@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quacker Friends Shop</title>
+
+  <!-- Font Awesome for social icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
   <style>
     * {
       margin: 0;
@@ -21,7 +25,7 @@
       position: fixed;
       inset: 0;
       background: #fff url('https://files.catbox.moe/yat7tm.png') center center no-repeat;
-      background-size: contain;
+      background-size: cover; /* fills screen perfectly */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -87,12 +91,16 @@
     footer {
       text-align: center;
       padding: 20px;
-      background: #B7E4C7;
+      background: #A8D5BA; /* Quacker Friends brand green */
       color: #333;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      position: relative;
+      bottom: 0;
+      left: 0;
+      width: 100%;
       margin-top: auto;
     }
 
@@ -103,14 +111,14 @@
 
     footer .socials {
       display: flex;
-      gap: 12px;
+      gap: 16px;
     }
 
     footer .socials a {
       color: #333;
-      font-size: 22px;
+      font-size: 24px;
       text-decoration: none;
-      transition: transform 0.2s ease;
+      transition: all 0.2s ease;
     }
 
     footer .socials a:hover {
@@ -206,7 +214,7 @@
       <div class="modal" id="productModal">
         <div class="modal-card">
           <span class="modal-close" id="closeModal">✕</span>
-          <!-- Replace this image URL with your real product photo later -->
+          <!-- Replace this image with your real product photo -->
           <img id="modalImage" src="https://placehold.co/400x400?text=Product+Photo" alt="Product">
           <h3 id="modalTitle"></h3>
           <div class="price" id="modalPrice"></div>
@@ -230,9 +238,9 @@
     <footer>
       <p>Follow Quacker Friends</p>
       <div class="socials">
-        <a href="https://x.com/" target="_blank">🐦</a>
-        <a href="https://www.tiktok.com/" target="_blank">🎵</a>
-        <a href="https://www.instagram.com/" target="_blank">📸</a>
+        <a href="https://x.com/" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
+        <a href="https://www.tiktok.com/" target="_blank"><i class="fa-brands fa-tiktok"></i></a>
+        <a href="https://www.instagram.com/" target="_blank"><i class="fa-brands fa-instagram"></i></a>
       </div>
     </footer>
   </div>
@@ -270,4 +278,3 @@
   </script>
 </body>
 </html>
-
