@@ -163,6 +163,8 @@
 
   <div id="profileSection">
     <h3>User Profile</h3>
+    <p id="quacksCount">Quacks Collected: 0</p>
+    <button id="spinButton" class="actionBtn">🎡 Spin the Wheel</button>
 
     <p id="walletAddress" class="muted">Not connected</p>
     <p id="ethBalance" class="muted">Balance: —</p>
@@ -196,6 +198,7 @@
 const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
 const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"}];
 const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbzu2RjvJf8-SyRIekMh53JODYZxoPXQpjJ2aGTqIHd93HgEZpnXcVC_zxoJbJt51zqSuQ/exec";
+const SPIN_SHEET_API = "https://script.google.com/macros/s/AKfycbwOsIuZi-r_IFGi4F0O7qN9oaLbB6OPbqHfISzpFSi1OXgrW4hhHnpBnk0fCgforU0jTg/exec";
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 
 const PRODUCTS = [
@@ -207,9 +210,12 @@ const PRODUCTS = [
 let userAddress = null;
 let web3 = null;
 let cart = [];
-let claimInProgress = false;
+let spinLocked = false; // 🚫 track if user has already spun today
 
-// show toast helper
+
+// local guard for today's spin to avoid double-hits while server updates propagate
+let lastSpinClient = null;
+
 function showToast(message, type="info", duration=3000) {
   const container = document.getElementById("toast-container");
   const toast = document.createElement("div");
@@ -219,7 +225,6 @@ function showToast(message, type="info", duration=3000) {
   setTimeout(()=>toast.remove(), duration);
 }
 
-// render products
 function renderItems() {
   const container = document.getElementById("items");
   container.innerHTML = "";
@@ -244,7 +249,6 @@ function renderItems() {
   });
 }
 
-// cart UI
 function updateCartUI() {
   const btn=document.getElementById("cartButton");
   btn.style.display="inline-block";
@@ -272,7 +276,6 @@ document.getElementById("cartButton").addEventListener("click",()=>{
   panel.style.display=(panel.style.display==="block")?"none":"block";
 });
 
-// checkout
 document.getElementById("checkoutBtn").addEventListener("click", async () => {
   if (!userAddress || !web3) { showToast("Connect wallet first","warn"); return; }
   if (cart.length === 0) { showToast("Cart is empty","warn"); return; }
@@ -310,7 +313,7 @@ document.getElementById("checkoutBtn").addEventListener("click", async () => {
   }
 });
 
-// wallet connect
+
 async function connectWallet(){
   if(!window.ethereum){showToast("Install MetaMask","warn");return;}
   web3=new Web3(window.ethereum);
@@ -321,123 +324,73 @@ async function connectWallet(){
   showToast("Wallet connected","success");
 }
 
-// helper: format remaining ms into "Xh Ym Zs"
-function formatRemaining(ms){
-  if(ms <= 0) return "0s";
-  const s = Math.floor(ms/1000);
-  const hrs = Math.floor(s/3600);
-  const mins = Math.floor((s%3600)/60);
-  const secs = s%60;
-  let parts = [];
-  if(hrs) parts.push(hrs + "h");
-  if(mins) parts.push(mins + "m");
-  parts.push(secs + "s");
-  return parts.join(" ");
-}
-
-// fetch profile (NFT count, ETH balance, keychain status + 24h cooldown)
 async function fetchProfile() {
   if(!userAddress){showToast("Connect wallet first","warn");return;}
   const panel=document.getElementById("profileSection");
   panel.style.display=(panel.style.display==="block")?"none":"block";
 
+  const contract=new web3.eth.Contract(CONTRACT_ABI,CONTRACT_ADDRESS);
+  const balance=await contract.methods.balanceOf(userAddress).call();
+  document.getElementById("nftCount").innerText="NFTs Owned: "+balance;
+
+  const wei=await web3.eth.getBalance(userAddress);
+  const eth=web3.utils.fromWei(wei,"ether");
+  document.getElementById("ethBalance").innerText=`Balance: ${parseFloat(eth).toFixed(4)} ETH`;
+
   try {
-    const contract=new web3.eth.Contract(CONTRACT_ABI,CONTRACT_ADDRESS);
-    const balance=await contract.methods.balanceOf(userAddress).call();
-    document.getElementById("nftCount").innerText="NFTs Owned: "+balance;
+    // Get quacks + lastSpin from sheet and set local guard
+    const res = await fetch(`${SPIN_SHEET_API}?wallet=${encodeURIComponent((userAddress||"").toLowerCase())}&getQuacks=true`, { cache: "no-store" });
+    const data = await res.json();
+    document.getElementById("quacksCount").innerText = `Quacks Collected: ${data.quacks || 0}`;
+    lastSpinClient = data.lastSpin || null;
 
-    const wei=await web3.eth.getBalance(userAddress);
-    const eth=web3.utils.fromWei(wei,"ether");
-    document.getElementById("ethBalance").innerText=`Balance: ${parseFloat(eth).toFixed(4)} ETH`;
-
-    // server check: returns { claimed: bool, lastClaim: isoString|null } per updated Apps Script
-    const res2 = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(userAddress)}&checkClaim=true`);
-    const data2 = await res2.json();
-
-    const now = Date.now();
-    const msIn24h = 24 * 60 * 60 * 1000;
-
-    // If server returned lastClaim (ISO), parse it
-    let lastClaimISO = data2.lastClaim || null;
-    if (lastClaimISO) {
-      const lastMs = new Date(lastClaimISO).getTime();
-      const diff = now - lastMs;
-      if (diff < msIn24h) {
-        const remaining = msIn24h - diff;
-        document.getElementById("keychainStatus").innerText = `⏳ Next claim available in ${formatRemaining(remaining)}`;
-        document.getElementById("claimSection").innerHTML = "";
-      } else {
-        // >=24h since last claim -> allow if NFT owned
-        if (Number(balance) > 0) {
-          document.getElementById("keychainStatus").innerText="🎁 Eligible for free keychain!";
-          document.getElementById("claimSection").innerHTML=`<button id="claimBtn" class="btn">Claim Keychain</button>`;
-          document.getElementById("claimBtn").addEventListener('click', claimKeychain);
-        } else {
-          document.getElementById("keychainStatus").innerText="Not eligible for keychain.";
-          document.getElementById("claimSection").innerHTML="";
-        }
-      }
+    // if already spun today, disable spin button
+    const today = new Date().toISOString().split("T")[0];
+    const spinBtn = document.getElementById("spinButton");
+    if (lastSpinClient === today) {
+      spinBtn.disabled = true;
+      spinBtn.innerText = "🎡 Already spun today";
     } else {
-      // never claimed before — allow if NFT owned
-      if (Number(balance) > 0) {
-        document.getElementById("keychainStatus").innerText="🎁 Eligible for free keychain!";
-        document.getElementById("claimSection").innerHTML=`<button id="claimBtn" class="btn">Claim Keychain</button>`;
-        document.getElementById("claimBtn").addEventListener('click', claimKeychain);
-      } else {
-        document.getElementById("keychainStatus").innerText="Not eligible for keychain.";
-        document.getElementById("claimSection").innerHTML="";
-      }
+      spinBtn.disabled = false;
+      spinBtn.innerText = "🎡 Spin the Wheel";
     }
 
+    const res2 = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&checkClaim=true`);
+    const data2 = await res2.json();
+    if(data2.claimed){
+      document.getElementById("keychainStatus").innerText="✅ Keychain already claimed!";
+      document.getElementById("claimSection").innerHTML="";
+    } else if(Number(balance)>0){
+      document.getElementById("keychainStatus").innerText="🎁 Eligible for free keychain!";
+      document.getElementById("claimSection").innerHTML=`<button id="claimBtn" class="btn">Claim Keychain</button>`;
+      document.getElementById("claimBtn").addEventListener('click',claimKeychain);
+    } else {
+      document.getElementById("keychainStatus").innerText="Not eligible for keychain.";
+      document.getElementById("claimSection").innerHTML="";
+    }
   } catch(err){ 
     console.error(err); 
-    showToast("Error loading profile", "warn"); 
+    showToast("Error loading profile / quacks", "warn"); 
   }
 
   document.getElementById("walletAddress").innerText=userAddress;
 }
 
-// claim keychain (uses your Apps Script endpoint which appends timestamp server-side)
 async function claimKeychain(){
-  if(claimInProgress) return;
-  if(!userAddress){ showToast("Connect wallet first","warn"); return; }
-
-  const shipping = prompt("Enter shipping address:");
-  if(!shipping){ showToast("Claim canceled","info"); return; }
-
+  const shipping=prompt("Enter shipping address:");
+  if(!shipping){showToast("Claim canceled","info");return;}
   try {
-    claimInProgress = true;
-    const btn = document.getElementById("claimBtn");
-    if(btn) { btn.disabled = true; btn.innerText = "⏳ Claiming..."; }
-
-    // Use the same parameter names your Apps Script expects:
-    // item (or items), wallet, price, address
-    const res = await fetch(`${CLAIM_SHEET_API}?item=${encodeURIComponent("Pumpkin Crochet Keychain")}&wallet=${encodeURIComponent(userAddress)}&price=0&address=${encodeURIComponent(shipping)}`, { method: 'GET' });
-    const text = await res.text();
-
-    if (text && text.toString().toLowerCase().includes("success")) {
+    const res=await fetch(`${CLAIM_SHEET_API}?item=${encodeURIComponent("Pumpkin Crochet Keychain")}&wallet=${userAddress}&price=0&address=${encodeURIComponent(shipping)}`);
+    const text=await res.text();
+    if(text.includes("Success")){
       showToast("🎉 Keychain claimed!","success");
       document.getElementById("keychainStatus").innerText="✅ Keychain already claimed!";
       document.getElementById("claimSection").innerHTML="";
-    } else {
-      console.error('Claim response:', text);
-      showToast("Claim failed: " + (text || "Unknown response"), "warn");
-      // revert button if present
-      if(btn){ btn.disabled = false; btn.innerText = "Claim Keychain"; }
-    }
-  } catch (err) {
-    console.error(err);
-    showToast("Claim failed","warn");
-    const btn = document.getElementById("claimBtn");
-    if(btn){ btn.disabled = false; btn.innerText = "Claim Keychain"; }
-  } finally {
-    claimInProgress = false;
-  }
+    } else { showToast("Claim failed: "+text,"warn"); }
+  } catch(err){ console.error(err); showToast("Claim failed","warn"); }
 }
 
-// wallet helpers
 function switchWallet(){
-  // attempt basic wallet switch flow (will open wallet)
   ethereum.request({method:"wallet_requestPermissions",params:[{eth_accounts:{}}]})
     .then(()=>ethereum.request({method:"eth_requestAccounts"}))
     .then(accounts=>{ userAddress=accounts[0]; fetchProfile(); showToast("Wallet switched","success"); })
@@ -453,11 +406,58 @@ function disconnectWallet(){
   showToast("Wallet disconnected","info");
 }
 
-// event listeners
 document.getElementById("profileButton").addEventListener("click",fetchProfile);
 document.getElementById("connectWallet").addEventListener("click",connectWallet);
 
 renderItems();
+  
+// Quacks spin logic - improved guard + loading toast
+document.getElementById("spinButton").addEventListener("click", async () => {
+  if(!userAddress){ 
+    showToast("Connect wallet first!","warn"); 
+    return; 
+  }
+
+  if(spinLocked){ // 🚫 prevent double spin in same session
+    showToast("Already spun today! Come back tomorrow.","info");
+    return;
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+
+  try {
+    const res = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&getQuacks=true`, { cache: "no-store" });
+    const data = await res.json();
+
+    if(data.lastSpin === today){
+      spinLocked = true; // 🚫 lock for this session
+      showToast("Already spun today! Come back tomorrow.","info");
+      return;
+    }
+
+    let spinAmount = 5;
+    const nftBalance = parseInt(document.getElementById("nftCount").innerText.replace(/\D/g,"")) || 0;
+    if(nftBalance > 0) spinAmount = 10;
+
+    const newTotal = (data.quacks || 0) + spinAmount;
+
+    const updateRes = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`);
+    const updateData = await updateRes.json();
+
+    if(updateData.success){
+      document.getElementById("quacksCount").innerText = `Quacks Collected: ${newTotal}`;
+      showToast(`🎉 You earned ${spinAmount} Quack${spinAmount>1?"s":""}!`,"success");
+      spinLocked = true; // 🚫 lock after success
+    } else {
+      showToast("Failed to log Quacks, try again later","warn");
+    }
+
+  } catch(err){
+    console.error("Spin error:", err);
+    showToast("⚠️ Error spinning wheel","error");
+  }
+});
+
 </script>
 </body>
 </html>
