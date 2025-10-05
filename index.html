@@ -20,7 +20,8 @@
     #landingScreen {
       position: fixed;
       inset: 0;
-      background: url('https://files.catbox.moe/yat7tm.png') center/cover no-repeat;
+      background: #fff url('https://files.catbox.moe/yat7tm.png') center center no-repeat;
+      background-size: contain;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -42,6 +43,7 @@
                   0 0 20px rgba(255, 145, 77, 0.8);
       cursor: pointer;
       transition: all 0.25s ease;
+      margin-top: 20px;
     }
 
     #enterButton:hover {
@@ -81,18 +83,39 @@
       justify-content: center;
     }
 
+    /* ===== Footer ===== */
     footer {
       text-align: center;
       padding: 20px;
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(8px);
+      background: #B7E4C7;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       margin-top: auto;
     }
 
-    footer a {
-      color: #ff914d;
-      margin: 0 8px;
+    footer p {
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    footer .socials {
+      display: flex;
+      gap: 12px;
+    }
+
+    footer .socials a {
+      color: #333;
+      font-size: 22px;
       text-decoration: none;
+      transition: transform 0.2s ease;
+    }
+
+    footer .socials a:hover {
+      transform: scale(1.2);
+      color: #ff914d;
     }
 
     /* ===== Product Modal ===== */
@@ -183,7 +206,8 @@
       <div class="modal" id="productModal">
         <div class="modal-card">
           <span class="modal-close" id="closeModal">✕</span>
-          <img id="modalImage" src="" alt="Product">
+          <!-- Replace this image URL with your real product photo later -->
+          <img id="modalImage" src="https://placehold.co/400x400?text=Product+Photo" alt="Product">
           <h3 id="modalTitle"></h3>
           <div class="price" id="modalPrice"></div>
           <button class="btn" id="addToCartFromModal">Add to Cart</button>
@@ -191,12 +215,12 @@
       </div>
 
       <section id="items">
-        <!-- Example PNG item -->
+        <!-- PNG Shop Item -->
         <img
           src="https://files.catbox.moe/nlii1p.png"
           alt="Pumpkin Crochet Keychain"
           style="width:180px;cursor:pointer;transition:transform 0.3s ease;"
-          onclick="openProductModal('Pumpkin Crochet Keychain', '$12.00', 'https://files.catbox.moe/nlii1p.png')"
+          onclick="openProductModal('Pumpkin Crochet Keychain', '$12.00')"
           onmouseover="this.style.transform='scale(1.1)'"
           onmouseout="this.style.transform='scale(1)'"
         >
@@ -204,10 +228,12 @@
     </main>
 
     <footer>
-      <p>Follow Quacker Friends:</p>
-      <a href="https://x.com/" target="_blank"><i class="fab fa-x fa-lg"></i></a>
-      <a href="https://www.tiktok.com/" target="_blank"><i class="fab fa-tiktok fa-lg"></i></a>
-      <a href="https://www.instagram.com/" target="_blank"><i class="fab fa-instagram fa-lg"></i></a>
+      <p>Follow Quacker Friends</p>
+      <div class="socials">
+        <a href="https://x.com/" target="_blank">🐦</a>
+        <a href="https://www.tiktok.com/" target="_blank">🎵</a>
+        <a href="https://www.instagram.com/" target="_blank">📸</a>
+      </div>
     </footer>
   </div>
 
@@ -227,10 +253,9 @@
     });
 
     // ===== Modal Controls =====
-    function openProductModal(title, price, img) {
+    function openProductModal(title, price) {
       document.getElementById("modalTitle").innerText = title;
       document.getElementById("modalPrice").innerText = price;
-      document.getElementById("modalImage").src = img;
       document.getElementById("productModal").style.display = "flex";
     }
 
@@ -245,3 +270,4 @@
   </script>
 </body>
 </html>
+
