@@ -38,15 +38,24 @@
       font-size: 1.5rem;
       border: none;
       border-radius: 50px;
-      background: white;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      background: linear-gradient(135deg, #ffffff, #b4f1eb);
+      box-shadow: 0 0 25px rgba(109, 200, 191, 0.6);
       cursor: pointer;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+      from {
+        box-shadow: 0 0 15px rgba(109, 200, 191, 0.6);
+      }
+      to {
+        box-shadow: 0 0 30px rgba(109, 200, 191, 1);
+      }
     }
 
     .enter-btn:hover {
       transform: scale(1.1);
-      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
     }
 
     /* === SHOP INTERIOR === */
@@ -163,6 +172,12 @@
     footer img:hover {
       transform: scale(1.1);
     }
+
+    /* Social logo fixes */
+    .icon {
+      width: 28px;
+      height: 28px;
+    }
   </style>
 </head>
 <body>
@@ -178,7 +193,7 @@
     <button class="connect-wallet">Connect Wallet</button>
 
     <!-- Drawer -->
-    <div class="drawer" id="drawer">
+    <div class="drawer" id="drawer" onmouseleave="closeDrawer()">
       <button>Plushies</button>
       <button>T-Shirts</button>
       <button>Keychains</button>
@@ -187,9 +202,15 @@
 
   <!-- FOOTER -->
   <footer>
-    <a href="#"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/TikTok_logo.svg" alt="TikTok"></a>
-    <a href="#"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram"></a>
-    <a href="#"><img src="https://upload.wikimedia.org/wikipedia/commons/6/60/X_icon.svg" alt="X"></a>
+    <a href="https://www.tiktok.com" target="_blank">
+      <img class="icon" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg" alt="TikTok" />
+    </a>
+    <a href="https://www.instagram.com" target="_blank">
+      <img class="icon" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" alt="Instagram" />
+    </a>
+    <a href="https://x.com" target="_blank">
+      <img class="icon" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg" alt="X" />
+    </a>
   </footer>
 
   <script>
@@ -206,7 +227,13 @@
     }
 
     function toggleDrawer() {
-      drawer.classList.toggle('active');
+      drawer.classList.add('active');
+    }
+
+    function closeDrawer() {
+      setTimeout(() => {
+        drawer.classList.remove('active');
+      }, 800); // gentle delay before closing
     }
   </script>
 
