@@ -1,243 +1,214 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Quacker Friends Shop</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quacker Friends Shop</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
 
-<!-- Font Awesome for social icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    body, html {
+      height: 100%;
+      width: 100%;
+      overflow-x: hidden;
+    }
 
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+    /* === LANDING PAGE === */
+    .landing {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: url('https://files.catbox.moe/yat7tm.png') no-repeat center center/cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: opacity 2s ease-in-out;
+      z-index: 10;
+    }
 
-body, html {
-  height: 100%;
-  font-family: "Poppins", sans-serif;
-  overflow-x: hidden;
-}
+    .enter-btn {
+      padding: 18px 45px;
+      font-size: 1.5rem;
+      border: none;
+      border-radius: 50px;
+      background: white;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
 
-/* ===== LANDING SCREEN ===== */
-#landingScreen {
-  background: url('https://files.catbox.moe/yat7tm.png') no-repeat center center;
-  background-size: cover;
-  height: 100vh;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  transition: all 1s ease-in-out;
-}
+    .enter-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
 
-.enter-btn {
-  background-color: #fff;
-  border: none;
-  padding: 16px 36px;
-  font-size: 1.4em;
-  font-weight: bold;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-  cursor: pointer;
-  transition: all 0.4s ease;
-}
+    /* === SHOP INTERIOR === */
+    .shop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('https://files.catbox.moe/8tj3u5.png') no-repeat center center/cover;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 2s ease-in-out;
+    }
 
-.enter-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 25px #fff, 0 0 45px #ffd580;
-}
+    .shop.active {
+      opacity: 1;
+      visibility: visible;
+    }
 
-/* ===== INSIDE SHOP ===== */
-#insideShop {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: url('https://files.catbox.moe/itorbb.png') no-repeat center center fixed;
-  background-size: contain;
-  height: 100vh;
-  position: relative;
-  transition: opacity 1s ease;
-}
+    .connect-wallet {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      padding: 10px 25px;
+      background: #fff;
+      border: none;
+      border-radius: 25px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.3s ease;
+    }
 
-/* Header */
-header {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-}
+    .connect-wallet:hover {
+      transform: scale(1.05);
+    }
 
-header button {
-  background-color: #ffcf4d;
-  border: none;
-  padding: 12px 22px;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
+    /* === SHOP DRAWER === */
+    .menu-btn {
+      position: absolute;
+      top: 25px;
+      left: 30px;
+      padding: 10px 25px;
+      background: #fff;
+      border: none;
+      border-radius: 25px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.3s ease;
+    }
 
-header button:hover {
-  transform: scale(1.1);
-}
+    .menu-btn:hover {
+      transform: scale(1.05);
+    }
 
-/* Product Item PNG */
-.product {
-  position: absolute;
-  bottom: 100px;
-  left: 50%;
-  transform: translateX(-50%);
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
+    .drawer {
+      position: fixed;
+      top: 0;
+      left: -300px;
+      width: 300px;
+      height: 100%;
+      background-color: #fff9f4;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+      transition: left 1.2s ease;
+      display: flex;
+      flex-direction: column;
+      padding: 80px 30px;
+      z-index: 11;
+    }
 
-.product:hover {
-  transform: translateX(-50%) scale(1.1);
-}
+    .drawer.active {
+      left: 0;
+    }
 
-/* Product Card */
-.product-card {
-  display: none;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-  width: 320px;
-  text-align: center;
-  padding: 20px;
-  animation: popUp 0.4s ease;
-  z-index: 10;
-}
+    .drawer button {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      margin: 15px 0;
+      cursor: pointer;
+      text-align: left;
+      transition: color 0.3s ease;
+    }
 
-@keyframes popUp {
-  from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-}
+    .drawer button:hover {
+      color: #6DC8BF;
+    }
 
-.product-card img {
-  width: 100%;
-  border-radius: 12px;
-}
+    /* === FOOTER === */
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #6DC8BF;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 25px;
+      padding: 15px 0;
+    }
 
-.close-card {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  font-size: 1.3em;
-  cursor: pointer;
-}
+    footer img {
+      width: 28px;
+      height: 28px;
+      filter: brightness(0) invert(1);
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
 
-/* Footer */
-footer {
-  text-align: center;
-  padding: 20px;
-  background: #6DC8BF;
-  color: #333;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  margin-top: auto;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-}
-
-footer .socials a {
-  color: #333;
-  font-size: 1.5em;
-  margin: 0 10px;
-  transition: all 0.3s ease;
-}
-
-footer .socials a:hover {
-  color: #fff;
-  transform: scale(1.2);
-}
-
-/* Transition Effect */
-.fadeOut {
-  animation: fadeOutZoom 1.2s forwards;
-}
-
-@keyframes fadeOutZoom {
-  0% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: scale(1.1); }
-}
-
-.fadeIn {
-  display: flex !important;
-  opacity: 0;
-  animation: fadeInScene 1.2s forwards;
-}
-
-@keyframes fadeInScene {
-  0% { opacity: 0; transform: scale(1.05); }
-  100% { opacity: 1; transform: scale(1); }
-}
-</style>
+    footer img:hover {
+      transform: scale(1.1);
+    }
+  </style>
 </head>
-
 <body>
-  <!-- Landing Screen -->
-  <div id="landingScreen">
+
+  <!-- LANDING PAGE -->
+  <div class="landing" id="landing">
     <button class="enter-btn" onclick="enterShop()">ENTER</button>
   </div>
 
-  <!-- Inside Shop -->
-  <div id="insideShop" class="inside-shop">
-    <header>
-      <button>Connect Wallet</button>
-    </header>
+  <!-- SHOP INTERIOR -->
+  <div class="shop" id="shop">
+    <button class="menu-btn" onclick="toggleDrawer()">SHOP</button>
+    <button class="connect-wallet">Connect Wallet</button>
 
-    <!-- Product -->
-    <img src="https://files.catbox.moe/nlii1p.png" class="product" alt="Pumpkin Item" onclick="openProductCard()">
-
-    <!-- Product Card -->
-    <div class="product-card" id="productCard">
-      <span class="close-card" onclick="closeProductCard()">✖</span>
-      <img src="https://via.placeholder.com/300x250.png?text=Your+Product+Photo" alt="Real Product Photo">
-      <h3>Pumpkin Crochet Keychain</h3>
-      <p>$9.99</p>
-      <button style="background:#6DC8BF;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;">Add to Cart</button>
+    <!-- Drawer -->
+    <div class="drawer" id="drawer">
+      <button>Plushies</button>
+      <button>T-Shirts</button>
+      <button>Keychains</button>
     </div>
-
-    <footer>
-      <p>Follow Quacker Friends</p>
-      <div class="socials">
-        <a href="https://x.com/" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
-        <a href="https://www.tiktok.com/" target="_blank"><i class="fa-brands fa-tiktok"></i></a>
-        <a href="https://www.instagram.com/" target="_blank"><i class="fa-brands fa-instagram"></i></a>
-      </div>
-    </footer>
   </div>
 
+  <!-- FOOTER -->
+  <footer>
+    <a href="#"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/TikTok_logo.svg" alt="TikTok"></a>
+    <a href="#"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram"></a>
+    <a href="#"><img src="https://upload.wikimedia.org/wikipedia/commons/6/60/X_icon.svg" alt="X"></a>
+  </footer>
+
   <script>
-  function enterShop() {
-    const landing = document.getElementById("landingScreen");
-    const inside = document.getElementById("insideShop");
-    landing.classList.add("fadeOut");
-    setTimeout(() => {
-      landing.style.display = "none";
-      inside.classList.add("fadeIn");
-    }, 1100);
-  }
+    const landing = document.getElementById('landing');
+    const shop = document.getElementById('shop');
+    const drawer = document.getElementById('drawer');
 
-  function openProductCard() {
-    document.getElementById("productCard").style.display = "block";
-  }
+    function enterShop() {
+      landing.style.opacity = '0';
+      setTimeout(() => {
+        landing.style.display = 'none';
+        shop.classList.add('active');
+      }, 2000);
+    }
 
-  function closeProductCard() {
-    document.getElementById("productCard").style.display = "none";
-  }
+    function toggleDrawer() {
+      drawer.classList.toggle('active');
+    }
   </script>
+
 </body>
 </html>
