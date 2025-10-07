@@ -1,246 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Quacker Friends Shop</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quacker Friends Shop</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "Poppins", sans-serif;
+      background-color: #fff9f4;
+      color: #5A3E36; /* warm brown */
+      overflow: hidden;
+    }
 
-<style>
-:root {
-  --brand-green: #6DC8BF;
-  --text-brown: #5A3E36;
-  --cream: #fff9f4;
-}
+    /* Preload fade container */
+    .fade-container {
+      position: relative;
+      height: 100vh;
+      width: 100%;
+      transition: opacity 1.5s ease;
+    }
 
-* {
-  box-sizing: border-box;
-}
+    .fade-out {
+      opacity: 0;
+    }
 
-body {
-  font-family: 'Poppins', sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: var(--cream);
-  color: var(--text-brown);
-  overflow-x: hidden;
-  transition: background 1s ease;
-}
+    .fade-in {
+      opacity: 1;
+    }
 
-/* Preload images smoothly */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: url('https://files.catbox.moe/yat7tm.png') center center / cover no-repeat;
-  opacity: 1;
-  transition: opacity 1s ease;
-  z-index: -1;
-}
+    /* Backgrounds */
+    .enter-screen, .shop-screen {
+      background-size: cover;
+      background-position: center;
+      height: 100vh;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transition: opacity 1.5s ease;
+    }
 
-body.inside::before {
-  background: url('https://files.catbox.moe/8tj3u5.png') center center / cover no-repeat;
-}
+    .enter-screen {
+      background-image: url("https://files.catbox.moe/yat7tm.png");
+      z-index: 2;
+    }
 
-/* Dream fade animation */
-.fade-out {
-  animation: fadeOut 1s ease forwards;
-}
-.fade-in {
-  animation: fadeIn 1s ease forwards;
-}
+    .shop-screen {
+      background-image: url("https://files.catbox.moe/8tj3u5.png");
+      z-index: 1;
+      opacity: 0;
+    }
 
-@keyframes fadeOut {
-  0% { opacity: 1; filter: blur(0px); }
-  100% { opacity: 0; filter: blur(8px); }
-}
-@keyframes fadeIn {
-  0% { opacity: 0; filter: blur(8px); }
-  100% { opacity: 1; filter: blur(0px); }
-}
+    /* Enter button */
+    .enter-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+      border: none;
+      padding: 18px 40px;
+      border-radius: 50px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #5A3E36;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+      animation: pulse 2s infinite;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
 
-/* Enter Screen */
-#enterScreen {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
+    @keyframes pulse {
+      0% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.4); }
+      50% { box-shadow: 0 0 30px rgba(255, 255, 255, 0.9); }
+      100% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.4); }
+    }
 
-#enterButton {
-  padding: 16px 42px;
-  border: none;
-  font-size: 1.6rem;
-  border-radius: 999px;
-  background: #fff;
-  color: var(--text-brown);
-  cursor: pointer;
-  font-weight: 600;
-  box-shadow: 0 0 20px rgba(255,255,255,0.7);
-  transition: all 0.4s ease;
-  animation: glowPulse 2s ease-in-out infinite;
-}
+    .enter-btn:hover {
+      transform: scale(1.07);
+    }
 
-@keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 10px rgba(255,255,255,0.6); transform: scale(1); }
-  50% { box-shadow: 0 0 25px rgba(255,255,255,1); transform: scale(1.05); }
-}
+    /* Wallet button */
+    .wallet-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: #fff;
+      color: #5A3E36;
+      border: 2px solid #5A3E36;
+      border-radius: 30px;
+      padding: 10px 25px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
 
-#enterButton:hover {
-  transform: scale(1.05);
-}
+    .wallet-btn:hover {
+      background-color: #5A3E36;
+      color: #fff9f4;
+    }
 
-/* Inside Shop */
-#insideShop {
-  display: none;
-  flex-direction: column;
-  min-height: 100vh;
-  animation: fadeIn 1s ease forwards;
-}
+    /* Footer */
+    footer {
+      background-color: #6DC8BF;
+      color: #5A3E36;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      padding: 12px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      font-weight: bold;
+      z-index: 10;
+    }
 
-header {
-  background: rgba(255,255,255,0.9);
-  backdrop-filter: blur(8px);
-  padding: 12px 20px;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-}
+    footer a {
+      color: #5A3E36;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
 
-#connectWallet {
-  background: var(--text-brown);
-  color: #fff;
-  border: none;
-  border-radius: 999px;
-  padding: 10px 18px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-#connectWallet:hover {
-  background: #7b5448;
-}
-
-/* Drawer Menu */
-#drawer {
-  position: fixed;
-  top: 0;
-  left: -260px;
-  width: 260px;
-  height: 100%;
-  background: var(--cream);
-  box-shadow: 8px 0 25px rgba(0,0,0,0.1);
-  padding: 40px 20px;
-  transition: left 0.6s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  z-index: 200;
-}
-
-#drawer:hover {
-  left: 0;
-}
-
-#drawer a {
-  text-decoration: none;
-  color: var(--text-brown);
-  font-weight: 600;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
-}
-
-#drawer a:hover {
-  transform: translateX(6px);
-  color: #8a5f54;
-}
-
-/* Drawer tab */
-#drawerTab {
-  position: fixed;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  background: var(--cream);
-  color: var(--text-brown);
-  padding: 8px 12px;
-  border-radius: 0 8px 8px 0;
-  box-shadow: 4px 0 10px rgba(0,0,0,0.1);
-  cursor: pointer;
-  font-weight: 600;
-  z-index: 300;
-}
-
-/* Footer */
-footer {
-  background: var(--brand-green);
-  color: #fff;
-  text-align: center;
-  padding: 20px;
-  margin-top: auto;
-}
-
-footer p {
-  margin: 8px 0;
-  font-size: 1rem;
-}
-
-footer a {
-  color: #fff;
-  margin: 0 10px;
-  font-size: 1.4rem;
-  transition: opacity 0.2s ease;
-}
-
-footer a:hover {
-  opacity: 0.7;
-}
-</style>
+    footer img {
+      height: 22px;
+      width: 22px;
+      margin-right: 8px;
+    }
+  </style>
 </head>
 
 <body>
-  <div id="enterScreen" class="fade-in">
-    <button id="enterButton">ENTER</button>
-  </div>
-
-  <div id="insideShop" class="fade-in">
-    <header>
-      <button id="connectWallet">Connect Wallet</button>
-    </header>
-
-    <div id="drawerTab">SHOP</div>
-    <div id="drawer">
-      <a href="#">🧸 Plushies</a>
-      <a href="#">👕 T-Shirts</a>
-      <a href="#">🎒 Keychains</a>
-      <a href="#">🧢 Beanies</a>
+  <div class="fade-container">
+    <div class="enter-screen fade-in" id="enterScreen">
+      <button class="enter-btn" id="enterButton">ENTER</button>
     </div>
 
-    <footer>
-      <p>Follow Quacker Friends</p>
-      <a href="https://x.com/" target="_blank"><i class="fab fa-x-twitter"></i></a>
-      <a href="https://www.tiktok.com/" target="_blank"><i class="fab fa-tiktok"></i></a>
-      <a href="https://www.instagram.com/" target="_blank"><i class="fab fa-instagram"></i></a>
-    </footer>
+    <div class="shop-screen" id="shopScreen">
+      <button class="wallet-btn">Connect Wallet</button>
+
+      <footer>
+        <a href="https://www.instagram.com/" target="_blank">
+          <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram"> Instagram
+        </a>
+        <a href="https://www.tiktok.com/" target="_blank">
+          <img src="https://cdn-icons-png.flaticon.com/512/3046/3046125.png" alt="TikTok"> TikTok
+        </a>
+        <a href="https://x.com/" target="_blank">
+          <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="X (Twitter)"> X
+        </a>
+      </footer>
+    </div>
   </div>
 
-<script>
-const enterBtn = document.getElementById("enterButton");
-const enterScreen = document.getElementById("enterScreen");
-const insideShop = document.getElementById("insideShop");
-const body = document.body;
+  <script>
+    // Preload both background images before showing Enter screen
+    const enterScreen = document.getElementById("enterScreen");
+    const shopScreen = document.getElementById("shopScreen");
+    const enterButton = document.getElementById("enterButton");
 
-enterBtn.addEventListener("click", () => {
-  enterScreen.classList.add("fade-out");
-  setTimeout(() => {
-    enterScreen.style.display = "none";
-    insideShop.style.display = "flex";
-    body.classList.add("inside");
-  }, 900);
-});
-</script>
+    const images = [
+      "https://files.catbox.moe/yat7tm.png",
+      "https://files.catbox.moe/8tj3u5.png"
+    ];
+
+    let loadedCount = 0;
+
+    images.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => {
+        loadedCount++;
+        if (loadedCount === images.length) {
+          enterScreen.style.opacity = "1";
+        }
+      };
+    });
+
+    enterButton.addEventListener("click", () => {
+      enterScreen.classList.add("fade-out");
+      setTimeout(() => {
+        enterScreen.style.display = "none";
+        shopScreen.style.opacity = "1";
+      }, 1500);
+    });
+  </script>
 </body>
 </html>
