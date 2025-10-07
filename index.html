@@ -2,189 +2,286 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quacker Friends Shop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      overflow: hidden;
-      font-family: "Poppins", sans-serif;
-      background-color: #fff9f4;
-      color: #5A3E36;
+    :root {
+      --brown: #4b2e05;
+      --cream: #fff9f2;
+      --footer-green: #6DC8BF;
+      --orange: #ff914d;
     }
 
-    /* Fade container */
-    .fade-container {
-      position: relative;
-      height: 100vh;
-      width: 100%;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      color: var(--brown);
+      overflow-x: hidden;
+      background: var(--cream);
+    }
+
+    /* ---------- ENTER SCREEN ---------- */
+    #enter-screen {
+      position: fixed;
+      inset: 0;
+      background: url('https://files.catbox.moe/yat7tm.png') center/cover no-repeat;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: opacity 1.5s ease;
+      z-index: 20;
     }
-
-    .fade-out {
-      opacity: 0;
-    }
-
-    .fade-in {
-      opacity: 1;
-    }
-
-    /* Backgrounds */
-    .enter-screen, .shop-screen {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-size: cover;
-      background-position: center;
-      transition: opacity 1.5s ease;
-    }
-
-    .enter-screen {
-      background-image: url("https://files.catbox.moe/yat7tm.png");
-      z-index: 2;
-    }
-
-    .shop-screen {
-      background-image: url("https://files.catbox.moe/8tj3u5.png");
-      z-index: 1;
-      opacity: 0;
-    }
-
-    /* Enter button */
-    .enter-btn {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+    #enter-btn {
       background: white;
-      border: none;
-      padding: 18px 40px;
-      border-radius: 40px;
-      font-size: 1.3rem;
-      font-weight: bold;
-      color: #5A3E36;
+      color: var(--brown);
+      font-size: 1.5rem;
+      font-weight: 600;
+      padding: 16px 40px;
+      border-radius: 999px;
+      box-shadow: 0 0 30px rgba(255,255,255,0.7);
+      border: 2px solid var(--brown);
+      transition: all 0.4s ease;
       cursor: pointer;
-      animation: glow 2s infinite;
-      transition: transform 0.3s ease;
+    }
+    #enter-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 50px rgba(255,255,255,0.9);
     }
 
-    @keyframes glow {
-      0% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.4); }
-      50% { box-shadow: 0 0 30px rgba(255, 255, 255, 0.9); }
-      100% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.4); }
+    /* ---------- INSIDE SHOP ---------- */
+    #shop {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 1.5s ease;
+      min-height: 100vh;
+      background: url('https://files.catbox.moe/8tj3u5.png') center/cover no-repeat fixed;
+      display: flex;
+      flex-direction: column;
     }
 
-    .enter-btn:hover {
-      transform: scale(1.08);
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
     }
 
-    /* Connect wallet */
-    .wallet-btn {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background-color: white;
-      color: #5A3E36;
-      border: 2px solid #5A3E36;
-      border-radius: 25px;
-      padding: 10px 20px;
-      font-weight: bold;
+    .shop-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--brown);
+      cursor: pointer;
+    }
+
+    #connectWallet {
+      background: var(--orange);
+      border: none;
+      color: white;
+      font-weight: 600;
+      border-radius: 999px;
+      padding: 10px 18px;
       cursor: pointer;
       transition: all 0.3s ease;
     }
-
-    .wallet-btn:hover {
-      background-color: #5A3E36;
-      color: white;
+    #connectWallet:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
-    /* Footer */
-    footer {
+    /* ---------- SIDE DRAWER ---------- */
+    #drawer {
       position: fixed;
-      bottom: 0;
-      width: 100%;
-      background-color: #6DC8BF;
+      top: 0;
+      left: -240px;
+      width: 220px;
+      height: 100%;
+      background: var(--cream);
+      box-shadow: 6px 0 20px rgba(0,0,0,0.15);
+      transition: left 0.6s ease, opacity 0.6s ease;
       display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 25px;
-      padding: 12px 0;
-      z-index: 10;
+      flex-direction: column;
+      padding: 80px 20px;
+      z-index: 15;
     }
-
-    footer img {
-      width: 26px;
-      height: 26px;
-      filter: brightness(0) invert(1);
+    #drawer:hover {
+      left: 0;
+    }
+    #drawer button {
+      background: none;
+      border: none;
+      font-size: 1.1rem;
+      color: var(--brown);
+      margin: 12px 0;
       cursor: pointer;
       transition: transform 0.3s ease;
     }
-
-    footer img:hover {
-      transform: scale(1.2);
+    #drawer button:hover {
+      transform: translateX(6px);
     }
+
+    /* ---------- PRODUCTS SECTION ---------- */
+    #product-section {
+      flex: 1;
+      display: none;
+      padding: 40px 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 22px;
+      background: rgba(255,255,255,0.4);
+      backdrop-filter: blur(3px);
+      animation: fadeIn 1s ease forwards;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      overflow: hidden;
+      width: 260px;
+      text-align: center;
+      padding-bottom: 16px;
+      transform: scale(0.95);
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      transform: scale(1);
+      box-shadow: 0 14px 35px rgba(0,0,0,0.15);
+    }
+    .card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+    .card h3 {
+      margin: 12px 0 6px;
+      font-size: 1.1rem;
+      color: var(--brown);
+    }
+    .card p {
+      color: var(--brown);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .card button {
+      background: var(--orange);
+      border: none;
+      color: white;
+      border-radius: 999px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .card button:hover {
+      transform: scale(1.05);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ---------- FOOTER ---------- */
+    footer {
+      background: white;
+      padding: 16px;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      border-top: 2px solid var(--footer-green);
+      margin-top: auto;
+    }
+    footer a {
+      color: var(--brown);
+      font-size: 1.5rem;
+      transition: transform 0.3s ease, opacity 0.3s;
+    }
+    footer a:hover {
+      transform: scale(1.2);
+      opacity: 0.7;
+    }
+
   </style>
 </head>
-
 <body>
-  <div class="fade-container">
-    <!-- ENTER SCREEN -->
-    <div class="enter-screen fade-in" id="enterScreen">
-      <button class="enter-btn" id="enterButton">ENTER</button>
+
+  <!-- ENTER SCREEN -->
+  <div id="enter-screen">
+    <button id="enter-btn">ENTER</button>
+  </div>
+
+  <!-- SHOP -->
+  <div id="shop">
+    <header>
+      <button class="shop-btn">☰ SHOP</button>
+      <button id="connectWallet">Connect Wallet</button>
+    </header>
+
+    <!-- SIDE DRAWER -->
+    <div id="drawer">
+      <button onclick="showCategory('plushies')">Plushies</button>
+      <button onclick="showCategory('tshirts')">T-Shirts</button>
+      <button onclick="showCategory('keychains')">Keychains</button>
     </div>
 
-    <!-- SHOP SCREEN -->
-    <div class="shop-screen" id="shopScreen">
-      <button class="wallet-btn">Connect Wallet</button>
+    <!-- PRODUCTS -->
+    <section id="product-section"></section>
 
-      <footer>
-        <a href="https://www.instagram.com/" target="_blank">
-          <img src="https://cdn-icons-png.flaticon.com/512/1384/1384063.png" alt="Instagram" />
-        </a>
-        <a href="https://www.tiktok.com/" target="_blank">
-          <img src="https://cdn-icons-png.flaticon.com/512/3046/3046125.png" alt="TikTok" />
-        </a>
-        <a href="https://x.com/" target="_blank">
-          <img src="https://cdn-icons-png.flaticon.com/512/5968/5968830.png" alt="X" />
-        </a>
-      </footer>
-    </div>
+    <footer>
+      <a href="https://x.com/" target="_blank"><i class="fab fa-x-twitter"></i></a>
+      <a href="https://www.tiktok.com/" target="_blank"><i class="fab fa-tiktok"></i></a>
+      <a href="https://www.instagram.com/" target="_blank"><i class="fab fa-instagram"></i></a>
+    </footer>
   </div>
 
   <script>
-    // preload both backgrounds
-    const enterScreen = document.getElementById("enterScreen");
-    const shopScreen = document.getElementById("shopScreen");
-    const enterButton = document.getElementById("enterButton");
+    const enterBtn = document.getElementById('enter-btn');
+    const enterScreen = document.getElementById('enter-screen');
+    const shop = document.getElementById('shop');
+    const productSection = document.getElementById('product-section');
 
-    const images = [
-      "https://files.catbox.moe/yat7tm.png",
-      "https://files.catbox.moe/8tj3u5.png"
-    ];
-
-    let loaded = 0;
-    images.forEach(src => {
-      const img = new Image();
-      img.src = src;
-      img.onload = () => {
-        loaded++;
-        if (loaded === images.length) {
-          enterScreen.style.opacity = "1";
-        }
-      };
-    });
-
-    enterButton.addEventListener("click", () => {
-      enterScreen.classList.add("fade-out");
+    enterBtn.addEventListener('click', () => {
+      enterScreen.style.opacity = '0';
       setTimeout(() => {
-        enterScreen.style.display = "none";
-        shopScreen.style.opacity = "1";
+        enterScreen.style.display = 'none';
+        shop.style.opacity = '1';
+        shop.style.pointerEvents = 'auto';
       }, 1500);
     });
+
+    const PRODUCTS = {
+      plushies: [
+        { title: "Pumpkin Duck Plushie", price: "0.005 ETH", img: "https://via.placeholder.com/400x300?text=Pumpkin+Duck+Plushie" },
+        { title: "Quacker Duck Plushie", price: "0.006 ETH", img: "https://via.placeholder.com/400x300?text=Quacker+Duck+Plushie" }
+      ],
+      tshirts: [
+        { title: "Quacker T-Shirt", price: "0.003 ETH", img: "https://via.placeholder.com/400x300?text=Quacker+T-Shirt" }
+      ],
+      keychains: [
+        { title: "Pumpkin Crochet Keychain", price: "0.001 ETH", img: "https://via.placeholder.com/400x300?text=Pumpkin+Keychain" }
+      ]
+    };
+
+    function showCategory(category) {
+      productSection.innerHTML = '';
+      productSection.style.display = 'flex';
+      PRODUCTS[category].forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="${item.img}" alt="${item.title}">
+          <h3>${item.title}</h3>
+          <p>${item.price}</p>
+          <button>Add to Cart</button>
+        `;
+        productSection.appendChild(card);
+      });
+    }
   </script>
 </body>
 </html>
