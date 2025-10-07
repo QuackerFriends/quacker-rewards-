@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quacker Friends Shop</title>
   <style>
-    body, html {
+    html, body {
       margin: 0;
       padding: 0;
       height: 100%;
+      overflow: hidden;
       font-family: "Poppins", sans-serif;
       background-color: #fff9f4;
-      color: #5A3E36; /* warm brown */
-      overflow: hidden;
+      color: #5A3E36;
     }
 
-    /* Preload fade container */
+    /* Fade container */
     .fade-container {
       position: relative;
       height: 100vh;
@@ -33,13 +33,13 @@
 
     /* Backgrounds */
     .enter-screen, .shop-screen {
-      background-size: cover;
-      background-position: center;
-      height: 100vh;
-      width: 100%;
       position: absolute;
       top: 0;
       left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
       transition: opacity 1.5s ease;
     }
 
@@ -60,39 +60,38 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background-color: #fff;
+      background: white;
       border: none;
       padding: 18px 40px;
-      border-radius: 50px;
+      border-radius: 40px;
       font-size: 1.3rem;
       font-weight: bold;
       color: #5A3E36;
       cursor: pointer;
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
-      animation: pulse 2s infinite;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      animation: glow 2s infinite;
+      transition: transform 0.3s ease;
     }
 
-    @keyframes pulse {
-      0% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.4); }
+    @keyframes glow {
+      0% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.4); }
       50% { box-shadow: 0 0 30px rgba(255, 255, 255, 0.9); }
-      100% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.4); }
+      100% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.4); }
     }
 
     .enter-btn:hover {
-      transform: scale(1.07);
+      transform: scale(1.08);
     }
 
-    /* Wallet button */
+    /* Connect wallet */
     .wallet-btn {
       position: absolute;
       top: 20px;
       right: 20px;
-      background-color: #fff;
+      background-color: white;
       color: #5A3E36;
       border: 2px solid #5A3E36;
-      border-radius: 30px;
-      padding: 10px 25px;
+      border-radius: 25px;
+      padding: 10px 20px;
       font-weight: bold;
       cursor: pointer;
       transition: all 0.3s ease;
@@ -100,65 +99,64 @@
 
     .wallet-btn:hover {
       background-color: #5A3E36;
-      color: #fff9f4;
+      color: white;
     }
 
     /* Footer */
     footer {
-      background-color: #6DC8BF;
-      color: #5A3E36;
       position: fixed;
       bottom: 0;
       width: 100%;
-      padding: 12px 0;
+      background-color: #6DC8BF;
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 20px;
-      font-weight: bold;
+      gap: 25px;
+      padding: 12px 0;
       z-index: 10;
     }
 
-    footer a {
-      color: #5A3E36;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
+    footer img {
+      width: 26px;
+      height: 26px;
+      filter: brightness(0) invert(1);
+      cursor: pointer;
+      transition: transform 0.3s ease;
     }
 
-    footer img {
-      height: 22px;
-      width: 22px;
-      margin-right: 8px;
+    footer img:hover {
+      transform: scale(1.2);
     }
   </style>
 </head>
 
 <body>
   <div class="fade-container">
+    <!-- ENTER SCREEN -->
     <div class="enter-screen fade-in" id="enterScreen">
       <button class="enter-btn" id="enterButton">ENTER</button>
     </div>
 
+    <!-- SHOP SCREEN -->
     <div class="shop-screen" id="shopScreen">
       <button class="wallet-btn">Connect Wallet</button>
 
       <footer>
         <a href="https://www.instagram.com/" target="_blank">
-          <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram"> Instagram
+          <img src="https://cdn-icons-png.flaticon.com/512/1384/1384063.png" alt="Instagram" />
         </a>
         <a href="https://www.tiktok.com/" target="_blank">
-          <img src="https://cdn-icons-png.flaticon.com/512/3046/3046125.png" alt="TikTok"> TikTok
+          <img src="https://cdn-icons-png.flaticon.com/512/3046/3046125.png" alt="TikTok" />
         </a>
         <a href="https://x.com/" target="_blank">
-          <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="X (Twitter)"> X
+          <img src="https://cdn-icons-png.flaticon.com/512/5968/5968830.png" alt="X" />
         </a>
       </footer>
     </div>
   </div>
 
   <script>
-    // Preload both background images before showing Enter screen
+    // preload both backgrounds
     const enterScreen = document.getElementById("enterScreen");
     const shopScreen = document.getElementById("shopScreen");
     const enterButton = document.getElementById("enterButton");
@@ -168,14 +166,13 @@
       "https://files.catbox.moe/8tj3u5.png"
     ];
 
-    let loadedCount = 0;
-
-    images.forEach((src) => {
+    let loaded = 0;
+    images.forEach(src => {
       const img = new Image();
       img.src = src;
       img.onload = () => {
-        loadedCount++;
-        if (loadedCount === images.length) {
+        loaded++;
+        if (loaded === images.length) {
           enterScreen.style.opacity = "1";
         }
       };
