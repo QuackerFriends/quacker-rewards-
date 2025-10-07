@@ -1,287 +1,324 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF" />
+  <meta name="viewport" content="width=devicegact = 1.0">
   <title>Quacker Friends Shop</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
   <style>
-    :root {
-      --brown: #4b2e05;
-      --cream: #fff9f2;
-      --footer-green: #6DC8BF;
-      --orange: #ff914d;
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: "Poppins", sans-serif;
+      background-color: #fff;
+      color: #4b2e05;
+      overflow: hidden;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Poppins', sans-serif;
-      color: var(--brown);
-      overflow-x: hidden;
-      background: var(--cream);
+    .fade {
+      transition: opacity 1s ease-in-out;
     }
 
-    /* ---------- ENTER SCREEN ---------- */
-    #enter-screen {
-      position: fixed;
-      inset: 0;
-      background: url('https://files.catbox.moe/yat7tm.png') center/cover no-repeat;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 1.5s ease;
-      z-index: 20;
-    }
-    #enter-btn {
-      background: white;
-      color: var(--brown);
-      font-size: 1.5rem;
-      font-weight: 600;
-      padding: 16px 40px;
-      border-radius: 999px;
-      box-shadow: 0 0 30px rgba(255,255,255,0.7);
-      border: 2px solid var(--brown);
-      transition: all 0.4s ease;
-      cursor: pointer;
-    }
-    #enter-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 50px rgba(255,255,255,0.9);
-    }
-
-    /* ---------- INSIDE SHOP ---------- */
-    #shop {
+    .hidden {
       opacity: 0;
       pointer-events: none;
-      transition: opacity 1.5s ease;
-      min-height: 100vh;
-      background: url('https://files.catbox.moe/8tj3u5.png') center/cover no-repeat fixed;
+    }
+
+    /* --- ENTER SCREEN --- */
+    .enter-screen {
+      position: fixed;
+      inset: 0;
+      background: url("https://files.catbox.moe/yat7tm.png") center/cover no-repeat;
       display: flex;
+      justify-aspect: center;
+      align-items: center;
       flex-direction: column;
     }
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 24px;
-    }
-
-    .shop-btn {
-      background: transparent;
+    .enter-button {
+      background: #fff;
+      color: #4b2e05;
       border: none;
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: var(--brown);
+      padding: 16px 40px;
+      font-size: 1.4em;
       cursor: pointer;
+      border-radius: 50px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+      transition: all 0.4s ease;
     }
 
-    #connectWallet {
-      background: var(--orange);
+    .enter-button:hover {
+      box-shadow: 0 0 35px rgba(255, 255, 255, 1);
+      transform: scale(1.05);
+    }
+
+    /* --- SHOP INTERIOR --- */
+    .shop-screen {
+      position: fixed;
+      inset: 0;
+      background: url("https://files.catbox.moe/8tj3u5.png") center/cover no-repeat;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+      display: flex;
+      flex-direction: column;
+      justify-aspect: space-between;
+      color: #4b2e05;
+    }
+
+    .shop-screen.active {
+      opacity: 1;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-aspect: space-between;
+      padding: 20px;
+    }
+
+    .shop-button {
+      background: #fff;
       border: none;
-      color: white;
-      font-weight: 600;
-      border-radius: 999px;
-      padding: 10px 18px;
+      color: #4b2e05;
+      padding: 10px 25px;
+      font-size: 1.2em;
+      border-radius: 8px;
       cursor: pointer;
       transition: all 0.3s ease;
     }
-    #connectWallet:hover {
+
+    .shop-button:hover {
+      background-color: #f7f2ee;
       transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
-    /* ---------- SIDE DRAWER ---------- */
-    #drawer {
+    .connect-button {
+      background: #fff;
+      border: none;
+      color: #4b2e05;
+      padding: 10px 25px;
+      font-size: 1.2em;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .connect-button:hover {
+      background-color: #f7f2ee;
+      transform: scale(1.05);
+    }
+
+    /* --- DRAWER --- */
+    .drawer {
       position: fixed;
       top: 0;
-      left: -240px;
-      width: 220px;
-      height: 100%;
-      background: var(--cream);
-      box-shadow: 6px 0 20px rgba(0,0,0,0.15);
-      transition: left 0.6s ease, opacity 0.6s ease;
-      display: flex;
-      flex-direction: column;
-      padding: 80px 20px;
-      z-index: 15;
+      left: -300px;
+      width: 250px;
+      height: 100vh;
+      background: #f3e8d8;
+      box-shadow: 2px 0 12px rgba(0,0,0,0.2);
+      padding: 60px 20px;
+      transition: left 0.6s ease;
     }
-    #drawer:hover {
+
+    .drawer.active {
       left: 0;
     }
-    #drawer button {
-      background: none;
-      border: none;
-      font-size: 1.1rem;
-      color: var(--brown);
-      margin: 12px 0;
+
+    .drawer-item {
+      font-size: 1.2em;
+      margin: 20px 0;
       cursor: pointer;
-      transition: transform 0.3s ease;
-    }
-    #drawer button:hover {
-      transform: translateX(6px);
+      transition: transform 0.3s;
     }
 
-    /* ---------- PRODUCTS SECTION ---------- */
-    #product-section {
-      flex: 1;
-      display: none;
-      padding: 40px 20px;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 22px;
-      background: rgba(255,255,255,0.4);
-      backdrop-filter: blur(3px);
-      animation: fadeIn 1s ease forwards;
-    }
-
-    .card {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      overflow: hidden;
-      width: 260px;
-      text-align: center;
-      padding-bottom: 16px;
-      transform: scale(0.95);
-      transition: all 0.3s ease;
-    }
-    .card:hover {
-      transform: scale(1);
-      box-shadow: 0 14px 35px rgba(0,0,0,0.15);
-    }
-    .card img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-    }
-    .card h3 {
-      margin: 12px 0 6px;
-      font-size: 1.1rem;
-      color: var(--brown);
-    }
-    .card p {
-      color: var(--brown);
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-    .card button {
-      background: var(--orange);
-      border: none;
-      color: white;
-      border-radius: 999px;
-      padding: 8px 14px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s ease;
-    }
-    .card button:hover {
+    .drawer-item:hover {
       transform: scale(1.05);
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* --- PRODUCT CARDS --- */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      opacity: 0;
+      transition: opacity 0.5s;
+      pointer-events: none;
+      z-index: 1;
     }
 
-    /* ---------- FOOTER ---------- */
-    footer {
-      background: white;
-      padding: 16px;
-      text-align: center;
+    .overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .product-grid {
+      position: fixed;
+      inset: 0;
       display: flex;
-      justify-content: center;
+      justify-aspect: center;
+      align-items: center;
+      flex-wrap: wrap;
       gap: 20px;
-      border-top: 2px solid var(--footer-green);
-      margin-top: auto;
-    }
-    footer a {
-      color: var(--brown);
-      font-size: 1.5rem;
-      transition: transform 0.3s ease, opacity 0.3s;
-    }
-    footer a:hover {
-      transform: scale(1.2);
-      opacity: 0.7;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 0.5s;
     }
 
+    .product-grid.active {
+      opacity: 1;
+    }
+
+    .product-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+      width: 250px;
+      padding: 20px;
+      text-align: center;
+      color: #4b2e05;
+      animation: pop 0.6s ease;
+    }
+
+    .product-card img {
+      width: 100%;
+      border-radius: 10px;
+    }
+
+    .product-card h3 {
+      margin: 10px 0 5px;
+    }
+
+    .product-card p {
+      margin: 0 0 10px;
+    }
+
+    .product-card button {
+      background: #6DC8BF;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .product-card button:hover {
+      background: #57b2a9;
+    }
+
+    @keyframes pop {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    /* --- FOOTER --- */
+    .footer {
+      background: #6DC8BF;
+      display: flex;
+      justify-aspect: center;
+      align-items: center;
+      padding: 20px;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
+    .footer img {
+      width: 30px;
+      margin: 0 10px;
+      filter: brightness(0) invert(1);
+    }
   </style>
 </head>
 <body>
+  <div class="enter-screen" id="enterScreen">
+    <button class="enter-button" id="enterBtn">ENTER</button>
+  <div>
 
-  <!-- ENTER SCREEN -->
-  <div id="enter-screen">
-    <button id="enter-btn">ENTER</button>
-  </div>
-
-  <!-- SHOP -->
-  <div id="shop">
-    <header>
-      <button class="shop-btn">☰ SHOP</button>
-      <button id="connectWallet">Connect Wallet</button>
-    </header>
-
-    <!-- SIDE DRAWER -->
-    <div id="drawer">
-      <button onclick="showCategory('plushies')">Plushies</button>
-      <button onclick="showCategory('tshirts')">T-Shirts</button>
-      <button onclick="showCategory('keychains')">Keychains</button>
+  <div class="shop-screen" id="shopScreen">
+    <div class="top-bar">
+      <button class="shop-button" id="shopBtn">SHOP</button>
+      <button class "connect-button">Connect Wallet</button>
     </div>
 
-    <!-- PRODUCTS -->
-    <section id="product-section"></section>
+    <div class="drawer" id="drawer">
+      <div class="drawer-item" data-category="plushies">Plushies</div>
+      <div class="drawer-item" data-category="tshirts">T-Shirts</div>
+      <div "drawer-item" data-category="keychains">Keychains</div>
+    </div>
 
-    <footer>
-      <a href="https://x.com/" target="_blank"><i class="fab fa-x-twitter"></i></a>
-      <a href="https://www.tiktok.com/" target="_blank"><i class="fab fa-tiktok"></i></a>
-      <a href="https://www.instagram.com/" target="_blank"><i class="fab fa-instagram"></i></a>
-    </footer>
+    <div class="overlay" id="overlay"></div>
+    <div class="product-grid" id="productGrid"></div>
+
+    <div class="footer">
+      <a href="https://www.tiktok.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/3046/3046127.png" alt="TikTok"></a>
+      <a href="https://www.instagram.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
+      <a href="https://x.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/5968/5968830.png" alt="Twitter"></a>
+    </div>
   </div>
 
   <script>
-    const enterBtn = document.getElementById('enter-btn');
-    const enterScreen = document.getElementById('enter-screen');
-    const shop = document.getElementById('shop');
-    const productSection = document.getElementById('product-section');
+    const enterBtn = document.getElementById("enterBtn");
+    const enterScreen = document.getElementById("enterScreen");
+    const shopScreen = document.getElementById("shopScreen");
+    const shopBtn = document.getElementByI("shopBtn");
+    const drawer = document.getElementById("drawer");
+    const overlay = document.getAElementById("overlay");
+    const productGrid = document.getAElementById("productGrid");
 
-    enterBtn.addEventListener('click', () => {
-      enterScreen.style.opacity = '0';
-      setTimeout(() => {
-        enterScreen.style.display = 'none';
-        shop.style.opacity = '1';
-        shop.style.pointerEvents = 'auto';
-      }, 1500);
-    });
-
-    const PRODUCTS = {
+    const products = {
       plushies: [
-        { title: "Pumpkin Duck Plushie", price: "0.005 ETH", img: "https://via.placeholder.com/400x300?text=Pumpkin+Duck+Plushie" },
-        { title: "Quacker Duck Plushie", price: "0.006 ETH", img: "https://via.placeholder.com/400x300?text=Quacker+Duck+Plushie" }
+        { name: "This is Ducking Fine Plush", price: "$20", image: "https://files.catbox.moe/06xw3d.png" }
       ],
       tshirts: [
-        { title: "Quacker T-Shirt", price: "0.003 ETH", img: "https://via.placeholder.com/400x300?text=Quacker+T-Shirt" }
+        { name: "Ciao! Duck Tee", price: "$25", image: "https://files.catbox.moe/zov6wz.png" }
       ],
       keychains: [
-        { title: "Pumpkin Crochet Keychain", price: "0.001 ETH", img: "https://via.placeholder.com/400x300?text=Pumpkin+Keychain" }
-      ]
-    };
+        { name: "Knight Duck Keychain", price: "$15", image: "https://files.catbox.moe/fe641v.png" }
+    ];
 
-    function showCategory(category) {
-      productSection.innerHTML = '';
-      productSection.style.display = 'flex';
-      PRODUCTS[category].forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <img src="${item.img}" alt="${item.title}">
-          <h3>${item.title}</h3>
-          <p>${item.price}</p>
+    enterBtn.addEventListener("click", () => {
+      enterScreen.classList.add("hidden");
+      setTimeout(() => {
+        shopScreen.classList.add("active");
+      }, 700);
+    });
+
+    shopBtn.addEventListener("click", () => {
+      drawer.classList.toggle("active");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!drawer.contains(e.target) && !shopBtn.contains(e.target)) {
+        drawer.classList.remove("active");
+      }
+    });
+
+    const drawerItems = document.query("drawer-item");
+    drawerItems.forEach(item => {
+      item.addEventListener("click", () => {
+        const category = item.getAttribute("data-category");
+        showProducts(category);
+        drawer.classList.remove("active");
+    });
+
+    function showProducts(category) {
+      overlay.classList.add("active");
+      productGrid.classList.add("active");
+      productGrid.innerHTML = products[category].map(p => `
+        <div class="product-card">
+          <img src="${p.image}" alt="${p.name}">
+          <h3>${p.name}</h3>
+          <p>${p.price}</p>
           <button>Add to Cart</button>
-        `;
-        productSection.appendChild(card);
-      });
+        </div>
+      `).join("");
     }
+
+    overlay.addEventName("click", () => {
+      overlay.classList.remove("active");
+      productGrid.classList.remove("active");
+    });
   </script>
 </body>
 </html>
