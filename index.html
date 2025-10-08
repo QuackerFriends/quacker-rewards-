@@ -1,324 +1,337 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF" />
-  <meta name="viewport" content="width=devicegact = 1.0">
-  <title>Quacker Friends Shop</title>
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      font-family: "Poppins", sans-serif;
-      background-color: #fff;
-      color: #4b2e05;
-      overflow: hidden;
-    }
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Quacker Friends Shop — Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brand-green:#6DC8BF;
+    --brown:#4b2e05;
+    --cream:#fff9f2;
+    --accent:#ff914d;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:"Poppins",sans-serif;color:var(--brown);background:var(--cream);-webkit-font-smoothing:antialiased;}
+  /* --- full-screen backgrounds --- */
+  .screen{
+    position:fixed;inset:0;background-position:center;background-size:cover;background-repeat:no-repeat;transition:opacity 1s ease,transform 1s ease;z-index:1;
+  }
+  #enterScreen{z-index:20}
+  #shopScreen{opacity:0;pointer-events:none;z-index:10}
 
-    .fade {
-      transition: opacity 1s ease-in-out;
-    }
+  /* enter button (glowing white, no outline) */
+  .enter-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:21}
+  #enterBtn{
+    background:#fff;border:none;padding:16px 42px;border-radius:999px;font-size:1.35rem;font-weight:700;color:var(--brown);cursor:pointer;
+    box-shadow:0 0 18px rgba(255,255,255,0.75);
+    transition:transform .25s ease,box-shadow .25s ease;
+    animation:enterGlow 2s infinite;
+  }
+  @keyframes enterGlow{
+    0%{box-shadow:0 0 12px rgba(255,255,255,0.6)}
+    50%{box-shadow:0 0 30px rgba(255,255,255,1);transform:scale(1.02)}
+    100%{box-shadow:0 0 12px rgba(255,255,255,0.6);transform:scale(1)}
+  }
+  #enterBtn:hover{transform:scale(1.06)}
 
-    .hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
+  /* top bar on shop */
+  .topbar{position:absolute;top:18px;left:18px;right:18px;display:flex;justify-content:space-between;align-items:center;z-index:30;padding:0 8px}
+  .shopBtn{
+    background:#fff;border:2px solid var(--brown);color:var(--brown);padding:10px 18px;border-radius:10px;font-weight:700;cursor:pointer;
+    transition:transform .18s ease,box-shadow .18s ease;
+  }
+  .shopBtn:hover{transform:scale(1.03);box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+  .walletBtn{
+    background:var(--accent);border:none;color:#fff;padding:10px 18px;border-radius:999px;font-weight:700;cursor:pointer;
+    transition:transform .18s;
+  }
+  .walletBtn:hover{transform:scale(1.03)}
 
-    /* --- ENTER SCREEN --- */
-    .enter-screen {
-      position: fixed;
-      inset: 0;
-      background: url("https://files.catbox.moe/yat7tm.png") center/cover no-repeat;
-      display: flex;
-      justify-aspect: center;
-      align-items: center;
-      flex-direction: column;
-    }
+  /* drawer (solid creamy) */
+  #drawer{
+    position:fixed;top:0;left:-260px;height:100vh;width:260px;background:#fff6ed;box-shadow:6px 0 24px rgba(0,0,0,0.12);
+    padding:80px 18px;display:flex;flex-direction:column;gap:14px;z-index:40;transition:left .6s cubic-bezier(.2,.9,.2,1);
+  }
+  #drawer.open{left:0}
+  .drawer-item{font-weight:700;color:var(--brown);background:none;border:none;text-align:left;padding:10px 8px;border-radius:8px;cursor:pointer;font-size:1.05rem}
+  .drawer-item:hover{transform:translateX(6px);color:#6f452f}
 
-    .enter-button {
-      background: #fff;
-      color: #4b2e05;
-      border: none;
-      padding: 16px 40px;
-      font-size: 1.4em;
-      cursor: pointer;
-      border-radius: 50px;
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
-      transition: all 0.4s ease;
-    }
+  /* overlay (fade when products shown) */
+  #overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);opacity:0;pointer-events:none;transition:opacity .35s ease;z-index:45}
+  #overlay.show{opacity:1;pointer-events:auto}
 
-    .enter-button:hover {
-      box-shadow: 0 0 35px rgba(255, 255, 255, 1);
-      transform: scale(1.05);
-    }
+  /* product grid pop (centered) */
+  #productGrid{position:fixed;inset:80px 60px 120px 340px;display:grid;grid-template-columns:repeat(2,1fr);gap:22px;align-content:start;justify-items:center;z-index:50;opacity:0;pointer-events:none;transition:opacity .35s ease}
+  #productGrid.show{opacity:1;pointer-events:auto}
 
-    /* --- SHOP INTERIOR --- */
-    .shop-screen {
-      position: fixed;
-      inset: 0;
-      background: url("https://files.catbox.moe/8tj3u5.png") center/cover no-repeat;
-      opacity: 0;
-      transition: opacity 1s ease-in-out;
-      display: flex;
-      flex-direction: column;
-      justify-aspect: space-between;
-      color: #4b2e05;
-    }
+  .card{
+    width:100%;max-width:420px;background:rgba(255,255,255,0.98);border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,0.12);overflow:hidden;padding:12px;
+    display:flex;flex-direction:column;align-items:center;gap:8px;transform:translateY(6px);transition:transform .25s ease,box-shadow .25s ease;
+  }
+  .card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(0,0,0,0.15)}
+  .card img{width:100%;height:280px;object-fit:cover;border-radius:10px}
+  .card h4{margin:8px 0 4px;font-size:1.05rem}
+  .card .price{font-weight:700;color:var(--accent);margin-bottom:6px}
+  .card .controls{display:flex;gap:8px;align-items:center}
+  .btn-small{background:#fff;border:2px solid var(--brown);color:var(--brown);padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700}
+  .btn-primary{background:var(--brand-green);border:none;color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:700}
+  select.size{padding:8px;border-radius:8px;border:1px solid #ddd;background:#fff;font-weight:600}
 
-    .shop-screen.active {
-      opacity: 1;
-    }
+  /* size guide modal */
+  #sizeModal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:120;pointer-events:none}
+  #sizeModal .box{width:90%;max-width:720px;background:#fff;border-radius:12px;padding:14px;box-shadow:0 20px 50px rgba(0,0,0,0.3);transform:scale(.98);opacity:0;transition:transform .2s,opacity .2s}
+  #sizeModal.show{pointer-events:auto}
+  #sizeModal.show .box{transform:scale(1);opacity:1}
+  .sizeImg{width:100%;height:auto;border-radius:8px}
+  .modalClose{position:absolute;top:26px;right:26px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:18px}
 
-    .top-bar {
-      display: flex;
-      justify-aspect: space-between;
-      padding: 20px;
-    }
+  /* footer (brand green with white icons only) */
+  footer{position:fixed;left:0;right:0;bottom:0;height:64px;background:var(--brand-green);display:flex;align-items:center;justify-content:center;gap:18px;z-index:60}
+  footer a{display:inline-block;width:36px;height:36px}
+  footer img{width:100%;height:100%;filter:brightness(0) invert(1)}
 
-    .shop-button {
-      background: #fff;
-      border: none;
-      color: #4b2e05;
-      padding: 10px 25px;
-      font-size: 1.2em;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .shop-button:hover {
-      background-color: #f7f2ee;
-      transform: scale(1.05);
-    }
-
-    .connect-button {
-      background: #fff;
-      border: none;
-      color: #4b2e05;
-      padding: 10px 25px;
-      font-size: 1.2em;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .connect-button:hover {
-      background-color: #f7f2ee;
-      transform: scale(1.05);
-    }
-
-    /* --- DRAWER --- */
-    .drawer {
-      position: fixed;
-      top: 0;
-      left: -300px;
-      width: 250px;
-      height: 100vh;
-      background: #f3e8d8;
-      box-shadow: 2px 0 12px rgba(0,0,0,0.2);
-      padding: 60px 20px;
-      transition: left 0.6s ease;
-    }
-
-    .drawer.active {
-      left: 0;
-    }
-
-    .drawer-item {
-      font-size: 1.2em;
-      margin: 20px 0;
-      cursor: pointer;
-      transition: transform 0.3s;
-    }
-
-    .drawer-item:hover {
-      transform: scale(1.05);
-    }
-
-    /* --- PRODUCT CARDS --- */
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      opacity: 0;
-      transition: opacity 0.5s;
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .overlay.active {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    .product-grid {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      justify-aspect: center;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 20px;
-      z-index: 2;
-      opacity: 0;
-      transition: opacity 0.5s;
-    }
-
-    .product-grid.active {
-      opacity: 1;
-    }
-
-    .product-card {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
-      width: 250px;
-      padding: 20px;
-      text-align: center;
-      color: #4b2e05;
-      animation: pop 0.6s ease;
-    }
-
-    .product-card img {
-      width: 100%;
-      border-radius: 10px;
-    }
-
-    .product-card h3 {
-      margin: 10px 0 5px;
-    }
-
-    .product-card p {
-      margin: 0 0 10px;
-    }
-
-    .product-card button {
-      background: #6DC8BF;
-      border: none;
-      color: white;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    .product-card button:hover {
-      background: #57b2a9;
-    }
-
-    @keyframes pop {
-      from { transform: scale(0.9); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-
-    /* --- FOOTER --- */
-    .footer {
-      background: #6DC8BF;
-      display: flex;
-      justify-aspect: center;
-      align-items: center;
-      padding: 20px;
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-    }
-
-    .footer img {
-      width: 30px;
-      margin: 0 10px;
-      filter: brightness(0) invert(1);
-    }
-  </style>
+  /* responsive */
+  @media (max-width:900px){
+    #productGrid{inset:100px 20px 140px 20px;grid-template-columns:repeat(1,1fr)}
+    .card img{height:240px}
+    #drawer{width:220px}
+  }
+</style>
 </head>
 <body>
-  <div class="enter-screen" id="enterScreen">
-    <button class="enter-button" id="enterBtn">ENTER</button>
-  <div>
-
-  <div class="shop-screen" id="shopScreen">
-    <div class="top-bar">
-      <button class="shop-button" id="shopBtn">SHOP</button>
-      <button class "connect-button">Connect Wallet</button>
-    </div>
-
-    <div class="drawer" id="drawer">
-      <div class="drawer-item" data-category="plushies">Plushies</div>
-      <div class="drawer-item" data-category="tshirts">T-Shirts</div>
-      <div "drawer-item" data-category="keychains">Keychains</div>
-    </div>
-
-    <div class="overlay" id="overlay"></div>
-    <div class="product-grid" id="productGrid"></div>
-
-    <div class="footer">
-      <a href="https://www.tiktok.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/3046/3046127.png" alt="TikTok"></a>
-      <a href="https://www.instagram.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"></a>
-      <a href="https://x.com" target="_blank"><img src="https://cdn-icons-png.flaticon.com/512/5968/5968830.png" alt="Twitter"></a>
+  <!-- Enter background -->
+  <div id="enterScreen" class="screen" style="background-image:url('https://files.catbox.moe/yat7tm.png');">
+    <div class="enter-wrap">
+      <button id="enterBtn" aria-label="Enter Quacker Friends Shop">ENTER</button>
     </div>
   </div>
 
-  <script>
-    const enterBtn = document.getElementById("enterBtn");
-    const enterScreen = document.getElementById("enterScreen");
-    const shopScreen = document.getElementById("shopScreen");
-    const shopBtn = document.getElementByI("shopBtn");
-    const drawer = document.getElementById("drawer");
-    const overlay = document.getAElementById("overlay");
-    const productGrid = document.getAElementById("productGrid");
+  <!-- Shop background -->
+  <div id="shopScreen" class="screen" style="background-image:url('https://files.catbox.moe/8tj3u5.png');">
+    <div class="topbar">
+      <button id="shopBtn" class="shopBtn">SHOP</button>
+      <button id="walletBtn" class="walletBtn">Connect Wallet</button>
+    </div>
 
-    const products = {
-      plushies: [
-        { name: "This is Ducking Fine Plush", price: "$20", image: "https://files.catbox.moe/06xw3d.png" }
-      ],
-      tshirts: [
-        { name: "Ciao! Duck Tee", price: "$25", image: "https://files.catbox.moe/zov6wz.png" }
-      ],
-      keychains: [
-        { name: "Knight Duck Keychain", price: "$15", image: "https://files.catbox.moe/fe641v.png" }
-    ];
+    <!-- Drawer -->
+    <nav id="drawer" aria-hidden="true">
+      <button class="drawer-item" data-cat="plushies">Plushies</button>
+      <button class="drawer-item" data-cat="tshirts">T-Shirts</button>
+      <button class="drawer-item" data-cat="keychains">Keychains</button>
+    </nav>
 
-    enterBtn.addEventListener("click", () => {
-      enterScreen.classList.add("hidden");
-      setTimeout(() => {
-        shopScreen.classList.add("active");
-      }, 700);
-    });
+    <!-- overlay and product grid (hidden until category clicked) -->
+    <div id="overlay"></div>
+    <div id="productGrid" aria-live="polite"></div>
 
-    shopBtn.addEventListener("click", () => {
-      drawer.classList.toggle("active");
-    });
+    <!-- size guide modal -->
+    <div id="sizeModal" aria-hidden="true">
+      <div class="box" role="dialog" aria-modal="true">
+        <button class="modalClose" id="sizeCloseBtn">✖</button>
+        <img class="sizeImg" src="https://files.catbox.moe/41dvss.png" alt="Size guide">
+      </div>
+    </div>
 
-    document.addEventListener("click", (e) => {
-      if (!drawer.contains(e.target) && !shopBtn.contains(e.target)) {
-        drawer.classList.remove("active");
-      }
-    });
+    <!-- footer -->
+    <footer aria-label="socials">
+      <a href="https://www.tiktok.com" target="_blank" rel="noopener">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg" alt="TikTok">
+      </a>
+      <a href="https://www.instagram.com" target="_blank" rel="noopener">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" alt="Instagram">
+      </a>
+      <a href="https://x.com" target="_blank" rel="noopener">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg" alt="X">
+      </a>
+    </footer>
+  </div>
 
-    const drawerItems = document.query("drawer-item");
-    drawerItems.forEach(item => {
-      item.addEventListener("click", () => {
-        const category = item.getAttribute("data-category");
-        showProducts(category);
-        drawer.classList.remove("active");
-    });
+<script>
+/* ---------- preload backgrounds then enable enter ---------- */
+const bg1 = "https://files.catbox.moe/yat7tm.png";
+const bg2 = "https://files.catbox.moe/8tj3u5.png";
+let loaded = 0;
+function checkLoaded(){ loaded++; if(loaded===2){ document.getElementById('enterBtn').disabled=false; } }
+const i1 = new Image(); i1.onload=checkLoaded; i1.src=bg1;
+const i2 = new Image(); i2.onload=checkLoaded; i2.src=bg2;
 
-    function showProducts(category) {
-      overlay.classList.add("active");
-      productGrid.classList.add("active");
-      productGrid.innerHTML = products[category].map(p => `
-        <div class="product-card">
-          <img src="${p.image}" alt="${p.name}">
-          <h3>${p.name}</h3>
-          <p>${p.price}</p>
-          <button>Add to Cart</button>
+/* disable enter button until backgrounds loaded */
+document.getElementById('enterBtn').disabled = true;
+
+/* ---------- elements ---------- */
+const enterBtn = document.getElementById('enterBtn');
+const enterScreen = document.getElementById('enterScreen');
+const shopScreen = document.getElementById('shopScreen');
+const shopBtn = document.getElementById('shopBtn');
+const drawer = document.getElementById('drawer');
+const overlay = document.getElementById('overlay');
+const productGrid = document.getElementById('productGrid');
+const drawerItems = Array.from(document.querySelectorAll('.drawer-item'));
+const sizeModal = document.getElementById('sizeModal');
+const sizeCloseBtn = document.getElementById('sizeCloseBtn');
+
+/* ---------- product data (using your provided tee images) ---------- */
+const PRODUCTS = {
+  plushies: [
+    { id:'pl1', name:'Pumpkin Duck Plush', price:'$25', img:'https://files.catbox.moe/06xw3d.png' },
+    { id:'pl2', name:'Quacker Duck Plush', price:'$20', img:'https://files.catbox.moe/zov6wz.png' }
+  ],
+  tshirts: [
+    { id:'t1', name:'This is Ducking Fine Tee', price:'$19.99', white:'https://files.catbox.moe/dw04zw.png', black:'https://files.catbox.moe/d6zm2s.png' },
+    { id:'t2', name:'Ciao! Duck Tee', price:'$19.99', white:'https://files.catbox.moe/qi081o.png', black:'https://files.catbox.moe/0gn3r2.png' },
+    { id:'t3', name:'Waddle Club Tee', price:'$19.99', white:'https://files.catbox.moe/zqtvvw.png', black:'https://files.catbox.moe/mgu7nu.png' },
+    { id:'t4', name:'Pumpkin Season Tee', price:'$19.99', white:'https://files.catbox.moe/nbl7st.png', black:'https://files.catbox.moe/5n618u.png' }
+  ],
+  keychains: [
+    { id:'k1', name:'Knight Duck Keychain', price:'$15', img:'https://files.catbox.moe/fe641v.png' }
+  ]
+};
+
+/* ---------- enter logic (soft dream fade) ---------- */
+enterBtn.addEventListener('click', () => {
+  // fade out enter screen then show shop
+  enterScreen.style.transition = 'opacity 1s ease';
+  enterScreen.style.opacity = '0';
+  setTimeout(()=>{
+    enterScreen.style.display = 'none';
+    // show shop screen by enabling pointer events and making opacity = 1
+    shopScreen.style.opacity = '1';
+    shopScreen.style.pointerEvents = 'auto';
+  }, 900);
+});
+
+/* ---------- drawer open/close behavior ---------- */
+// open on click or mouseenter
+shopBtn.addEventListener('click', () => openDrawer());
+drawer.addEventListener('mouseenter', () => openDrawer());
+// close on mouseleave
+drawer.addEventListener('mouseleave', () => closeDrawerDelay());
+// close when clicking outside
+document.addEventListener('click', (e) => {
+  if(!drawer.contains(e.target) && !shopBtn.contains(e.target)) closeDrawer();
+});
+
+// helper functions
+let closeTimeout = null;
+function openDrawer(){
+  clearTimeout(closeTimeout);
+  drawer.classList.add('open');
+  drawer.setAttribute('aria-hidden','false');
+}
+function closeDrawer(){
+  clearTimeout(closeTimeout);
+  drawer.classList.remove('open');
+  drawer.setAttribute('aria-hidden','true');
+}
+function closeDrawerDelay(){
+  closeTimeout = setTimeout(()=>{ drawer.classList.remove('open'); }, 700);
+}
+
+/* ---------- show products for a category ---------- */
+function showProducts(category){
+  // fill productGrid with cards depending on category
+  const arr = PRODUCTS[category] || [];
+  productGrid.innerHTML = ''; // reset
+  arr.forEach(item=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+    // If tshirt has white/black variants, build toggle; else single img
+    if(category === 'tshirts'){
+      card.innerHTML = `
+        <img src="${item.white}" alt="${item.name}" class="prod-img" data-white="${item.white}" data-black="${item.black}">
+        <h4>${item.name}</h4>
+        <div class="price">${item.price}</div>
+        <div class="controls">
+          <button class="btn-small toggleColor">Switch Color</button>
+          <select class="size" aria-label="Size">
+            <option>S</option><option>M</option><option>L</option><option>XL</option>
+          </select>
+          <button class="btn-small viewSize">Size Guide</button>
         </div>
-      `).join("");
+        <div style="height:8px"></div>
+        <button class="btn-primary addCart">Add to Cart</button>
+      `;
+    } else {
+      // plushies / keychains
+      card.innerHTML = `
+        <img src="${item.img}" alt="${item.name}">
+        <h4>${item.name}</h4>
+        <div class="price">${item.price}</div>
+        <div style="height:8px"></div>
+        <button class="btn-primary addCart">Add to Cart</button>
+      `;
     }
+    productGrid.appendChild(card);
+  });
 
-    overlay.addEventName("click", () => {
-      overlay.classList.remove("active");
-      productGrid.classList.remove("active");
+  // show overlay + grid
+  overlay.classList.add('show');
+  productGrid.classList.add('show');
+
+  // wire up interactive controls (toggle color, size guide, add to cart)
+  productGrid.querySelectorAll('.toggleColor').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      const imgEl = btn.closest('.card').querySelector('.prod-img');
+      if(!imgEl) return;
+      const cur = imgEl.src;
+      const white = imgEl.dataset.white;
+      const black = imgEl.dataset.black;
+      imgEl.src = (cur === white) ? black : white;
     });
-  </script>
+  });
+  productGrid.querySelectorAll('.viewSize').forEach(btn=>{
+    btn.addEventListener('click', ()=> openSizeModal());
+  });
+  productGrid.querySelectorAll('.addCart').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      // UI-only response
+      btn.textContent = 'Added ✓';
+      btn.disabled = true;
+      setTimeout(()=>{ btn.textContent = 'Add to Cart'; btn.disabled=false }, 1200);
+    });
+  });
+}
+
+/* ---------- category buttons in drawer ---------- */
+drawerItems.forEach(b=>{
+  b.addEventListener('click', ()=>{
+    const cat = b.dataset.cat;
+    // close drawer and show products
+    closeDrawer();
+    showProducts(cat);
+  });
+});
+
+/* close overlay and product grid when overlay clicked */
+overlay.addEventListener('click', ()=> {
+  overlay.classList.remove('show');
+  productGrid.classList.remove('show');
+});
+
+/* ---------- size modal ---------- */
+function openSizeModal(){
+  sizeModal.classList.add('show');
+  sizeModal.setAttribute('aria-hidden','false');
+}
+function closeSizeModal(){
+  sizeModal.classList.remove('show');
+  sizeModal.setAttribute('aria-hidden','true');
+}
+sizeCloseBtn.addEventListener('click', closeSizeModal);
+sizeModal.addEventListener('click', (e)=>{ if(e.target === sizeModal) closeSizeModal(); });
+
+/* ---------- small accessibility helpers ---------- */
+// keyboard ESC to close overlay or modal
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape'){
+    overlay.classList.remove('show');
+    productGrid.classList.remove('show');
+    closeSizeModal();
+    closeDrawer();
+  }
+});
+</script>
 </body>
 </html>
