@@ -7,22 +7,30 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap');
   * {margin:0; padding:0; box-sizing:border-box; font-family:'Quicksand',sans-serif;}
-  body,html {height:100%; overflow:hidden; background:#fdfaf5; color:#3b2f2f;}
-  
-  video, img.bg {
+  html, body {height:100%; background:#fdfaf5; color:#3b2f2f; overflow:hidden;}
+
+  img.bg {
     position:fixed; top:0; left:0; width:100%; height:100%;
     object-fit:cover; z-index:-2;
   }
 
-  .enter-screen, .shop-screen {position:relative; width:100%; height:100%; display:flex; justify-content:center; align-items:center; flex-direction:column;}
+  .enter-screen, .shop-screen {
+    position:relative; width:100%; height:100%;
+    display:flex; justify-content:center; align-items:center; flex-direction:column;
+    transition:opacity 1s ease;
+  }
   .hidden {display:none;}
-  
+
   .enter-btn {
     background:none; border:2px solid #fff; color:#fff; font-size:2rem;
-    padding:10px 30px; border-radius:40px; cursor:pointer;
-    transition:all .3s ease; text-shadow:0 0 8px rgba(255,255,255,0.7);
+    padding:12px 36px; border-radius:40px; cursor:pointer;
+    transition:all .3s ease; text-shadow:0 0 10px rgba(255,255,255,0.8);
   }
-  .enter-btn:hover {background:#fff; color:#3b2f2f; box-shadow:0 0 20px #fff;}
+  .enter-btn:hover {
+    background:#fff; color:#3b2f2f;
+    box-shadow:0 0 20px rgba(255,255,255,0.9);
+    transform:scale(1.05);
+  }
 
   .shop-btn {
     position:fixed; top:30px; left:30px;
@@ -35,10 +43,9 @@
 
   .drawer {
     position:fixed; top:0; left:-300px; width:300px; height:100%;
-    background:rgba(255,249,240,0.9);
+    background:rgba(255,249,240,0.95);
     box-shadow:4px 0 10px rgba(0,0,0,0.2);
-    transition:left 0.5s ease; padding:60px 20px;
-    z-index:9;
+    transition:left 0.5s ease; padding:60px 20px; z-index:9;
   }
   .drawer.open {left:0;}
   .drawer ul {list-style:none;}
@@ -51,6 +58,7 @@
     backdrop-filter:blur(6px);
     display:none; justify-content:center; align-items:center;
     flex-direction:column; overflow-y:auto; padding:40px;
+    z-index:8;
   }
   .overlay.show {display:flex;}
 
@@ -60,7 +68,7 @@
   }
 
   .product-card {
-    background:rgba(255,255,255,0.8);
+    background:rgba(255,255,255,0.85);
     border-radius:16px; padding:15px;
     box-shadow:0 4px 12px rgba(0,0,0,0.1);
     text-align:center;
@@ -69,9 +77,6 @@
   .product-card:hover {transform:translateY(-6px); box-shadow:0 8px 18px rgba(0,0,0,0.15);}
   .product-card img {width:100%; border-radius:12px;}
   .price {font-weight:600; color:#3b2f2f; margin-top:6px;}
-  .size-select, .size-guide {
-    margin-top:8px;
-  }
   .size-select select {
     padding:5px 10px; border:1px solid #ccc; border-radius:8px; background:#fff; color:#3b2f2f;
   }
@@ -140,8 +145,11 @@
 
 <script>
   function enterShop(){
-    document.getElementById('enterScreen').classList.add('hidden');
-    document.getElementById('shopScreen').classList.remove('hidden');
+    document.getElementById('enterScreen').style.opacity = '0';
+    setTimeout(()=>{
+      document.getElementById('enterScreen').classList.add('hidden');
+      document.getElementById('shopScreen').classList.remove('hidden');
+    },600);
   }
 
   function toggleDrawer(){
@@ -152,7 +160,7 @@
   const overlay = document.getElementById('productOverlay');
 
   function openCategory(cat){
-    overlay.innerHTML = ''; // clear previous
+    overlay.innerHTML = '';
     overlay.classList.add('show');
     let products = [];
 
@@ -161,7 +169,7 @@
         {img:'https://files.catbox.moe/dw04zw.png', price:'$19.99'},
         {img:'https://files.catbox.moe/d6zm2s.png', price:'$19.99'},
         {img:'https://files.catbox.moe/qi081o.png', price:'$19.99'},
-        {img:'https://files.catbox.moe/0gn3r2.png', price:'$19.99'}
+        {img:'https://files.catbox.moe/0gn3r2.png', price:'$19.99'},
       ];
     } else if(cat === 'plushies'){
       products = [
@@ -176,6 +184,7 @@
 
     const grid = document.createElement('div');
     grid.className = 'product-grid';
+
     products.forEach(p=>{
       const card = document.createElement('div');
       card.className = 'product-card';
@@ -196,8 +205,14 @@
       `;
       grid.appendChild(card);
     });
+
     overlay.appendChild(grid);
-    overlay.onclick = (e)=>{ if(e.target===overlay) overlay.classList.remove('show'); };
+
+    overlay.onclick = (e)=>{
+      if(e.target===overlay){
+        overlay.classList.remove('show');
+      }
+    };
   }
 
   function openSizeGuide(){
