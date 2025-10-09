@@ -163,10 +163,10 @@
 
   .shop-items {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 20px;
     padding: 20px;
-    width: 80%;
+    width: 85%;
     max-width: 800px;
   }
 
@@ -175,7 +175,7 @@
     border: 2px solid #4b2e1e;
     border-radius: 20px;
     text-align: center;
-    padding: 12px;
+    padding: 14px;
   }
 
   .item-card img {
@@ -185,7 +185,43 @@
 
   .item-card h3 {
     font-size: 1rem;
-    margin: 8px 0;
+    margin: 8px 0 4px;
+  }
+
+  .price {
+    font-weight: bold;
+    color: #4b2e1e;
+  }
+
+  select {
+    border-radius: 12px;
+    border: 1px solid #4b2e1e;
+    padding: 5px;
+    margin-top: 5px;
+  }
+
+  .size-guide {
+    display: inline-block;
+    margin-top: 5px;
+    color: #6DC8BF;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 0.9rem;
+  }
+
+  .add-cart {
+    background: #4b2e1e;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 15px;
+    margin-top: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  .add-cart:hover {
+    background: #6DC8BF;
   }
 
   .close-overlay {
@@ -197,6 +233,37 @@
     cursor: pointer;
     font-weight: 600;
     margin-top: 20px;
+  }
+
+  /* --- Size Guide Popup --- */
+  #size-guide-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.95);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 999;
+  }
+
+  #size-guide-popup img {
+    max-width: 90%;
+    border-radius: 20px;
+    border: 2px solid #4b2e1e;
+  }
+
+  .close-size-guide {
+    margin-top: 15px;
+    background: #4b2e1e;
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 20px;
+    cursor: pointer;
   }
 
   /* --- Footer --- */
@@ -249,6 +316,12 @@
   </div>
 </section>
 
+<!-- Size Guide Popup -->
+<div id="size-guide-popup">
+  <img src="https://files.catbox.moe/41dvss.png" alt="Size Guide">
+  <button class="close-size-guide" onclick="closeSizeGuide()">Close</button>
+</div>
+
 <!-- Footer -->
 <footer>
   <a href="https://www.instagram.com" target="_blank">
@@ -264,19 +337,15 @@
 
 <script>
 function enterShop() {
-  const entry = document.getElementById("entry");
-  const shop = document.getElementById("shop");
-
-  entry.style.opacity = "0";
+  document.getElementById("entry").style.opacity = "0";
   setTimeout(() => {
-    entry.style.display = "none";
-    shop.classList.add("active");
+    document.getElementById("entry").style.display = "none";
+    document.getElementById("shop").classList.add("active");
   }, 1000);
 }
 
 function toggleDrawer() {
-  const drawer = document.getElementById("drawer");
-  drawer.classList.toggle("open");
+  document.getElementById("drawer").classList.toggle("open");
 }
 
 function openShopCategory(category) {
@@ -285,30 +354,52 @@ function openShopCategory(category) {
   const items = document.getElementById("shop-items");
   title.textContent = category;
 
-  // Simple placeholder items for now
-  items.innerHTML = `
-    <div class="item-card">
-      <img src="https://placekitten.com/200/200" alt="${category} Item">
-      <h3>${category} Item 1</h3>
-    </div>
-    <div class="item-card">
-      <img src="https://placekitten.com/201/200" alt="${category} Item">
-      <h3>${category} Item 2</h3>
-    </div>
-    <div class="item-card">
-      <img src="https://placekitten.com/202/200" alt="${category} Item">
-      <h3>${category} Item 3</h3>
-    </div>
-  `;
+  if (category === "Tees") {
+    items.innerHTML = `
+      ${generateTeeCard("Tee 1", "https://files.catbox.moe/dw04zw.png", "https://files.catbox.moe/d6zm2s.png")}
+      ${generateTeeCard("Tee 2", "https://files.catbox.moe/qi081o.png", "https://files.catbox.moe/0gn3r2.png")}
+      ${generateTeeCard("Tee 3", "https://files.catbox.moe/zqtvvw.png", "https://files.catbox.moe/mgu7nu.png")}
+      ${generateTeeCard("Tee 4", "https://files.catbox.moe/nbl7st.png", "https://files.catbox.moe/5n618u.png")}
+    `;
+  } else {
+    items.innerHTML = `
+      <div class="item-card"><img src="https://placekitten.com/200/200"><h3>${category} Item</h3><p class="price">$14.99</p></div>
+    `;
+  }
 
   overlay.classList.add("active");
+}
+
+function generateTeeCard(name, whiteImg, blackImg) {
+  return `
+    <div class="item-card">
+      <img src="${whiteImg}" alt="${name}">
+      <h3>${name}</h3>
+      <p class="price">$19.99</p>
+      <select>
+        <option>S</option>
+        <option>M</option>
+        <option>L</option>
+        <option>XL</option>
+      </select>
+      <div class="size-guide" onclick="openSizeGuide()">Size Guide</div>
+      <button class="add-cart">Add to Cart</button>
+    </div>
+  `;
+}
+
+function openSizeGuide() {
+  document.getElementById("size-guide-popup").style.display = "flex";
+}
+
+function closeSizeGuide() {
+  document.getElementById("size-guide-popup").style.display = "none";
 }
 
 function closeOverlay() {
   document.getElementById("shop-overlay").classList.remove("active");
 }
 
-// Close drawer when clicking outside
 document.addEventListener('click', function(e) {
   const drawer = document.getElementById('drawer');
   const shopBtn = document.querySelector('.shop-btn');
@@ -317,6 +408,5 @@ document.addEventListener('click', function(e) {
   }
 });
 </script>
-
 </body>
 </html>
