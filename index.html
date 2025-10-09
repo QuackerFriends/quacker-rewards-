@@ -5,141 +5,102 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quacker Friends Shop</title>
 <style>
-  * {
+  body {
     margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Poppins", sans-serif;
-    color: #4b2e1e;
+    font-family: 'Poppins', sans-serif;
+    background: url('https://files.catbox.moe/06xw3d.png') center/cover no-repeat fixed;
+    color: #3a2f2f;
+    overflow-x: hidden;
   }
 
-  body, html {
-    height: 100%;
-    overflow: hidden;
-  }
-
-  /* ENTRY SCREEN */
-  #entry-screen {
+  /* Cinematic dreamy overlay */
+  .overlay {
     position: fixed;
     inset: 0;
-    background: url('https://files.catbox.moe/yat7tm.png') center/cover no-repeat;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 1.5s ease;
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(8px);
+    z-index: 0;
   }
 
-  .enter-btn {
-    background-color: white;
-    border: none;
-    font-size: 1.5rem;
-    padding: 14px 40px;
+  /* Shop floating button */
+  .shop-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: #f8f5ef;
+    border: 2px solid #d3c7b9;
+    color: #3a2f2f;
+    padding: 10px 18px;
     border-radius: 40px;
-    color: #4b2e1e;
     font-weight: 600;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
     cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    z-index: 10;
+    transition: all 0.3s ease;
   }
 
-  .enter-btn:hover {
+  .shop-btn:hover {
+    background: #fff9f4;
     transform: scale(1.05);
-    box-shadow: 0 0 35px rgba(255, 255, 255, 0.9);
   }
 
-  /* SHOP SCREEN */
-  #shop-screen {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: url('https://files.catbox.moe/8tj3u5.png') center/cover no-repeat;
-    transition: opacity 1.5s ease;
-    overflow-y: auto;
-  }
-
-  header {
-    position: absolute;
-    top: 20px;
-    right: 40px;
-  }
-
-  .connect-btn {
-    background-color: #fff;
-    border: 2px solid #4b2e1e;
-    color: #4b2e1e;
-    font-weight: 600;
-    padding: 10px 20px;
-    border-radius: 30px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-
-  .connect-btn:hover {
-    background-color: #4b2e1e;
-    color: white;
-  }
-
-  /* Drawer */
+  /* Drawer styling */
   .drawer {
     position: fixed;
     top: 0;
-    left: -240px;
-    height: 100%;
+    left: -260px;
     width: 240px;
-    background-color: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px);
-    padding-top: 80px;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
     transition: left 0.4s ease;
+    padding-top: 80px;
+    z-index: 20;
   }
 
-  .drawer:hover {
+  .drawer.open {
     left: 0;
   }
 
   .drawer button {
     display: block;
     width: 100%;
-    padding: 14px 20px;
-    background: none;
+    padding: 15px;
     border: none;
+    background: none;
     text-align: left;
-    font-size: 1.2rem;
-    font-weight: 600;
+    font-size: 16px;
+    color: #3a2f2f;
     cursor: pointer;
+    transition: background 0.3s ease;
   }
 
   .drawer button:hover {
-    background-color: rgba(109, 200, 191, 0.3);
+    background: rgba(255, 255, 255, 0.6);
   }
 
-  /* Products */
-  .product-grid {
-    display: none;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 25px;
-    justify-items: center;
-    padding: 120px 40px 120px;
-    animation: fadeIn 1s ease forwards;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+  /* Product grid */
+  .products {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    padding: 100px 40px 120px;
+    z-index: 1;
+    position: relative;
   }
 
   .product-card {
-    background: rgba(255,255,255,0.8);
+    background: rgba(255, 255, 255, 0.85);
     border-radius: 20px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    padding: 15px;
     text-align: center;
-    padding: 20px;
-    width: 250px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
 
   .product-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    transform: translateY(-6px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
   }
 
   .product-card img {
@@ -148,213 +109,190 @@
   }
 
   .product-card h3 {
-    margin-top: 10px;
-    font-size: 1.1rem;
+    margin: 10px 0 5px;
+    font-size: 16px;
   }
 
   .product-card p {
-    margin: 6px 0;
-    font-weight: 600;
-  }
-
-  .product-card button {
-    background-color: #6DC8BF;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 30px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background 0.3s ease;
-  }
-
-  .product-card button:hover {
-    background-color: #4b2e1e;
-  }
-
-  /* Product Popup */
-  .overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background-color: rgba(255,255,255,0.4);
-    backdrop-filter: blur(8px);
-    align-items: center;
-    justify-content: center;
-    animation: fadeIn 0.5s ease forwards;
-  }
-
-  .popup {
-    background-color: #fff;
-    border-radius: 20px;
-    padding: 30px;
-    max-width: 420px;
-    width: 90%;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    text-align: center;
-    position: relative;
-  }
-
-  .popup img {
-    width: 100%;
-    border-radius: 15px;
-    margin-bottom: 15px;
-  }
-
-  .popup h3 {
-    font-size: 1.3rem;
-    margin-bottom: 8px;
-  }
-
-  .popup p {
-    font-weight: 500;
-    margin-bottom: 10px;
-  }
-
-  .close-popup {
-    position: absolute;
-    top: 12px;
-    right: 15px;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
+    margin: 5px 0;
+    color: #7a6f67;
+    font-size: 14px;
   }
 
   /* Footer */
   footer {
-    background-color: #6DC8BF;
-    padding: 12px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: transparent;
     display: flex;
     justify-content: center;
-    gap: 18px;
     align-items: center;
+    gap: 25px;
+    z-index: 5;
   }
 
-  footer img {
-    width: 22px;
-    height: 22px;
-    filter: brightness(100%);
+  footer a img {
+    width: 26px;
+    height: 26px;
+    filter: brightness(100%) invert(1);
+    transition: transform 0.3s ease, filter 0.3s ease;
+  }
+
+  footer a img:hover {
+    transform: scale(1.2);
+    filter: brightness(1.4) invert(1);
+  }
+
+  /* Size Guide Modal */
+  .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(5px);
+    justify-content: center;
+    align-items: center;
+    z-index: 30;
+  }
+
+  .modal-content {
+    position: relative;
+    background: #fff;
+    padding: 20px;
+    border-radius: 15px;
+    max-width: 400px;
+  }
+
+  .close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    cursor: pointer;
+    font-size: 18px;
+  }
+
+  .size-img {
+    width: 100%;
+    border-radius: 10px;
   }
 </style>
 </head>
 <body>
 
-<!-- ENTRY SCREEN -->
-<div id="entry-screen">
-  <button class="enter-btn" onclick="enterShop()">ENTER</button>
+<div class="overlay"></div>
+
+<!-- Shop Button -->
+<button class="shop-btn" onclick="toggleDrawer()">Shop</button>
+
+<!-- Drawer Menu -->
+<div class="drawer" id="drawer">
+  <button onclick="showCategory('tees')">Tees</button>
+  <button onclick="showCategory('plushies')">Plushies</button>
+  <button onclick="showCategory('keychains')">Keychains</button>
 </div>
 
-<!-- SHOP SCREEN -->
-<div id="shop-screen">
-  <header>
-    <button class="connect-btn">Connect Wallet</button>
-  </header>
+<!-- Product Grid -->
+<div class="products" id="productGrid"></div>
 
-  <div class="drawer">
-    <button onclick="showProducts('plushies')">Plushies</button>
-    <button onclick="showProducts('keychains')">Keychains</button>
-    <button onclick="showProducts('tees')">T-Shirts</button>
-  </div>
+<!-- Footer -->
+<footer>
+  <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/733/733635.png" alt="Twitter"></a>
+  <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384063.png" alt="Instagram"></a>
+  <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="TikTok"></a>
+</footer>
 
-  <div id="plushies" class="product-grid">
-    <div class="product-card">
-      <img src="https://files.catbox.moe/06xw3d.png" alt="Plushie">
-      <h3>Quacker Plushie</h3>
-      <p>$19.99</p>
-      <button onclick="openPopup('https://files.catbox.moe/06xw3d.png', 'Quacker Plushie', '$19.99')">View Details</button>
-    </div>
-    <div class="product-card">
-      <img src="https://files.catbox.moe/zov6wz.png" alt="Plushie">
-      <h3>Duckie Plushie</h3>
-      <p>$19.99</p>
-      <button onclick="openPopup('https://files.catbox.moe/zov6wz.png', 'Duckie Plushie', '$19.99')">View Details</button>
-    </div>
-    <div class="product-card">
-      <img src="https://files.catbox.moe/fe641v.png" alt="Plushie">
-      <h3>Mini Quack Plushie</h3>
-      <p>$19.99</p>
-      <button onclick="openPopup('https://files.catbox.moe/fe641v.png', 'Mini Quack Plushie', '$19.99')">View Details</button>
-    </div>
-  </div>
-
-  <div id="keychains" class="product-grid">
-    <div class="product-card">
-      <img src="https://files.catbox.moe/nlii1p.png" alt="Keychain">
-      <h3>Pumpkin Crochet Keychain</h3>
-      <p>$9.99</p>
-      <button onclick="openPopup('https://files.catbox.moe/nlii1p.png', 'Pumpkin Crochet Keychain', '$9.99')">View Details</button>
-    </div>
-  </div>
-
-  <div id="tees" class="product-grid">
-    <div class="product-card">
-      <img src="https://files.catbox.moe/dw04zw.png" alt="Tee">
-      <h3>Quacker Tee 1</h3>
-      <p>$19.99</p>
-      <button onclick="openPopup('https://files.catbox.moe/dw04zw.png', 'Quacker Tee 1', '$19.99')">View Details</button>
-    </div>
-    <div class="product-card">
-      <img src="https://files.catbox.moe/qi081o.png" alt="Tee">
-      <h3>Quacker Tee 2</h3>
-      <p>$19.99</p>
-      <button onclick="openPopup('https://files.catbox.moe/qi081o.png', 'Quacker Tee 2', '$19.99')">View Details</button>
-    </div>
-    <div class="product-card">
-      <img src="https://files.catbox.moe/zqtvvw.png" alt="Tee">
-      <h3>Quacker Tee 3</h3>
-      <p>$19.99</p>
-      <button onclick="openPopup('https://files.catbox.moe/zqtvvw.png', 'Quacker Tee 3', '$19.99')">View Details</button>
-    </div>
-    <div class="product-card">
-      <img src="https://files.catbox.moe/nbl7st.png" alt="Tee">
-      <h3>Quacker Tee 4</h3>
-      <p>$19.99</p>
-      <button onclick="openPopup('https://files.catbox.moe/nbl7st.png', 'Quacker Tee 4', '$19.99')">View Details</button>
-    </div>
-  </div>
-
-  <footer>
-    <img src="https://cdn-icons-png.flaticon.com/512/733/733558.png" alt="Instagram">
-    <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" alt="TikTok">
-    <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="Twitter">
-  </footer>
-</div>
-
-<!-- Popup Overlay -->
-<div class="overlay" id="overlay">
-  <div class="popup">
-    <button class="close-popup" onclick="closePopup()">×</button>
-    <img id="popup-img" src="" alt="">
-    <h3 id="popup-title"></h3>
-    <p id="popup-price"></p>
-    <p id="popup-desc">Soft crochet friend handmade with love 💚</p>
+<!-- Size Guide Modal -->
+<div class="modal" id="sizeModal">
+  <div class="modal-content">
+    <span class="close" onclick="closeSizeGuide()">&times;</span>
+    <img src="https://files.catbox.moe/41dvss.png" alt="Size Guide" class="size-img">
   </div>
 </div>
 
 <script>
-function enterShop() {
-  document.getElementById('entry-screen').style.opacity = '0';
-  setTimeout(() => {
-    document.getElementById('entry-screen').style.display = 'none';
-    document.getElementById('shop-screen').style.display = 'block';
-  }, 1500);
+const drawer = document.getElementById('drawer');
+const productGrid = document.getElementById('productGrid');
+const sizeModal = document.getElementById('sizeModal');
+
+function toggleDrawer() {
+  drawer.classList.toggle('open');
 }
 
-function showProducts(category) {
-  document.querySelectorAll('.product-grid').forEach(grid => grid.style.display = 'none');
-  document.getElementById(category).style.display = 'grid';
+document.addEventListener('click', (e) => {
+  if (!drawer.contains(e.target) && !e.target.classList.contains('shop-btn')) {
+    drawer.classList.remove('open');
+  }
+});
+
+function showCategory(category) {
+  drawer.classList.remove('open');
+  let productsHTML = '';
+
+  if (category === 'tees') {
+    const tees = [
+      { name: 'Tee 1 (White)', img: 'https://files.catbox.moe/dw04zw.png' },
+      { name: 'Tee 1 (Black)', img: 'https://files.catbox.moe/d6zm2s.png' },
+      { name: 'Tee 2 (White)', img: 'https://files.catbox.moe/qi081o.png' },
+      { name: 'Tee 2 (Black)', img: 'https://files.catbox.moe/0gn3r2.png' },
+      { name: 'Tee 3 (White)', img: 'https://files.catbox.moe/zqtvvw.png' },
+      { name: 'Tee 3 (Black)', img: 'https://files.catbox.moe/mgu7nu.png' },
+      { name: 'Tee 4 (White)', img: 'https://files.catbox.moe/nbl7st.png' },
+      { name: 'Tee 4 (Black)', img: 'https://files.catbox.moe/5n618u.png' },
+    ];
+
+    productsHTML = tees.map(tee => `
+      <div class="product-card">
+        <img src="${tee.img}" alt="${tee.name}">
+        <h3>${tee.name}</h3>
+        <p>$19.99</p>
+        <button onclick="openSizeGuide()">Size Guide</button>
+      </div>
+    `).join('');
+  }
+
+  if (category === 'plushies') {
+    const plushies = [
+      { name: 'Duck Plush', img: 'https://files.catbox.moe/06xw3d.png', price: '$24.99' },
+      { name: 'Frog Plush', img: 'https://files.catbox.moe/zov6wz.png', price: '$24.99' },
+      { name: 'Bunny Plush', img: 'https://files.catbox.moe/fe641v.png', price: '$24.99' },
+    ];
+
+    productsHTML = plushies.map(p => `
+      <div class="product-card">
+        <img src="${p.img}" alt="${p.name}">
+        <h3>${p.name}</h3>
+        <p>${p.price}</p>
+      </div>
+    `).join('');
+  }
+
+  if (category === 'keychains') {
+    const keychains = [
+      { name: 'Quacker Keychain', img: 'https://files.catbox.moe/zov6wz.png', price: '$9.99' },
+      { name: 'Froggie Keychain', img: 'https://files.catbox.moe/fe641v.png', price: '$9.99' },
+    ];
+
+    productsHTML = keychains.map(k => `
+      <div class="product-card">
+        <img src="${k.img}" alt="${k.name}">
+        <h3>${k.name}</h3>
+        <p>${k.price}</p>
+      </div>
+    `).join('');
+  }
+
+  productGrid.innerHTML = productsHTML;
 }
 
-function openPopup(img, title, price) {
-  document.getElementById('popup-img').src = img;
-  document.getElementById('popup-title').textContent = title;
-  document.getElementById('popup-price').textContent = price;
-  document.getElementById('overlay').style.display = 'flex';
+function openSizeGuide() {
+  sizeModal.style.display = 'flex';
 }
 
-function closePopup() {
-  document.getElementById('overlay').style.display = 'none';
+function closeSizeGuide() {
+  sizeModal.style.display = 'none';
 }
 </script>
 </body>
