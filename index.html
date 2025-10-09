@@ -5,295 +5,222 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quacker Friends Shop</title>
 <style>
-  body {
+  body, html {
     margin: 0;
-    font-family: 'Poppins', sans-serif;
-    background: url('https://files.catbox.moe/06xw3d.png') center/cover no-repeat fixed;
-    color: #3a2f2f;
-    overflow-x: hidden;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+    height: 100%;
+    overflow: hidden;
+    color: #4b2e1e;
   }
 
-  /* Cinematic dreamy overlay */
-  .overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(255, 255, 255, 0.35);
-    backdrop-filter: blur(8px);
-    z-index: 0;
+  /* --- Entry Page --- */
+  #entry {
+    background: url('https://files.catbox.moe/yat7tm.png') no-repeat center center/cover;
+    height: 100vh;
+    width: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 1.5s ease-in-out;
   }
 
-  /* Shop floating button */
-  .shop-btn {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    background: #f8f5ef;
-    border: 2px solid #d3c7b9;
-    color: #3a2f2f;
-    padding: 10px 18px;
-    border-radius: 40px;
+  .enter-btn {
+    background: #fff;
+    color: #4b2e1e;
+    border: none;
+    font-size: 1.6rem;
     font-weight: 600;
+    padding: 18px 50px;
+    border-radius: 40px;
     cursor: pointer;
-    z-index: 10;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
     transition: all 0.3s ease;
   }
 
-  .shop-btn:hover {
-    background: #fff9f4;
+  .enter-btn:hover {
     transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.9);
   }
 
-  /* Drawer styling */
+  /* --- Shop Page --- */
+  #shop {
+    background: url('https://files.catbox.moe/8tj3u5.png') no-repeat center center/cover;
+    height: 100vh;
+    width: 100%;
+    display: none;
+    position: relative;
+    transition: opacity 1s ease;
+  }
+
+  .connect-wallet {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #fff;
+    color: #4b2e1e;
+    border: 2px solid #4b2e1e;
+    padding: 10px 22px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  .connect-wallet:hover {
+    background: #4b2e1e;
+    color: #fff;
+  }
+
+  /* --- Shop Drawer --- */
+  .shop-btn {
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    background: #fff;
+    border: none;
+    color: #4b2e1e;
+    padding: 10px 24px;
+    font-weight: 600;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  .shop-btn:hover {
+    background: #4b2e1e;
+    color: #fff;
+  }
+
   .drawer {
     position: fixed;
     top: 0;
     left: -260px;
     width: 240px;
-    height: 100vh;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(12px);
-    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+    height: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 4px 0 10px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    padding: 60px 20px;
     transition: left 0.4s ease;
-    padding-top: 80px;
-    z-index: 20;
+    z-index: 1000;
   }
 
   .drawer.open {
     left: 0;
   }
 
-  .drawer button {
-    display: block;
-    width: 100%;
-    padding: 15px;
-    border: none;
-    background: none;
-    text-align: left;
-    font-size: 16px;
-    color: #3a2f2f;
-    cursor: pointer;
-    transition: background 0.3s ease;
+  .drawer a {
+    text-decoration: none;
+    color: #4b2e1e;
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin: 12px 0;
+    transition: 0.3s;
   }
 
-  .drawer button:hover {
-    background: rgba(255, 255, 255, 0.6);
+  .drawer a:hover {
+    color: #6DC8BF;
   }
 
-  /* Product grid */
-  .products {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 20px;
-    padding: 100px 40px 120px;
-    z-index: 1;
-    position: relative;
-  }
-
-  .product-card {
-    background: rgba(255, 255, 255, 0.85);
-    border-radius: 20px;
-    padding: 15px;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-
-  .product-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-  }
-
-  .product-card img {
-    width: 100%;
-    border-radius: 15px;
-  }
-
-  .product-card h3 {
-    margin: 10px 0 5px;
-    font-size: 16px;
-  }
-
-  .product-card p {
-    margin: 5px 0;
-    color: #7a6f67;
-    font-size: 14px;
-  }
-
-  /* Footer */
+  /* --- Footer --- */
   footer {
     position: fixed;
     bottom: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    background: transparent;
+    width: 100%;
+    background: #6DC8BF;
     display: flex;
     justify-content: center;
-    align-items: center;
     gap: 25px;
-    z-index: 5;
+    padding: 12px 0;
+    z-index: 10;
   }
 
-  footer a img {
-    width: 26px;
-    height: 26px;
-    filter: brightness(100%) invert(1);
-    transition: transform 0.3s ease, filter 0.3s ease;
-  }
-
-  footer a img:hover {
-    transform: scale(1.2);
-    filter: brightness(1.4) invert(1);
-  }
-
-  /* Size Guide Modal */
-  .modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(5px);
-    justify-content: center;
-    align-items: center;
-    z-index: 30;
-  }
-
-  .modal-content {
-    position: relative;
-    background: #fff;
-    padding: 20px;
-    border-radius: 15px;
-    max-width: 400px;
-  }
-
-  .close {
-    position: absolute;
-    top: 8px;
-    right: 12px;
+  footer img {
+    width: 28px;
+    height: 28px;
+    filter: brightness(0) invert(1);
+    transition: 0.3s;
     cursor: pointer;
-    font-size: 18px;
   }
 
-  .size-img {
-    width: 100%;
-    border-radius: 10px;
+  footer img:hover {
+    transform: scale(1.15);
+  }
+
+  /* --- Overlay Fade Animation --- */
+  .fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .fade-in {
+    display: block;
+    opacity: 0;
+    animation: fadeIn 1.2s forwards;
+  }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
   }
 </style>
 </head>
 <body>
 
-<div class="overlay"></div>
+<!-- Entry Page -->
+<section id="entry">
+  <button class="enter-btn" onclick="enterShop()">ENTER</button>
+</section>
 
-<!-- Shop Button -->
-<button class="shop-btn" onclick="toggleDrawer()">Shop</button>
+<!-- Shop Page -->
+<section id="shop">
+  <button class="connect-wallet">Connect Wallet</button>
+  <button class="shop-btn" onclick="toggleDrawer()">Shop</button>
 
-<!-- Drawer Menu -->
-<div class="drawer" id="drawer">
-  <button onclick="showCategory('tees')">Tees</button>
-  <button onclick="showCategory('plushies')">Plushies</button>
-  <button onclick="showCategory('keychains')">Keychains</button>
-</div>
-
-<!-- Product Grid -->
-<div class="products" id="productGrid"></div>
+  <div class="drawer" id="drawer">
+    <a href="#">Plushies</a>
+    <a href="#">Keychains</a>
+    <a href="#">Tees</a>
+  </div>
+</section>
 
 <!-- Footer -->
 <footer>
-  <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/733/733635.png" alt="Twitter"></a>
-  <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384063.png" alt="Instagram"></a>
-  <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="TikTok"></a>
+  <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram">
+  <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" alt="TikTok">
+  <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="Twitter">
 </footer>
 
-<!-- Size Guide Modal -->
-<div class="modal" id="sizeModal">
-  <div class="modal-content">
-    <span class="close" onclick="closeSizeGuide()">&times;</span>
-    <img src="https://files.catbox.moe/41dvss.png" alt="Size Guide" class="size-img">
-  </div>
-</div>
-
 <script>
-const drawer = document.getElementById('drawer');
-const productGrid = document.getElementById('productGrid');
-const sizeModal = document.getElementById('sizeModal');
+  function enterShop() {
+    const entry = document.getElementById("entry");
+    const shop = document.getElementById("shop");
 
-function toggleDrawer() {
-  drawer.classList.toggle('open');
-}
-
-document.addEventListener('click', (e) => {
-  if (!drawer.contains(e.target) && !e.target.classList.contains('shop-btn')) {
-    drawer.classList.remove('open');
-  }
-});
-
-function showCategory(category) {
-  drawer.classList.remove('open');
-  let productsHTML = '';
-
-  if (category === 'tees') {
-    const tees = [
-      { name: 'Tee 1 (White)', img: 'https://files.catbox.moe/dw04zw.png' },
-      { name: 'Tee 1 (Black)', img: 'https://files.catbox.moe/d6zm2s.png' },
-      { name: 'Tee 2 (White)', img: 'https://files.catbox.moe/qi081o.png' },
-      { name: 'Tee 2 (Black)', img: 'https://files.catbox.moe/0gn3r2.png' },
-      { name: 'Tee 3 (White)', img: 'https://files.catbox.moe/zqtvvw.png' },
-      { name: 'Tee 3 (Black)', img: 'https://files.catbox.moe/mgu7nu.png' },
-      { name: 'Tee 4 (White)', img: 'https://files.catbox.moe/nbl7st.png' },
-      { name: 'Tee 4 (Black)', img: 'https://files.catbox.moe/5n618u.png' },
-    ];
-
-    productsHTML = tees.map(tee => `
-      <div class="product-card">
-        <img src="${tee.img}" alt="${tee.name}">
-        <h3>${tee.name}</h3>
-        <p>$19.99</p>
-        <button onclick="openSizeGuide()">Size Guide</button>
-      </div>
-    `).join('');
+    entry.classList.add("fade-out");
+    setTimeout(() => {
+      entry.style.display = "none";
+      shop.classList.add("fade-in");
+    }, 800);
   }
 
-  if (category === 'plushies') {
-    const plushies = [
-      { name: 'Duck Plush', img: 'https://files.catbox.moe/06xw3d.png', price: '$24.99' },
-      { name: 'Frog Plush', img: 'https://files.catbox.moe/zov6wz.png', price: '$24.99' },
-      { name: 'Bunny Plush', img: 'https://files.catbox.moe/fe641v.png', price: '$24.99' },
-    ];
-
-    productsHTML = plushies.map(p => `
-      <div class="product-card">
-        <img src="${p.img}" alt="${p.name}">
-        <h3>${p.name}</h3>
-        <p>${p.price}</p>
-      </div>
-    `).join('');
+  function toggleDrawer() {
+    const drawer = document.getElementById("drawer");
+    drawer.classList.toggle("open");
   }
 
-  if (category === 'keychains') {
-    const keychains = [
-      { name: 'Quacker Keychain', img: 'https://files.catbox.moe/zov6wz.png', price: '$9.99' },
-      { name: 'Froggie Keychain', img: 'https://files.catbox.moe/fe641v.png', price: '$9.99' },
-    ];
-
-    productsHTML = keychains.map(k => `
-      <div class="product-card">
-        <img src="${k.img}" alt="${k.name}">
-        <h3>${k.name}</h3>
-        <p>${k.price}</p>
-      </div>
-    `).join('');
-  }
-
-  productGrid.innerHTML = productsHTML;
-}
-
-function openSizeGuide() {
-  sizeModal.style.display = 'flex';
-}
-
-function closeSizeGuide() {
-  sizeModal.style.display = 'none';
-}
+  // Close drawer when clicking outside
+  document.addEventListener('click', function(e) {
+    const drawer = document.getElementById('drawer');
+    const shopBtn = document.querySelector('.shop-btn');
+    if (!drawer.contains(e.target) && !shopBtn.contains(e.target)) {
+      drawer.classList.remove('open');
+    }
+  });
 </script>
+
 </body>
 </html>
