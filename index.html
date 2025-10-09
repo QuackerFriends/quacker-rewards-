@@ -1,305 +1,376 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quacker Friends Shop</title>
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      font-family: 'Poppins', sans-serif;
-      color: #4b2e1e;
-      overflow-x: hidden;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quacker Friends Shop</title>
+<style>
+/* Global reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-    .enter-screen, .shop-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: 100%;
-      background-size: cover;
-      background-position: center;
-      transition: opacity 1.5s ease-in-out;
-    }
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #2c1e1a;
+  color: #fffaf5;
+  overflow-x: hidden;
+}
 
-    .enter-screen {
-      background-image: url('https://files.catbox.moe/yat7tm.png');
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+/* Background video / image preload */
+#background {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+  opacity: 1;
+  transition: opacity 0.8s ease;
+}
 
-    .enter-btn {
-      padding: 15px 40px;
-      font-size: 1.5em;
-      color: #4b2e1e;
-      background: white;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      box-shadow: 0 0 20px rgba(255,255,255,0.6);
-      transition: all 0.3s ease;
-    }
+/* Enter page */
+#enter-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: url('https://files.catbox.moe/06xw3d.png') center/cover no-repeat;
+}
 
-    .enter-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 35px rgba(255,255,255,0.8);
-    }
+#enter-button {
+  margin-top: 20px;
+  padding: 12px 30px;
+  background: #3d2b1f;
+  color: #fffaf5;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(255,255,255,0.2);
+  transition: all 0.3s ease;
+}
 
-    .shop-screen {
-      background-image: url('https://files.catbox.moe/8tj3u5.png');
-      background-size: cover;
-      background-position: center;
-      opacity: 0;
-      pointer-events: none;
-    }
+#enter-button:hover {
+  background: #5a3d2e;
+  box-shadow: 0 0 15px rgba(255,255,255,0.4);
+}
 
-    .shop-screen.active {
-      opacity: 1;
-      pointer-events: all;
-    }
+/* Inside shop */
+#shop-page {
+  display: none;
+  height: 100vh;
+  background: url('https://files.catbox.moe/zov6wz.png') center/cover no-repeat;
+  backdrop-filter: blur(4px);
+}
 
-    .shop-button {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      background: rgba(255,255,255,0.8);
-      color: #4b2e1e;
-      padding: 12px 25px;
-      border: none;
-      border-radius: 30px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      z-index: 100;
-    }
+/* Navbar */
+nav {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(30, 20, 15, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+}
 
-    .shop-button:hover {
-      background: rgba(255,255,255,1);
-    }
+nav h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  color: #fffaf5;
+}
 
-    .drawer {
-      position: fixed;
-      top: 0;
-      left: -250px;
-      width: 250px;
-      height: 100%;
-      background: rgba(255, 248, 240, 0.9);
-      backdrop-filter: blur(10px);
-      box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-      transition: left 0.4s ease;
-      padding-top: 60px;
-      z-index: 90;
-    }
+nav button {
+  background: transparent;
+  border: 1px solid #fffaf5;
+  color: #fffaf5;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
 
-    .drawer.active {
-      left: 0;
-    }
+nav button:hover {
+  background: rgba(255,255,255,0.2);
+}
 
-    .drawer a {
-      display: block;
-      padding: 15px 25px;
-      color: #4b2e1e;
-      text-decoration: none;
-      font-weight: bold;
-      transition: background 0.2s ease;
-    }
+/* Drawer menu */
+#menu {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 400px;
+  height: 100%;
+  background: rgba(45, 30, 25, 0.9);
+  backdrop-filter: blur(8px);
+  padding: 20px;
+  transition: right 0.4s ease;
+  overflow-y: auto;
+  z-index: 2000;
+  border-left: 2px solid rgba(255,255,255,0.2);
+}
 
-    .drawer a:hover {
-      background: rgba(255,255,255,0.5);
-    }
+#menu.active {
+  right: 0;
+}
 
-    .overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: 100%;
-      background: rgba(255, 248, 240, 0.9);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 20px;
-      padding: 60px;
-      z-index: 80;
-      overflow-y: auto;
-    }
+#close-menu {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 24px;
+  cursor: pointer;
+  color: #fffaf5;
+}
 
-    .overlay.active {
-      display: flex;
-    }
+/* Menu items */
+.menu-item {
+  margin: 20px 0;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #fffaf5;
+  transition: 0.3s;
+}
+.menu-item:hover {
+  color: #ffdfb3;
+}
 
-    .product-card {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      width: 280px;
-      padding: 20px;
-      text-align: center;
-      transition: transform 0.3s ease;
-    }
+/* Product grid */
+#product-grid {
+  display: none;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+  padding: 140px 60px 60px 60px;
+}
 
-    .product-card:hover {
-      transform: scale(1.05);
-    }
+.product-card {
+  background: rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
 
-    .product-card img {
-      width: 100%;
-      border-radius: 15px;
-    }
+.product-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255,255,255,0.15);
+}
 
-    .product-card select, .product-card button {
-      margin-top: 10px;
-      padding: 10px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-    }
+.product-card img {
+  width: 100%;
+  height: 220px;
+  object-fit: contain;
+  border-radius: 10px;
+}
 
-    .product-card button {
-      background: #6dc8bf;
-      color: white;
-      font-weight: bold;
-    }
+.price {
+  font-size: 1.1rem;
+  margin: 10px 0;
+  color: #ffdfb3;
+}
 
-    .size-guide-popup {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(255,255,255,0.95);
-      border-radius: 20px;
-      padding: 20px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-      z-index: 200;
-    }
+select, button.size-guide {
+  margin-top: 5px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.2);
+  color: #fffaf5;
+  cursor: pointer;
+}
 
-    .size-guide-popup img {
-      width: 300px;
-      border-radius: 10px;
-    }
+button.add-to-cart {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background: #5a3d2e;
+  border: none;
+  border-radius: 20px;
+  color: #fffaf5;
+  cursor: pointer;
+}
 
-    .close-popup {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      font-size: 20px;
-      color: #4b2e1e;
-      cursor: pointer;
-    }
+/* Size guide popup */
+#size-guide-popup {
+  display: none;
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(45, 30, 25, 0.95);
+  border-radius: 15px;
+  padding: 20px;
+  z-index: 3000;
+  text-align: center;
+}
 
-    footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: #6dc8bf;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 10px 0;
-      gap: 20px;
-      z-index: 50;
-    }
+#size-guide-popup img {
+  width: 300px;
+  border-radius: 10px;
+}
 
-    footer img {
-      width: 25px;
-      filter: brightness(0) invert(1);
-      transition: transform 0.3s ease;
-      cursor: pointer;
-    }
+#close-size-guide {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 24px;
+  cursor: pointer;
+  color: #fffaf5;
+}
 
-    footer img:hover {
-      transform: scale(1.2);
-    }
-  </style>
+/* Footer */
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  padding: 10px 0;
+  background: rgba(30,20,15,0.8);
+}
+
+footer .socials {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+footer .socials i {
+  font-size: 18px;
+  color: white;
+  transition: 0.3s;
+}
+
+footer .socials i:hover {
+  text-shadow: 0 0 8px white;
+}
+
+/* Smooth fade */
+.fade-in {
+  animation: fadeIn 1s forwards;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+</style>
+<script src="https://kit.fontawesome.com/a2e0e9b6f5.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
-  <div class="enter-screen" id="enterScreen">
-    <button class="enter-btn" onclick="enterShop()">ENTER</button>
+<!-- Enter Page -->
+<div id="enter-page">
+  <button id="enter-button">Enter</button>
+</div>
+
+<!-- Shop Page -->
+<div id="shop-page">
+  <nav>
+    <h1>Quacker Friends</h1>
+    <button id="menu-button">Shop</button>
+  </nav>
+
+  <div id="menu">
+    <span id="close-menu">&times;</span>
+    <div class="menu-item" id="tees">Tees</div>
   </div>
 
-  <div class="shop-screen" id="shopScreen">
-    <button class="shop-button" onclick="toggleDrawer()">SHOP</button>
-
-    <div class="drawer" id="drawer">
-      <a href="#" onclick="showCategory('plushies')">Plushies</a>
-      <a href="#" onclick="showCategory('keychains')">Keychains</a>
-      <a href="#" onclick="showCategory('tees')">Tees</a>
-    </div>
-
-    <div class="overlay" id="plushiesOverlay">
-      <div class="product-card">
-        <img src="https://files.catbox.moe/06xw3d.png" alt="Plushie">
-        <h3>Quacker Plushie</h3>
-        <p>$19.99</p>
-        <button>Add to Cart</button>
-      </div>
-    </div>
-
-    <div class="overlay" id="keychainsOverlay">
-      <div class="product-card">
-        <img src="https://files.catbox.moe/zov6wz.png" alt="Keychain">
-        <h3>Quacker Keychain</h3>
-        <p>$9.99</p>
-        <button>Add to Cart</button>
-      </div>
-    </div>
-
-    <div class="overlay" id="teesOverlay">
-      <!-- T-Shirt grid -->
-    </div>
-  </div>
-
-  <div class="size-guide-popup" id="sizeGuide">
-    <span class="close-popup" onclick="closeGuide()">✕</span>
-    <img src="https://files.catbox.moe/41dvss.png" alt="Size Guide">
-  </div>
+  <div id="product-grid"></div>
 
   <footer>
-    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram">
-    <img src="https://cdn-icons-png.flaticon.com/512/3046/3046120.png" alt="TikTok">
-    <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="X">
+    <div class="socials">
+      <i class="fab fa-instagram"></i>
+    </div>
   </footer>
+</div>
 
-  <script>
-    const enterScreen = document.getElementById('enterScreen');
-    const shopScreen = document.getElementById('shopScreen');
-    const drawer = document.getElementById('drawer');
-    const overlays = document.querySelectorAll('.overlay');
+<!-- Size Guide Popup -->
+<div id="size-guide-popup">
+  <span id="close-size-guide">&times;</span>
+  <img src="https://files.catbox.moe/41dvss.png" alt="Size Guide">
+</div>
 
-    function enterShop() {
-      enterScreen.style.opacity = '0';
-      setTimeout(() => {
-        enterScreen.style.display = 'none';
-        shopScreen.classList.add('active');
-      }, 1200);
-    }
+<script>
+const enterButton = document.getElementById('enter-button');
+const enterPage = document.getElementById('enter-page');
+const shopPage = document.getElementById('shop-page');
+const menu = document.getElementById('menu');
+const closeMenu = document.getElementById('close-menu');
+const menuButton = document.getElementById('menu-button');
+const tees = document.getElementById('tees');
+const productGrid = document.getElementById('product-grid');
+const sizeGuidePopup = document.getElementById('size-guide-popup');
+const closeSizeGuide = document.getElementById('close-size-guide');
 
-    function toggleDrawer() {
-      drawer.classList.toggle('active');
-    }
+// Preload background
+const bg1 = new Image();
+bg1.src = 'https://files.catbox.moe/06xw3d.png';
+bg1.onload = () => console.log("Enter bg loaded");
 
-    function showCategory(cat) {
-      overlays.forEach(o => o.classList.remove('active'));
-      document.getElementById(cat + 'Overlay').classList.add('active');
-    }
+const bg2 = new Image();
+bg2.src = 'https://files.catbox.moe/zov6wz.png';
+bg2.onload = () => console.log("Shop bg loaded");
 
-    function closeGuide() {
-      document.getElementById('sizeGuide').style.display = 'none';
-    }
+// Enter button
+enterButton.onclick = () => {
+  enterPage.style.display = "none";
+  shopPage.style.display = "block";
+};
 
-    function openGuide() {
-      document.getElementById('sizeGuide').style.display = 'block';
-    }
-  </script>
+// Menu toggle
+menuButton.onclick = () => menu.classList.add('active');
+closeMenu.onclick = () => menu.classList.remove('active');
 
+// Tees data
+const teesData = [
+  { img: 'https://files.catbox.moe/fe641v.png', name: 'Tee 1' },
+  { img: 'https://files.catbox.moe/06xw3d.png', name: 'Tee 2' },
+  { img: 'https://files.catbox.moe/zov6wz.png', name: 'Tee 3' },
+  { img: 'https://files.catbox.moe/fe641v.png', name: 'Tee 4' },
+  { img: 'https://files.catbox.moe/06xw3d.png', name: 'Tee 5' },
+  { img: 'https://files.catbox.moe/zov6wz.png', name: 'Tee 6' },
+  { img: 'https://files.catbox.moe/fe641v.png', name: 'Tee 7' },
+  { img: 'https://files.catbox.moe/06xw3d.png', name: 'Tee 8' },
+  { img: 'https://files.catbox.moe/zov6wz.png', name: 'Tee 9' }
+];
+
+tees.onclick = () => {
+  menu.classList.remove('active');
+  productGrid.style.display = 'grid';
+  productGrid.innerHTML = '';
+  teesData.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.innerHTML = `
+      <img src="${p.img}" alt="${p.name}">
+      <div class="price">$19.99</div>
+      <select>
+        <option>S</option>
+        <option>M</option>
+        <option>L</option>
+        <option>XL</option>
+      </select>
+      <button class="size-guide">Size Guide</button>
+      <button class="add-to-cart">Add to Cart</button>
+    `;
+    productGrid.appendChild(card);
+  });
+
+  document.querySelectorAll('.size-guide').forEach(btn => {
+    btn.onclick = () => {
+      sizeGuidePopup.style.display = 'block';
+    };
+  });
+};
+
+// Close size guide
+closeSizeGuide.onclick = () => {
+  sizeGuidePopup.style.display = 'none';
+};
+</script>
 </body>
 </html>
