@@ -19,11 +19,14 @@
     background: url('https://files.catbox.moe/yat7tm.png') no-repeat center center/cover;
     height: 100vh;
     width: 100%;
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: opacity 1.5s ease-in-out;
+    transition: opacity 1.2s ease-in-out;
+    z-index: 10;
   }
 
   .enter-btn {
@@ -49,9 +52,19 @@
     background: url('https://files.catbox.moe/8tj3u5.png') no-repeat center center/cover;
     height: 100vh;
     width: 100%;
-    display: none;
-    position: relative;
-    transition: opacity 1s ease;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.2s ease-in-out;
+    z-index: 5;
+  }
+
+  #shop.active {
+    opacity: 1;
+    pointer-events: all;
+    z-index: 9;
   }
 
   .connect-wallet {
@@ -135,7 +148,7 @@
     justify-content: center;
     gap: 25px;
     padding: 12px 0;
-    z-index: 10;
+    z-index: 20;
   }
 
   footer img {
@@ -148,24 +161,6 @@
 
   footer img:hover {
     transform: scale(1.15);
-  }
-
-  /* --- Overlay Fade Animation --- */
-  .fade-out {
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .fade-in {
-    display: block;
-    opacity: 0;
-    animation: fadeIn 1.2s forwards;
-  }
-
-  @keyframes fadeIn {
-    to {
-      opacity: 1;
-    }
   }
 </style>
 </head>
@@ -196,30 +191,30 @@
 </footer>
 
 <script>
-  function enterShop() {
-    const entry = document.getElementById("entry");
-    const shop = document.getElementById("shop");
+function enterShop() {
+  const entry = document.getElementById("entry");
+  const shop = document.getElementById("shop");
 
-    entry.classList.add("fade-out");
-    setTimeout(() => {
-      entry.style.display = "none";
-      shop.classList.add("fade-in");
-    }, 800);
+  entry.style.opacity = "0";
+  setTimeout(() => {
+    entry.style.display = "none";
+    shop.classList.add("active");
+  }, 1000);
+}
+
+function toggleDrawer() {
+  const drawer = document.getElementById("drawer");
+  drawer.classList.toggle("open");
+}
+
+// Close drawer when clicking outside
+document.addEventListener('click', function(e) {
+  const drawer = document.getElementById('drawer');
+  const shopBtn = document.querySelector('.shop-btn');
+  if (!drawer.contains(e.target) && !shopBtn.contains(e.target)) {
+    drawer.classList.remove('open');
   }
-
-  function toggleDrawer() {
-    const drawer = document.getElementById("drawer");
-    drawer.classList.toggle("open");
-  }
-
-  // Close drawer when clicking outside
-  document.addEventListener('click', function(e) {
-    const drawer = document.getElementById('drawer');
-    const shopBtn = document.querySelector('.shop-btn');
-    if (!drawer.contains(e.target) && !shopBtn.contains(e.target)) {
-      drawer.classList.remove('open');
-    }
-  });
+});
 </script>
 
 </body>
