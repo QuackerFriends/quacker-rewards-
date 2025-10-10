@@ -6,6 +6,7 @@
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/> 
+
   <style>
     :root{
       --brand-orange:#ff914d;
@@ -209,7 +210,10 @@ const PRODUCTS = [
 let userAddress = null;
 let web3 = null;
 let cart = [];
-let spinLocked = false;
+let spinLocked = false; // 🚫 track if user has already spun today
+
+
+// local guard for today's spin to avoid double-hits while server updates propagate
 let lastSpinClient = null;
 
 function showToast(message, type="info", duration=3000) {
@@ -309,6 +313,7 @@ document.getElementById("checkoutBtn").addEventListener("click", async () => {
   }
 });
 
+
 async function connectWallet(){
   if(!window.ethereum){showToast("Install MetaMask","warn");return;}
   web3=new Web3(window.ethereum);
@@ -324,10 +329,6 @@ async function fetchProfile() {
   const panel=document.getElementById("profileSection");
   panel.style.display=(panel.style.display==="block")?"none":"block";
 
-  const spinBtn = document.getElementById("spinButton");
-  spinBtn.disabled = true;
-  spinBtn.innerText = "⏳ Loading spin status...";
-
   const contract=new web3.eth.Contract(CONTRACT_ABI,CONTRACT_ADDRESS);
   const balance=await contract.methods.balanceOf(userAddress).call();
   document.getElementById("nftCount").innerText="NFTs Owned: "+balance;
@@ -337,27 +338,36 @@ async function fetchProfile() {
   document.getElementById("ethBalance").innerText=`Balance: ${parseFloat(eth).toFixed(4)} ETH`;
 
   try {
+    // Get quacks + lastSpin from sheet and set local guard
     const res = await fetch(`${SPIN_SHEET_API}?wallet=${encodeURIComponent((userAddress||"").toLowerCase())}&getQuacks=true`, { cache: "no-store" });
     const data = await res.json();
     document.getElementById("quacksCount").innerText = `Quacks Collected: ${data.quacks || 0}`;
     lastSpinClient = data.lastSpin || null;
 
+    // if already spun today, disable spin button
     const today = new Date().toISOString().split("T")[0];
+    const spinBtn = document.getElementById("spinButton");
     if (lastSpinClient === today) {
       spinBtn.disabled = true;
       spinBtn.innerText = "🎡 Already spun today";
-      spinLocked = true;
     } else {
       spinBtn.disabled = false;
       spinBtn.innerText = "🎡 Spin the Wheel";
-      spinLocked = false;
     }
 
-    // Keychain status
-    const res2 = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(userAddress)}&checkKeychain=true`);
+    const res2 = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&checkClaim=true`);
     const data2 = await res2.json();
-    document.getElementById("keychainStatus").innerText = data2.hasClaimed?"✅ Already claimed":"⏳ Not claimed";
-
+    if(data2.claimed){
+      document.getElementById("keychainStatus").innerText="✅ Keychain already claimed!";
+      document.getElementById("claimSection").innerHTML="";
+    } else if(Number(balance)>0){
+      document.getElementById("keychainStatus").innerText="🎁 Eligible for free keychain!";
+      document.getElementById("claimSection").innerHTML=`<button id="claimBtn" class="btn">Claim Keychain</button>`;
+      document.getElementById("claimBtn").addEventListener('click',claimKeychain);
+    } else {
+      document.getElementById("keychainStatus").innerText="Not eligible for keychain.";
+      document.getElementById("claimSection").innerHTML="";
+    }
   } catch(err){ 
     console.error(err); 
     showToast("Error loading profile / quacks", "warn"); 
@@ -366,66 +376,91 @@ async function fetchProfile() {
   document.getElementById("walletAddress").innerText=userAddress;
 }
 
-document.getElementById("connectWallet").addEventListener("click",connectWallet);
-document.getElementById("profileButton").addEventListener("click",fetchProfile);
+async function claimKeychain(){
+  const shipping=prompt("Enter shipping address:");
+  if(!shipping){showToast("Claim canceled","info");return;}
+  try {
+    const res=await fetch(`${CLAIM_SHEET_API}?item=${encodeURIComponent("Pumpkin Crochet Keychain")}&wallet=${userAddress}&price=0&address=${encodeURIComponent(shipping)}`);
+    const text=await res.text();
+    if(text.includes("Success")){
+      showToast("🎉 Keychain claimed!","success");
+      document.getElementById("keychainStatus").innerText="✅ Keychain already claimed!";
+      document.getElementById("claimSection").innerHTML="";
+    } else { showToast("Claim failed: "+text,"warn"); }
+  } catch(err){ console.error(err); showToast("Claim failed","warn"); }
+}
 
+function switchWallet(){
+  ethereum.request({method:"wallet_requestPermissions",params:[{eth_accounts:{}}]})
+    .then(()=>ethereum.request({method:"eth_requestAccounts"}))
+    .then(accounts=>{ userAddress=accounts[0]; fetchProfile(); showToast("Wallet switched","success"); })
+    .catch(err=>console.error(err));
+}
+
+function disconnectWallet(){
+  userAddress=null;
+  web3=null;
+  document.getElementById("profileButton").style.display="none";
+  document.getElementById("connectWallet").innerText="Connect Wallet";
+  document.getElementById("profileSection").style.display="none";
+  showToast("Wallet disconnected","info");
+}
+
+document.getElementById("profileButton").addEventListener("click",fetchProfile);
+document.getElementById("connectWallet").addEventListener("click",connectWallet);
+
+renderItems();
+  
+// Quacks spin logic - improved guard + loading toast
 document.getElementById("spinButton").addEventListener("click", async () => {
-  if(!userAddress){ 
-    showToast("Connect wallet first!","warn"); 
-    return; 
-  }
-  if(spinLocked){
-    showToast("Already spun today! Come back tomorrow.","info");
+  if (!userAddress) {
+    showToast("Connect wallet first!", "warn");
     return;
   }
 
-  const spinBtn = document.getElementById("spinButton");
-  spinBtn.disabled = true;
-  spinBtn.innerText = "🎡 Spinning...";
-
   const today = new Date().toISOString().split("T")[0];
+
   try {
+    // 1️⃣ Fetch latest Quacks + lastSpin from sheet
     const res = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&getQuacks=true`, { cache: "no-store" });
     const data = await res.json();
 
-    if(data.lastSpin === today){
-      spinLocked = true;
-      spinBtn.innerText = "🎡 Already spun today";
-      showToast("Already spun today! Come back tomorrow.","info");
+    // Prevent spin if already done today
+    if (data.lastSpin === today) {
+      showToast("🎡 Already spun today! Come back tomorrow.", "info");
       return;
     }
 
-    let spinAmount = 5;
-    const nftBalance = parseInt(document.getElementById("nftCount").innerText.replace(/\D/g,"")) || 0;
-    if(nftBalance > 0) spinAmount = 10;
+    // 2️⃣ Determine spin amount
+    const nftBalance = parseInt(document.getElementById("nftCount").innerText.replace(/\D/g, "")) || 0;
+    const spinAmount = nftBalance > 0 ? 10 : 5;
 
     const newTotal = (data.quacks || 0) + spinAmount;
 
-    const updateRes = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`);
+    // 3️⃣ Update sheet with new quacks + lastSpin date
+    const updateRes = await fetch(
+      `${SPIN_SHEET_API}?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`,
+      { cache: "no-store" }
+    );
     const updateData = await updateRes.json();
 
-    if(updateData.success){
+    if (updateData.success) {
+      // ✅ Update frontend immediately
       document.getElementById("quacksCount").innerText = `Quacks Collected: ${newTotal}`;
-      showToast(`🎉 You earned ${spinAmount} Quack${spinAmount>1?"s":""}!`,"success");
-      spinBtn.innerText = "🎡 Already spun today";
-      spinLocked = true;
+      document.getElementById("spinButton").disabled = true;
+      document.getElementById("spinButton").innerText = "🎡 Already spun today";
+      showToast(`🎉 You earned ${spinAmount} Quack${spinAmount > 1 ? "s" : ""}!`, "success");
     } else {
-      showToast("Failed to log Quacks, try again later","warn");
-      spinBtn.disabled = false;
-      spinBtn.innerText = "🎡 Spin the Wheel";
+      showToast("⚠️ Failed to log Quacks, try again later", "warn");
     }
 
-  } catch(err){
+  } catch (err) {
     console.error("Spin error:", err);
-    showToast("⚠️ Error spinning wheel","error");
-    spinBtn.disabled = false;
-    spinBtn.innerText = "🎡 Spin the Wheel";
+    showToast("⚠️ Error spinning wheel", "error");
   }
 });
 
-function switchWallet(){showToast("Switch wallet not implemented yet","info");}
-function disconnectWallet(){userAddress=null;web3=null;document.getElementById("connectWallet").innerText="Connect Wallet";document.getElementById("profileButton").style.display="none";document.getElementById("profileSection").style.display="none";}
-window.addEventListener("load",renderItems);
+
 </script>
 </body>
 </html>
