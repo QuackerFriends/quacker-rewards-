@@ -2,176 +2,222 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quacker Shop</title>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <title>Quacker Friends Shop</title>
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/> 
+
   <style>
-    body {
-      background: #0f172a;
-      color: #fff;
-      font-family: 'Poppins', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
+    :root{
+      --brand-orange:#ff914d;
+      --brand-orange-dark:#ff7b2c;
+      --brand-teal:#66c7c4;
+      --muted:#f5f7fa;
+      --card:#ffffff;
+      --shadow: 0 8px 20px rgba(12,12,20,0.06);
+      --radius:14px;
+      --maxWidth:1100px;
     }
-    h1 { font-size: 2rem; margin-bottom: 1rem; }
-    #profileCard {
-      background: #1e293b;
-      padding: 24px;
-      border-radius: 20px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-      text-align: center;
-      width: 320px;
-    }
-    .btn {
-      padding: 10px 16px;
-      border: none;
-      border-radius: 999px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-primary { background: #2563eb; color: #fff; }
-    .btn-primary:hover { background: #1d4ed8; }
-    .btn-success { background: #16a34a; color: #fff; }
-    .btn-success:hover { background: #15803d; }
-    .btn:disabled {
-      background: #334155;
-      color: #9ca3af;
-      cursor: not-allowed;
-    }
-    #progressBarContainer {
-      background: #334155;
-      border-radius: 999px;
-      height: 14px;
-      width: 100%;
-      margin: 10px 0 16px;
-      overflow: hidden;
-    }
-    #progressBarFill {
-      background: linear-gradient(90deg, #22c55e, #84cc16);
-      height: 100%;
-      width: 0%;
-      border-radius: 999px;
-      transition: width 1s linear;
-    }
-    #nextClaim {
-      font-size: 0.9rem;
-      color: #cbd5e1;
-    }
+    *{box-sizing:border-box}
+    body {font-family:'Poppins',sans-serif;margin:0;padding:0;background:linear-gradient(180deg,#fbfcff,#f5f7fa);color:#222;min-height:100vh;display:flex;flex-direction:column;}
+    header {display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--brand-orange);color:white;box-shadow:0 6px 18px rgba(0,0,0,0.08);}
+    header h1{margin:0;font-size:20px;display:flex;align-items:center;gap:10px}
+    .btn{padding:10px 16px;background:var(--brand-orange-dark);color:white;border:none;border-radius:999px;cursor:pointer;font-weight:600;transition:all 0.18s ease;display:inline-flex;align-items:center;gap:8px;}
+    .btn.secondary{background:transparent;color:white;border:1px solid rgba(255,255,255,0.25);padding:8px 12px;border-radius:10px}
+    .btn:active{transform:translateY(1px)}
+    #profileButton{position:relative;}
+    .spinner{border:3px solid rgba(255,255,255,0.3);border-top:3px solid white;border-radius:50%;width:14px;height:14px;animation:spin 1s linear infinite;display:inline-block;vertical-align:middle;}
+    @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+    main{flex:1;padding:30px 20px;max-width:var(--maxWidth);margin:0 auto 80px;}
+    #items{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px;}
+    .item{border-radius:var(--radius);padding:18px;background:var(--card);text-align:center;box-shadow:var(--shadow);transition:transform 0.22s ease,box-shadow 0.22s ease;}
+    .item:hover{transform:translateY(-6px);box-shadow:0 16px 36px rgba(12,12,20,0.08);}
+    .item img{width:100%;height:180px;object-fit:cover;border-radius:10px;margin-bottom:12px;background:#eee;}
+    .item h3{margin:6px 0 6px;font-size:16px;font-weight:700;}
+    .item p{margin:0 0 12px;font-size:14px;color:#666;}
+    .price{font-weight:700;color:var(--brand-orange-dark)}
+
+    #profileSection{display:none;position:absolute;top:70px;right:30px;background:var(--card);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.12);width:340px;padding:16px;z-index:100;}
+    #profileSection h3{margin-top:0;font-size:16px;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:12px;}
+    #profileSection p{margin:6px 0;color:#444}
+    #profileSection .btn.secondary{color:#333!important;background:#f1f1f1;}
+    #profileSection .btn.secondary:hover{background:#e9e9e9;}
+
+    .progress-container{background:#eee;border-radius:999px;height:12px;width:100%;margin-top:6px;}
+    .progress-bar{height:12px;background:var(--brand-orange);border-radius:999px;width:0%;transition:width 1s linear;}
+
+    #toast-container{position:fixed;top:6rem;right:1rem;display:flex;flex-direction:column;gap:0.5rem;z-index:9999;}
+    .toast{padding:0.5rem 0.75rem;border-radius:4px;color:#fff;font-size:0.9rem;display:flex;align-items:center;gap:0.5rem;white-space:nowrap;}
+    .toast.success{background:#2ecc71!important;}
+    .toast.error{background:#e74c3c!important;}
+    .toast.warn{background:#e67e22!important;}
+    .toast.info{background:#3498db!important;}
+    .toast .close-btn{margin-left:0.5rem;cursor:pointer;font-weight:bold;}
+
+    .muted{color:#666;font-size:13px}
   </style>
 </head>
 <body>
+  <header>
+    <h1>🦆 Quacker Friends Shop</h1>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button id="connectWallet" class="btn">Connect Wallet</button>
+      <button id="profileButton" class="btn secondary" style="display:none">Profile</button>
+    </div>
+  </header>
 
-  <h1>🦆 Quacker Shop</h1>
+  <div id="toast-container"></div>
 
-  <div id="profileCard">
-    <p id="walletDisplay" class="text-lg font-semibold mb-2">Wallet: Not connected</p>
-    <p id="quacksDisplay" class="text-lg mb-1">Quacks Collected: 0</p>
+  <div id="profileSection">
+    <h3>User Profile</h3>
+    <p id="walletAddress" class="muted">Not connected</p>
+    <p id="ethBalance" class="muted">Balance: —</p>
+    <p id="nftCount">NFTs Owned: ...</p>
+    <hr>
 
-    <div id="progressBarContainer" class="hidden">
-      <div id="progressBarFill"></div>
+    <div id="quacksSection">
+      <p id="quacksCount">Quacks Collected: 0</p>
+      <button id="claimQuacksBtn" class="btn">🦆 Collect Daily Quacks</button>
+      <p id="countdownText" class="muted"></p>
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
     </div>
 
-    <p id="nextClaim" class="text-sm text-gray-400 mb-4">Next Claim: --</p>
-
-    <button id="connectButton" class="btn btn-primary">Connect Wallet</button>
-    <button id="claimButton" class="btn btn-success hidden mt-3">Collect Daily Quacks</button>
+    <hr>
+    <button class="btn secondary" onclick="switchWallet()">🔄 Switch Wallet</button>
+    <button class="btn secondary" onclick="disconnectWallet()">❌ Disconnect</button>
   </div>
 
-  <script>
-    const scriptURL = "https://script.google.com/macros/library/d/1nLvxz5T09Ogksoc7qFdqjlBze_seclqr_djTjVTg3UgREJ9UyGX-rUXd/19"; // ✅ keep your same Google Script URL
-    let walletAddress = "";
-    let isHolder = false; // you can toggle this based on NFT check
-    let nextClaimTime = null;
-    let countdownInterval = null;
+  <main>
+    <section id="items"></section>
+  </main>
 
-    const connectButton = document.getElementById("connectButton");
-    const claimButton = document.getElementById("claimButton");
-    const walletDisplay = document.getElementById("walletDisplay");
-    const quacksDisplay = document.getElementById("quacksDisplay");
-    const nextClaimDisplay = document.getElementById("nextClaim");
-    const progressBarContainer = document.getElementById("progressBarContainer");
-    const progressBarFill = document.getElementById("progressBarFill");
+  <footer>
+    <p>Follow Quacker Friends:</p>
+    <a href="https://x.com/" target="_blank"><i class="fab fa-x fa-lg"></i></a>
+    <a href="https://www.tiktok.com/" target="_blank"><i class="fab fa-tiktok fa-lg"></i></a>
+    <a href="https://www.instagram.com/" target="_blank"><i class="fab fa-instagram fa-lg"></i></a>
+  </footer>
 
-    connectButton.addEventListener("click", async () => {
-      const name = prompt("Enter your wallet address or name:");
-      if (!name) return;
-      walletAddress = name.toLowerCase();
-      walletDisplay.textContent = `Wallet: ${walletAddress}`;
-      connectButton.classList.add("hidden");
-      claimButton.classList.remove("hidden");
-      await checkClaimStatus();
-    });
+<script>
+const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
+const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"}];
+const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbzu2RjvJf8-SyRIekMh53JODYZxoPXQpjJ2aGTqIHd93HgEZpnXcVC_zxoJbJt51zqSuQ/exec";
 
-    async function checkClaimStatus() {
-      try {
-        const res = await fetch(`${scriptURL}?wallet=${walletAddress}&checkClaim=true`);
-        const data = await res.json();
-        const quacks = data.quacks_collected || 0;
-        quacksDisplay.textContent = `Quacks Collected: ${quacks}`;
+let userAddress = null;
+let web3 = null;
 
-        if (data.claim_available) {
-          nextClaimDisplay.textContent = "Next Claim: Available now!";
-          progressBarContainer.classList.add("hidden");
-          claimButton.disabled = false;
-        } else {
-          const hoursLeft = data.next_claim_in_hours;
-          nextClaimTime = Date.now() + hoursLeft * 3600 * 1000;
-          claimButton.disabled = true;
-          progressBarContainer.classList.remove("hidden");
-          startCountdown();
-        }
-      } catch (e) {
-        Swal.fire("Error", "Failed to load claim status.", "error");
-      }
+function showToast(msg,type="info",duration=3000){
+  const container=document.getElementById("toast-container");
+  const toast=document.createElement("div");
+  toast.className=`toast ${type}`;
+  toast.innerHTML=`<span>${msg}</span><span class='close-btn' onclick='this.parentElement.remove()'>✕</span>`;
+  container.appendChild(toast);
+  setTimeout(()=>toast.remove(),duration);
+}
+
+async function connectWallet(){
+  if(!window.ethereum){showToast("Install MetaMask","warn");return;}
+  web3=new Web3(window.ethereum);
+  const accounts=await ethereum.request({method:"eth_requestAccounts"});
+  userAddress=accounts[0];
+  document.getElementById("connectWallet").innerText=userAddress.slice(0,6)+"..."+userAddress.slice(-4);
+  document.getElementById("profileButton").style.display="inline-block";
+  showToast("Wallet connected","success");
+}
+
+function switchWallet(){
+  ethereum.request({method:"wallet_requestPermissions",params:[{eth_accounts:{}}]})
+  .then(()=>ethereum.request({method:"eth_requestAccounts"}))
+  .then(accounts=>{userAddress=accounts[0];fetchProfile();showToast("Wallet switched","success");})
+  .catch(console.error);
+}
+
+function disconnectWallet(){
+  userAddress=null;web3=null;
+  document.getElementById("profileButton").style.display="none";
+  document.getElementById("connectWallet").innerText="Connect Wallet";
+  document.getElementById("profileSection").style.display="none";
+  showToast("Wallet disconnected","info");
+}
+
+document.getElementById("connectWallet").addEventListener("click",connectWallet);
+document.getElementById("profileButton").addEventListener("click",fetchProfile);
+
+async function fetchProfile(){
+  if(!userAddress){showToast("Connect wallet first","warn");return;}
+  const panel=document.getElementById("profileSection");
+  panel.style.display=(panel.style.display==="block")?"none":"block";
+
+  const contract=new web3.eth.Contract(CONTRACT_ABI,CONTRACT_ADDRESS);
+  const balance=await contract.methods.balanceOf(userAddress).call();
+  document.getElementById("nftCount").innerText="NFTs Owned: "+balance;
+
+  const wei=await web3.eth.getBalance(userAddress);
+  const eth=web3.utils.fromWei(wei,"ether");
+  document.getElementById("ethBalance").innerText=`Balance: ${parseFloat(eth).toFixed(4)} ETH`;
+
+  // Check last claim info
+  try{
+    const res=await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&getQuacks=true`);
+    const data=await res.json();
+    const quacks=data.quacks||0;
+    const lastClaim=data.lastClaim?new Date(data.lastClaim):null;
+    document.getElementById("quacksCount").innerText=`Quacks Collected: ${quacks}`;
+    setupClaimTimer(lastClaim,balance>0,quacks);
+  }catch(err){console.error(err);showToast("Error loading quacks","warn");}
+}
+
+function setupClaimTimer(lastClaim,isHolder,quacks){
+  const btn=document.getElementById("claimQuacksBtn");
+  const countdown=document.getElementById("countdownText");
+  const bar=document.getElementById("progressBar");
+  const now=new Date();
+  let nextClaim=null;
+
+  if(lastClaim){
+    nextClaim=new Date(lastClaim.getTime()+24*60*60*1000);
+    if(now<nextClaim){
+      btn.disabled=true;
+      countdown.innerText=`Next claim available in...`;
+      updateCountdown();
+      return;
     }
+  }
+  btn.disabled=false;
+  btn.innerText="🦆 Collect Daily Quacks";
+  countdown.innerText="";
+  bar.style.width="0%";
 
-    function startCountdown() {
-      if (countdownInterval) clearInterval(countdownInterval);
-      countdownInterval = setInterval(() => {
-        const now = Date.now();
-        const remaining = nextClaimTime - now;
-
-        if (remaining <= 0) {
-          clearInterval(countdownInterval);
-          nextClaimDisplay.textContent = "Next Claim: Available now!";
-          progressBarFill.style.width = "100%";
-          claimButton.disabled = false;
-          return;
-        }
-
-        const hrs = Math.floor(remaining / (1000 * 60 * 60));
-        const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-        const secs = Math.floor((remaining % (1000 * 60)) / 1000);
-        nextClaimDisplay.textContent = `Next claim in: ${hrs}h ${mins}m ${secs}s`;
-
-        const total = 24 * 60 * 60 * 1000;
-        const progress = ((total - remaining) / total) * 100;
-        progressBarFill.style.width = progress + "%";
-      }, 1000);
+  btn.onclick=async()=>{
+    const amount=isHolder?10:2;
+    const newTotal=quacks+amount;
+    const res=await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}&lastClaim=${new Date().toISOString()}`);
+    const data=await res.json();
+    if(data.success){
+      showToast(`🦆 Collected ${amount} Quacks!`,"success");
+      document.getElementById("quacksCount").innerText=`Quacks Collected: ${newTotal}`;
+      setupClaimTimer(new Date(),isHolder,newTotal);
+    }else{
+      showToast("Error claiming quacks","warn");
     }
+  };
 
-    claimButton.addEventListener("click", async () => {
-      try {
-        const quacksToAdd = isHolder ? 10 : 2;
-        const res = await fetch(`${scriptURL}?wallet=${walletAddress}&claim=true&quacks=${quacksToAdd}`);
-        const data = await res.json();
-
-        if (data.error) {
-          Swal.fire("Hold up!", data.error, "info");
-          return;
-        }
-
-        Swal.fire("Success!", `You collected ${quacksToAdd} Quacks!`, "success");
-        await checkClaimStatus();
-      } catch {
-        Swal.fire("Error", "Claim failed.", "error");
-      }
-    });
-  </script>
+  function updateCountdown(){
+    const now=new Date();
+    const diff=nextClaim-now;
+    if(diff<=0){btn.disabled=false;countdown.innerText="You can collect now!";bar.style.width="0%";return;}
+    const hrs=Math.floor(diff/1000/60/60);
+    const mins=Math.floor((diff/1000/60)%60);
+    const secs=Math.floor((diff/1000)%60);
+    countdown.innerText=`Come back in ${hrs}h ${mins}m ${secs}s`;
+    const pct=100-((diff/(24*60*60*1000))*100);
+    bar.style.width=pct+"%";
+    requestAnimationFrame(updateCountdown);
+  }
+}
+</script>
 </body>
 </html>
