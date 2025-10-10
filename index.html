@@ -1,376 +1,431 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quacker Friends Shop</title>
-<style>
-/* Global reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+  <meta charset="UTF-8" />
+  <title>Quacker Friends Shop</title>
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/> 
+  <style>
+    :root{
+      --brand-orange:#ff914d;
+      --brand-orange-dark:#ff7b2c;
+      --brand-teal:#66c7c4;
+      --muted:#f5f7fa;
+      --card:#ffffff;
+      --shadow: 0 8px 20px rgba(12,12,20,0.06);
+      --radius:14px;
+      --maxWidth:1100px;
+    }
+    *{box-sizing:border-box}
+    body { 
+      font-family:'Poppins',sans-serif;
+      margin:0;padding:0;
+      background:linear-gradient(180deg,#fbfcff,#f5f7fa);
+      color:#222;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+    header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:14px 24px;
+      background:var(--brand-orange);
+      color:white;
+      box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    }
+    header h1{
+      margin:0;font-size:20px;
+      display:flex;align-items:center;gap:10px
+    }
+    .btn {
+      padding:10px 16px;
+      background:var(--brand-orange-dark);
+      color:white;border:none;
+      border-radius:999px;
+      cursor:pointer;
+      font-weight:600;
+      transition:all 0.18s ease;
+      display:inline-flex;align-items:center;gap:8px;
+    }
+    .btn.secondary{
+      background:transparent;
+      color:white;
+      border:1px solid rgba(255,255,255,0.25);
+      padding:8px 12px;border-radius:10px
+    }
+    .btn:active{transform:translateY(1px)}
+    #profileButton{position:relative;}
+    .spinner{border:3px solid rgba(255,255,255,0.3);border-top:3px solid white;border-radius:50%;width:14px;height:14px;animation:spin 1s linear infinite;display:inline-block;vertical-align:middle;}
+    @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
 
-body {
-  font-family: 'Poppins', sans-serif;
-  background-color: #2c1e1a;
-  color: #fffaf5;
-  overflow-x: hidden;
-}
+    main{flex:1;padding:30px 20px;max-width:var(--maxWidth);margin:0 auto 80px;}
+    #items{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px;}
+    .item{border-radius:var(--radius);padding:18px;background:var(--card);text-align:center;box-shadow:var(--shadow);transition:transform 0.22s ease,box-shadow 0.22s ease;}
+    .item:hover{transform:translateY(-6px);box-shadow:0 16px 36px rgba(12,12,20,0.08);}
+    .item img{width:100%;height:180px;object-fit:cover;border-radius:10px;margin-bottom:12px;background:#eee;}
+    .item h3{margin:6px 0 6px;font-size:16px;font-weight:700;}
+    .item p{margin:0 0 12px;font-size:14px;color:#666;}
+    .price{font-weight:700;color:var(--brand-orange-dark)}
 
-/* Background video / image preload */
-#background {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: -1;
-  opacity: 1;
-  transition: opacity 0.8s ease;
-}
+    #profileSection,
+    #cartSection {
+      display:none;
+      position:absolute;
+      top:70px;
+      right:30px;
+      background:var(--card);
+      border-radius:12px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.12);
+      width:340px;
+      padding:16px;
+      z-index:100;
+    }
+    
+    #profileSection h3,
+    #cartSection h3 {margin-top:0;font-size:16px;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:12px;}
+    #profileSection p{margin:6px 0;color:#444}
+    #cartItems {max-height:200px;overflow-y:auto;margin-bottom:10px;}
+    #cartItems p {margin:4px 0;}
+    #cartTotal {font-weight:bold;margin-top:8px;}
+    #cartSection button {margin-top:8px;width:100%;}
 
-/* Enter page */
-#enter-page {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background: url('https://files.catbox.moe/06xw3d.png') center/cover no-repeat;
-}
+    #profileSection .btn.secondary {
+      color: #333 !important;
+      background: #f1f1f1;
+    }
+    #profileSection .btn.secondary:hover {
+      background: #e9e9e9;
+    }
 
-#enter-button {
-  margin-top: 20px;
-  padding: 12px 30px;
-  background: #3d2b1f;
-  color: #fffaf5;
-  font-size: 1.2rem;
-  border: none;
-  border-radius: 30px;
-  cursor: pointer;
-  box-shadow: 0 0 10px rgba(255,255,255,0.2);
-  transition: all 0.3s ease;
-}
+    #toast-container {
+      position: fixed;
+      top: 6rem;
+      right: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      z-index: 9999;
+    }
+    .toast {
+      padding: 0.5rem 0.75rem;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+    }
+    .toast.success { background: #2ecc71 !important; }
+    .toast.error   { background: #e74c3c !important; }
+    .toast.warn    { background: #e67e22 !important; }
+    .toast.info    { background: #3498db !important; }
+    .toast .close-btn {
+      margin-left: 0.5rem;
+      cursor: pointer;
+      font-weight: bold;
+    }
 
-#enter-button:hover {
-  background: #5a3d2e;
-  box-shadow: 0 0 15px rgba(255,255,255,0.4);
-}
+    .muted{color:#666;font-size:13px}
+    .center{display:flex;gap:10px;align-items:center}
+    .hidden{display:none}
+    @media (max-width:520px){
+      header{padding:14px}
+      main{padding:18px 12px}
+      #profileSection,#cartSection{right:12px;left:12px;width:auto}
+    }
 
-/* Inside shop */
-#shop-page {
-  display: none;
-  height: 100vh;
-  background: url('https://files.catbox.moe/zov6wz.png') center/cover no-repeat;
-  backdrop-filter: blur(4px);
-}
-
-/* Navbar */
-nav {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  padding: 15px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(30, 20, 15, 0.75);
-  backdrop-filter: blur(6px);
-  z-index: 1000;
-}
-
-nav h1 {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.8rem;
-  color: #fffaf5;
-}
-
-nav button {
-  background: transparent;
-  border: 1px solid #fffaf5;
-  color: #fffaf5;
-  padding: 8px 16px;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-nav button:hover {
-  background: rgba(255,255,255,0.2);
-}
-
-/* Drawer menu */
-#menu {
-  position: fixed;
-  top: 0;
-  right: -400px;
-  width: 400px;
-  height: 100%;
-  background: rgba(45, 30, 25, 0.9);
-  backdrop-filter: blur(8px);
-  padding: 20px;
-  transition: right 0.4s ease;
-  overflow-y: auto;
-  z-index: 2000;
-  border-left: 2px solid rgba(255,255,255,0.2);
-}
-
-#menu.active {
-  right: 0;
-}
-
-#close-menu {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  font-size: 24px;
-  cursor: pointer;
-  color: #fffaf5;
-}
-
-/* Menu items */
-.menu-item {
-  margin: 20px 0;
-  cursor: pointer;
-  font-size: 1.2rem;
-  color: #fffaf5;
-  transition: 0.3s;
-}
-.menu-item:hover {
-  color: #ffdfb3;
-}
-
-/* Product grid */
-#product-grid {
-  display: none;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 25px;
-  padding: 140px 60px 60px 60px;
-}
-
-.product-card {
-  background: rgba(255,255,255,0.1);
-  border-radius: 16px;
-  padding: 20px;
-  text-align: center;
-  transition: transform 0.3s ease, background 0.3s ease;
-}
-
-.product-card:hover {
-  transform: translateY(-5px);
-  background: rgba(255,255,255,0.15);
-}
-
-.product-card img {
-  width: 100%;
-  height: 220px;
-  object-fit: contain;
-  border-radius: 10px;
-}
-
-.price {
-  font-size: 1.1rem;
-  margin: 10px 0;
-  color: #ffdfb3;
-}
-
-select, button.size-guide {
-  margin-top: 5px;
-  padding: 5px 10px;
-  border: none;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.2);
-  color: #fffaf5;
-  cursor: pointer;
-}
-
-button.add-to-cart {
-  margin-top: 10px;
-  padding: 8px 16px;
-  background: #5a3d2e;
-  border: none;
-  border-radius: 20px;
-  color: #fffaf5;
-  cursor: pointer;
-}
-
-/* Size guide popup */
-#size-guide-popup {
-  display: none;
-  position: fixed;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(45, 30, 25, 0.95);
-  border-radius: 15px;
-  padding: 20px;
-  z-index: 3000;
-  text-align: center;
-}
-
-#size-guide-popup img {
-  width: 300px;
-  border-radius: 10px;
-}
-
-#close-size-guide {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  font-size: 24px;
-  cursor: pointer;
-  color: #fffaf5;
-}
-
-/* Footer */
-footer {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  text-align: center;
-  padding: 10px 0;
-  background: rgba(30,20,15,0.8);
-}
-
-footer .socials {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-}
-
-footer .socials i {
-  font-size: 18px;
-  color: white;
-  transition: 0.3s;
-}
-
-footer .socials i:hover {
-  text-shadow: 0 0 8px white;
-}
-
-/* Smooth fade */
-.fade-in {
-  animation: fadeIn 1s forwards;
-}
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-</style>
-<script src="https://kit.fontawesome.com/a2e0e9b6f5.js" crossorigin="anonymous"></script>
+    footer {
+      background:var(--brand-teal);
+      padding:20px;
+      text-align:center;
+      color:#fff;
+      margin-top:auto;
+    }
+    footer a { margin:0 10px;color:#fff;transition:opacity 0.2s; }
+    footer a:hover { opacity:0.7; }
+  </style>
 </head>
 <body>
+  <header>
+    <h1>🦆 Quacker Friends Shop</h1>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button id="cartButton" class="btn secondary" style="display:none">🛒 Cart (0)</button>
+      <button id="connectWallet" class="btn">Connect Wallet</button>
+      <button id="profileButton" class="btn secondary" style="display:none">Profile</button>
+    </div>
+  </header>
+  <div id="toast-container"></div>
 
-<!-- Enter Page -->
-<div id="enter-page">
-  <button id="enter-button">Enter</button>
-</div>
+  <div id="profileSection">
+    <h3>User Profile</h3>
+    <p id="quacksCount">Quacks Collected: 0</p>
+    <button id="spinButton" class="actionBtn">🎡 Spin the Wheel</button>
 
-<!-- Shop Page -->
-<div id="shop-page">
-  <nav>
-    <h1>Quacker Friends</h1>
-    <button id="menu-button">Shop</button>
-  </nav>
-
-  <div id="menu">
-    <span id="close-menu">&times;</span>
-    <div class="menu-item" id="tees">Tees</div>
+    <p id="walletAddress" class="muted">Not connected</p>
+    <p id="ethBalance" class="muted">Balance: —</p>
+    <p id="nftCount">NFTs Owned: ...</p>
+    <p id="keychainStatus" class="small">Checking keychain claim...</p>
+    <div id="claimSection" style="margin-top:10px;"></div>
+    <hr>
+    <button class="btn secondary" onclick="switchWallet()">🔄 Switch Wallet</button>
+    <button class="btn secondary" onclick="disconnectWallet()">❌ Disconnect</button>
   </div>
 
-  <div id="product-grid"></div>
+  <div id="cartSection">
+    <h3>Your Cart</h3>
+    <div id="cartItems"></div>
+    <p id="cartTotal">Total: 0 ETH</p>
+    <button id="checkoutBtn" class="btn">Checkout</button>
+  </div>
+
+  <main>
+    <section id="items"></section>
+  </main>
 
   <footer>
-    <div class="socials">
-      <i class="fab fa-instagram"></i>
-    </div>
+    <p>Follow Quacker Friends:</p>
+    <a href="https://x.com/" target="_blank"><i class="fab fa-x fa-lg"></i></a>
+    <a href="https://www.tiktok.com/" target="_blank"><i class="fab fa-tiktok fa-lg"></i></a>
+    <a href="https://www.instagram.com/" target="_blank"><i class="fab fa-instagram fa-lg"></i></a>
   </footer>
-</div>
-
-<!-- Size Guide Popup -->
-<div id="size-guide-popup">
-  <span id="close-size-guide">&times;</span>
-  <img src="https://files.catbox.moe/41dvss.png" alt="Size Guide">
-</div>
 
 <script>
-const enterButton = document.getElementById('enter-button');
-const enterPage = document.getElementById('enter-page');
-const shopPage = document.getElementById('shop-page');
-const menu = document.getElementById('menu');
-const closeMenu = document.getElementById('close-menu');
-const menuButton = document.getElementById('menu-button');
-const tees = document.getElementById('tees');
-const productGrid = document.getElementById('product-grid');
-const sizeGuidePopup = document.getElementById('size-guide-popup');
-const closeSizeGuide = document.getElementById('close-size-guide');
+const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
+const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"}];
+const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbzu2RjvJf8-SyRIekMh53JODYZxoPXQpjJ2aGTqIHd93HgEZpnXcVC_zxoJbJt51zqSuQ/exec";
+const SPIN_SHEET_API = "https://script.google.com/macros/s/AKfycbwOsIuZi-r_IFGi4F0O7qN9oaLbB6OPbqHfISzpFSi1OXgrW4hhHnpBnk0fCgforU0jTg/exec";
+const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 
-// Preload background
-const bg1 = new Image();
-bg1.src = 'https://files.catbox.moe/06xw3d.png';
-bg1.onload = () => console.log("Enter bg loaded");
-
-const bg2 = new Image();
-bg2.src = 'https://files.catbox.moe/zov6wz.png';
-bg2.onload = () => console.log("Shop bg loaded");
-
-// Enter button
-enterButton.onclick = () => {
-  enterPage.style.display = "none";
-  shopPage.style.display = "block";
-};
-
-// Menu toggle
-menuButton.onclick = () => menu.classList.add('active');
-closeMenu.onclick = () => menu.classList.remove('active');
-
-// Tees data
-const teesData = [
-  { img: 'https://files.catbox.moe/fe641v.png', name: 'Tee 1' },
-  { img: 'https://files.catbox.moe/06xw3d.png', name: 'Tee 2' },
-  { img: 'https://files.catbox.moe/zov6wz.png', name: 'Tee 3' },
-  { img: 'https://files.catbox.moe/fe641v.png', name: 'Tee 4' },
-  { img: 'https://files.catbox.moe/06xw3d.png', name: 'Tee 5' },
-  { img: 'https://files.catbox.moe/zov6wz.png', name: 'Tee 6' },
-  { img: 'https://files.catbox.moe/fe641v.png', name: 'Tee 7' },
-  { img: 'https://files.catbox.moe/06xw3d.png', name: 'Tee 8' },
-  { img: 'https://files.catbox.moe/zov6wz.png', name: 'Tee 9' }
+const PRODUCTS = [
+  { id: "pumpkin-keychain", title: "Pumpkin Crochet Keychain", price: "0.001", img: "https://via.placeholder.com/400x300?text=Pumpkin+Keychain" },
+  { id: "cat-beanie", title: "Cat Beanie", price: "0.0025", img: "https://via.placeholder.com/400x300?text=Cat+Beanie" },
+  { id: "pumpkin-duck", title: "Pumpkin Duck Plushie", price: "0.005", img: "https://via.placeholder.com/400x300?text=Pumpkin+Duck+Plushie" }
 ];
 
-tees.onclick = () => {
-  menu.classList.remove('active');
-  productGrid.style.display = 'grid';
-  productGrid.innerHTML = '';
-  teesData.forEach(p => {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    card.innerHTML = `
-      <img src="${p.img}" alt="${p.name}">
-      <div class="price">$19.99</div>
-      <select>
-        <option>S</option>
-        <option>M</option>
-        <option>L</option>
-        <option>XL</option>
-      </select>
-      <button class="size-guide">Size Guide</button>
-      <button class="add-to-cart">Add to Cart</button>
+let userAddress = null;
+let web3 = null;
+let cart = [];
+let spinLocked = false;
+let lastSpinClient = null;
+
+function showToast(message, type="info", duration=3000) {
+  const container = document.getElementById("toast-container");
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span>${message}</span><span class="close-btn" onclick="this.parentElement.remove()">✕</span>`;
+  container.appendChild(toast);
+  setTimeout(()=>toast.remove(), duration);
+}
+
+function renderItems() {
+  const container = document.getElementById("items");
+  container.innerHTML = "";
+  PRODUCTS.forEach(p=>{
+    const el=document.createElement("div");
+    el.className="item";
+    el.innerHTML=`
+      <img src="${p.img}" alt="${p.title}" />
+      <h3>${p.title}</h3>
+      <p class="price">${p.price} ETH</p>
+      <button class="btn" data-id="${p.id}">Add to Cart</button>
     `;
-    productGrid.appendChild(card);
+    container.appendChild(el);
   });
-
-  document.querySelectorAll('.size-guide').forEach(btn => {
-    btn.onclick = () => {
-      sizeGuidePopup.style.display = 'block';
-    };
+  document.querySelectorAll("#items button").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const product=PRODUCTS.find(x=>x.id===btn.dataset.id);
+      cart.push(product);
+      updateCartUI();
+      showToast("🛒 Added to cart","success");
+    });
   });
-};
+}
 
-// Close size guide
-closeSizeGuide.onclick = () => {
-  sizeGuidePopup.style.display = 'none';
-};
+function updateCartUI() {
+  const btn=document.getElementById("cartButton");
+  btn.style.display="inline-block";
+  btn.innerText=`🛒 Cart (${cart.length})`;
+
+  const itemsDiv=document.getElementById("cartItems");
+  itemsDiv.innerHTML="";
+  let total=0;
+  cart.forEach((p,i)=>{
+    total+=parseFloat(p.price);
+    const row=document.createElement("p");
+    row.innerHTML=`${p.title} - ${p.price} ETH <button onclick="removeFromCart(${i})">❌</button>`;
+    itemsDiv.appendChild(row);
+  });
+  document.getElementById("cartTotal").innerText="Total: "+total+" ETH";
+}
+
+function removeFromCart(i){
+  cart.splice(i,1);
+  updateCartUI();
+}
+
+document.getElementById("cartButton").addEventListener("click",()=>{ 
+  const panel=document.getElementById("cartSection");
+  panel.style.display=(panel.style.display==="block")?"none":"block";
+});
+
+document.getElementById("checkoutBtn").addEventListener("click", async () => {
+  if (!userAddress || !web3) { showToast("Connect wallet first","warn"); return; }
+  if (cart.length === 0) { showToast("Cart is empty","warn"); return; }
+
+  const shipping = prompt("Enter shipping address:");
+  if (!shipping) { showToast("Checkout canceled","info"); return; }
+
+  const total = cart.reduce((s,p) => s + parseFloat(p.price), 0);
+
+  let loadingToast = null;
+  try {
+    loadingToast = document.createElement("div");
+    loadingToast.className = "toast info";
+    loadingToast.innerHTML = `<span>⏳ Purchase in progress, hang tight...</span>`;
+    document.getElementById("toast-container").appendChild(loadingToast);
+
+    const valueInWei = web3.utils.toWei(total.toString(), "ether");
+    const tx = await web3.eth.sendTransaction({ from: userAddress, to: SHOP_WALLET, value: valueInWei });
+
+    if (tx && tx.transactionHash) {
+      const itemsStr = cart.map(p => p.title).join(", ");
+      await fetch(`${CLAIM_SHEET_API}?item=${encodeURIComponent(itemsStr)}&wallet=${userAddress}&price=${total}&address=${encodeURIComponent(shipping)}`);
+      showToast("✅ Checkout complete!", "success");
+      cart = [];
+      updateCartUI();
+      document.getElementById("cartSection").style.display = "none";
+    } else {
+      showToast("Transaction failed or rejected", "warn");
+    }
+  } catch (err) {
+    console.error(err);
+    showToast("⚠️ Checkout failed", "error");
+  } finally {
+    if (loadingToast) loadingToast.remove();
+  }
+});
+
+async function connectWallet(){
+  if(!window.ethereum){showToast("Install MetaMask","warn");return;}
+  web3=new Web3(window.ethereum);
+  const accounts=await ethereum.request({method:"eth_requestAccounts"});
+  userAddress=accounts[0];
+  document.getElementById("connectWallet").innerText=userAddress.slice(0,6)+"..."+userAddress.slice(-4);
+  document.getElementById("profileButton").style.display="inline-block";
+  showToast("Wallet connected","success");
+}
+
+async function fetchProfile() {
+  if(!userAddress){showToast("Connect wallet first","warn");return;}
+  const panel=document.getElementById("profileSection");
+  panel.style.display=(panel.style.display==="block")?"none":"block";
+
+  const spinBtn = document.getElementById("spinButton");
+  spinBtn.disabled = true;
+  spinBtn.innerText = "⏳ Loading spin status...";
+
+  const contract=new web3.eth.Contract(CONTRACT_ABI,CONTRACT_ADDRESS);
+  const balance=await contract.methods.balanceOf(userAddress).call();
+  document.getElementById("nftCount").innerText="NFTs Owned: "+balance;
+
+  const wei=await web3.eth.getBalance(userAddress);
+  const eth=web3.utils.fromWei(wei,"ether");
+  document.getElementById("ethBalance").innerText=`Balance: ${parseFloat(eth).toFixed(4)} ETH`;
+
+  try {
+    const res = await fetch(`${SPIN_SHEET_API}?wallet=${encodeURIComponent((userAddress||"").toLowerCase())}&getQuacks=true`, { cache: "no-store" });
+    const data = await res.json();
+    document.getElementById("quacksCount").innerText = `Quacks Collected: ${data.quacks || 0}`;
+    lastSpinClient = data.lastSpin || null;
+
+    const today = new Date().toISOString().split("T")[0];
+    if (lastSpinClient === today) {
+      spinBtn.disabled = true;
+      spinBtn.innerText = "🎡 Already spun today";
+      spinLocked = true;
+    } else {
+      spinBtn.disabled = false;
+      spinBtn.innerText = "🎡 Spin the Wheel";
+      spinLocked = false;
+    }
+
+    // Keychain status
+    const res2 = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(userAddress)}&checkKeychain=true`);
+    const data2 = await res2.json();
+    document.getElementById("keychainStatus").innerText = data2.hasClaimed?"✅ Already claimed":"⏳ Not claimed";
+
+  } catch(err){ 
+    console.error(err); 
+    showToast("Error loading profile / quacks", "warn"); 
+  }
+
+  document.getElementById("walletAddress").innerText=userAddress;
+}
+
+document.getElementById("connectWallet").addEventListener("click",connectWallet);
+document.getElementById("profileButton").addEventListener("click",fetchProfile);
+
+document.getElementById("spinButton").addEventListener("click", async () => {
+  if(!userAddress){ 
+    showToast("Connect wallet first!","warn"); 
+    return; 
+  }
+  if(spinLocked){
+    showToast("Already spun today! Come back tomorrow.","info");
+    return;
+  }
+
+  const spinBtn = document.getElementById("spinButton");
+  spinBtn.disabled = true;
+  spinBtn.innerText = "🎡 Spinning...";
+
+  const today = new Date().toISOString().split("T")[0];
+  try {
+    const res = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&getQuacks=true`, { cache: "no-store" });
+    const data = await res.json();
+
+    if(data.lastSpin === today){
+      spinLocked = true;
+      spinBtn.innerText = "🎡 Already spun today";
+      showToast("Already spun today! Come back tomorrow.","info");
+      return;
+    }
+
+    let spinAmount = 5;
+    const nftBalance = parseInt(document.getElementById("nftCount").innerText.replace(/\D/g,"")) || 0;
+    if(nftBalance > 0) spinAmount = 10;
+
+    const newTotal = (data.quacks || 0) + spinAmount;
+
+    const updateRes = await fetch(`${SPIN_SHEET_API}?wallet=${userAddress}&updateQuacks=true&quacks=${newTotal}&lastSpin=${today}`);
+    const updateData = await updateRes.json();
+
+    if(updateData.success){
+      document.getElementById("quacksCount").innerText = `Quacks Collected: ${newTotal}`;
+      showToast(`🎉 You earned ${spinAmount} Quack${spinAmount>1?"s":""}!`,"success");
+      spinBtn.innerText = "🎡 Already spun today";
+      spinLocked = true;
+    } else {
+      showToast("Failed to log Quacks, try again later","warn");
+      spinBtn.disabled = false;
+      spinBtn.innerText = "🎡 Spin the Wheel";
+    }
+
+  } catch(err){
+    console.error("Spin error:", err);
+    showToast("⚠️ Error spinning wheel","error");
+    spinBtn.disabled = false;
+    spinBtn.innerText = "🎡 Spin the Wheel";
+  }
+});
+
+function switchWallet(){showToast("Switch wallet not implemented yet","info");}
+function disconnectWallet(){userAddress=null;web3=null;document.getElementById("connectWallet").innerText="Connect Wallet";document.getElementById("profileButton").style.display="none";document.getElementById("profileSection").style.display="none";}
+window.addEventListener("load",renderItems);
 </script>
 </body>
 </html>
