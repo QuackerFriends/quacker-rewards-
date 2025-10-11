@@ -1,230 +1,304 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DuckShop</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quacker Friends Shop — Test Mode (0 ETH)</title>
   <style>
-    body { font-family: sans-serif; background: #f9fafb; margin: 0; }
-    header { background: #111; color: #fff; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-    nav ul { list-style: none; display: flex; gap: 1rem; margin: 0; padding: 0; }
-    nav ul li { position: relative; }
-    nav ul li ul { display: none; position: absolute; top: 100%; left: 0; background: #222; padding: 0.5rem; border-radius: 0.5rem; }
-    nav ul li:hover ul { display: block; }
-    nav ul li ul li { padding: 0.5rem; }
-    .shop-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; padding: 2rem; }
-    .item { background: #fff; border-radius: 1rem; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
-    .item img { width: 100%; border-radius: 0.75rem; }
-    button { background: #111; color: #fff; border: none; border-radius: 2rem; padding: 0.5rem 1rem; cursor: pointer; }
-    #cartModal { position: fixed; top: 0; right: 0; width: 320px; height: 100%; background: #fff; box-shadow: -4px 0 10px rgba(0,0,0,0.1); transform: translateX(100%); transition: all 0.3s; display: flex; flex-direction: column; }
-    #cartModal.open { transform: translateX(0); }
-    #cartItems { flex: 1; overflow-y: auto; padding: 1rem; }
-    #closeCartBtn { position: absolute; top: 1rem; right: 1rem; cursor: pointer; }
-    #sizeGuideModal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; }
-    #sizeGuideModal.open { display: flex; }
-    #sizeGuideModal img { width: 400px; border-radius: 1rem; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin:0; background:#f6f7fb; color:#111;}
+    header{background:#ff914d;color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+    .btn{background:#ff7b2c;color:#fff;border:none;padding:8px 12px;border-radius:999px;cursor:pointer;font-weight:600}
+    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff;padding:8px 10px;border-radius:8px}
+    .shop-container{max-width:1100px;margin:24px auto;padding:0 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+    .item{background:#fff;padding:14px;border-radius:12px;box-shadow:0 6px 20px rgba(12,12,20,0.06);text-align:center}
+    .item img{width:100%;height:220px;object-fit:contain;border-radius:8px;background:#f8f8f8}
+    .price{color:#ff7b2c;font-weight:700;margin:8px 0}
+    #cartModal{position:fixed;right:0;top:0;height:100vh;width:360px;background:#fff;box-shadow:-12px 0 40px rgba(0,0,0,0.12);transform:translateX(110%);transition:transform .28s;z-index:9999;padding:16px;display:flex;flex-direction:column}
+    #cartModal.open{transform:translateX(0)}
+    #cartList{flex:1;overflow:auto;margin-bottom:12px}
+    .close-x{position:absolute;right:12px;top:10px;border:none;background:transparent;font-size:20px;cursor:pointer}
+    #sizeGuideModal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);z-index:10000}
+    #sizeGuideModal.open{display:flex}
+    .sizeCard{background:#fff;padding:12px;border-radius:12px;max-width:720px;width:92%}
+    .sizeCard img{width:100%;height:auto;border-radius:8px}
+    #profileSection{display:none;position:absolute;right:18px;top:64px;background:#fff;padding:12px;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,0.12);width:300px}
+    #toast-container{position:fixed;top:12px;right:12px;z-index:20000;display:flex;flex-direction:column;gap:8px}
+    .toast{padding:8px 12px;border-radius:8px;color:#fff}
+    .toast.info{background:#2563eb}.toast.success{background:#059669}.toast.error{background:#ef4444}
   </style>
 </head>
 <body>
   <header>
-    <h2>DuckShop</h2>
-    <nav>
-      <ul>
-        <li>Shop
-          <ul>
-            <li><a href="#" onclick="showCategory('tees')">Tees</a></li>
-            <li><a href="#">Crochet Plushies</a></li>
-            <li><a href="#">Tapestry</a></li>
-          </ul>
-        </li>
-        <li><button onclick="openCart()">Cart</button></li>
-        <li><button id="connectBtn" onclick="connectWallet()">Connect Wallet</button></li>
-        <li><button onclick="toggleProfile()">Profile</button></li>
-      </ul>
-    </nav>
+    <div style="display:flex;align-items:center;gap:16px">
+      <h1 style="margin:0;font-size:18px">🦆 Quacker Friends Shop (Test)</h1>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="position:relative">
+        <button class="btn secondary" onclick="showCategory('tees')">Shop ▾</button>
+      </div>
+      <button id="openCartBtn" class="btn">Cart</button>
+      <button id="connectBtn" class="btn" onclick="connectWallet()">Connect Wallet</button>
+      <button id="profileBtn" class="btn secondary" onclick="toggleProfile()" style="display:none">Profile</button>
+    </div>
   </header>
 
-  <main id="shop" class="shop-container"></main>
+  <div id="toast-container"></div>
 
-  <div id="cartModal">
-    <span id="closeCartBtn" onclick="closeCart()">✖</span>
-    <h3 style="text-align:center;">Your Cart</h3>
-    <div id="cartItems"></div>
-    <button onclick="checkout()">Checkout</button>
+  <div id="profileSection" aria-hidden="true">
+    <h3 style="margin:6px 0">User Profile</h3>
+    <p id="profileWallet" style="font-size:13px;color:#333">Not connected</p>
+    <p style="font-size:13px;color:#666">Daily Quacks: (disabled)</p>
+    <div style="margin-top:10px"><button class="btn secondary" onclick="disconnectWallet()">Disconnect</button></div>
   </div>
 
-  <div id="sizeGuideModal" onclick="closeSizeGuide()">
-    <img src="https://files.catbox.moe/41dvss.png" alt="Size Guide">
+  <main class="shop-container" id="shop"></main>
+
+  <!-- cart modal -->
+  <div id="cartModal" aria-hidden="true">
+    <button class="close-x" onclick="closeCart()">✕</button>
+    <h3 style="margin-top:6px">Your Cart</h3>
+    <div id="cartList"></div>
+    <div style="margin-top:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <strong>Total</strong>
+        <strong id="cartTotal">0 ETH</strong>
+      </div>
+      <button id="checkoutBtn" class="btn" style="width:100%" onclick="checkout()">Checkout (force 0 ETH tx)</button>
+    </div>
   </div>
 
-  <script>
-    const PURCHASE_API = "https://script.google.com/macros/s/AKfycbwZMlGQ2REZxTP1lIoWBYzc8n7l-h7C79F9u9MjDY4XIR6jKNO7ky1VXtCm3oP5RM_9qA/exec";
-    const SHOP_WALLET = "0x0000000000000000000000000000000000000000"; // 👈 Replace with your real wallet
-    let cart = [], userAddress = null;
+  <!-- size guide modal -->
+  <div id="sizeGuideModal" role="dialog" aria-hidden="true">
+    <div class="sizeCard">
+      <button class="close-x" onclick="closeSizeGuide()">✕</button>
+      <img id="sizeGuideImage" src="" alt="Size guide" />
+    </div>
+  </div>
 
-    // Simple toast helper (alert fallback)
-    function toast(msg, type = "info", duration = 3000) {
-      console.log(`[${type.toUpperCase()}] ${msg}`);
-      alert(msg);
-    }
+<script>
+/* CONFIG */
+const PURCHASE_API = "https://script.google.com/macros/s/AKfycbwZMlGQ2REZxTP1lIoWBYzc8n7l-h7C79F9u9MjDY4XIR6jKNO7ky1VXtCm3oP5RM_9qA/exec";
+const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D"; // your shop wallet (used for tx to prompt)
+const BASE_CHAIN_ID_HEX = "0x2105"; // Base mainnet
 
-    const tees = [
-      {title: "Battle Duck Black", img: "https://files.catbox.moe/dw04zw.png", price: 0.001},
-      {title: "Battle Duck White", img: "https://files.catbox.moe/d6zm2s.png", price: 0.001},
-      {title: "Higher Black", img: "https://files.catbox.moe/qi081o.png", price: 0.001},
-      {title: "Higher White", img: "https://files.catbox.moe/0gn3r2.png", price: 0.001},
-      {title: "Sus Duck Black", img: "https://files.catbox.moe/zqtvvw.png", price: 0.001},
-      {title: "Sus Duck White", img: "https://files.catbox.moe/mgu7nu.png", price: 0.001},
-      {title: "This is Fine Black", img: "https://files.catbox.moe/nbl7st.png", price: 0.001},
-      {title: "This is Fine White", img: "https://files.catbox.moe/5n618u.png", price: 0.001},
-    ];
+/* STATE */
+let cart = [];
+let userAddress = null;
 
-    function showCategory(cat) {
-      if (cat === "tees") {
-        document.getElementById("shop").innerHTML = tees.map(t => `
-          <div class="item">
-            <img src="${t.img}">
-            <h4>${t.title}</h4>
-            <p>Price: ${t.price} ETH</p>
-            <label>Color:
-              <select><option>Black</option><option>White</option></select>
-            </label>
-            <label>Size:
-              <select><option>S</option><option>M</option><option>L</option><option>XL</option></select>
-            </label>
-            <button onclick="openSizeGuide()">Size Guide</button>
-            <button onclick="addToCart('${t.title}', '${t.img}', ${t.price})">Add to Cart</button>
+/* PRODUCTS (all prices set to 0 for testing) */
+const PRODUCTS = [
+  { id:"battle-black", title:"Battle Duck Tee — Black", price:0, img:"https://files.catbox.moe/dw04zw.png", sizes:["S","M","L","XL"], sizeGuide:"https://files.catbox.moe/41dvss.png" },
+  { id:"battle-white", title:"Battle Duck Tee — White", price:0, img:"https://files.catbox.moe/d6zm2s.png", sizes:["S","M","L","XL"], sizeGuide:"https://files.catbox.moe/41dvss.png" },
+  { id:"higher-black", title:"Higher Duck Tee — Black", price:0, img:"https://files.catbox.moe/qi081o.png", sizes:["S","M","L","XL"], sizeGuide:"https://files.catbox.moe/41dvss.png" },
+  { id:"higher-white", title:"Higher Duck Tee — White", price:0, img:"https://files.catbox.moe/0gn3r2.png", sizes:["S","M","L","XL"], sizeGuide:"https://files.catbox.moe/41dvss.png" },
+  { id:"sus-black", title:"Sus Duck Tee — Black", price:0, img:"https://files.catbox.moe/zqtvvw.png", sizes:["S","M","L","XL"], sizeGuide:"https://files.catbox.moe/41dvss.png" },
+  { id:"sus-white", title:"Sus Duck Tee — White", price:0, img:"https://files.catbox.moe/mgu7nu.png", sizes:["S","M","L","XL"], sizeGuide:"https://files.catbox.moe/41dvss.png" },
+  { id:"fine-black", title:"This Is Fine Tee — Black", price:0, img:"https://files.catbox.moe/nbl7st.png", sizes:["S","M","L","XL"], sizeGuide:"https://files.catbox.moe/41dvss.png" },
+  { id:"fine-white", title:"This Is Fine Tee — White", price:0, img:"https://files.catbox.moe/5n618u.png", sizes:["S","M","L","XL"], sizeGuide:"https://files.catbox.moe/41dvss.png" }
+];
+
+/* UI helpers */
+function showToast(msg, type="info", timeout=3000){
+  const container = document.getElementById("toast-container");
+  const el = document.createElement("div");
+  el.className = "toast " + (type==="success"?"success":type==="error"?"error":"info");
+  el.innerText = msg;
+  container.appendChild(el);
+  setTimeout(()=>el.remove(), timeout);
+}
+
+/* Render products (tees by default when clicking Shop) */
+function showCategory(cat){
+  const shop = document.getElementById("shop");
+  shop.innerHTML = "";
+  if(cat === "tees"){
+    PRODUCTS.forEach(p=>{
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <img src="${p.img}" alt="${p.title}" />
+        <h3 style="margin:8px 0">${p.title}</h3>
+        <div class="price">${p.price.toFixed(4)} ETH</div>
+        <div style="text-align:left;margin-top:8px">
+          <label style="font-weight:600">Color</label>
+          <select id="color_${p.id}" style="width:100%;padding:8px;border-radius:8px;margin:6px 0">
+            <option>Black</option><option>White</option>
+          </select>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+            <label style="font-weight:600">Size</label>
+            <button class="btn secondary" onclick="openSizeGuide('${p.sizeGuide}')">Size Guide</button>
           </div>
-        `).join('');
-      }
-    }
-
-    function openSizeGuide() {
-      document.getElementById("sizeGuideModal").classList.add("open");
-    }
-    function closeSizeGuide() {
-      document.getElementById("sizeGuideModal").classList.remove("open");
-    }
-
-    function addToCart(title, img, price) {
-      cart.push({title, img, price, q: 1, color: "Black", size: "M"});
-      toast("Added to cart!", "success");
-    }
-
-    function openCart() { document.getElementById("cartModal").classList.add("open"); updateCartUI(); }
-    function closeCart() { document.getElementById("cartModal").classList.remove("open"); }
-
-    function updateCartUI() {
-      const div = document.getElementById("cartItems");
-      div.innerHTML = cart.map((c, i) => `<p>${c.title} - ${c.price} ETH</p>`).join('');
-    }
-
-    async function connectWallet() {
-      if (window.ethereum) {
-        try {
-          const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-          userAddress = accounts[0];
-          console.log("👛 Connected wallet:", userAddress);
-          document.getElementById("connectBtn").innerText = userAddress.slice(0,6) + "..." + userAddress.slice(-4);
-          toast("Wallet connected ✅", "success");
-        } catch (err) {
-          console.error("❌ Wallet connection failed", err);
-          toast("Wallet connection failed", "error");
-        }
-      } else {
-        toast("MetaMask not found!", "error");
-      }
-    }
-
-   async function checkout() {
-  try {
-    if (!window.ethereum) {
-      alert("MetaMask not found!"); return;
-    }
-    if (!userAddress) {
-      alert("Connect wallet first!"); return;
-    }
-    if (!cart || cart.length === 0) {
-      alert("Your cart is empty!"); return;
-    }
-
-    // Ensure Base Mainnet
-    const BASE_CHAIN_ID_HEX = "0x2105";
-    try {
-      const currentChain = await ethereum.request({ method: "eth_chainId" });
-      if (currentChain !== BASE_CHAIN_ID_HEX) {
-        await ethereum.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: BASE_CHAIN_ID_HEX }],
-        });
-      }
-    } catch (switchErr) {
-      // user may need to switch manually
-      console.warn("Chain switch failed or required manually:", switchErr);
-      if (!confirm("Please switch your wallet to Base network (8453) and click OK to continue.")) return;
-    }
-
-    // Calculate total
-    const totalEth = cart.reduce((s, i) => s + (Number(i.price) * Number(i.q || 1)), 0);
-    // Use 0x0 when total is zero so wallet still prompts
-    const valueHex = totalEth > 0
-      ? "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16)
-      : "0x0";
-
-    const txParams = {
-      from: userAddress,
-      to: SHOP_WALLET,   // make sure SHOP_WALLET is set in your script above
-      value: valueHex,
-    };
-
-    // Ask user to confirm in MetaMask (even if value=0)
-    alert("A wallet confirmation will open now. Please confirm the transaction in your wallet.");
-    let txHash;
-    try {
-      txHash = await ethereum.request({
-        method: "eth_sendTransaction",
-        params: [txParams],
-      });
-    } catch (txErr) {
-      console.error("Transaction cancelled or failed:", txErr);
-      alert("Transaction canceled or failed.");
-      return;
-    }
-
-    // txHash obtained — log items to Apps Script (POST JSON)
-    for (const ci of cart) {
-      const payload = {
-        wallet: userAddress,
-        itemName: ci.title,
-        color: ci.color || "",
-        size: ci.size || "",
-        quantity: ci.q || 1,
-        price: Number(ci.price || 0) * Number(ci.q || 1),
-        txHash: txHash
-      };
-
-      try {
-        await fetch(PURCHASE_API, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-      } catch (logErr) {
-        console.warn("Logging to sheet failed for item:", ci, logErr);
-      }
-    }
-
-    // cleanup + user feedback
-    cart = [];
-    updateCartUI();
-    closeCart();
-    alert("✅ Purchase recorded (tx hash: " + txHash + ")");
-  } catch (err) {
-    console.error("Checkout error:", err);
-    alert("Checkout failed: " + (err && err.message ? err.message : err));
+          <select id="size_${p.id}" style="width:100%;padding:8px;border-radius:8px;margin-top:6px">
+            ${p.sizes.map(s=>`<option>${s}</option>`).join("")}
+          </select>
+        </div>
+        <div style="margin-top:10px">
+          <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
+        </div>
+      `;
+      shop.appendChild(div);
+    });
   }
 }
 
-  </script>
+/* Size guide modal */
+function openSizeGuide(url){
+  document.getElementById("sizeGuideImage").src = url;
+  const m = document.getElementById("sizeGuideModal");
+  m.classList.add("open");
+  m.setAttribute("aria-hidden","false");
+}
+function closeSizeGuide(){
+  const m = document.getElementById("sizeGuideModal");
+  m.classList.remove("open");
+  m.setAttribute("aria-hidden","true");
+}
+
+/* Cart functions */
+function addToCart(productId){
+  const p = PRODUCTS.find(x=>x.id===productId);
+  if(!p){ showToast("Product not found","error"); return; }
+  const color = document.getElementById(`color_${p.id}`).value || "Black";
+  const size = document.getElementById(`size_${p.id}`).value || p.sizes[0];
+  cart.push({ id: p.id, title: p.title, price: p.price, color, size, q:1 });
+  showToast(`${p.title} added to cart`,"success");
+  updateCartUI();
+}
+
+function updateCartUI(){
+  const list = document.getElementById("cartList");
+  if(cart.length === 0){ list.innerHTML = "<p style='color:#666'>Cart is empty</p>"; document.getElementById("cartTotal").innerText = "0 ETH"; return; }
+  list.innerHTML = cart.map((c, i) => `
+    <div style="display:flex;gap:10px;align-items:center;padding:8px;border-bottom:1px solid #eee">
+      <div style="flex:1">
+        <div style="font-weight:700">${c.title}</div>
+        <div style="font-size:13px;color:#666">${c.color} • ${c.size}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:700">${(c.price * c.q).toFixed(6)} ETH</div>
+        <div style="font-size:12px;margin-top:6px"><button style="background:transparent;border:none;color:#d33" onclick="removeFromCart(${i})">Remove</button></div>
+      </div>
+    </div>
+  `).join("");
+  const total = cart.reduce((s,i)=>s + (i.price * i.q), 0);
+  document.getElementById("cartTotal").innerText = total.toFixed(6) + " ETH";
+}
+
+function removeFromCart(index){
+  cart.splice(index,1);
+  updateCartUI();
+}
+
+/* Cart modal open/close */
+document.getElementById("openCartBtn").addEventListener("click",()=>{
+  if(cart.length === 0){ showToast("Cart is empty","info"); return; }
+  document.getElementById("cartModal").classList.add("open");
+  document.getElementById("cartModal").setAttribute("aria-hidden","false");
+  updateCartUI();
+});
+function closeCart(){
+  document.getElementById("cartModal").classList.remove("open");
+  document.getElementById("cartModal").setAttribute("aria-hidden","true");
+}
+
+/* Wallet connect / profile */
+async function connectWallet(){
+  if(!window.ethereum){ showToast("MetaMask not found","error"); return; }
+  try{
+    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+    userAddress = accounts[0];
+    document.getElementById("connectBtn").innerText = userAddress.slice(0,6)+"..."+userAddress.slice(-4);
+    document.getElementById("profileBtn").style.display = "inline-block";
+    document.getElementById("profileWallet").innerText = userAddress;
+    showToast("Wallet connected","success");
+  }catch(err){ console.error(err); showToast("Connect failed","error"); }
+}
+function toggleProfile(){
+  const p = document.getElementById("profileSection");
+  p.style.display = p.style.display === "block" ? "none" : "block";
+}
+function disconnectWallet(){
+  userAddress = null;
+  document.getElementById("connectBtn").innerText = "Connect Wallet";
+  document.getElementById("profileBtn").style.display = "none";
+  document.getElementById("profileSection").style.display = "none";
+  showToast("Disconnected","info");
+}
+
+/* Checkout - force a zero-value transaction to prompt MetaMask (so we get txHash) */
+async function checkout(){
+  try{
+    if(!window.ethereum){ showToast("MetaMask not found","error"); return; }
+    if(!userAddress){ showToast("Connect wallet first","error"); return; }
+    if(cart.length === 0){ showToast("Cart is empty","info"); return; }
+
+    // Try to switch to Base mainnet, if possible
+    try{
+      const chain = await ethereum.request({ method: "eth_chainId" });
+      if(chain !== BASE_CHAIN_ID_HEX){
+        await ethereum.request({ method: "wallet_switchEthereumChain", params:[{chainId:BASE_CHAIN_ID_HEX}] });
+        showToast("Switched to Base mainnet","success");
+      }
+    }catch(switchErr){
+      // if user must switch manually, we warn and continue (will still prompt)
+      console.warn("Chain switch issue:", switchErr);
+      if(!confirm("Please ensure your wallet is on the Base network (8453). Click OK to continue.")) return;
+    }
+
+    // Always send a transaction request — value will be 0x0 because prices are 0
+    const totalEth = cart.reduce((s,i)=>s + (i.price * i.q), 0);
+    const valueHex = totalEth > 0 ? "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16) : "0x0";
+
+    const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
+    showToast("Please confirm the transaction in your wallet (zero-value tx will be created).","info",8000);
+
+    let txHash;
+    try{
+      txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
+    }catch(txErr){
+      console.error("tx aborted", txErr);
+      showToast("Transaction canceled","error");
+      return;
+    }
+
+    // log to Apps Script (POST JSON)
+    for(const ci of cart){
+      const payload = {
+        wallet: userAddress,
+        itemName: ci.title,
+        color: ci.color,
+        size: ci.size,
+        quantity: ci.q,
+        price: Number(ci.price || 0),
+        txHash
+      };
+      try{
+        await fetch(PURCHASE_API, {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify(payload)
+        });
+      }catch(logErr){
+        console.warn("Logging failed for", payload, logErr);
+      }
+    }
+
+    // done
+    cart = [];
+    updateCartUI();
+    closeCart();
+    showToast("Purchase recorded (tx: "+ (txHash||"TEST") +")","success",5000);
+  }catch(err){
+    console.error("checkout error", err);
+    showToast("Checkout failed","error");
+  }
+}
+
+/* INIT */
+document.addEventListener("DOMContentLoaded",()=>{
+  // default show tees
+  showCategory('tees');
+});
+</script>
 </body>
 </html>
