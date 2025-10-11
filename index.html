@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Quacker Friends Shop</title>
 
-<!-- Web3 (for utility functions) -->
 <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 
@@ -36,6 +34,7 @@ header h1{margin:0;font-size:20px;display:flex;align-items:center;gap:10px}
 .btn:active{transform:translateY(1px)}
 
 main{flex:1;padding:30px 20px;max-width:var(--maxWidth);margin:0 auto 80px;}
+#welcome{background:var(--card);padding:22px;border-radius:14px;box-shadow:var(--shadow);text-align:center;margin-bottom:18px;}
 #items{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
 .item{background:var(--card);padding:16px;border-radius:14px;box-shadow:var(--shadow);text-align:center}
 .item img{width:100%;height:220px;object-fit:contain;border-radius:8px;background:#f6f6f6}
@@ -44,26 +43,37 @@ main{flex:1;padding:30px 20px;max-width:var(--maxWidth);margin:0 auto 80px;}
 select{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-bottom:8px}
 
 #profileSection{display:none;position:absolute;top:70px;right:30px;background:var(--card);border-radius:12px;width:340px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,0.12);z-index:100}
+#profileSection h3{margin-top:0;font-size:16px;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:12px;}
+#profileSection p{margin:6px 0;color:#444}
+
 #toast-container{position:fixed;top:1rem;right:1rem;display:flex;flex-direction:column;gap:.5rem;z-index:9999}
 .toast{padding:.5rem .75rem;border-radius:6px;color:#fff}
 .toast.success{background:#16a34a}
 .toast.error{background:#ef4444}
 .toast.info{background:#3b82f6}
+.toast.link a{color:#fff;font-weight:700;text-decoration:underline}
 
 .cart-button { position: relative; }
 .cart-count { position:absolute; top:-8px; right:-8px; background:#111;color:#fff;border-radius:999px;padding:4px 7px;font-size:12px; }
 
-.cart-modal {
-  position:fixed; right:0; top:0; height:100vh; width:420px; background:var(--card); box-shadow:-12px 0 40px rgba(0,0,0,0.12);
-  transform:translateX(110%); transition:transform .28s ease; z-index:1200; padding:18px; display:flex; flex-direction:column;
-}
+.cart-modal { position:fixed; right:0; top:0; height:100vh; width:420px; background:var(--card); box-shadow:-12px 0 40px rgba(0,0,0,0.12); transform:translateX(110%); transition:transform .28s ease; z-index:1200; padding:18px; display:flex; flex-direction:column;}
 .cart-modal.open{ transform:translateX(0); }
+.cart-modal .close-x{position:absolute; right:12px; top:8px; background:transparent;border:none;font-size:20px;cursor:pointer}
 .cart-list{flex:1; overflow:auto; margin-bottom:12px;}
 .cart-item{display:flex;gap:12px;align-items:center;padding:10px;border-bottom:1px solid #f1f1f1}
 .cart-item img{width:64px;height:64px;object-fit:contain;border-radius:6px;background:#f6f6f6}
 .qty { width:56px; padding:6px; border-radius:6px; border:1px solid #ddd; text-align:center }
 
 .checkout-row{display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid #eee}
+.small-muted{font-size:13px;color:#666}
+
+.sizeguide-modal {
+  position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:1300;
+}
+.sizeguide-modal.open { display:flex; }
+.sizeguide-modal .card { background:#fff; padding:12px; border-radius:12px; max-width:720px; width:92%; box-shadow:0 10px 40px rgba(0,0,0,0.2); position:relative; }
+.sizeguide-modal img{max-width:100%;height:auto;display:block;border-radius:8px}
+.sizeguide-modal .close-btn { position:absolute; right:12px; top:12px; background:transparent;border:none;font-size:20px; cursor:pointer; }
 
 @media (max-width:520px){
   header{padding:12px}
@@ -97,22 +107,28 @@ select{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-bot
 
 <div id="toast-container"></div>
 
-<!-- Profile panel (keeps minimal for now) -->
-<div id="profileSection">
+<main>
+  <div id="welcome">
+    <h2>Welcome to Quacker Friends Shop</h2>
+    <p>Select a category from <strong>Shop ▾</strong> to browse items. (Click Tees to get started.)</p>
+  </div>
+
+  <section id="items"></section>
+</main>
+
+<!-- Profile panel -->
+<div id="profileSection" aria-hidden="true">
   <h3>User Profile</h3>
   <p id="profileWallet">Not connected</p>
-  <p id="profileQuacks">Daily Quacks Collected: 0</p>
+  <p id="profileQuacks">Daily Quacks Collected: (disabled)</p>
   <div style="margin-top:10px">
     <button class="btn secondary" onclick="disconnectWallet()">❌ Disconnect</button>
   </div>
 </div>
 
-<main>
-  <section id="items"></section>
-</main>
-
 <!-- Cart modal -->
 <div id="cartModal" class="cart-modal" aria-hidden="true">
+  <button class="close-x" title="Close cart" onclick="closeCart()">✕</button>
   <h3>Your Cart</h3>
   <div class="cart-list" id="cartList"></div>
 
@@ -131,24 +147,31 @@ select{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-bot
   </div>
 </div>
 
+<!-- Size guide modal -->
+<div id="sizeGuideModal" class="sizeguide-modal" aria-hidden="true">
+  <div class="card">
+    <button class="close-btn" onclick="closeSizeGuide()">✕</button>
+    <img id="sizeGuideImage" src="" alt="Size guide" />
+  </div>
+</div>
+
 <footer style="margin-top:30px;background:var(--brand-teal);padding:18px;text-align:center;color:#fff">
   <p>Follow Quacker Friends:</p>
-  <a href="#" style="color:#fff;margin:0 8px"><i class="fab fa-x"></i></a>
 </footer>
 
 <script>
 /* --------- CONFIG --------- */
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 const PURCHASE_API = "https://script.google.com/macros/s/AKfycbwZMlGQ2REZxTP1lIoWBYzc8n7l-h7C79F9u9MjDY4XIR6jKNO7ky1VXtCm3oP5RM_9qA/exec";
-const BASE_CHAIN_ID_HEX = "0x2105"; // 8453 decimal
+const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 
-/* --------- PRODUCTS (Tees) --------- */
+/* --------- PRODUCTS (test price = 0 ETH) --------- */
 const PRODUCTS = {
   tees: [
     {
       id: "battle-duck",
       title: "Battle Duck Tee",
-      price: 0.02,
+      price: 0.00, // TEST price
       images: { Black: "https://files.catbox.moe/dw04zw.png", White: "https://files.catbox.moe/d6zm2s.png" },
       sizes: ["S","M","L","XL"],
       sizeGuide: "https://files.catbox.moe/41dvss.png"
@@ -156,7 +179,7 @@ const PRODUCTS = {
     {
       id: "higher-duck",
       title: "Higher Duck Tee",
-      price: 0.02,
+      price: 0.00,
       images: { Black: "https://files.catbox.moe/qi081o.png", White: "https://files.catbox.moe/0gn3r2.png" },
       sizes: ["S","M","L","XL"],
       sizeGuide: "https://files.catbox.moe/41dvss.png"
@@ -164,7 +187,7 @@ const PRODUCTS = {
     {
       id: "sus-duck",
       title: "Sus Duck Tee",
-      price: 0.02,
+      price: 0.00,
       images: { Black: "https://files.catbox.moe/zqtvvw.png", White: "https://files.catbox.moe/mgu7nu.png" },
       sizes: ["S","M","L","XL"],
       sizeGuide: "https://files.catbox.moe/41dvss.png"
@@ -172,7 +195,7 @@ const PRODUCTS = {
     {
       id: "this-is-fine",
       title: "This Is Fine Tee",
-      price: 0.02,
+      price: 0.00,
       images: { Black: "https://files.catbox.moe/nbl7st.png", White: "https://files.catbox.moe/5n618u.png" },
       sizes: ["S","M","L","XL"],
       sizeGuide: "https://files.catbox.moe/41dvss.png"
@@ -183,23 +206,26 @@ const PRODUCTS = {
 };
 
 /* --------- STATE --------- */
-let currentCategory = "tees";
-let cart = []; // {id,title,price,color,size,q}
+let currentCategory = null;
+let cart = [];
 let userAddress = null;
 let web3instance = null;
 
 /* --------- UTILITIES --------- */
-function toast(msg, type="info", t=3500){
+function toast(msg, type="info", timeout=3500, linkHtml=null){
   const container = document.getElementById("toast-container");
   const el = document.createElement("div");
   el.className = "toast " + (type==="success"?"success":type==="error"?"error":"info");
-  el.innerText = msg;
+  if(linkHtml){
+    el.innerHTML = `${msg} <span style="margin-left:8px">${linkHtml}</span>`;
+  } else {
+    el.innerText = msg;
+  }
   container.appendChild(el);
-  setTimeout(()=>el.remove(), t);
+  setTimeout(()=>el.remove(), timeout);
 }
 
 function weiHexFromEth(eth){
-  // use web3 if available for precise conversion
   if(window.Web3 && window.Web3.utils){
     const weiStr = Web3.utils.toWei(eth.toString(), "ether");
     return "0x" + BigInt(weiStr).toString(16);
@@ -209,7 +235,7 @@ function weiHexFromEth(eth){
   }
 }
 
-/* --------- RENDER SHOP --------- */
+/* --------- RENDER & UI --------- */
 function showCategory(cat){
   currentCategory = cat;
   renderItems();
@@ -219,7 +245,17 @@ function showCategory(cat){
 function renderItems(){
   const container = document.getElementById("items");
   container.innerHTML = "";
+  if(!currentCategory){
+    document.getElementById("welcome").style.display = "block";
+    return;
+  } else {
+    document.getElementById("welcome").style.display = "none";
+  }
   const items = PRODUCTS[currentCategory] || [];
+  if(items.length === 0){
+    container.innerHTML = `<div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:var(--shadow);">No items yet in ${currentCategory}.</div>`;
+    return;
+  }
   items.forEach(p=>{
     const wrap = document.createElement("div");
     wrap.className = "item";
@@ -230,10 +266,10 @@ function renderItems(){
     wrap.innerHTML = `
       <img id="${imgId}" src="${p.images.Black}" alt="${p.title}" />
       <h3>${p.title}</h3>
-      <div class="price">${p.price} ETH</div>
+      <div class="price">${p.price.toFixed(4)} ETH</div>
       <label style="display:block;text-align:left;font-weight:600;margin-top:8px">Color</label>
       <select id="${colorId}">${Object.keys(p.images).map(c=>`<option value="${c}">${c}</option>`).join("")}</select>
-      <label style="display:block;text-align:left;font-weight:600">Size <a href="${p.sizeGuide}" target="_blank" style="font-size:12px;margin-left:8px">(Size Guide)</a></label>
+      <label style="display:block;text-align:left;font-weight:600">Size <button class="btn secondary" style="margin-left:8px;padding:6px 8px;font-size:12px" onclick="openSizeGuide('${p.sizeGuide}')">Size Guide</button></label>
       <select id="${sizeId}">${p.sizes.map(s=>`<option value="${s}">${s}</option>`).join("")}</select>
       <div style="margin-top:8px;display:flex;gap:8px;align-items:center;justify-content:center">
         <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
@@ -248,6 +284,19 @@ function renderItems(){
       wrap.querySelector(`#${imgId}`).src = p.images[val];
     });
   });
+}
+
+/* --------- SIZE GUIDE POPUP --------- */
+function openSizeGuide(url){
+  document.getElementById("sizeGuideImage").src = url;
+  const modal = document.getElementById("sizeGuideModal");
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden","false");
+}
+function closeSizeGuide(){
+  const modal = document.getElementById("sizeGuideModal");
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden","true");
 }
 
 /* --------- CART --------- */
@@ -268,7 +317,7 @@ function updateCartUI(){
       <div style="flex:1">
         <div style="font-weight:600">${ci.title}</div>
         <div style="font-size:13px;color:#555">${ci.color} • ${ci.size}</div>
-        <div style="margin-top:6px">${ci.price} ETH</div>
+        <div style="margin-top:6px">${ci.price.toFixed(4)} ETH</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
         <input class="qty" type="number" min="1" value="${ci.q}" onchange="changeQty(${idx}, this.value)" />
@@ -321,15 +370,15 @@ openCartBtn.addEventListener("click", ()=> {
 });
 function closeCart(){ cartModal.classList.remove("open"); cartModal.setAttribute("aria-hidden","true"); }
 
-/* --------- WALLET / CONNECT --------- */
+/* --------- WALLET --------- */
 async function connectWallet(){
   if(!window.ethereum){ toast("MetaMask (or compatible) not found", "error"); return; }
   try{
-    // Request accounts
     const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
     userAddress = accounts[0];
     web3instance = new Web3(window.ethereum);
     toast("Wallet connected", "success");
+    document.getElementById("connectWallet").style.display = "none";
     document.getElementById("profileButton").style.display = "inline-block";
     document.getElementById("profileWallet").innerText = userAddress;
   }catch(err){
@@ -339,54 +388,57 @@ async function connectWallet(){
 }
 document.getElementById("connectWallet").addEventListener("click", connectWallet);
 
+document.getElementById("profileButton").addEventListener("click", ()=>{
+  const panel = document.getElementById("profileSection");
+  panel.style.display = panel.style.display === "block" ? "none" : "block";
+});
+
+/* Disconnect */
 function disconnectWallet(){
   userAddress = null;
   web3instance = null;
+  document.getElementById("connectWallet").style.display = "inline-block";
   document.getElementById("profileButton").style.display = "none";
   document.getElementById("profileSection").style.display = "none";
   toast("Wallet disconnected", "info");
 }
 
-/* --------- SWITCH CHAIN HELPER --------- */
+/* --------- CHAIN/SWITCH HELPER --------- */
 async function ensureBaseNetwork(){
   if(!window.ethereum) throw new Error("No wallet");
   try{
     const currentChain = await ethereum.request({ method: "eth_chainId" });
     if(currentChain === BASE_CHAIN_ID_HEX) return true;
-    // attempt to switch
     await ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: BASE_CHAIN_ID_HEX }] });
     return true;
   }catch(err){
-    // ask user to switch manually if wallet doesn't support programmatic switch
     throw new Error("Please switch your wallet to Base (chainId 8453) and try again.");
   }
 }
 
-/* --------- CHECKOUT (MetaMask sendTx + log) --------- */
+/* --------- CHECKOUT (BASE) --------- */
 async function checkout(){
-  if(!userAddress) { toast("Connect wallet first", "warn"); return; }
+  if(!userAddress) { toast("Connect wallet first", "error"); return; }
   if(cart.length === 0) { toast("Cart is empty", "info"); return; }
 
   try{
-    // ensure Base network
     await ensureBaseNetwork();
 
     // calculate total
     const totalEth = cart.reduce((s,i)=>s + (i.price * i.q), 0);
-    const valueHex = weiHexFromEth(totalEth);
+    const valueHex = weiHexFromEth(totalEth); // will be 0x0 for testing if price = 0
 
-    // build tx object
-    const txParams = {
-      from: userAddress,
-      to: SHOP_WALLET,
-      value: valueHex
-    };
+    const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
 
-    toast("Sending transaction... confirm in your wallet", "info", 6000);
+    toast("Sending transaction... confirm in your wallet", "info", 8000);
     const txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
-    toast("Transaction sent: " + txHash, "success", 4000);
+    toast("Transaction sent", "success", 4000);
 
-    // After tx sent, log each cart item to your Purchase sheet (POST)
+    // Build basescan link and show it in toast
+    const basescanLink = `https://basescan.org/tx/${txHash}`;
+    toast("View transaction on Basescan", "success", 7000, `<a href="${basescanLink}" target="_blank">Open</a>`);
+
+    // POST purchase lines to purchase API
     for(const ci of cart){
       const body = {
         wallet: userAddress,
@@ -394,7 +446,7 @@ async function checkout(){
         color: ci.color,
         size: ci.size,
         quantity: ci.q,
-        price: (ci.price * ci.q) // ETH amount for this line
+        price: (ci.price * ci.q)
       };
       try{
         await fetch(PURCHASE_API, {
@@ -407,28 +459,24 @@ async function checkout(){
       }
     }
 
-    // clear cart and UI
     cart = [];
     updateCartUI();
     closeCart();
     toast("Purchase logged. Thank you!", "success");
-
   }catch(err){
     console.error(err);
     toast(err.message || "Checkout failed", "error");
   }
 }
-
 document.getElementById("checkoutBtn").addEventListener("click", checkout);
 
 /* --------- INIT --------- */
 function init(){
+  // start with welcome text, do NOT auto-show tees
+  currentCategory = null;
   renderItems();
-  // show default tees
-  showCategory("tees");
 }
 init();
-
 </script>
 </body>
 </html>
