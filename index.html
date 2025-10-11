@@ -123,65 +123,82 @@
     }
 
     async function checkout() {
-  if (!userAddress) return alert("Connect wallet first!");
-  if (cart.length === 0) return alert("Your cart is empty!");
+  if (!userAddress) {
+    toast("Connect wallet first!", "error");
+    return;
+  }
+  if (cart.length === 0) {
+    toast("Your cart is empty!", "info");
+    return;
+  }
 
   try {
-    // connect wallet to base mainnet
-    const chainId = "0x2105"; // Base Mainnet
+    // Ensure Base Mainnet
+    const BASE_CHAIN_ID_HEX = "0x2105"; // Base Mainnet
     const currentChain = await ethereum.request({ method: "eth_chainId" });
-    if (currentChain !== chainId) {
+    if (currentChain !== BASE_CHAIN_ID_HEX) {
       await ethereum.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId }],
+        params: [{ chainId: BASE_CHAIN_ID_HEX }],
       });
+      toast("Switched to Base Mainnet ✅", "success");
     }
 
-    let totalEth = cart.reduce((sum, item) => sum + Number(item.price), 0);
+    // Calculate total ETH in cart
+    const totalEth = cart.reduce((sum, item) => sum + (item.price * item.q), 0);
+    if (totalEth <= 0) {
+      toast("Test mode: 0 ETH total — simulating payment success...", "info");
+    }
 
-    if (totalEth === 0) {
-      alert("Test mode: price 0 ETH — simulating payment success...");
-    } else {
-      const tx = await ethereum.request({
+    // Send transaction if price > 0
+    let txHash = null;
+    if (totalEth > 0) {
+      const valueHex = "0x" + (BigInt(Math.floor(totalEth * 1e18))).toString(16);
+      const txParams = {
+        from: userAddress,
+        to: SHOP_WALLET,
+        value: valueHex,
+      };
+
+      toast("Confirm the transaction in MetaMask...", "info", 8000);
+      txHash = await ethereum.request({
         method: "eth_sendTransaction",
-        params: [
-          {
-            from: userAddress,
-            to: "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D", // your address
-            value: `0x${(BigInt(totalEth * 1e18)).toString(16)}`,
-          },
-        ],
+        params: [txParams],
       });
-      alert(`Transaction sent! Hash:\n${tx}`);
+
+      const link = `<a href="https://basescan.org/tx/${txHash}" target="_blank">View on Basescan</a>`;
+      toast("Transaction sent ✅", "success", 8000, link);
     }
 
-    // after payment success — log each item to sheet
+    // Log purchase (only after tx success or 0 ETH test)
     for (const ci of cart) {
-      const params = new URLSearchParams({
+      const data = {
         wallet: userAddress,
         itemName: ci.title,
         color: ci.color,
         size: ci.size,
         quantity: ci.q,
-        price: ci.price,
-      });
+        price: ci.price * ci.q,
+        txHash: txHash || "TEST_MODE",
+      };
 
-      fetch(`${PURCHASE_API}?${params.toString()}`)
-        .then(r => r.json())
-        .then(data => console.log("Logged:", data))
-        .catch(err => console.error(err));
+      await fetch(PURCHASE_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).catch(err => console.warn("Logging failed:", err));
     }
 
-    alert("✅ Purchase complete and logged!");
     cart = [];
     updateCartUI();
     closeCart();
-
+    toast("Purchase complete and logged 🦆", "success");
   } catch (err) {
     console.error(err);
-    alert("❌ Transaction failed or canceled.");
+    toast(err.message || "Checkout failed", "error");
   }
 }
+
 
   </script>
 </body>
