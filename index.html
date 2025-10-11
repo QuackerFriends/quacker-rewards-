@@ -136,101 +136,95 @@
       }
     }
 
-    async function checkout() {
-      console.log("🚀 Checkout started");
+   async function checkout() {
+  try {
+    if (!window.ethereum) {
+      alert("MetaMask not found!"); return;
+    }
+    if (!userAddress) {
+      alert("Connect wallet first!"); return;
+    }
+    if (!cart || cart.length === 0) {
+      alert("Your cart is empty!"); return;
+    }
+
+    // Ensure Base Mainnet
+    const BASE_CHAIN_ID_HEX = "0x2105";
+    try {
+      const currentChain = await ethereum.request({ method: "eth_chainId" });
+      if (currentChain !== BASE_CHAIN_ID_HEX) {
+        await ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: BASE_CHAIN_ID_HEX }],
+        });
+      }
+    } catch (switchErr) {
+      // user may need to switch manually
+      console.warn("Chain switch failed or required manually:", switchErr);
+      if (!confirm("Please switch your wallet to Base network (8453) and click OK to continue.")) return;
+    }
+
+    // Calculate total
+    const totalEth = cart.reduce((s, i) => s + (Number(i.price) * Number(i.q || 1)), 0);
+    // Use 0x0 when total is zero so wallet still prompts
+    const valueHex = totalEth > 0
+      ? "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16)
+      : "0x0";
+
+    const txParams = {
+      from: userAddress,
+      to: SHOP_WALLET,   // make sure SHOP_WALLET is set in your script above
+      value: valueHex,
+    };
+
+    // Ask user to confirm in MetaMask (even if value=0)
+    alert("A wallet confirmation will open now. Please confirm the transaction in your wallet.");
+    let txHash;
+    try {
+      txHash = await ethereum.request({
+        method: "eth_sendTransaction",
+        params: [txParams],
+      });
+    } catch (txErr) {
+      console.error("Transaction cancelled or failed:", txErr);
+      alert("Transaction canceled or failed.");
+      return;
+    }
+
+    // txHash obtained — log items to Apps Script (POST JSON)
+    for (const ci of cart) {
+      const payload = {
+        wallet: userAddress,
+        itemName: ci.title,
+        color: ci.color || "",
+        size: ci.size || "",
+        quantity: ci.q || 1,
+        price: Number(ci.price || 0) * Number(ci.q || 1),
+        txHash: txHash
+      };
 
       try {
-        if (!window.ethereum) {
-          toast("MetaMask not found!", "error");
-          return;
-        }
-        console.log("✅ Ethereum provider detected:", window.ethereum);
-
-        if (!userAddress) {
-          toast("Connect wallet first!", "error");
-          return;
-        }
-
-        if (cart.length === 0) {
-          toast("Your cart is empty!", "info");
-          return;
-        }
-
-        console.log("📦 Cart contents:", cart);
-
-        // Ensure Base network
-        const BASE_CHAIN_ID_HEX = "0x2105";
-        const currentChain = await ethereum.request({ method: "eth_chainId" });
-        console.log("🔗 Current chain ID:", currentChain);
-
-        if (currentChain !== BASE_CHAIN_ID_HEX) {
-          try {
-            await ethereum.request({
-              method: "wallet_switchEthereumChain",
-              params: [{ chainId: BASE_CHAIN_ID_HEX }],
-            });
-            toast("Switched to Base Mainnet ✅", "success");
-          } catch (err) {
-            toast("Please switch to Base Mainnet manually", "error");
-            return;
-          }
-        }
-
-        const totalEth = cart.reduce((s, i) => s + (i.price * i.q), 0);
-        console.log("💰 Total ETH:", totalEth);
-
-        let txHash = "TEST_MODE";
-        if (totalEth > 0) {
-          console.log("📤 Sending transaction...");
-          const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
-          const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
-
-          toast("Confirm transaction in MetaMask...", "info");
-          txHash = await ethereum.request({
-            method: "eth_sendTransaction",
-            params: [txParams],
-          });
-          console.log("✅ Transaction hash:", txHash);
-          toast(`Transaction sent ✅ Hash: ${txHash}`, "success");
-        } else {
-          console.log("🧪 Test mode (0 ETH)");
-          toast("Test mode: 0 ETH — logging only", "info");
-        }
-
-        for (const ci of cart) {
-          const data = {
-            wallet: userAddress,
-            itemName: ci.title,
-            color: ci.color,
-            size: ci.size,
-            quantity: ci.q,
-            price: ci.price * ci.q,
-            txHash,
-          };
-          console.log("📝 Logging to Apps Script:", data);
-
-          try {
-            const resp = await fetch(PURCHASE_API, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(data),
-            });
-            const js = await resp.json();
-            console.log("📄 Sheet response:", js);
-          } catch (err) {
-            console.error("⚠️ Sheet logging failed:", err);
-          }
-        }
-
-        cart = [];
-        updateCartUI();
-        closeCart();
-        toast("Purchase complete and logged 🦆", "success");
-      } catch (err) {
-        console.error("💥 Checkout crashed:", err);
-        toast(err.message || "Checkout failed", "error");
+        await fetch(PURCHASE_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } catch (logErr) {
+        console.warn("Logging to sheet failed for item:", ci, logErr);
       }
     }
+
+    // cleanup + user feedback
+    cart = [];
+    updateCartUI();
+    closeCart();
+    alert("✅ Purchase recorded (tx hash: " + txHash + ")");
+  } catch (err) {
+    console.error("Checkout error:", err);
+    alert("Checkout failed: " + (err && err.message ? err.message : err));
+  }
+}
+
   </script>
 </body>
 </html>
