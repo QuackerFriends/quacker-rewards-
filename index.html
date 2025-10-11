@@ -183,13 +183,28 @@ async function checkout(){
     // log purchase
     for(const ci of cart){
       const payload={wallet:userAddress,itemName:ci.title,color:ci.color,size:ci.size,quantity:ci.q,price:Number(ci.price||0),txHash};
-     await fetch(PURCHASE_API, {
+    const res = await fetch(PURCHASE_API, {
   method: "POST",
-  mode: "cors",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(payload)
+  body: JSON.stringify(payload),
 });
 
+let data;
+try {
+  // Try parsing JSON directly
+  data = await res.json();
+} catch {
+  // If it’s HTML (CORS relay), extract JSON manually
+  const text = await res.text();
+  const match = text.match(/{.*}/s);
+  data = match ? JSON.parse(match[0]) : { success: false, error: "Invalid response" };
+}
+
+if (data.success) {
+  console.log("✅ Purchase logged:", data);
+} else {
+  console.warn("⚠️ Log failed:", data);
+}
 
     }
 
