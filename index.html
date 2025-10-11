@@ -463,7 +463,34 @@ async function checkout() {
     cart = [];
     updateCartUI();
     closeCart();
-    toast("Purchase logged successfully 🦆", "success");
+    // ✅ Log purchases to Google Sheet using GET request
+for (const ci of cart) {
+  const params = new URLSearchParams({
+    wallet: userAddress,
+    itemName: ci.title,
+    color: ci.color,
+    size: ci.size,
+    quantity: ci.q,
+    price: ci.price * ci.q
+  });
+
+  fetch(`${PURCHASE_API}?${params.toString()}`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        console.log("✅ Purchase logged to sheet!");
+      } else {
+        console.error("❌ Logging failed:", data.error);
+      }
+    })
+    .catch(err => console.error("Fetch error:", err));
+}
+
+cart = [];
+updateCartUI();
+closeCart();
+toast("Purchase logged successfully 🦆", "success");
+
   } catch (err) {
     console.error(err);
     toast(err.message || "Checkout failed", "error");
