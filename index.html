@@ -417,14 +417,14 @@ async function ensureBaseNetwork(){
 }
 
 /* --------- CHECKOUT (BASE) --------- */
-async function checkout(){
-  if(!userAddress) { toast("Connect wallet first", "error"); return; }
-  if(cart.length === 0) { toast("Cart is empty", "info"); return; }
+async function checkout() {
+  if (!userAddress) { toast("Connect wallet first", "error"); return; }
+  if (cart.length === 0) { toast("Cart is empty", "info"); return; }
 
-  try{
+  try {
     await ensureBaseNetwork();
 
-    const totalEth = cart.reduce((s,i)=>s + (i.price * i.q), 0);
+    const totalEth = cart.reduce((s, i) => s + (i.price * i.q), 0);
     const valueHex = weiHexFromEth(totalEth);
     const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
 
@@ -432,24 +432,31 @@ async function checkout(){
     const txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
 
     const basescanLink = `https://basescan.org/tx/${txHash}`;
-    toast("Transaction sent ✅", "success", 5000, `<a href="${basescanLink}" target="_blank">View on Basescan</a>`);
+    toast(
+      `Transaction sent ✅ <a href="${basescanLink}" target="_blank">View on Basescan</a>`,
+      "success",
+      8000
+    );
 
-    // ✅ Log each purchased item to the Google Sheet
-    for(const ci of cart){
-      const params = new URLSearchParams({
+    // ✅ Log purchase via POST request to Apps Script
+    for (const ci of cart) {
+      const purchaseData = {
         wallet: userAddress,
         itemName: ci.title,
         color: ci.color,
         size: ci.size,
         quantity: ci.q,
-        price: (ci.price * ci.q),
-        txHash
-      });
-      const url = `${PURCHASE_API}?${params.toString()}`;
-      try{
-        await fetch(url);
-      }catch(e){
-        console.warn("Logging failed", e);
+        price: ci.price * ci.q,
+      };
+
+      try {
+        await fetch(PURCHASE_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(purchaseData),
+        });
+      } catch (e) {
+        console.warn("Logging failed:", e);
       }
     }
 
@@ -457,19 +464,20 @@ async function checkout(){
     updateCartUI();
     closeCart();
     toast("Purchase logged successfully 🦆", "success");
-  }catch(err){
+  } catch (err) {
     console.error(err);
     toast(err.message || "Checkout failed", "error");
   }
 }
+
 document.getElementById("checkoutBtn").addEventListener("click", checkout);
 
 /* --------- INIT --------- */
-function init(){
+function init() {
   currentCategory = null;
   document.getElementById("welcome").innerHTML = `
     <h2>Welcome to Quacker Friends Shop</h2>
-    <p>Browse the latest Quacker tees and merch!</p>
+    <p>Browse the latest Quacker merch!</p>
   `;
   renderItems();
 }
@@ -478,13 +486,6 @@ init();
 </body>
 </html>
 
-/* --------- INIT --------- */
-function init(){
-  // start with welcome text, do NOT auto-show tees
-  currentCategory = null;
-  renderItems();
-}
-init();
 </script>
 </body>
 </html>
