@@ -123,54 +123,65 @@
     }
 
     async function checkout() {
-  if (!userAddress) {
-    toast("Connect wallet first!", "error");
-    return;
-  }
-  if (cart.length === 0) {
-    toast("Your cart is empty!", "info");
-    return;
-  }
-
   try {
-    // Ensure Base Mainnet
+    if (!window.ethereum) {
+      toast("MetaMask not found!", "error");
+      return;
+    }
+    if (!userAddress) {
+      toast("Connect wallet first!", "error");
+      return;
+    }
+    if (cart.length === 0) {
+      toast("Your cart is empty!", "info");
+      return;
+    }
+
+    // --- Ensure Base Network ---
     const BASE_CHAIN_ID_HEX = "0x2105"; // Base Mainnet
-    const currentChain = await ethereum.request({ method: "eth_chainId" });
+    let currentChain = await ethereum.request({ method: "eth_chainId" });
     if (currentChain !== BASE_CHAIN_ID_HEX) {
-      await ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: BASE_CHAIN_ID_HEX }],
-      });
-      toast("Switched to Base Mainnet ✅", "success");
+      try {
+        await ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: BASE_CHAIN_ID_HEX }],
+        });
+        toast("Switched to Base Mainnet ✅", "success");
+      } catch (err) {
+        toast("Please switch to Base Mainnet and retry.", "error");
+        return;
+      }
     }
 
-    // Calculate total ETH in cart
-    const totalEth = cart.reduce((sum, item) => sum + (item.price * item.q), 0);
-    if (totalEth <= 0) {
-      toast("Test mode: 0 ETH total — simulating payment success...", "info");
+    // --- Calculate total ---
+    const totalEth = cart.reduce((s, i) => s + (i.price * i.q), 0);
+    const isTest = totalEth <= 0;
+    let txHash = "TEST_MODE";
+
+    // --- Send transaction if > 0 ETH ---
+    if (!isTest) {
+      const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
+      const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
+      toast("Confirm the transaction in MetaMask...", "info", 6000);
+
+      try {
+        txHash = await ethereum.request({
+          method: "eth_sendTransaction",
+          params: [txParams],
+        });
+
+        const link = `<a href="https://basescan.org/tx/${txHash}" target="_blank">View on Basescan</a>`;
+        toast("Transaction sent ✅", "success", 8000, link);
+      } catch (err) {
+        console.error("Transaction error:", err);
+        toast("Transaction cancelled or failed.", "error");
+        return;
+      }
+    } else {
+      toast("Test mode: 0 ETH total — logging only.", "info", 5000);
     }
 
-    // Send transaction if price > 0
-    let txHash = null;
-    if (totalEth > 0) {
-      const valueHex = "0x" + (BigInt(Math.floor(totalEth * 1e18))).toString(16);
-      const txParams = {
-        from: userAddress,
-        to: SHOP_WALLET,
-        value: valueHex,
-      };
-
-      toast("Confirm the transaction in MetaMask...", "info", 8000);
-      txHash = await ethereum.request({
-        method: "eth_sendTransaction",
-        params: [txParams],
-      });
-
-      const link = `<a href="https://basescan.org/tx/${txHash}" target="_blank">View on Basescan</a>`;
-      toast("Transaction sent ✅", "success", 8000, link);
-    }
-
-    // Log purchase (only after tx success or 0 ETH test)
+    // --- Log purchases to Google Sheet ---
     for (const ci of cart) {
       const data = {
         wallet: userAddress,
@@ -179,22 +190,29 @@
         size: ci.size,
         quantity: ci.q,
         price: ci.price * ci.q,
-        txHash: txHash || "TEST_MODE",
+        txHash,
       };
 
-      await fetch(PURCHASE_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }).catch(err => console.warn("Logging failed:", err));
+      try {
+        const resp = await fetch(PURCHASE_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        const js = await resp.json();
+        console.log("Sheet log:", js);
+      } catch (err) {
+        console.warn("Logging failed:", err);
+      }
     }
 
+    // --- Cleanup ---
     cart = [];
     updateCartUI();
     closeCart();
     toast("Purchase complete and logged 🦆", "success");
   } catch (err) {
-    console.error(err);
+    console.error("Checkout error:", err);
     toast(err.message || "Checkout failed", "error");
   }
 }
