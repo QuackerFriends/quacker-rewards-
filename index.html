@@ -123,24 +123,44 @@
     }
 
     async function checkout() {
+  console.log("🚀 Checkout started");
+
   try {
     if (!window.ethereum) {
+      console.error("❌ No window.ethereum detected");
       toast("MetaMask not found!", "error");
       return;
     }
+    console.log("✅ Ethereum provider detected:", window.ethereum);
+
     if (!userAddress) {
+      console.warn("⚠️ No wallet connected");
       toast("Connect wallet first!", "error");
       return;
     }
+
     if (cart.length === 0) {
+      console.warn("🛒 Empty cart");
       toast("Your cart is empty!", "info");
       return;
     }
 
-    // --- Ensure Base Network ---
-    const BASE_CHAIN_ID_HEX = "0x2105"; // Base Mainnet
-    let currentChain = await ethereum.request({ method: "eth_chainId" });
+    console.log("📦 Cart contents:", cart);
+
+    // Ensure Base network
+    const BASE_CHAIN_ID_HEX = "0x2105";
+    let currentChain;
+    try {
+      currentChain = await ethereum.request({ method: "eth_chainId" });
+      console.log("🔗 Current chain ID:", currentChain);
+    } catch (err) {
+      console.error("⚠️ Cannot get chain ID", err);
+      toast("Cannot access chain ID from wallet", "error");
+      return;
+    }
+
     if (currentChain !== BASE_CHAIN_ID_HEX) {
+      console.log("🔄 Switching to Base Mainnet...");
       try {
         await ethereum.request({
           method: "wallet_switchEthereumChain",
@@ -148,40 +168,45 @@
         });
         toast("Switched to Base Mainnet ✅", "success");
       } catch (err) {
+        console.error("❌ Failed to switch chain", err);
         toast("Please switch to Base Mainnet and retry.", "error");
         return;
       }
     }
 
-    // --- Calculate total ---
+    // Calculate total
     const totalEth = cart.reduce((s, i) => s + (i.price * i.q), 0);
-    const isTest = totalEth <= 0;
-    let txHash = "TEST_MODE";
+    console.log("💰 Total ETH:", totalEth);
 
-    // --- Send transaction if > 0 ETH ---
-    if (!isTest) {
+    let txHash = "TEST_MODE";
+    if (totalEth > 0) {
+      console.log("📤 Sending transaction...");
       const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
       const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
-      toast("Confirm the transaction in MetaMask...", "info", 6000);
 
+      toast("Confirm the transaction in MetaMask...", "info", 6000);
       try {
         txHash = await ethereum.request({
           method: "eth_sendTransaction",
           params: [txParams],
         });
-
-        const link = `<a href="https://basescan.org/tx/${txHash}" target="_blank">View on Basescan</a>`;
-        toast("Transaction sent ✅", "success", 8000, link);
+        console.log("✅ Transaction hash:", txHash);
+        toast(
+          `Transaction sent ✅ <a href="https://basescan.org/tx/${txHash}" target="_blank">View</a>`,
+          "success",
+          8000
+        );
       } catch (err) {
-        console.error("Transaction error:", err);
+        console.error("❌ Transaction failed", err);
         toast("Transaction cancelled or failed.", "error");
         return;
       }
     } else {
-      toast("Test mode: 0 ETH total — logging only.", "info", 5000);
+      console.log("🧪 Test mode (0 ETH)");
+      toast("Test mode: 0 ETH total — logging only.", "info");
     }
 
-    // --- Log purchases to Google Sheet ---
+    // Log purchases
     for (const ci of cart) {
       const data = {
         wallet: userAddress,
@@ -192,6 +217,7 @@
         price: ci.price * ci.q,
         txHash,
       };
+      console.log("📝 Sending to Apps Script:", data);
 
       try {
         const resp = await fetch(PURCHASE_API, {
@@ -200,19 +226,19 @@
           body: JSON.stringify(data),
         });
         const js = await resp.json();
-        console.log("Sheet log:", js);
+        console.log("📄 Sheet response:", js);
       } catch (err) {
-        console.warn("Logging failed:", err);
+        console.error("⚠️ Sheet logging failed:", err);
       }
     }
 
-    // --- Cleanup ---
     cart = [];
     updateCartUI();
     closeCart();
     toast("Purchase complete and logged 🦆", "success");
+    console.log("✅ Checkout complete");
   } catch (err) {
-    console.error("Checkout error:", err);
+    console.error("💥 Checkout crashed:", err);
     toast(err.message || "Checkout failed", "error");
   }
 }
