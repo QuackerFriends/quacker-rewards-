@@ -183,14 +183,13 @@ async function checkout(){
     // log purchase
     for(const ci of cart){
       const payload={wallet:userAddress,itemName:ci.title,color:ci.color,size:ci.size,quantity:ci.q,price:Number(ci.price||0),txHash};
-      await fetch(PURCHASE_API, {
+     await fetch(PURCHASE_API, {
   method: "POST",
   mode: "cors",
-  headers: {
-    "Content-Type": "application/json"
-  },
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify(payload)
 });
+
 
     }
 
