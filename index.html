@@ -180,38 +180,25 @@ async function checkout(){
       showToast("No tx sent — logging anyway (test mode)","info");
     }
 
-    // log purchase
+    // ✅ Log purchase safely (CORS-compatible)
     for(const ci of cart){
       const payload={wallet:userAddress,itemName:ci.title,color:ci.color,size:ci.size,quantity:ci.q,price:Number(ci.price||0),txHash};
-    const res = await fetch(PURCHASE_API, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(payload),
-});
-
-let data;
-try {
-  // Try parsing JSON directly
-  data = await res.json();
-} catch {
-  // If it’s HTML (CORS relay), extract JSON manually
-  const text = await res.text();
-  const match = text.match(/{.*}/s);
-  data = match ? JSON.parse(match[0]) : { success: false, error: "Invalid response" };
-}
-
-if (data.success) {
-  console.log("✅ Purchase logged:", data);
-} else {
-  console.warn("⚠️ Log failed:", data);
-}
-
+      const res=await fetch(PURCHASE_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+      let data;
+      try{
+        data=await res.json();
+      }catch{
+        const text=await res.text();
+        const match=text.match(/{.*}/s);
+        data=match?JSON.parse(match[0]):{success:false,error:"Invalid response"};
+      }
+      console.log("Sheet log response:",data);
     }
 
     cart=[];
     updateCartUI();
     closeCart();
-    showToast("Purchase logged! (tx: "+txHash+")","success",4000);
+    showToast("Purchase logged successfully!","success",4000);
   }catch(err){
     console.error("checkout error",err);
     showToast("Checkout failed","error");
