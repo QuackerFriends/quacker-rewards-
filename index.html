@@ -123,28 +123,66 @@
     }
 
     async function checkout() {
-      if (!userAddress) return alert("Connect wallet first!");
-      alert("Simulating ETH payment success...");
+  if (!userAddress) return alert("Connect wallet first!");
+  if (cart.length === 0) return alert("Your cart is empty!");
 
-      for (const ci of cart) {
-        const params = new URLSearchParams({
-          wallet: userAddress,
-          itemName: ci.title,
-          color: ci.color,
-          size: ci.size,
-          quantity: ci.q,
-          price: ci.price
-        });
-        fetch(`${PURCHASE_API}?${params.toString()}`)
-          .then(r => r.json())
-          .then(data => console.log("Log:", data))
-          .catch(err => console.error(err));
-      }
-      cart = [];
-      updateCartUI();
-      closeCart();
-      alert("Purchase logged successfully!");
+  try {
+    // connect wallet to base mainnet
+    const chainId = "0x2105"; // Base Mainnet
+    const currentChain = await ethereum.request({ method: "eth_chainId" });
+    if (currentChain !== chainId) {
+      await ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId }],
+      });
     }
+
+    let totalEth = cart.reduce((sum, item) => sum + Number(item.price), 0);
+
+    if (totalEth === 0) {
+      alert("Test mode: price 0 ETH — simulating payment success...");
+    } else {
+      const tx = await ethereum.request({
+        method: "eth_sendTransaction",
+        params: [
+          {
+            from: userAddress,
+            to: "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D", // your address
+            value: `0x${(BigInt(totalEth * 1e18)).toString(16)}`,
+          },
+        ],
+      });
+      alert(`Transaction sent! Hash:\n${tx}`);
+    }
+
+    // after payment success — log each item to sheet
+    for (const ci of cart) {
+      const params = new URLSearchParams({
+        wallet: userAddress,
+        itemName: ci.title,
+        color: ci.color,
+        size: ci.size,
+        quantity: ci.q,
+        price: ci.price,
+      });
+
+      fetch(`${PURCHASE_API}?${params.toString()}`)
+        .then(r => r.json())
+        .then(data => console.log("Logged:", data))
+        .catch(err => console.error(err));
+    }
+
+    alert("✅ Purchase complete and logged!");
+    cart = [];
+    updateCartUI();
+    closeCart();
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ Transaction failed or canceled.");
+  }
+}
+
   </script>
 </body>
 </html>
