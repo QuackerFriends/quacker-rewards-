@@ -63,7 +63,7 @@
         <strong>Total</strong>
         <strong id="cartTotal">0 ETH</strong>
       </div>
-      <button id="checkoutBtn" class="btn" style="width:100%" onclick="checkout()">Checkout (force 0 ETH tx)</button>
+      <button id="checkoutBtn" class="btn" style="width:100%" onclick="checkout()">Checkout (test mode)</button>
     </div>
   </div>
 
@@ -76,229 +76,127 @@
   </div>
 
 <script>
-/* CONFIG */
 const PURCHASE_API = "https://script.google.com/macros/s/AKfycbwZMlGQ2REZxTP1lIoWBYzc8n7l-h7C79F9u9MjDY4XIR6jKNO7ky1VXtCm3oP5RM_9qA/exec";
-const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D"; // your shop wallet (used for tx to prompt)
-const BASE_CHAIN_ID_HEX = "0x2105"; // Base mainnet
+const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
+const BASE_CHAIN_ID_HEX = "0x2105";
 
-/* STATE */
 let cart = [];
 let userAddress = null;
 
-/* PRODUCTS (all prices set to 0 for testing) */
 const PRODUCTS = [
   { id:"battle-black", title:"Battle Duck Tee — Black", price:0, img:"https://files.catbox.moe/dw04zw.png", sizes:["S","M","L","XL"], sizeGuide:"https://files.catbox.moe/41dvss.png" },
-  { id:"battle-white", title:"Battle Duck Tee — White", price:0, img:"https://files.catbox.moe/d6zm2s.png", sizes:["S","M","L","XL"], sizeGuide:"https://files.catbox.moe/41dvss.png" },
-  { id:"higher-black", title:"Higher Duck Tee — Black", price:0, img:"https://files.catbox.moe/qi081o.png", sizes:["S","M","L","XL"], sizeGuide:"https://files.catbox.moe/41dvss.png" },
-  { id:"higher-white", title:"Higher Duck Tee — White", price:0, img:"https://files.catbox.moe/0gn3r2.png", sizes:["S","M","L","XL"], sizeGuide:"https://files.catbox.moe/41dvss.png" },
-  { id:"sus-black", title:"Sus Duck Tee — Black", price:0, img:"https://files.catbox.moe/zqtvvw.png", sizes:["S","M","L","XL"], sizeGuide:"https://files.catbox.moe/41dvss.png" },
-  { id:"sus-white", title:"Sus Duck Tee — White", price:0, img:"https://files.catbox.moe/mgu7nu.png", sizes:["S","M","L","XL"], sizeGuide:"https://files.catbox.moe/41dvss.png" },
-  { id:"fine-black", title:"This Is Fine Tee — Black", price:0, img:"https://files.catbox.moe/nbl7st.png", sizes:["S","M","L","XL"], sizeGuide:"https://files.catbox.moe/41dvss.png" },
-  { id:"fine-white", title:"This Is Fine Tee — White", price:0, img:"https://files.catbox.moe/5n618u.png", sizes:["S","M","L","XL"], sizeGuide:"https://files.catbox.moe/41dvss.png" }
+  { id:"battle-white", title:"Battle Duck Tee — White", price:0, img:"https://files.catbox.moe/d6zm2s.png", sizes:["S","M","L","XL"], sizeGuide:"https://files.catbox.moe/41dvss.png" }
 ];
 
-/* UI helpers */
 function showToast(msg, type="info", timeout=3000){
-  const container = document.getElementById("toast-container");
-  const el = document.createElement("div");
-  el.className = "toast " + (type==="success"?"success":type==="error"?"error":"info");
-  el.innerText = msg;
-  container.appendChild(el);
-  setTimeout(()=>el.remove(), timeout);
+  const c=document.getElementById("toast-container");
+  const e=document.createElement("div");
+  e.className="toast "+(type==="success"?"success":type==="error"?"error":"info");
+  e.innerText=msg;
+  c.appendChild(e);
+  setTimeout(()=>e.remove(),timeout);
 }
 
-/* Render products (tees by default when clicking Shop) */
 function showCategory(cat){
-  const shop = document.getElementById("shop");
-  shop.innerHTML = "";
-  if(cat === "tees"){
+  const shop=document.getElementById("shop");
+  shop.innerHTML="";
+  if(cat==="tees"){
     PRODUCTS.forEach(p=>{
-      const div = document.createElement("div");
-      div.className = "item";
-      div.innerHTML = `
+      const div=document.createElement("div");
+      div.className="item";
+      div.innerHTML=`
         <img src="${p.img}" alt="${p.title}" />
         <h3 style="margin:8px 0">${p.title}</h3>
         <div class="price">${p.price.toFixed(4)} ETH</div>
-        <div style="text-align:left;margin-top:8px">
-          <label style="font-weight:600">Color</label>
-          <select id="color_${p.id}" style="width:100%;padding:8px;border-radius:8px;margin:6px 0">
-            <option>Black</option><option>White</option>
-          </select>
-          <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
-            <label style="font-weight:600">Size</label>
-            <button class="btn secondary" onclick="openSizeGuide('${p.sizeGuide}')">Size Guide</button>
-          </div>
-          <select id="size_${p.id}" style="width:100%;padding:8px;border-radius:8px;margin-top:6px">
-            ${p.sizes.map(s=>`<option>${s}</option>`).join("")}
-          </select>
-        </div>
-        <div style="margin-top:10px">
-          <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
-        </div>
+        <select id="color_${p.id}" style="width:100%;padding:8px;border-radius:8px;margin:6px 0">
+          <option>Black</option><option>White</option>
+        </select>
+        <select id="size_${p.id}" style="width:100%;padding:8px;border-radius:8px;margin-top:6px">
+          ${p.sizes.map(s=>`<option>${s}</option>`).join("")}
+        </select>
+        <button class="btn" style="margin-top:10px" onclick="addToCart('${p.id}')">Add to cart</button>
       `;
       shop.appendChild(div);
     });
   }
 }
 
-/* Size guide modal */
-function openSizeGuide(url){
-  document.getElementById("sizeGuideImage").src = url;
-  const m = document.getElementById("sizeGuideModal");
-  m.classList.add("open");
-  m.setAttribute("aria-hidden","false");
-}
-function closeSizeGuide(){
-  const m = document.getElementById("sizeGuideModal");
-  m.classList.remove("open");
-  m.setAttribute("aria-hidden","true");
-}
-
-/* Cart functions */
-function addToCart(productId){
-  const p = PRODUCTS.find(x=>x.id===productId);
-  if(!p){ showToast("Product not found","error"); return; }
-  const color = document.getElementById(`color_${p.id}`).value || "Black";
-  const size = document.getElementById(`size_${p.id}`).value || p.sizes[0];
-  cart.push({ id: p.id, title: p.title, price: p.price, color, size, q:1 });
+function addToCart(id){
+  const p=PRODUCTS.find(x=>x.id===id);
+  const color=document.getElementById(`color_${id}`).value;
+  const size=document.getElementById(`size_${id}`).value;
+  cart.push({...p,color,size,q:1});
   showToast(`${p.title} added to cart`,"success");
   updateCartUI();
 }
 
 function updateCartUI(){
-  const list = document.getElementById("cartList");
-  if(cart.length === 0){ list.innerHTML = "<p style='color:#666'>Cart is empty</p>"; document.getElementById("cartTotal").innerText = "0 ETH"; return; }
-  list.innerHTML = cart.map((c, i) => `
-    <div style="display:flex;gap:10px;align-items:center;padding:8px;border-bottom:1px solid #eee">
-      <div style="flex:1">
-        <div style="font-weight:700">${c.title}</div>
-        <div style="font-size:13px;color:#666">${c.color} • ${c.size}</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-weight:700">${(c.price * c.q).toFixed(6)} ETH</div>
-        <div style="font-size:12px;margin-top:6px"><button style="background:transparent;border:none;color:#d33" onclick="removeFromCart(${i})">Remove</button></div>
-      </div>
-    </div>
-  `).join("");
-  const total = cart.reduce((s,i)=>s + (i.price * i.q), 0);
-  document.getElementById("cartTotal").innerText = total.toFixed(6) + " ETH";
+  const list=document.getElementById("cartList");
+  if(cart.length===0){list.innerHTML="<p>Cart empty</p>";document.getElementById("cartTotal").innerText="0 ETH";return;}
+  list.innerHTML=cart.map((c,i)=>`
+    <div style="padding:8px;border-bottom:1px solid #eee">
+      <div><b>${c.title}</b></div>
+      <div>${c.color} • ${c.size}</div>
+      <div>${c.price.toFixed(6)} ETH</div>
+      <button style="background:transparent;color:#d33;border:none" onclick="removeFromCart(${i})">Remove</button>
+    </div>`).join("");
+  const total=cart.reduce((s,i)=>s+(i.price*i.q),0);
+  document.getElementById("cartTotal").innerText=total.toFixed(6)+" ETH";
 }
+function removeFromCart(i){cart.splice(i,1);updateCartUI();}
 
-function removeFromCart(index){
-  cart.splice(index,1);
-  updateCartUI();
-}
-
-/* Cart modal open/close */
 document.getElementById("openCartBtn").addEventListener("click",()=>{
-  if(cart.length === 0){ showToast("Cart is empty","info"); return; }
+  if(cart.length===0){showToast("Cart empty","info");return;}
   document.getElementById("cartModal").classList.add("open");
-  document.getElementById("cartModal").setAttribute("aria-hidden","false");
-  updateCartUI();
 });
-function closeCart(){
-  document.getElementById("cartModal").classList.remove("open");
-  document.getElementById("cartModal").setAttribute("aria-hidden","true");
-}
+function closeCart(){document.getElementById("cartModal").classList.remove("open");}
 
-/* Wallet connect / profile */
 async function connectWallet(){
-  if(!window.ethereum){ showToast("MetaMask not found","error"); return; }
-  try{
-    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-    userAddress = accounts[0];
-    document.getElementById("connectBtn").innerText = userAddress.slice(0,6)+"..."+userAddress.slice(-4);
-    document.getElementById("profileBtn").style.display = "inline-block";
-    document.getElementById("profileWallet").innerText = userAddress;
-    showToast("Wallet connected","success");
-  }catch(err){ console.error(err); showToast("Connect failed","error"); }
-}
-function toggleProfile(){
-  const p = document.getElementById("profileSection");
-  p.style.display = p.style.display === "block" ? "none" : "block";
-}
-function disconnectWallet(){
-  userAddress = null;
-  document.getElementById("connectBtn").innerText = "Connect Wallet";
-  document.getElementById("profileBtn").style.display = "none";
-  document.getElementById("profileSection").style.display = "none";
-  showToast("Disconnected","info");
+  if(!window.ethereum){showToast("MetaMask not found","error");return;}
+  const accounts=await ethereum.request({method:"eth_requestAccounts"});
+  userAddress=accounts[0];
+  document.getElementById("connectBtn").innerText=userAddress.slice(0,6)+"..."+userAddress.slice(-4);
+  showToast("Wallet connected","success");
 }
 
-/* Checkout - force a zero-value transaction to prompt MetaMask (so we get txHash) */
 async function checkout(){
   try{
-    if(!window.ethereum){ showToast("MetaMask not found","error"); return; }
-    if(!userAddress){ showToast("Connect wallet first","error"); return; }
-    if(cart.length === 0){ showToast("Cart is empty","info"); return; }
+    if(!window.ethereum){showToast("MetaMask not found","error");return;}
+    if(!userAddress){showToast("Connect wallet first","error");return;}
+    if(cart.length===0){showToast("Cart is empty","info");return;}
 
-    // Try to switch to Base mainnet, if possible
+    let txHash="TEST_"+Date.now(); // default simulated tx for test mode
+
     try{
-      const chain = await ethereum.request({ method: "eth_chainId" });
-      if(chain !== BASE_CHAIN_ID_HEX){
-        await ethereum.request({ method: "wallet_switchEthereumChain", params:[{chainId:BASE_CHAIN_ID_HEX}] });
-        showToast("Switched to Base mainnet","success");
+      const chain=await ethereum.request({method:"eth_chainId"});
+      if(chain!==BASE_CHAIN_ID_HEX){
+        await ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:BASE_CHAIN_ID_HEX}]});
       }
-    }catch(switchErr){
-      // if user must switch manually, we warn and continue (will still prompt)
-      console.warn("Chain switch issue:", switchErr);
-      if(!confirm("Please ensure your wallet is on the Base network (8453). Click OK to continue.")) return;
-    }
-
-    // Always send a transaction request — value will be 0x0 because prices are 0
-    const totalEth = cart.reduce((s,i)=>s + (i.price * i.q), 0);
-    const valueHex = totalEth > 0 ? "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16) : "0x0";
-
-    const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
-    showToast("Please confirm the transaction in your wallet (zero-value tx will be created).","info",8000);
-
-    let txHash;
-    try{
-      txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
+      const txParams={from:userAddress,to:SHOP_WALLET,value:"0x0"};
+      showToast("Confirm (0 ETH) transaction in wallet...","info",6000);
+      txHash=await ethereum.request({method:"eth_sendTransaction",params:[txParams]});
     }catch(txErr){
-      console.error("tx aborted", txErr);
-      showToast("Transaction canceled","error");
-      return;
+      console.warn("tx failed or rejected",txErr);
+      showToast("No tx sent — logging anyway (test mode)","info");
     }
 
-    // log to Apps Script (POST JSON)
+    // log purchase
     for(const ci of cart){
-      const payload = {
-        wallet: userAddress,
-        itemName: ci.title,
-        color: ci.color,
-        size: ci.size,
-        quantity: ci.q,
-        price: Number(ci.price || 0),
-        txHash
-      };
-      try{
-        await fetch(PURCHASE_API, {
-          method: "POST",
-          headers: { "Content-Type":"application/json" },
-          body: JSON.stringify(payload)
-        });
-      }catch(logErr){
-        console.warn("Logging failed for", payload, logErr);
-      }
+      const payload={wallet:userAddress,itemName:ci.title,color:ci.color,size:ci.size,quantity:ci.q,price:Number(ci.price||0),txHash};
+      await fetch(PURCHASE_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
     }
 
-    // done
-    cart = [];
+    cart=[];
     updateCartUI();
     closeCart();
-    showToast("Purchase recorded (tx: "+ (txHash||"TEST") +")","success",5000);
+    showToast("Purchase logged! (tx: "+txHash+")","success",4000);
   }catch(err){
-    console.error("checkout error", err);
+    console.error("checkout error",err);
     showToast("Checkout failed","error");
   }
 }
 
-/* INIT */
-document.addEventListener("DOMContentLoaded",()=>{
-  // default show tees
-  showCategory('tees');
-});
+document.addEventListener("DOMContentLoaded",()=>showCategory('tees'));
 </script>
 </body>
 </html>
