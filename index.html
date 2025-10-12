@@ -321,15 +321,7 @@ function showCategory(cat){
       </select>
       <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
   <label style="font-weight:600">Size</label>
-  function openItemModal(id) {
-  document.getElementById('modalOverlay').style.display = 'block';
-  document.getElementById('itemModal').style.display = 'block';
-}
 
-function closeItemModal() {
-  document.getElementById('modalOverlay').style.display = 'none';
-  document.getElementById('itemModal').style.display = 'none';
-}
 
   <button class="btn size-guide-btn" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
 </div>
@@ -348,6 +340,16 @@ function closeItemModal() {
       el.querySelector(`#${imgId}`).src = p.images[e.target.value];
     });
   });
+}
+
+  function openItemModal(id) {
+  document.getElementById('modalOverlay').style.display = 'block';
+  document.getElementById('itemModal').style.display = 'block';
+}
+
+function closeItemModal() {
+  document.getElementById('modalOverlay').style.display = 'none';
+  document.getElementById('itemModal').style.display = 'none';
 }
 
 /* ===== SIZE GUIDE POPUP ===== */
