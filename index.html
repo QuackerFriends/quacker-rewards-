@@ -169,6 +169,22 @@ async function checkout() {
 
     // ✅ Only log when tx actually sent
     showToast("Transaction confirmed! Logging purchase...", "success");
+    
+// ✅ Wait briefly to ensure the transaction is broadcast
+await new Promise(r => setTimeout(r, 1500));
+
+// ✅ Build BaseScan link
+const baseScanUrl = `https://basescan.org/tx/${txHash}`;
+
+// ✅ Show success toast
+showToast("✅ Purchase successful! View transaction link below", "success", 5000);
+
+// ✅ Optional: clickable BaseScan link
+const linkToast = document.createElement("div");
+linkToast.className = "toast success";
+linkToast.innerHTML = `<a href="${baseScanUrl}" target="_blank" style="color:#fff;text-decoration:underline;">View on BaseScan</a>`;
+document.getElementById("toast-container").appendChild(linkToast);
+setTimeout(() => linkToast.remove(), 8000);
 
     for (const ci of cart) {
       const payload = {
