@@ -52,6 +52,24 @@ body::before {
   border-radius: 8px;
 }
 .dropdown-item:hover { background: var(--brand-orange); color: #fff; }
+    .item .size-guide-btn {
+  color: #222;               /* dark text */
+  background: #f6f6f6;       /* light gray background */
+  border: 1px solid #ccc;    /* subtle border */
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;                  /* space between icon and text */
+  transition: background 0.2s;
+}
+
+.item .size-guide-btn:hover {
+  background: #e0e0e0;       /* slightly darker on hover */
+}
+
 
     header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--brand-orange);color:white;box-shadow:0 6px 18px rgba(0,0,0,0.08)}
     header h1{margin:0;font-size:20px;display:flex;align-items:center;gap:10px}
@@ -269,9 +287,9 @@ function showCategory(cat){
         ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join("")}
       </select>
       <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
-        <label style="font-weight:600">Size</label>
-        <button class="btn secondary" style="margin-left:8px;padding:6px 8px;font-size:12px" onclick="openSizeGuide('${p.sizeGuide}')">Size Guide</button>
-      </div>
+  <label style="font-weight:600">Size</label>
+  <button class="btn size-guide-btn" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
+</div>
       <select id="${sizeId}" style="margin-top:6px">
         ${p.sizes.map(s=>`<option value="${s}">${s}</option>`).join("")}
       </select>
