@@ -180,11 +180,9 @@ async function checkout() {
         price: Number(ci.price || 0),
         txHash,
       };
-      await fetch(PURCHASE_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const params = new URLSearchParams(payload).toString();
+await fetch(`${PURCHASE_API}?${params}`);
+
     }
 
     cart = [];
