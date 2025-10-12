@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,6 +40,19 @@ body::before {
   background: rgba(255, 255, 255, 0.65); /* adjust opacity (0.3–0.7) as needed */
   z-index: -1;
 }
+    .dropdown-item {
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.15s;
+  color: #222;
+  border-radius: 8px;
+}
+.dropdown-item:hover { background: var(--brand-orange); color: #fff; }
+
     header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--brand-orange);color:white;box-shadow:0 6px 18px rgba(0,0,0,0.08)}
     header h1{margin:0;font-size:20px;display:flex;align-items:center;gap:10px}
     .btn{padding:10px 16px;background:var(--brand-orange-dark);color:white;border:none;border-radius:999px;cursor:pointer;font-weight:600;transition:all .18s;display:inline-flex;gap:8px;align-items:center}
@@ -72,31 +86,15 @@ body::before {
     footer{background:var(--brand-teal);padding:20px;text-align:center;color:#fff;margin-top:auto}
     footer a{margin:0 10px;color:#fff}
     @media(max-width:520px){#profileSection{right:12px;left:12px;width:auto}.cart-modal{width:100%}}
-
-    .dropdown-item {
-  padding: 10px 16px;
-  border: none;
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background 0.15s;
-  color: #222;
-  border-radius: 8px;
-}
-.dropdown-item:hover { background: var(--brand-orange); color: #fff; }
-
   </style>
 </head>
 <body>
   <header>
     <h1>🦆 Quacker Friends Shop</h1>
     <div style="display:flex;gap:10px;align-items:center">
-      <div class="shop-controls">
-        
-      <div class="shop-dropdown" style="position:relative">
+    <div class="shop-controls" style="position:relative">
   <button class="btn secondary" id="menuBtn">Shop ▾</button>
-  <div id="shopMenu" class="dropdown-menu" style="
+  <div id="shopMenu" style="
       display:none;
       position:absolute;
       top:100%;
@@ -114,7 +112,6 @@ body::before {
   </div>
 </div>
 
-      </div>
       <button id="connectBtn" class="btn">Connect Wallet</button>
       <button id="profileBtn" class="btn secondary" style="display:none">Profile</button>
       <button id="openCartBtn" class="btn" style="position:relative">Cart <span id="cartCount" class="cart-count" style="display:none">0</span></button>
@@ -143,8 +140,7 @@ body::before {
       <p style="margin:0;color:#666">Select category below — Tees are ready. Prices set to 0 ETH for testing.</p>
     </div>
 
-    
-
+   
     <section id="items" class="shop-container"></section>
   </main>
 
@@ -543,38 +539,17 @@ async function checkout(){
 /* ===== INIT ===== */
 document.addEventListener("DOMContentLoaded", ()=>{
   showCategory('tees');
-  // wire menu dropdown behavior (simple)
-  document.getElementById('menuBtn').addEventListener('click', ()=> {
-    // toggle categories quickly
-    const next = currentCategory === 'tees' ? 'plushies' : currentCategory === 'plushies' ? 'tapestry' : 'tees';
-    showCategory(next);
-  });
+  
 });
-
 
   const menuBtn = document.getElementById('menuBtn');
 const shopMenu = document.getElementById('shopMenu');
 
 menuBtn.addEventListener('click', () => {
-  const isOpen = shopMenu.style.display === "flex";
-  shopMenu.style.display = isOpen ? "none" : "flex";
+  shopMenu.style.display = shopMenu.style.display === "flex" ? "none" : "flex";
 });
 
-// close dropdown when clicking outside
-document.addEventListener('click', (e) => {
-  if (!menuBtn.contains(e.target) && !shopMenu.contains(e.target)) {
-    shopMenu.style.display = "none";
-  }
-});
-const menuBtn = document.getElementById('menuBtn');
-const shopMenu = document.getElementById('shopMenu');
-
-menuBtn.addEventListener('click', () => {
-  const isOpen = shopMenu.style.display === "flex";
-  shopMenu.style.display = isOpen ? "none" : "flex";
-});
-
-// close dropdown when clicking outside
+// Close dropdown when clicking outside
 document.addEventListener('click', (e) => {
   if (!menuBtn.contains(e.target) && !shopMenu.contains(e.target)) {
     shopMenu.style.display = "none";
