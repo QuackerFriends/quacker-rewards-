@@ -126,49 +126,74 @@ async function connectWallet(){
   showToast("Wallet connected","success");
 }
 
-async function checkout(){
-  try{
-    if(!window.ethereum){showToast("MetaMask not found","error");return;}
-    if(!userAddress){showToast("Connect wallet first","error");return;}
-    if(cart.length===0){showToast("Cart is empty","info");return;}
-
-    let txHash="TEST_"+Date.now(); // fallback test transaction ID
-
-    try{
-      const chain=await ethereum.request({method:"eth_chainId"});
-      if(chain!==BASE_CHAIN_ID_HEX){
-        await ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:BASE_CHAIN_ID_HEX}]});
-      }
-      const txParams={from:userAddress,to:SHOP_WALLET,value:"0x0"};
-      showToast("Confirm (0 ETH) transaction...","info",6000);
-      txHash=await ethereum.request({method:"eth_sendTransaction",params:[txParams]});
-    }catch(txErr){
-      console.warn("tx failed or rejected",txErr);
-      showToast("Transaction skipped (test mode)","info");
+async function checkout() {
+  try {
+    if (!window.ethereum) {
+      showToast("MetaMask not found", "error");
+      return;
+    }
+    if (!userAddress) {
+      showToast("Connect wallet first", "error");
+      return;
+    }
+    if (cart.length === 0) {
+      showToast("Cart is empty", "info");
+      return;
     }
 
-    // ✅ Log purchase via GET (CORS-safe)
-    for(const ci of cart){
-      const params=new URLSearchParams({
-        wallet:userAddress,
-        itemName:ci.title,
-        size:ci.size,
-        quantity:ci.q,
-        price:ci.price,
-        txHash
+    const chain = await ethereum.request({ method: "eth_chainId" });
+    if (chain !== BASE_CHAIN_ID_HEX) {
+      await ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: BASE_CHAIN_ID_HEX }]
       });
-      const res=await fetch(`${PURCHASE_API}?${params.toString()}`);
-      const json=await res.json();
-      console.log("📦 Log result:",json);
     }
 
-    cart=[];
+    // 🦆 Build total transaction value
+    const totalEth = cart.reduce((sum, item) => sum + Number(item.price || 0), 0);
+    const valueWei = "0x" + BigInt(totalEth * 1e18).toString(16);
+
+    const txParams = {
+      from: userAddress,
+      to: SHOP_WALLET,
+      value: valueWei,
+    };
+
+    showToast("Please confirm transaction in wallet...", "info", 6000);
+
+    // 🪙 Send real transaction
+    const txHash = await ethereum.request({
+      method: "eth_sendTransaction",
+      params: [txParams],
+    });
+
+    // ✅ Only log when tx actually sent
+    showToast("Transaction confirmed! Logging purchase...", "success");
+
+    for (const ci of cart) {
+      const payload = {
+        wallet: userAddress,
+        itemName: ci.title,
+        color: ci.color,
+        size: ci.size,
+        quantity: ci.q,
+        price: Number(ci.price || 0),
+        txHash,
+      };
+      await fetch(PURCHASE_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    }
+
+    cart = [];
     updateCartUI();
     closeCart();
-    showToast("Purchase logged! (tx: "+txHash+")","success",4000);
-  }catch(err){
-    console.error("checkout error",err);
-    showToast("Checkout failed","error");
+    showToast("✅ Purchase logged successfully!", "success", 4000);
+  } catch (err) {
+    console.error("checkout error", err);
+    showToast("❌ Checkout canceled or failed", "error");
   }
 }
 
