@@ -72,6 +72,20 @@ body::before {
     footer{background:var(--brand-teal);padding:20px;text-align:center;color:#fff;margin-top:auto}
     footer a{margin:0 10px;color:#fff}
     @media(max-width:520px){#profileSection{right:12px;left:12px;width:auto}.cart-modal{width:100%}}
+
+    .dropdown-item {
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.15s;
+  color: #222;
+  border-radius: 8px;
+}
+.dropdown-item:hover { background: var(--brand-orange); color: #fff; }
+
   </style>
 </head>
 <body>
@@ -79,7 +93,27 @@ body::before {
     <h1>🦆 Quacker Friends Shop</h1>
     <div style="display:flex;gap:10px;align-items:center">
       <div class="shop-controls">
-        <button class="btn secondary" id="menuBtn">Shop ▾</button>
+        
+      <div class="shop-dropdown" style="position:relative">
+  <button class="btn secondary" id="menuBtn">Shop ▾</button>
+  <div id="shopMenu" class="dropdown-menu" style="
+      display:none;
+      position:absolute;
+      top:100%;
+      left:0;
+      background:var(--card);
+      border-radius:12px;
+      box-shadow:var(--shadow);
+      flex-direction:column;
+      min-width:160px;
+      z-index:1500;
+  ">
+    <button class="dropdown-item" onclick="showCategory('tees')">Tees</button>
+    <button class="dropdown-item" onclick="showCategory('plushies')">Plushies</button>
+    <button class="dropdown-item" onclick="showCategory('tapestry')">Tapestry</button>
+  </div>
+</div>
+
       </div>
       <button id="connectBtn" class="btn">Connect Wallet</button>
       <button id="profileBtn" class="btn secondary" style="display:none">Profile</button>
@@ -109,11 +143,7 @@ body::before {
       <p style="margin:0;color:#666">Select category below — Tees are ready. Prices set to 0 ETH for testing.</p>
     </div>
 
-    <div style="display:flex;gap:12px;margin-bottom:14px">
-      <button class="btn secondary" onclick="showCategory('tees')">Tees</button>
-      <button class="btn secondary" onclick="showCategory('plushies')">Plushies</button>
-      <button class="btn secondary" onclick="showCategory('tapestry')">Tapestry</button>
-    </div>
+    
 
     <section id="items" class="shop-container"></section>
   </main>
