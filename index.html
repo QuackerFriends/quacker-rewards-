@@ -121,19 +121,53 @@
 
 
     @media(max-width:520px){#profileSection{right:12px;left:12px;width:auto}.cart-modal{width:100%}}
-    #modalOverlay {
+    /* Background blur for items */
+#bgBlur {
+  display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5); /* dim background */
-  z-index: 1999;
-  display: none; /* hidden until modal opens */
+  z-index: 1000;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.18);
+  pointer-events: none;
 }
+
+/* Ensure header/footer stay crisp above blur */
+header { position: relative; z-index: 1100; }
+footer { position: relative; z-index: 1100; padding: 10px 0; font-size: 14px; }
+
+/* Toasts slightly lower */
+#toast-container {
+  position: fixed;
+  top: 56px;
+  right: 12px;
+  z-index: 20000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Profile buttons visible */
+#profileSection .btn.secondary {
+  background: #fff;
+  color: #222;
+  border: 1px solid #ddd;
+}
+
+/* Modal overlay sits above blur */
+#modalOverlay { z-index: 1999; }
+
 
   </style>
 </head>
   <div id="modalOverlay"></div>
 
 <body>
+  
+  <!-- Background blur layer (only shows when browsing items) -->
+<div id="bgBlur"></div>
+
   <div id="shippingNotice" style="
     background: #ffcc00;
     color: #222;
@@ -210,7 +244,11 @@
       <div style="margin-top:8px">
         <button id="checkoutBtn" class="btn" style="width:100%">Checkout (Pay in Base)</button>
       </div>
-      <div style="margin-top:8px;font-size:12px;color:#666;text-align:center">Network: Base Mainnet (8453)</div>
+      <div style="margin-top:8px;font-size:12px;color:#666;text-align:center">
+  Network: Base Mainnet <br>
+  <strong style="color:#c0392b;">Shipping only available in the US and Canada</strong>
+</div>
+
     </div>
   </div>
 
@@ -296,15 +334,30 @@ function showToast(message, type="info", duration=3000){
 }
 
 /* ===== RENDER ITEMS ===== */
-function showCategory(cat){
+function showCategory(cat)function showCategory(cat) {
   currentCategory = cat;
   const container = document.getElementById("items");
-  container.innerHTML = "";
+  const bgBlur = document.getElementById("bgBlur");
+
   const items = PRODUCTS[cat] || [];
-  if(items.length === 0){
+
+  // toggle blur only when items exist
+  if (items.length > 0) {
+    bgBlur.style.display = "block";
+  } else {
+    bgBlur.style.display = "none";
+  }
+
+  container.innerHTML = "";
+  if (items.length === 0) {
     container.innerHTML = `<div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:var(--shadow);">No items yet in ${cat}.</div>`;
     return;
   }
+
+  // (keep the rest of your function that renders items)
+}
+document.getElementById('bgBlur').style.display = 'none';
+
   items.forEach(p=>{
     const el = document.createElement("div");
     el.className = "item";
