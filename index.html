@@ -367,32 +367,45 @@ function showToast(message, type="info", duration=3000){
   setTimeout(()=>el.remove(), duration);
 }
 
-/* ===== RENDER ITEMS ===== */
+/* ===== RENDER ITEMS (works with pre-rendered grids OR dynamic PRODUCTS) ===== */
 function showCategory(cat) {
   currentCategory = cat;
-  const items = document.querySelectorAll('.item-grid');
-  items.forEach(i => i.style.display = 'none');
 
-  const selected = document.getElementById(cat + '-grid');
-  if (selected) {
-    selected.style.display = 'grid';
-    document.body.classList.add("blur-bg"); // keep blur ON while viewing
-  } else {
-    document.body.classList.remove("blur-bg"); // only remove blur if none selected
+  // 1) Prefer pre-rendered grids if present (ids like "tees-grid", "plushies-grid", etc.)
+  const allGrids = document.querySelectorAll('.item-grid');
+  if (allGrids && allGrids.length > 0) {
+    // hide all
+    allGrids.forEach(g => g.style.display = 'none');
+
+    const selected = document.getElementById(cat + '-grid');
+    if (selected) {
+      selected.style.display = 'grid';
+      document.body.classList.add('blur-bg'); // keep blur while viewing
+    } else {
+      document.body.classList.remove('blur-bg');
+    }
+    return; // done — don't fall back to dynamic rendering
   }
-}
 
+  // 2) Fallback: render dynamically from PRODUCTS (if no pre-rendered grids found)
+  const container = document.getElementById('items');
+  const items = PRODUCTS[cat] || [];
 
+  if (items.length > 0) {
+    document.body.classList.add('blur-bg');
+  } else {
+    document.body.classList.remove('blur-bg');
+  }
 
-  container.innerHTML = "";
+  container.innerHTML = '';
   if (items.length === 0) {
     container.innerHTML = `<div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:var(--shadow);">No items yet in ${cat}.</div>`;
     return;
   }
 
   items.forEach(p => {
-    const el = document.createElement("div");
-    el.className = "item";
+    const el = document.createElement('div');
+    el.className = 'item';
     const imgId = `img_${p.id}`;
     const colorId = `color_${p.id}`;
     const sizeId = `size_${p.id}`;
@@ -403,14 +416,14 @@ function showCategory(cat) {
       <div class="price">${p.price.toFixed(4)} ETH</div>
       <label style="display:block;text-align:left;font-weight:600">Color</label>
       <select id="${colorId}">
-        ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join("")}
+        ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
       </select>
       <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
         <label style="font-weight:600">Size</label>
-        <button class="btn size-guide-btn" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
+        <button class="btn size-guide-btn" style="margin-left:8px;padding:6px 8px;font-size:12px" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
       </div>
       <select id="${sizeId}" style="margin-top:6px">
-        ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join("")}
+        ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
       </select>
       <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
         <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
@@ -418,9 +431,9 @@ function showCategory(cat) {
     `;
     container.appendChild(el);
 
-    // Update image on color change
+    // wire color change to swap image
     const colorSelect = el.querySelector(`#${colorId}`);
-    colorSelect.addEventListener("change", (e) => {
+    colorSelect.addEventListener('change', (e) => {
       el.querySelector(`#${imgId}`).src = p.images[e.target.value];
     });
   });
