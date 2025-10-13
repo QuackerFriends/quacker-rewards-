@@ -153,7 +153,7 @@ footer { position: relative; z-index: 1100; padding: 10px 0; font-size: 14px; }
 
   </style>
 </head>
-  <div id="modalOverlay"></div>
+
 
 <body>
   
@@ -171,6 +171,8 @@ footer { position: relative; z-index: 1100; padding: 10px 0; font-size: 14px; }
   ⚠️ Note: Shipping is only available in the US and Canada.
 </div>
   <header>
+    <div id="modalOverlay"></div>
+
     <h1> Quacker Friends Shop</h1>
     <div style="display:flex;gap:10px;align-items:center">
     <div class="shop-controls" style="position:relative">
@@ -333,12 +335,8 @@ function showCategory(cat) {
 
   const items = PRODUCTS[cat] || [];
 
-  // toggle blur only when items exist
-  if (items.length > 0) {
-    bgBlur.style.display = "block";
-  } else {
-    bgBlur.style.display = "none";
-  }
+  // Toggle blur only when viewing category items
+  bgBlur.style.display = items.length > 0 ? "block" : "none";
 
   container.innerHTML = "";
   if (items.length === 0) {
@@ -346,11 +344,7 @@ function showCategory(cat) {
     return;
   }
 
-  // (keep the rest of your function that renders items)
-}
-document.getElementById('bgBlur').style.display = 'none';
-
-  items.forEach(p=>{
+  items.forEach(p => {
     const el = document.createElement("div");
     el.className = "item";
     const imgId = `img_${p.id}`;
@@ -366,13 +360,11 @@ document.getElementById('bgBlur').style.display = 'none';
         ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join("")}
       </select>
       <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
-  <label style="font-weight:600">Size</label>
-
-
-  <button class="btn size-guide-btn" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
-</div>
+        <label style="font-weight:600">Size</label>
+        <button class="btn size-guide-btn" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
+      </div>
       <select id="${sizeId}" style="margin-top:6px">
-        ${p.sizes.map(s=>`<option value="${s}">${s}</option>`).join("")}
+        ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join("")}
       </select>
       <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
         <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
@@ -380,13 +372,14 @@ document.getElementById('bgBlur').style.display = 'none';
     `;
     container.appendChild(el);
 
-    // handle color change
+    // Update image on color change
     const colorSelect = el.querySelector(`#${colorId}`);
-    colorSelect.addEventListener("change",(e)=>{
+    colorSelect.addEventListener("change", (e) => {
       el.querySelector(`#${imgId}`).src = p.images[e.target.value];
     });
   });
 }
+
 
   function openItemModal(id) {
   document.getElementById('modalOverlay').style.display = 'block';
