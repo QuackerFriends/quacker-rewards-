@@ -368,16 +368,18 @@ function showToast(message, type="info", duration=3000){
 /* ===== RENDER ITEMS ===== */
 function showCategory(cat) {
   currentCategory = cat;
-  const container = document.getElementById("items");
-  const bgBlur = document.getElementById("bgBlur");
+  const items = document.querySelectorAll('.item-grid');
+  items.forEach(i => i.style.display = 'none');
 
-  const items = PRODUCTS[cat] || [];
-
- if (items.length > 0) {
-  document.body.classList.add("blur-bg");
-} else {
-  document.body.classList.remove("blur-bg");
+  const selected = document.getElementById(cat + '-grid');
+  if (selected) {
+    selected.style.display = 'grid';
+    document.body.classList.add("blur-bg"); // keep blur ON while viewing
+  } else {
+    document.body.classList.remove("blur-bg"); // only remove blur if none selected
+  }
 }
+
 
 
   container.innerHTML = "";
