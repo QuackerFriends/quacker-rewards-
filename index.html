@@ -24,14 +24,6 @@
   padding: 20px;
 }
 
-/* background overlay behind modal */
-#modalOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5); /* dim effect */
-  z-index: 1999;
-  display: none;
-}
 
     :root{
       --brand-orange:#ff914d;
@@ -334,7 +326,7 @@ function showToast(message, type="info", duration=3000){
 }
 
 /* ===== RENDER ITEMS ===== */
-function showCategory(cat)function showCategory(cat) {
+function showCategory(cat) {
   currentCategory = cat;
   const container = document.getElementById("items");
   const bgBlur = document.getElementById("bgBlur");
@@ -685,7 +677,6 @@ function closeItemModal() {
 
 
 </script>
-  <div id="modalOverlay"></div>
 
 </body>
 </html>
