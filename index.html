@@ -655,8 +655,10 @@ menuBtn.addEventListener('click', () => {
 document.addEventListener('click', (e) => {
   if (!menuBtn.contains(e.target) && !shopMenu.contains(e.target)) {
     shopMenu.style.display = "none";
+    document.getElementById("bgBlur").style.display = "none";
   }
 });
+
 
   function openItemModal(id) {
   document.getElementById('modalOverlay').style.display = 'block';
