@@ -118,7 +118,7 @@
   display: none;
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 0; /* sits behind everything else */
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   background: rgba(0, 0, 0, 0.18);
@@ -140,6 +140,7 @@ footer { position: relative; z-index: 1100; padding: 10px 0; font-size: 14px; }
   gap: 8px;
 }
 
+
 /* Profile buttons visible */
 #profileSection .btn.secondary {
   background: #fff;
@@ -149,6 +150,13 @@ footer { position: relative; z-index: 1100; padding: 10px 0; font-size: 14px; }
 
 /* Modal overlay sits above blur */
 #modalOverlay { z-index: 1999; }
+    
+#profileSection {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  z-index: 3000; /* higher than header */
+}
 
 
   </style>
@@ -228,6 +236,9 @@ footer { position: relative; z-index: 1100; padding: 10px 0; font-size: 14px; }
   <div id="cartModal" class="cart-modal" aria-hidden="true">
     <button class="close-x" title="Close cart" onclick="closeCart()">✕</button>
     <h3>Your Cart</h3>
+    <div style="font-size:13px;color:#c0392b;margin-bottom:8px;">
+  Shipping only available in the US and Canada
+</div>
     <div class="cart-list" id="cartList"></div>
 
     <div>
