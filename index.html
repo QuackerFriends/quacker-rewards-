@@ -113,17 +113,8 @@
 
 
     @media(max-width:520px){#profileSection{right:12px;left:12px;width:auto}.cart-modal{width:100%}}
-    /* Background blur for items */
-#bgBlur {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 0; /* sits behind everything else */
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  background: rgba(0, 0, 0, 0.18);
-  pointer-events: none;
-}
+  
+
 
 /* Ensure header/footer stay crisp above blur */
 header { position: relative; z-index: 1100; }
@@ -157,6 +148,25 @@ footer { position: relative; z-index: 1100; padding: 10px 0; font-size: 14px; }
   right: 20px;
   z-index: 3000; /* higher than header */
 }
+    /* Background blur effect only on the body background image */
+body {
+  background: url('https://files.catbox.moe/n3gp1o.png') no-repeat center center fixed;
+  background-size: cover;
+  transition: filter 0.3s ease;
+}
+
+/* When browsing items, blur only the body background image */
+body.blur-bg {
+  filter: blur(6px) brightness(0.8);
+}
+
+/* Keep header/footer above the blurred background */
+header, footer {
+  position: relative;
+  z-index: 10;
+  backdrop-filter: none;
+}
+
 
 
   </style>
@@ -251,7 +261,7 @@ footer { position: relative; z-index: 1100; padding: 10px 0; font-size: 14px; }
       </div>
       <div style="margin-top:8px;font-size:12px;color:#666;text-align:center">
   Network: Base Mainnet <br>
-  <strong style="color:#c0392b;">Shipping only available in the US and Canada</strong>
+
 </div>
 
     </div>
@@ -346,8 +356,12 @@ function showCategory(cat) {
 
   const items = PRODUCTS[cat] || [];
 
-  // Toggle blur only when viewing category items
-  bgBlur.style.display = items.length > 0 ? "block" : "none";
+ if (items.length > 0) {
+  document.body.classList.add("blur-bg");
+} else {
+  document.body.classList.remove("blur-bg");
+}
+
 
   container.innerHTML = "";
   if (items.length === 0) {
@@ -666,6 +680,8 @@ menuBtn.addEventListener('click', () => {
 document.addEventListener('click', (e) => {
   if (!menuBtn.contains(e.target) && !shopMenu.contains(e.target)) {
     shopMenu.style.display = "none";
+    document.body.classList.remove("blur-bg");
+
     document.getElementById("bgBlur").style.display = "none";
   }
 });
