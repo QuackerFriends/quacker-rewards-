@@ -303,6 +303,10 @@ header, footer {
 
    
     <section id="items" class="shop-container"></section>
+    <div style="text-align:center; margin-top:20px;">
+  <button class="btn secondary" onclick="clearBlur()">Close Items</button>
+</div>
+
   </main>
 
   <!-- Cart Modal -->
@@ -820,11 +824,14 @@ menuBtn.addEventListener('click', () => {
 document.addEventListener('click', (e) => {
   if (!menuBtn.contains(e.target) && !shopMenu.contains(e.target)) {
     shopMenu.style.display = "none";
-    document.body.classList.remove("blur-bg");
-
-    document.getElementById("bgBlur").style.display = "none";
   }
 });
+
+// Keep background blurred until user manually clears it
+function clearBlur() {
+  document.body.classList.remove("blur-bg");
+}
+
 
 
   function openItemModal(id) {
