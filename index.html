@@ -217,6 +217,20 @@ header, footer {
   backdrop-filter: none;
 }
 
+    #modalOverlay {
+  display: none; /* hidden by default */
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1999;
+  pointer-events: none; /* allow clicks through unless active */
+}
+#modalOverlay.active {
+  display: block;
+  pointer-events: auto; /* only block clicks when we actually want it */
+}
+
+
 
 
   </style>
@@ -533,12 +547,12 @@ function prevImage(id) {
 
   
   function openItemModal(id) {
-  document.getElementById('modalOverlay').style.display = 'block';
+  document.getElementById('modalOverlay').classList.add('active');
   document.getElementById('itemModal').style.display = 'block';
 }
 
 function closeItemModal() {
-  document.getElementById('modalOverlay').style.display = 'none';
+  document.getElementById('modalOverlay').classList.remove('active');
   document.getElementById('itemModal').style.display = 'none';
 }
 
@@ -814,12 +828,12 @@ document.addEventListener('click', (e) => {
 
 
   function openItemModal(id) {
-  document.getElementById('modalOverlay').style.display = 'block';
+  document.getElementById('modalOverlay').classList.add('active');
   document.getElementById('itemModal').style.display = 'block';
 }
 
 function closeItemModal() {
-  document.getElementById('modalOverlay').style.display = 'none';
+  document.getElementById('modalOverlay').classList.remove('active');
   document.getElementById('itemModal').style.display = 'none';
 }
 
