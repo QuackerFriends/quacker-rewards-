@@ -12,6 +12,36 @@
 
   <style>
 
+    .slide-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.4);
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.slide-btn.prev { left: 8px; }
+.slide-btn.next { right: 8px; }
+
+
+    .image-wrapper {
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.image-wrapper img {
+  transition: transform 0.4s ease;
+}
+
+.image-wrapper:hover img {
+  transform: scale(1.15);
+}
+
+
     #itemModal {
   position: fixed;
   top: 50%;
@@ -348,7 +378,43 @@ const PRODUCTS = {
     }
   ],
   plushies: [],
-  tapestry: []
+   tapestry: [
+  {
+    id: "alucard",
+    title: "Alucard Tapestry",
+    price: 0.0,
+     images: {
+      1: "https://files.catbox.moe/mhfu3w.png",
+      2: "https://files.catbox.moe/ynmqnw.png"
+    }
+  },
+  {
+    id: "sam",
+    title: "Sam Tapestry",
+    price: 0.0,
+    images: {
+      Default: "https://files.catbox.moe/yd9d3t.png"
+    }
+  },
+  {
+    id: "tipu",
+    title: "TIPU Tapestry",
+    price: 0.0,
+    images: {
+      Default: "https://files.catbox.moe/8s9x67.png"
+    }
+  },
+  {
+    id: "yumeko",
+    title: "Yumeko Tapestry",
+    price: 0.0,
+    images: {
+      Default: "https://files.catbox.moe/jjmlg1.png"
+    }
+  }
+],
+
+};
 };
 
 /* ===== STATE ===== */
@@ -411,24 +477,33 @@ function showCategory(cat) {
     const sizeId = `size_${p.id}`;
 
     el.innerHTML = `
-      <img id="${imgId}" src="${p.images.Black}" alt="${p.title}" />
-      <h3>${p.title}</h3>
-      <div class="price">${p.price.toFixed(4)} ETH</div>
-      <label style="display:block;text-align:left;font-weight:600">Color</label>
-      <select id="${colorId}">
-        ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
-      </select>
-      <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
-        <label style="font-weight:600">Size</label>
-        <button class="btn size-guide-btn" style="margin-left:8px;padding:6px 8px;font-size:12px" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
-      </div>
-      <select id="${sizeId}" style="margin-top:6px">
-        ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-      </select>
-      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
-        <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
-      </div>
-    `;
+  <div class="image-wrapper">
+     <img id="${imgId}" src="${Object.values(p.images)[0]}" alt="${p.title}" />
+    ${Object.keys(p.images).length > 1 ? `
+      <button class="slide-btn prev" onclick="prevImage('${p.id}')">‹</button>
+      <button class="slide-btn next" onclick="nextImage('${p.id}')">›</button>
+    ` : ""}
+  </div>
+  <h3>${p.title}</h3>
+  <div class="price">${p.price.toFixed(4)} ETH</div>
+  ${cat === "tees" ? `
+    <label style="display:block;text-align:left;font-weight:600">Color</label>
+    <select id="${colorId}">
+      ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join("")}
+    </select>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+      <label style="font-weight:600">Size</label>
+      <button class="btn size-guide-btn" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
+    </div>
+    <select id="${sizeId}" style="margin-top:6px">
+      ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join("")}
+    </select>
+  ` : ""}
+  <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+    <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
+  </div>
+`;
+
     container.appendChild(el);
 
     // wire color change to swap image
@@ -439,7 +514,24 @@ function showCategory(cat) {
   });
 }
 
+function nextImage(id) {
+  const img = document.querySelector(`#img_${id}`);
+  const product = Object.values(PRODUCTS).flat().find(p => p.id === id);
+  const urls = Object.values(product.images);
+  const current = urls.indexOf(img.src);
+  img.src = urls[(current + 1) % urls.length];
+}
 
+function prevImage(id) {
+  const img = document.querySelector(`#img_${id}`);
+  const product = Object.values(PRODUCTS).flat().find(p => p.id === id);
+  const urls = Object.values(product.images);
+  const current = urls.indexOf(img.src);
+  img.src = urls[(current - 1 + urls.length) % urls.length];
+}
+
+
+  
   function openItemModal(id) {
   document.getElementById('modalOverlay').style.display = 'block';
   document.getElementById('itemModal').style.display = 'block';
