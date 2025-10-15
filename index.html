@@ -37,21 +37,26 @@
     .shop-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
     .item{background:var(--card);padding:16px;border-radius:14px;box-shadow:var(--shadow);text-align:center;position:relative}
     .item img{width:100%;height:220px;object-fit:contain;border-radius:8px;background:#f6f6f6}
-    /* --- Hover Zoom Effect for Product Images --- */
-.item {
-  overflow: hidden;                /* hide image edges when zoomed */
+    
+   .item {
+  overflow: hidden;
+  transition: transform 0.25s ease;
+}
+
+.item:hover {
+  transform: translateY(-4px);
 }
 
 .item img {
-  transition: transform 0.35s ease, filter 0.3s ease;
-  transform-origin: center center; /* zoom from center */
+  transition: transform 0.4s ease, filter 0.3s ease;
 }
 
 .item:hover img {
-  transform: scale(1.12);          /* how much to zoom (1.1–1.2 looks good) */
-  filter: brightness(1.05);
+  transform: scale(1.15);
+  filter: brightness(1.1);
   cursor: zoom-in;
 }
+
 
     .item h3{margin:10px 0 6px;font-size:16px}
     .price{font-weight:700;color:var(--brand-orange-dark);margin-bottom:8px}
