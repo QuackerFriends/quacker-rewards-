@@ -49,9 +49,69 @@
     .carousel .prev-btn{ left:8px } .carousel .next-btn{ right:8px }
     .carousel button:hover{ background:var(--brand-orange); color:#fff }
 
-    /* modals & overlay */
-    #modalOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1800; pointer-events:none; }
-    #modalOverlay.active { display:block; pointer-events:auto; }
+    /* --- GLOBAL Z-INDEX & CLICK FIX --- */
+
+/* Overlay must never block anything unless active */
+#modalOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1800;
+  pointer-events: none !important;
+}
+
+#modalOverlay.active {
+  display: block;
+  pointer-events: auto !important;
+}
+
+/* Header & navigation always clickable */
+header, .nav-container, .nav-actions, .nav-actions button {
+  position: relative;
+  z-index: 3000;
+  pointer-events: auto !important;
+}
+
+/* Profile dropdown just below header */
+#profileSection {
+  position: fixed;
+  top: 72px;               /* sits just below the header */
+  right: 20px;
+  z-index: 3100;
+  background: #1c1c1c;
+  color: #eee;
+  padding: 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  min-width: 180px;
+}
+
+/* Buttons in profile dropdown visible */
+#profileSection button {
+  width: 100%;
+  background: #2a2a2a;
+  color: #eee;
+  border: none;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+#profileSection button:hover {
+  background: #ff6600;
+  color: #fff;
+}
+
+/* Shop dropdown, modals, and toasts also stay clickable */
+#shopMenu,
+.cart-modal,
+.sizeguide-modal,
+#toastContainer {
+  pointer-events: auto !important;
+}
+
 
     .sizeguide-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:3000;background:rgba(0,0,0,0.5)}
     .sizeguide-modal.open{display:flex}
@@ -115,7 +175,7 @@
 </head>
 <body>
   <!-- overlay sits directly under header/above content; pointer-events controlled by .active -->
-  <div id="modalOverlay"></div>
+  <div id="tees"></div>
 
   <div id="shippingNotice" style="background:#ffcc00;color:#222;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">
     ⚠️ Note: Shipping is only available in the US and Canada.
@@ -211,6 +271,49 @@ const PRODUCTS = {
     { id: "thisisfine", title: "This Is Fine Tee", price: 0, images:{ Black: "https://files.catbox.moe/nbl7st.png", White: "https://files.catbox.moe/5n618u.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://files.catbox.moe/41dvss.png" }
   ],
   plushies: [],
+  tapestry: [
+  {
+    id: "all_characters_tapestry",
+    title: "All Characters Tapestry",
+    price: 0.03,
+    images: [
+      "https://files.catbox.moe/fvvfv3.png"
+    ]
+  },
+  {
+    id: "alucard_tapestry",
+    title: "Alucard Tapestry",
+    price: 0.03,
+    images: [
+      "https://files.catbox.moe/mhfu3w.png"
+    ]
+  },
+  {
+    id: "sam_tapestry",
+    title: "Sam Tapestry",
+    price: 0.03,
+    images: [
+      "https://files.catbox.moe/yd9d3t.png"
+    ]
+  },
+  {
+    id: "tipu_tapestry",
+    title: "Tipu Tapestry",
+    price: 0.03,
+    images: [
+      "https://files.catbox.moe/8s9x67.png"
+    ]
+  },
+  {
+    id: "yumeko_tapestry",
+    title: "Yumeko Tapestry",
+    price: 0.03,
+    images: [
+      "https://files.catbox.moe/jjmlg1.png"
+    ]
+  }
+]
+
   
 
 };
@@ -325,8 +428,8 @@ function showCategory(cat) {
 }
 
 /* ===== OPEN/CLOSE common modals & overlay helpers ===== */
-function showOverlay(){ const ov = document.getElementById('modalOverlay'); ov.classList.add('active'); ov.style.display='block'; }
-function hideOverlay(){ const ov = document.getElementById('modalOverlay'); ov.classList.remove('active'); ov.style.display='none'; }
+function showOverlay(){ const ov = document.getElementById('tees'); ov.classList.add('active'); ov.style.display='block'; }
+function hideOverlay(){ const ov = document.getElementById('tees'); ov.classList.remove('active'); ov.style.display='none'; }
 
 // Size guide
 function openSizeGuide(url){
