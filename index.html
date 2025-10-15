@@ -87,6 +87,48 @@
     .shop-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
     .item{background:var(--card);padding:16px;border-radius:14px;box-shadow:var(--shadow);text-align:center}
     .item img{width:100%;height:220px;object-fit:contain;border-radius:8px;background:#f6f6f6}
+    .carousel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.carousel img {
+  width: 100%;
+  height: 220px;
+  object-fit: contain;
+  background: #f6f6f6;
+  display: none;
+  transition: opacity 0.3s;
+}
+
+.carousel img.active {
+  display: block;
+}
+
+.carousel button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.8);
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+.carousel .prev-btn { left: 10px; }
+.carousel .next-btn { right: 10px; }
+
+.carousel button:hover {
+  background: var(--brand-orange);
+  color: white;
+}
+
     .item h3{margin:10px 0 6px;font-size:16px}
     .price{font-weight:700;color:var(--brand-orange-dark);margin-bottom:8px}
     select{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-bottom:8px}
@@ -348,8 +390,28 @@ const PRODUCTS = {
     }
   ],
   plushies: [],
-  tapestry: []
-};
+tapestry: [
+  {
+    id: "forest_tapestry",
+    title: "Forest Duck Tapestry",
+    price: 0.03,
+    images: [
+      "https://files.catbox.moe/abcd1.png",
+      "https://files.catbox.moe/abcd2.png",
+      "https://files.catbox.moe/abcd3.png"
+    ]
+  },
+  {
+    id: "cosmic_tapestry",
+    title: "Cosmic Duck Tapestry",
+    price: 0.025,
+    images: [
+      "https://files.catbox.moe/cosmic1.png",
+      "https://files.catbox.moe/cosmic2.png",
+      "https://files.catbox.moe/cosmic3.png"
+    ]
+  }
+]
 
 /* ===== STATE ===== */
 let userAddress = null;
@@ -370,34 +432,10 @@ function showToast(message, type="info", duration=3000){
 /* ===== RENDER ITEMS (works with pre-rendered grids OR dynamic PRODUCTS) ===== */
 function showCategory(cat) {
   currentCategory = cat;
-
-  // 1) Prefer pre-rendered grids if present (ids like "tees-grid", "plushies-grid", etc.)
-  const allGrids = document.querySelectorAll('.item-grid');
-  if (allGrids && allGrids.length > 0) {
-    // hide all
-    allGrids.forEach(g => g.style.display = 'none');
-
-    const selected = document.getElementById(cat + '-grid');
-    if (selected) {
-      selected.style.display = 'grid';
-      document.body.classList.add('blur-bg'); // keep blur while viewing
-    } else {
-      document.body.classList.remove('blur-bg');
-    }
-    return; // done — don't fall back to dynamic rendering
-  }
-
-  // 2) Fallback: render dynamically from PRODUCTS (if no pre-rendered grids found)
   const container = document.getElementById('items');
   const items = PRODUCTS[cat] || [];
-
-  if (items.length > 0) {
-    document.body.classList.add('blur-bg');
-  } else {
-    document.body.classList.remove('blur-bg');
-  }
-
   container.innerHTML = '';
+
   if (items.length === 0) {
     container.innerHTML = `<div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:var(--shadow);">No items yet in ${cat}.</div>`;
     return;
@@ -406,38 +444,75 @@ function showCategory(cat) {
   items.forEach(p => {
     const el = document.createElement('div');
     el.className = 'item';
-    const imgId = `img_${p.id}`;
-    const colorId = `color_${p.id}`;
-    const sizeId = `size_${p.id}`;
 
-    el.innerHTML = `
-      <img id="${imgId}" src="${p.images.Black}" alt="${p.title}" />
-      <h3>${p.title}</h3>
-      <div class="price">${p.price.toFixed(4)} ETH</div>
-      <label style="display:block;text-align:left;font-weight:600">Color</label>
-      <select id="${colorId}">
-        ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
-      </select>
-      <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
-        <label style="font-weight:600">Size</label>
-        <button class="btn size-guide-btn" style="margin-left:8px;padding:6px 8px;font-size:12px" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
-      </div>
-      <select id="${sizeId}" style="margin-top:6px">
-        ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-      </select>
-      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
-        <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
-      </div>
-    `;
-    container.appendChild(el);
+    if (cat === "tapestry") {
+      // 🖼 Tapestry — use carousel
+      const carouselId = `carousel_${p.id}`;
+      el.innerHTML = `
+        <div class="carousel" id="${carouselId}">
+          <img src="${p.images[0]}" class="active" alt="${p.title}" />
+          <button class="prev-btn">‹</button>
+          <button class="next-btn">›</button>
+        </div>
+        <h3>${p.title}</h3>
+        <div class="price">${p.price.toFixed(4)} ETH</div>
+        <div style="margin-top:12px">
+          <button class="btn" onclick="addTapestryToCart('${p.id}')">Add to cart</button>
+        </div>
+      `;
+      container.appendChild(el);
 
-    // wire color change to swap image
-    const colorSelect = el.querySelector(`#${colorId}`);
-    colorSelect.addEventListener('change', (e) => {
-      el.querySelector(`#${imgId}`).src = p.images[e.target.value];
-    });
+      // carousel controls
+      const imgs = el.querySelectorAll('img');
+      let index = 0;
+      el.querySelector('.next-btn').addEventListener('click', () => {
+        imgs[index].classList.remove('active');
+        index = (index + 1) % p.images.length;
+        imgs[index].classList.add('active');
+        imgs[index].src = p.images[index];
+      });
+      el.querySelector('.prev-btn').addEventListener('click', () => {
+        imgs[index].classList.remove('active');
+        index = (index - 1 + p.images.length) % p.images.length;
+        imgs[index].classList.add('active');
+        imgs[index].src = p.images[index];
+      });
+    } 
+    else {
+      // 👕 Tees and other items (original logic)
+      const imgId = `img_${p.id}`;
+      const colorId = `color_${p.id}`;
+      const sizeId = `size_${p.id}`;
+      el.innerHTML = `
+        <img id="${imgId}" src="${p.images.Black}" alt="${p.title}" />
+        <h3>${p.title}</h3>
+        <div class="price">${p.price.toFixed(4)} ETH</div>
+        <label style="display:block;text-align:left;font-weight:600">Color</label>
+        <select id="${colorId}">
+          ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
+        </select>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+          <label style="font-weight:600">Size</label>
+          <button class="btn size-guide-btn" style="margin-left:8px;padding:6px 8px;font-size:12px" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
+        </div>
+        <select id="${sizeId}" style="margin-top:6px">
+          ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
+        </select>
+        <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+          <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
+        </div>
+      `;
+      container.appendChild(el);
+
+      // color swap
+      const colorSelect = el.querySelector(`#${colorId}`);
+      colorSelect.addEventListener('change', (e) => {
+        el.querySelector(`#${imgId}`).src = p.images[e.target.value];
+      });
+    }
   });
 }
+
 
 
   function openItemModal(id) {
@@ -462,6 +537,16 @@ function closeSizeGuide(){
   modal.classList.remove("open");
   modal.setAttribute("aria-hidden","true");
 }
+  
+  function addTapestryToCart(prodId) {
+  const product = (PRODUCTS.tapestry || []).find(p => p.id === prodId);
+  if (!product) { showToast("Product not found", "error"); return; }
+
+  cart.push({ id: product.id, title: product.title, price: product.price, color: "N/A", size: "N/A", q: 1 });
+  updateCartUI();
+  showToast(`${product.title} added to cart`, "success");
+}
+
 
 /* ===== CART ===== */
 function addToCart(prodId){
