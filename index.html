@@ -25,7 +25,8 @@
       margin:0;padding:0;color:#222;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;position:relative;
     }
     body::before{
-      content:"";position:fixed;inset:0;background:url('https://files.catbox.moe/n3gp1o.png') no-repeat center center fixed;background-size:cover;z-index:-1;transition:filter .4s;pointer-events:none;
+      content:"";position:fixed;inset:0;background:url('https://files.catbox.moe/n3gp1o.png') no-repeat center center fixed;background-size:cover;z-index:-1;transition:filter .4s;  pointer-events: none !important;
+;
     }
     body.blur-bg::before{filter:blur(6px) brightness(.7);}
 
@@ -263,6 +264,9 @@ header, .nav-container, .nav-actions, .nav-actions button {
       <button id="openCartBtn" class="btn" style="position:relative">Cart <span id="cartCount" class="cart-count" style="display:none">0</span></button>
     </div>
   </header>
+  
+  <div id="modalOverlay"></div>
+
 
   <div id="toast-container"></div>
 
