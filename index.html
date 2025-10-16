@@ -475,12 +475,15 @@ function showCategory(cat) {
       // single-image items (tees, keychains single image)
       const imgId = `img_${p.id}`;
       const sizeId = `size_${p.id}`;
-      const sizeSelectHtml = (p.sizes && p.sizes.length) ? `
-        <label style="display:block;text-align:left;font-weight:600">Size</label>
-        <select id="${sizeId}">
-          ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-        </select>
-      ` : '';
+      // Hide the size dropdown for Quackheads Keychain specifically
+const sizeSelectHtml =
+  (p.sizes && p.sizes.length && p.id !== "quackheads_keychain") ? `
+    <label style="display:block;text-align:left;font-weight:600">Size</label>
+    <select id="${sizeId}">
+      ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
+    </select>
+  ` : '';
+
 
       // For tees with color objects you might still have p.images as object; handle both
       const mainSrc = Array.isArray(p.images) ? (p.images[0]||'') : (p.images.Black || Object.values(p.images)[0]);
