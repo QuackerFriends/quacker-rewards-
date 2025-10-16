@@ -476,13 +476,16 @@ function showCategory(cat) {
       const imgId = `img_${p.id}`;
       const sizeId = `size_${p.id}`;
       // Hide the size dropdown for Quackheads Keychain specifically
-const sizeSelectHtml =
-  (p.sizes && p.sizes.length && p.id !== "quackheads_keychain") ? `
-    <label style="display:block;text-align:left;font-weight:600">Size</label>
-    <select id="${sizeId}">
-      ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-    </select>
-  ` : '';
+let labelText = "Size";
+if (p.id === "quackheads_keychain") labelText = "Color";
+
+const sizeSelectHtml = (p.sizes && p.sizes.length) ? `
+  <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
+  <select id="${sizeId}">
+    ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
+  </select>
+` : '';
+
 
 
       // For tees with color objects you might still have p.images as object; handle both
