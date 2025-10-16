@@ -373,13 +373,17 @@ const PRODUCTS = {
       price: 0.015,
       images: ["https://files.catbox.moe/vqnc8x.png"]
     },
-    {
-      id: "quackheads_keychain",
-      title: "Quackheads Keychain",
-      price: 0,
-      sizes: ["Green", "Mustard", "Pink"],
-      images: ["https://files.catbox.moe/gnm9n0.png"]
-    },
+   {
+  id: "quackheads_keychain",
+  title: "Quackheads Keychain",
+  price: 0,
+  images: {
+    Green: "https://files.catbox.moe/gnm9n0.png",
+    Mustard: "https://files.catbox.moe/gnm9n0.png",
+    Pink: "https://files.catbox.moe/gnm9n0.png"
+  }
+},
+
     {
       id: "sam_keychain",
       title: "Sam Keychain",
@@ -475,9 +479,7 @@ function showCategory(cat) {
       // single-image items (tees, keychains single image)
       const imgId = `img_${p.id}`;
       const sizeId = `size_${p.id}`;
-      // Hide the size dropdown for Quackheads Keychain specifically
-let labelText = "Size";
-if (p.id === "quackheads_keychain") labelText = "Color";
+     
 
 const sizeSelectHtml = (p.sizes && p.sizes.length) ? `
   <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
