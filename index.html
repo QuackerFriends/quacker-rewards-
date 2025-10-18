@@ -445,11 +445,7 @@ const PRODUCTS = {
      
      sizes: ["Green", "Mustard", "Pink"],
       images: ["https://files.catbox.moe/f8ybtj.png","https://files.catbox.moe/gnm9n0.png"] ,
-  images: {
-    Green: "https://files.catbox.moe/gnm9n0.png",
-    Mustard: "https://files.catbox.moe/gnm9n0.png",
-    Pink: "https://files.catbox.moe/gnm9n0.png"
-  }
+
 },
 
     {
@@ -548,16 +544,38 @@ function showCategory(cat) {
       const imgId = `img_${p.id}`;
       const sizeId = `size_${p.id}`;
       
-     // Hide the size dropdown for Quackheads Keychain specifically
+  // 🧩 Show Color + Top Accessory for Quackheads, or normal Size for others
 let labelText = "Size";
-if (p.id === "quackheads_keychain") labelText = "Top Accesory";
+if (p.id === "quackheads_keychain") labelText = "Top Accessory";
 
-const sizeSelectHtml = (p.sizes && p.sizes.length) ? `
-  <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
-  <select id="${sizeId}">
-    ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-  </select>
-` : '';
+let sizeSelectHtml = "";
+
+// For Quackheads → show color + top accessory
+if (p.id === "quackheads_keychain") {
+  const colors = ["Green", "Mustard", "Pink"];
+
+  sizeSelectHtml = `
+    <label style="display:block;text-align:left;font-weight:600">Color</label>
+    <select id="color_${p.id}" class="color-select">
+      ${colors.map(c => `<option value="${c}">${c}</option>`).join('')}
+    </select>
+
+    <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">${labelText}</label>
+    <select id="${sizeId}" class="size-select">
+      ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
+    </select>
+  `;
+}
+// For all other products → normal size dropdown
+else if (p.sizes && p.sizes.length) {
+  sizeSelectHtml = `
+    <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
+    <select id="${sizeId}" class="size-select">
+      ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
+    </select>
+  `;
+}
+
 
 
 
