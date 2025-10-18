@@ -1,318 +1,808 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your Shop</title>
-<style>
-:root { --brand-orange: #ff6600; }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quacker Friends Shop</title>
 
-body {
-  font-family: Arial, sans-serif;
-  background: #fafafa;
-  color: #333;
-  margin: 0;
-  padding: 20px;
-  text-align: center;
-}
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 
-h2 {
-  color: var(--brand-orange);
-}
+  <style>
+    :root{
+      --brand-orange:#ff914d;
+      --brand-orange-dark:#ff7b2c;
+      --brand-teal:#66c7c4;
+      --card:#ffffff;
+      --shadow:0 8px 20px rgba(12,12,20,0.06);
+      --radius:14px;
+      --maxWidth:1100px;
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family:'Poppins',sans-serif;
+      margin:0;padding:0;color:#222;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;position:relative;
+    }
+    body::before{
+      content:"";position:fixed;inset:0;background:url('https://files.catbox.moe/n3gp1o.png') no-repeat center center fixed;background-size:cover;z-index:-1;transition:filter .4s;pointer-events:none;
+    }
+    body.blur-bg::before{filter:blur(6px) brightness(.7);}
 
-.category-buttons {
-  margin-bottom: 20px;
-}
-
-.category-buttons button {
-  background: var(--brand-orange);
-  color: white;
-  border: none;
-  border-radius: 999px;
-  padding: 8px 16px;
-  margin: 4px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.category-buttons button:hover {
-  background: #e65c00;
-}
-
-.product-card {
-  background: white;
-  border-radius: 16px;
-  padding: 12px;
-  margin: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  width: 260px;
-  display: inline-block;
-  vertical-align: top;
-}
-
-.product-card img {
-  width: 100%;
-  border-radius: 12px;
-}
-
-.product-card label {
-  display: block;
-  text-align: left;
-  font-weight: 600;
-  margin-top: 6px;
-}
-
-select {
-  width: 100%;
-  padding: 6px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  margin-bottom: 8px;
-}
-
-button.add-btn {
-  background: var(--brand-orange);
-  color: white;
-  border: none;
-  border-radius: 999px;
-  padding: 8px 16px;
-  font-weight: 600;
-  cursor: pointer;
-  width: 100%;
-}
-
-button.add-btn:hover {
-  background: #e65c00;
-}
-
-/* Carousel styling */
-.carousel {
+    header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--brand-orange);color:white;box-shadow:0 6px 18px rgba(0,0,0,0.08);z-index:1500;position:relative}
+    header h1{margin:0;font-size:20px;display:flex;align-items:center;gap:10px}
+    .btn{padding:10px 16px;background:var(--brand-orange-dark);color:white;border:none;border-radius:999px;cursor:pointer;font-weight:600;transition:all .18s;display:inline-flex;gap:8px;align-items:center}
+    .btn.secondary{background:transparent;color:white;border:1px solid rgba(255,255,255,.25);padding:8px 12px;border-radius:10px}
+    main{flex:1;padding:30px 20px;max-width:var(--maxWidth);margin:0 auto 80px}
+    .shop-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
+    .item{background:var(--card);padding:16px;border-radius:14px;box-shadow:var(--shadow);text-align:center;position:relative}
+    .item img{width:100%;height:220px;object-fit:contain;border-radius:8px;background:#f6f6f6}
+    
+   /* --- Cursor-follow zoom (magnifier style) --- */
+.item {
   position: relative;
   overflow: hidden;
-  border-radius: 12px;
-  background: #f6f6f6;
 }
-.carousel img {
+
+.item img {
   width: 100%;
-  height: 220px;
-  object-fit: contain;
+  transition: transform 0.3s ease;
+  cursor: crosshair;
+  transform-origin: center center;
+}
+
+/* Optional: smooth reset when leaving */
+.item:hover img {
+  transform: scale(1.5); /* base zoom level */
+}
+
+
+    .item h3{margin:10px 0 6px;font-size:16px}
+    .price{font-weight:700;color:var(--brand-orange-dark);margin-bottom:8px}
+    select{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-bottom:8px}
+
+    /* carousel */
+    .carousel { position: relative; overflow: hidden; border-radius: 12px; background:#f6f6f6; }
+    .carousel img { width:100%; height:220px; object-fit:contain; display:none; transition:opacity .25s ease; }
+    .carousel img.active { display:block; }
+    .carousel button { position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.85); border:none; border-radius:999px; width:34px; height:34px; cursor:pointer; font-size:18px; color:#333; display:flex; align-items:center; justify-content:center; }
+    .carousel .prev-btn{ left:8px } .carousel .next-btn{ right:8px }
+    .carousel button:hover{ background:var(--brand-orange); color:#fff }
+
+    /* --- GLOBAL Z-INDEX & CLICK FIX --- */
+
+/* Overlay must never block anything unless active */
+#modalOverlay {
   display: none;
-  transition: opacity .25s ease;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1800;
+  pointer-events: none !important;
 }
-.carousel img.active {
+
+#modalOverlay.active {
   display: block;
+  pointer-events: auto !important;
 }
-.carousel button {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255,255,255,0.85);
+
+/* Header & navigation always clickable */
+header, .nav-container, .nav-actions, .nav-actions button {
+  position: relative;
+  z-index: 3000;
+  pointer-events: auto !important;
+}
+
+/* Profile dropdown just below header */
+#profileSection {
+  position: fixed;
+  top: 72px;               /* sits just below the header */
+  right: 20px;
+  z-index: 3100;
+  background: #1c1c1c;
+  color: #eee;
+  padding: 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  min-width: 180px;
+}
+
+/* Buttons in profile dropdown visible */
+#profileSection button {
+  width: 100%;
+  background: #2a2a2a;
+  color: #eee;
   border: none;
-  border-radius: 999px;
-  width: 34px;
-  height: 34px;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.6rem;
   cursor: pointer;
-  font-size: 18px;
-  color: #333;
+  margin-top: 6px;
+  transition: background 0.2s, color 0.2s;
 }
-.carousel .prev-btn { left: 8px; }
-.carousel .next-btn { right: 8px; }
-.carousel button:hover {
-  background: var(--brand-orange);
-  color: white;
+#profileSection button:hover {
+  background: #ff6600;
+  color: #fff;
 }
-</style>
+
+/* Shop dropdown, modals, and toasts also stay clickable */
+#shopMenu,
+.cart-modal,
+.sizeguide-modal,
+#toastContainer {
+  pointer-events: auto !important;
+}
+
+
+    .sizeguide-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:3000;background:rgba(0,0,0,0.5)}
+    .sizeguide-modal.open{display:flex}
+    .sizeguide-modal .card{background:#fff;padding:12px;border-radius:12px;max-width:720px;width:92%;position:relative}
+    .sizeguide-modal img{max-width:100%;height:auto;display:block;border-radius:8px}
+    .sizeguide-modal .close-btn{position:absolute;right:12px;top:12px;background:transparent;border:none;font-size:20px;cursor:pointer}
+
+    .cart-modal{position:fixed;right:0;top:0;height:100vh;width:420px;background:var(--card);box-shadow:-12px 0 40px rgba(0,0,0,0.12);transform:translateX(110%);transition:transform .28s ease;z-index:2500;padding:18px;display:flex;flex-direction:column}
+    .cart-modal.open{transform:translateX(0)}
+    .cart-modal .close-x{position:absolute;right:12px;top:8px;background:transparent;border:none;font-size:20px;cursor:pointer}
+    .cart-list{flex:1;overflow:auto;margin-bottom:12px}
+    .cart-item{display:flex;gap:12px;align-items:center;padding:10px;border-bottom:1px solid #f1f1f1}
+    .cart-item img{width:64px;height:64px;object-fit:contain;border-radius:6px;background:#f6f6f6}
+
+   /* PROFILE DROPDOWN */
+#profileSection {
+  display: none;
+  position: fixed;
+  top: 100px; /* moved down a bit below header */
+  right: 20px;
+  background: #1c1c1c;
+  color: #ddd; /* readable text */
+  padding: 1rem;
+  border-radius: 1rem;
+  z-index: 2600;
+  min-width: 180px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+#profileSection button {
+  width: 100%;
+  background: #2a2a2a;
+  color: #eee; /* <-- fix text color */
+  border: none;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+
+#profileSection button:hover {
+  background: #ff6600;
+  color: #fff;
+}
+
+    #toast-container{position:fixed;top:110px;right:12px;z-index:4000;display:flex;flex-direction:column;gap:8px}
+    .toast{padding:8px 12px;border-radius:8px;color:#fff;display:flex;gap:8px;align-items:center}
+    .toast.info{background:#2563eb}.toast.success{background:#059669}.toast.error{background:#ef4444}
+
+    /* dropdown */
+    #shopMenu{display:none;position:absolute;top:100%;left:0;background:var(--card);border-radius:12px;box-shadow:var(--shadow);flex-direction:column;min-width:160px;z-index:2000}
+    .dropdown-item{padding:10px 16px;border:none;background:transparent;text-align:left;cursor:pointer;font-weight:600;transition:background .15s;color:#222;border-radius:8px}
+    .dropdown-item:hover{background:var(--brand-orange);color:#fff}
+
+    footer{background:var(--brand-teal);padding:10px 0;text-align:center;color:#fff;margin-top:auto;position:relative;z-index:1000}
+    footer a{margin:0 10px;color:#fff}
+
+    @media(max-width:520px){#profileSection{right:12px;left:12px;width:auto}.cart-modal{width:100%}}
+  </style>
 </head>
 <body>
+  <!-- overlay sits directly under header/above content; pointer-events controlled by .active -->
+  <div id="tees"></div>
 
-<h2>🛍️ Welcome to the Shop</h2>
-<div class="category-buttons">
-  <button onclick="showCategory('tapestry')">Tapestries</button>
-  <button onclick="showCategory('tees')">Tees</button>
-  <button onclick="showCategory('keychains')">Keychains</button>
-</div>
+  <div id="shippingNotice" style="background:#ffcc00;color:#222;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">
+    ⚠️ Note: Shipping is only available in the US and Canada.
+  </div>
 
-<div id="shop"></div>
+  <header>
+    <h1>Quacker Friends Shop</h1>
+    <div style="display:flex;gap:10px;align-items:center">
+      <div class="shop-controls" style="position:relative">
+        <button class="btn secondary" id="menuBtn">Shop ▾</button>
+        <div id="shopMenu">
+          <button class="dropdown-item" onclick="showCategory('tees')">Tees</button>
+          <button class="dropdown-item" onclick="showCategory('plushies')">Plushies</button>
+          <button class="dropdown-item" onclick="showCategory('tapestry')">Tapestry</button>
+          <button class="dropdown-item" onclick="showCategory('keychains')">Keychains</button>
+
+        </div>
+      </div>
+
+      <button id="connectBtn" class="btn">Connect Wallet</button>
+      <button id="profileBtn" class="btn secondary" style="display:none">Profile</button>
+      <button id="openCartBtn" class="btn" style="position:relative">Cart <span id="cartCount" class="cart-count" style="display:none">0</span></button>
+    </div>
+  </header>
+
+  <div id="toast-container"></div>
+
+  <!-- Profile Panel -->
+  <div id="profileSection" aria-hidden="true">
+    <h3>User Profile</h3>
+    <p id="walletAddr" style="font-size:13px;color:#333">Not connected</p>
+    <p id="nftCount">NFTs Owned: ...</p>
+    <p id="quacksCount">Daily Quacks: 0</p>
+    <div style="margin-top:10px">
+      <button id="claimQuacksBtn" class="btn">🦆 Collect Daily Quacks</button>
+    </div>
+    <hr>
+    <button class="btn secondary" onclick="switchWallet()">🔄 Switch Wallet</button>
+    <button class="btn secondary" onclick="disconnectWallet()">❌ Disconnect</button>
+  </div>
+
+  <main style="max-width:var(--maxWidth);margin:20px auto;padding:0 16px;width:100%">
+    <section id="items" class="shop-container"></section>
+  </main>
+
+  <!-- Cart Modal -->
+  <div id="cartModal" class="cart-modal" aria-hidden="true">
+    <button class="close-x" title="Close cart" onclick="closeCart()">✕</button>
+    <h3>Your Cart</h3>
+    <div style="font-size:13px;color:#c0392b;margin-bottom:8px;">Shipping only available in the US and Canada</div>
+    <div class="cart-list" id="cartList"></div>
+
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong>Total</strong>
+        <strong id="cartTotal">0 ETH</strong>
+      </div>
+      <div style="margin-top:8px">
+        <button id="checkoutBtn" class="btn" style="width:100%">Checkout (Pay in Base)</button>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:#666;text-align:center">Network: Base Mainnet</div>
+    </div>
+  </div>
+
+  <!-- Size guide modal -->
+  <div id="sizeGuideModal" class="sizeguide-modal" aria-hidden="true">
+    <div class="card">
+      <button class="close-btn" onclick="closeSizeGuide()">✕</button>
+      <img id="sizeGuideImage" src="" alt="Size guide" />
+    </div>
+  </div>
+
+  <footer>
+    <p>Follow Quacker Friends:</p>
+    <a href="https://x.com/" target="_blank"><i class="fab fa-x fa-lg"></i></a>
+    <a href="https://www.tiktok.com/" target="_blank"><i class="fab fa-tiktok fa-lg"></i></a>
+    <a href="https://www.instagram.com/" target="_blank"><i class="fab fa-instagram fa-lg"></i></a>
+  </footer>
 
 <script>
+/* ===== CONFIG ===== */
+const PURCHASE_API = "https://script.google.com/macros/s/AKfycbwZMlGQ2REZxTP1lIoWBYzc8n7l-h7C79F9u9MjDY4XIR6jKNO7ky1VXtCm3oP5RM_9qA/exec";
+const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbzu2RjvJf8-SyRIekMh53JODYZxoPXQpjJ2aGTqIHd93HgEZpnXcVC_zxoJbJt51zqSuQ/exec";
+const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
+const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"}];
+const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
+const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
+
+/* ===== PRODUCTS ===== */
 const PRODUCTS = {
+  tees: [
+    { id: "battle", title: "Battle Duck Tee", price: 0, images:{ Black: "https://files.catbox.moe/dw04zw.png", White: "https://files.catbox.moe/d6zm2s.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://files.catbox.moe/ynmqnw.png" },
+    { id: "higher", title: "Higher Duck Tee", price: 0, images:{ Black: "https://files.catbox.moe/qi081o.png", White: "https://files.catbox.moe/0gn3r2.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://files.catbox.moe/ynmqnw.png" },
+    { id: "sus", title: "Sus Duck Tee", price: 0, images:{ Black: "https://files.catbox.moe/zqtvvw.png", White: "https://files.catbox.moe/mgu7nu.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://files.catbox.moe/ynmqnw.png" },
+    { id: "thisisfine", title: "This Is Fine Tee", price: 0, images:{ Black: "https://files.catbox.moe/nbl7st.png", White: "https://files.catbox.moe/5n618u.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://files.catbox.moe/41dvss.png" }
+  ],
+  plushies: [],
   tapestry: [
+  {
+    id: "all_characters_tapestry",
+    title: "All Characters Tapestry",
+    price: 0.03,
+    images: [
+      "https://files.catbox.moe/fvvfv3.png" , "https://files.catbox.moe/fvvfv3.png"
+    ]
+  },
+  {
+    id: "alucard_tapestry",
+    title: "Alucard Tapestry",
+    price: 0.03,
+    images: [
+      "https://files.catbox.moe/mhfu3w.png" ,"https://files.catbox.moe/2o5m5o.png"
+    ]
+  },
+  {
+    id: "sam_tapestry",
+    title: "Sam Tapestry",
+    price: 0.03,
+    images: [
+      "https://files.catbox.moe/yd9d3t.png" , "https://files.catbox.moe/6ictom.png"
+    ]
+  },
+  {
+    id: "tipu_tapestry",
+    title: "Tipu Tapestry",
+    price: 0.03,
+    images: [
+      "https://files.catbox.moe/8s9x67.png" , "https://files.catbox.moe/nrz3bw.png"
+    ]
+  },
+  {
+    id: "yumeko_tapestry",
+    title: "Yumeko Tapestry",
+    price: 0.03,
+    images: [
+      "https://files.catbox.moe/jjmlg1.png" , "https://files.catbox.moe/kg72t2.png"
+    ]
+  }
+]
+, 
+    keychains: [
     {
-      id: "forest_tapestry",
-      title: "Forest Tapestry",
-      price: 0.05,
-      images: [
-        "https://files.catbox.moe/3lplph.png",
-        "https://files.catbox.moe/n8lx8c.png",
-        "https://files.catbox.moe/qthm2g.png"
+      id: "alucard_keychain",
+      title: "Alucard Keychain",
+      price: 0.015,
+    
+      images: [ 
+         "https://files.catbox.moe/zi9q31.png" 
       ]
     },
     {
-      id: "sky_tapestry",
-      title: "Sky Dreams Tapestry",
-      price: 0.05,
-      images: [
-        "https://files.catbox.moe/9msz4m.png",
-        "https://files.catbox.moe/sy6x2u.png"
-      ]
-    }
-  ],
-  tees: [
-    {
-      id: "ghostduck_tee",
-      title: "Ghost Duck Tee",
-      price: 0.025,
-      sizes: ["S", "M", "L", "XL"],
-      colors: ["Black", "White", "Pink"],
-      images: {
-        Black: "https://files.catbox.moe/8txxhf.png",
-        White: "https://files.catbox.moe/fjw31l.png",
-        Pink: "https://files.catbox.moe/j0z3a9.png"
-      }
-    }
-  ],
-  keychains: [
-    {
-      id: "quackheads_keychain",
-      title: "Quackheads Keychain",
+      id: "cosmichead_keychain",
+      title: "Cosmic Head Keychain",
       price: 0.015,
-      sizes: ["Green Quackhead", "Pink Quackhead", "Mustard Quackhead"],
-      colors: ["None", "Gold", "Silver"],
-      images: ["https://files.catbox.moe/gnm9n0.png"]
+      
+      images: ["https://files.catbox.moe/j7eg63.png"]
+    },
+    {
+      id: "ghostduck_green_keychain",
+      title: "Ghost Duck – Green Wizard Hat",
+      price: 0.015,
+      
+      images: ["https://files.catbox.moe/vdikpt.png"]
+    },
+    {
+      id: "ghostduck_purple_keychain",
+      title: "Ghost Duck – Purple Wizard Hat",
+      price: 0.015,
+      
+      images: ["https://files.catbox.moe/2g5kn1.png"]
+    },
+    {
+      id: "ghostduck_red_keychain",
+      title: "Ghost Duck – Red Wizard Hat",
+      price: 0.015,
+      images: ["https://files.catbox.moe/vqnc8x.png"]
+    },
+   {
+  id: "quackheads_keychain",
+  title: "Quackheads Keychain",
+  price: 0,
+     
+     sizes: ["Green", "Mustard", "Pink"],
+      images: ["https://files.catbox.moe/gnm9n0.png"] ,
+  images: {
+    Green: "https://files.catbox.moe/gnm9n0.png",
+    Mustard: "https://files.catbox.moe/gnm9n0.png",
+    Pink: "https://files.catbox.moe/gnm9n0.png"
+  }
+},
+
+    {
+      id: "sam_keychain",
+      title: "Sam Keychain",
+      price: 0.015,
+      images: ["https://files.catbox.moe/tzcg0h.png"]
     }
   ]
+
+  
+
 };
 
-const cart = [];
+/* ===== STATE ===== */
+let userAddress = null;
+let web3 = null;
+let cart = [];
+let currentCategory = "tees";
 
-function showToast(msg,type="success"){
-  console.log(msg);
+/* ===== UI HELPERS ===== */
+function showToast(message, type="info", duration=3000){
+  const container = document.getElementById("toast-container");
+  const el = document.createElement("div");
+  el.className = "toast " + (type==="success"?"success":type==="error"?"error":"info");
+  el.innerHTML = `<span>${message}</span>`;
+  container.appendChild(el);
+  setTimeout(()=>el.remove(), duration);
 }
 
-function updateCartUI(){
-  console.log("Cart:",cart);
+/* ===== RENDER (works for tees & tapestry) ===== */
+function showCategory(cat) {
+  currentCategory = cat;
+  const container = document.getElementById('items');
+  const items = PRODUCTS[cat] || [];
+  container.innerHTML = '';
+
+  if (items.length === 0) {
+    container.innerHTML = `<div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:var(--shadow);">No items yet in ${cat}.</div>`;
+    return;
+  }
+
+  document.body.classList.add('blur-bg');
+
+  items.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'item';
+
+    // If item has multiple images -> render carousel
+    if (Array.isArray(p.images) && p.images.length > 1) {
+      const imgsHtml = p.images.map((src, i) =>
+        `<img src="${src}" class="${i===0 ? 'active' : ''}" data-index="${i}" alt="${p.title} - ${i+1}" />`
+      ).join('');
+
+      el.innerHTML = `
+        <div class="carousel" id="carousel_${p.id}">
+          ${imgsHtml}
+          <button class="prev-btn" aria-label="Previous">‹</button>
+          <button class="next-btn" aria-label="Next">›</button>
+        </div>
+        <h3>${p.title}</h3>
+        <div class="price">${p.price.toFixed(4)} ETH</div>
+        <div style="margin-top:12px">
+          ${ (p.sizes && p.sizes.length) ? `
+            <label style="display:block;text-align:left;font-weight:600">Size</label>
+            <select id="size_${p.id}">
+              ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
+            </select>
+          ` : '' }
+          <div style="margin-top:8px">
+            <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
+          </div>
+        </div>
+      `;
+      container.appendChild(el);
+
+      // attach carousel behavior
+      const carousel = el.querySelector('.carousel');
+      const imgs = Array.from(carousel.querySelectorAll('img'));
+      let index = 0;
+      const setIndex = (newIdx) => {
+        imgs[index].classList.remove('active');
+        index = newIdx;
+        imgs[index].classList.add('active');
+      };
+      carousel.querySelector('.next-btn').addEventListener('click', (e)=>{ e.stopPropagation(); setIndex((index+1)%imgs.length); });
+      carousel.querySelector('.prev-btn').addEventListener('click', (e)=>{ e.stopPropagation(); setIndex((index-1+imgs.length)%imgs.length); });
+
+      // swipe support (mobile)
+      let startX = null;
+      carousel.addEventListener('touchstart', (ev)=>{ startX = ev.touches[0].clientX; });
+      carousel.addEventListener('touchend', (ev)=>{ if (startX===null) return; const diff = ev.changedTouches[0].clientX - startX; if (diff > 30) setIndex((index-1+imgs.length)%imgs.length); else if (diff < -30) setIndex((index+1)%imgs.length); startX = null; });
+
+    } else {
+      // single-image items (tees, keychains single image)
+      const imgId = `img_${p.id}`;
+      const sizeId = `size_${p.id}`;
+      
+     // Hide the size dropdown for Quackheads Keychain specifically
+let labelText = "Size";
+if (p.id === "quackheads_keychain") labelText = "Top Accesory";
+
+const sizeSelectHtml = (p.sizes && p.sizes.length) ? `
+  <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
+  <select id="${sizeId}">
+    ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
+  </select>
+` : '';
+
+
+
+      // For tees with color objects you might still have p.images as object; handle both
+      const mainSrc = Array.isArray(p.images) ? (p.images[0]||'') : (p.images.Black || Object.values(p.images)[0]);
+
+      el.innerHTML = `
+        <img id="${imgId}" src="${mainSrc}" alt="${p.title}" />
+        <h3>${p.title}</h3>
+        <div class="price">${p.price.toFixed(4)} ETH</div>
+        ${ sizeSelectHtml }
+        <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+          <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
+        </div>
+      `;
+      container.appendChild(el);
+
+      // If tee images is an object (colors), wire color select (keeps backwards compatibility)
+      if (p.images && typeof p.images === 'object' && !Array.isArray(p.images)) {
+        // create color select dynamically if not present already
+        const colorKey = `color_${p.id}`;
+        if (!el.querySelector(`#${colorKey}`)) {
+          const colorHtml = `<label style="display:block;text-align:left;font-weight:600">Color</label>
+            <select id="${colorKey}">${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}</select>`;
+          el.insertAdjacentHTML('beforeend', colorHtml);
+          const colorSelect = el.querySelector(`#${colorKey}`);
+          colorSelect.addEventListener('change', (e)=> {
+            const imgEl = el.querySelector(`#${imgId}`);
+            if (imgEl && p.images[e.target.value]) imgEl.src = p.images[e.target.value];
+          });
+        }
+      }
+    }
+  });
+
+  // after render: attach zoom-follow handlers to any newly created images
+  attachZoomFollow();
+  
+}
+
+
+/* ===== OPEN/CLOSE common modals & overlay helpers ===== */
+function showOverlay(){ const ov = document.getElementById('tees'); ov.classList.add('active'); ov.style.display='block'; }
+function hideOverlay(){ const ov = document.getElementById('tees'); ov.classList.remove('active'); ov.style.display='none'; }
+
+// Size guide
+function openSizeGuide(url){
+  document.getElementById("sizeGuideImage").src = url;
+  document.getElementById("sizeGuideModal").classList.add("open");
+  showOverlay();
+}
+function closeSizeGuide(){
+  document.getElementById("sizeGuideModal").classList.remove("open");
+  hideOverlay();
+}
+
+/* ===== CART helpers (add image thumbnails to cart entries so UI is robust) ===== */
+function addTapestryToCart(prodId){
+  const product = (PRODUCTS.tapestry||[]).find(p=>p.id===prodId);
+  if(!product){ showToast("Product not found","error"); return; }
+  cart.push({ id: product.id, title: product.title, price: product.price, color: "N/A", size: "N/A", q:1, thumb: product.images[0] });
+  updateCartUI();
+  showToast(`${product.title} added to cart`,"success");
 }
 
 function addToCart(prodId){
+  // prefer searching all categories for the id
   let product = null;
   for (const cat of Object.keys(PRODUCTS)) {
     product = (PRODUCTS[cat]||[]).find(p=>p.id===prodId);
     if (product) {
-      const thumb = Array.isArray(product.images) ? product.images[0]
-                    : (typeof product.images === 'object' ? Object.values(product.images)[0] : product.images);
+      // store thumbnail (for tapestry, first image; for tees, Black or first)
+      const thumb = product.images?.Black || (Array.isArray(product.images) ? product.images[0] : Object.values(product.images)[0]);
+      // read selects if present
       const colorEl = document.getElementById(`color_${prodId}`);
       const sizeEl = document.getElementById(`size_${prodId}`);
-      const color = colorEl ? colorEl.value : "";
+      const color = colorEl ? colorEl.value : (product.images && typeof product.images === 'object' ? Object.keys(product.images)[0] : '');
       const size = sizeEl ? sizeEl.value : "N/A";
       cart.push({ id: product.id, title: product.title, price: product.price, color, size, q:1, thumb });
       updateCartUI();
-      showToast(`${product.title} added to cart`,"success");
+      showToast(`${product.title} (${color}, ${size}) added to cart`,"success");
       return;
     }
   }
   showToast("Product not found","error");
 }
 
-function showCategory(cat){
-  const el = document.getElementById("shop");
-  el.innerHTML = "";
-  const items = PRODUCTS[cat] || [];
-  items.forEach(p=>{
-    const sizeId = `size_${p.id}`;
-    const colorId = `color_${p.id}`;
+function updateCartUI(){
+  const countEl = document.getElementById("cartCount");
+  const listEl = document.getElementById("cartList");
+  const totalEl = document.getElementById("cartTotal");
+  const cartCount = cart.reduce((s,i)=>s+i.q,0);
+  if(cartCount>0){ countEl.style.display="inline-block"; countEl.innerText = cartCount; } else countEl.style.display="none";
 
-    let labelText = "Size";
-    if (p.id === "quackheads_keychain") labelText = "Top Accessory";
+  if(cart.length===0){ listEl.innerHTML = "<p style='color:#666'>Cart is empty</p>"; totalEl.innerText = "0 ETH"; return; }
 
-    const sizeSelectHtml = (p.sizes && p.sizes.length) ? `
-      <label>${labelText}</label>
-      <select id="${sizeId}">
-        ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-      </select>
-    ` : '';
-
-    const colorSelectHtml = (p.colors && p.colors.length) ? `
-      <label>Color</label>
-      <select id="${colorId}">
-        ${p.colors.map(c => `<option value="${c}">${c}</option>`).join('')}
-      </select>
-    ` : '';
-
-    // Image section (carousel or static)
-    let imgHtml = '';
-    if (Array.isArray(p.images) && p.images.length > 1) {
-      imgHtml = `
-        <div class="carousel" id="carousel_${p.id}">
-          ${p.images.map((img,i)=>`<img src="${img}" class="${i===0?'active':''}">`).join('')}
-          <button class="prev-btn">‹</button>
-          <button class="next-btn">›</button>
-        </div>
-      `;
-    } else if (typeof p.images === 'object') {
-      const defaultColor = Object.keys(p.images)[0];
-      imgHtml = `<img id="img_${p.id}" src="${p.images[defaultColor]}">`;
-    } else {
-      imgHtml = `<img src="${p.images[0]}" alt="${p.title}">`;
-    }
-
-    el.innerHTML += `
-      <div class="product-card">
-        ${imgHtml}
-        <h3>${p.title}</h3>
-        <p>${p.price} ETH</p>
-        ${sizeSelectHtml}
-        ${colorSelectHtml}
-        <button class="add-btn" onclick="addToCart('${p.id}')">Add to Cart</button>
+  listEl.innerHTML = "";
+  let total = 0;
+  cart.forEach((ci, idx)=>{
+    const row = document.createElement("div");
+    row.className = "cart-item";
+    const thumb = ci.thumb || "";
+    row.innerHTML = `
+      <img src="${thumb}" alt="${ci.title}" />
+      <div style="flex:1">
+        <div style="font-weight:700">${ci.title}</div>
+        <div style="font-size:13px;color:#666">${ci.color} • ${ci.size}</div>
+        <div style="margin-top:6px">${ci.price.toFixed(6)} ETH</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <input class="qty" type="number" min="1" value="${ci.q}" onchange="changeQty(${idx}, this.value)" style="width:56px;padding:6px;border-radius:6px;border:1px solid #ddd;text-align:center" />
+        <button style="background:transparent;border:none;color:#e11;cursor:pointer" onclick="removeFromCart(${idx})">Remove</button>
       </div>
     `;
+    listEl.appendChild(row);
+    total += ci.price * ci.q;
+  });
+  totalEl.innerText = total.toFixed(6) + " ETH";
+}
+function changeQty(index,val){ const v = Number(val)||1; cart[index].q = Math.max(1,v); updateCartUI(); }
+function removeFromCart(index){ cart.splice(index,1); updateCartUI(); }
 
-    // Carousel setup
-    if (Array.isArray(p.images) && p.images.length > 1) setupCarousel(p.id);
+/* ===== CART MODAL UI ===== */
+const cartModal = document.getElementById("cartModal");
+document.getElementById("openCartBtn").addEventListener("click", ()=> {
+  if(cart.length === 0){ showToast("Cart is empty", "info"); return; }
+  cartModal.classList.add("open"); cartModal.setAttribute("aria-hidden","false");
+  showOverlay();
+  updateCartUI();
+});
+function closeCart(){ cartModal.classList.remove("open"); cartModal.setAttribute("aria-hidden","true"); hideOverlay(); }
 
-    // Color switch for tees
-    if (typeof p.images === 'object' && p.colors) {
-      const colorSelect = document.getElementById(colorId);
-      const imgEl = document.getElementById(`img_${p.id}`);
-      colorSelect.addEventListener('change', (e)=>{
-        const val = e.target.value;
-        if (p.images[val]) imgEl.src = p.images[val];
-      });
+/* ===== WALLET & PROFILE (unchanged) ===== */
+async function connectWallet(){
+  if(!window.ethereum){ showToast("MetaMask not found","error"); return; }
+  try{
+    web3 = new Web3(window.ethereum);
+    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+    userAddress = accounts[0];
+    document.getElementById("connectBtn").innerText = userAddress.slice(0,6) + "..." + userAddress.slice(-4);
+    document.getElementById("profileBtn").style.display = "inline-block";
+    document.getElementById("walletAddr").innerText = userAddress;
+    showToast("Wallet connected","success");
+  }catch(err){
+    console.error(err);
+    showToast("Connect failed","error");
+  }
+}
+document.getElementById("connectBtn").addEventListener("click", connectWallet);
+
+document.getElementById("profileBtn").addEventListener("click", async ()=>{
+  const panel = document.getElementById("profileSection");
+  panel.style.display = panel.style.display === "block" ? "none" : "block";
+  if(!userAddress) return;
+  try{
+    const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+    const balance = await contract.methods.balanceOf(userAddress).call();
+    document.getElementById("nftCount").innerText = "NFTs Owned: " + balance;
+    const res = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(userAddress)}`);
+    const data = await res.json();
+    const userRow = Array.isArray(data) ? data.find(r => (r.address||"").toLowerCase() === userAddress.toLowerCase()) : null;
+    document.getElementById("quacksCount").innerText = "Daily Quacks: " + (userRow ? userRow.quacks_collected : 0);
+  }catch(err){ console.error(err); showToast("Error loading profile","warn"); }
+});
+
+async function switchWallet(){ try{ await ethereum.request({ method:"wallet_requestPermissions", params:[{eth_accounts:{}}] }); const accounts = await ethereum.request({ method:"eth_requestAccounts" }); userAddress = accounts[0]; document.getElementById("walletAddr").innerText = userAddress; showToast("Wallet switched","success"); }catch(err){ console.error(err); } }
+function disconnectWallet(){ userAddress = null; web3 = null; document.getElementById("connectBtn").innerText = "Connect Wallet"; document.getElementById("profileBtn").style.display = "none"; document.getElementById("profileSection").style.display = "none"; showToast("Wallet disconnected","info"); }
+
+/* ===== CLAIM QUACKS ===== */
+document.getElementById("claimQuacksBtn").addEventListener("click", async ()=>{
+  if(!userAddress){ showToast("Connect wallet first","warn"); return; }
+  try{
+    const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+    const balance = await contract.methods.balanceOf(userAddress).call();
+    const quacksToAdd = Number(balance) > 0 ? 10 : 2;
+    const res = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(userAddress)}&claim=true&quacks=${quacksToAdd}`);
+    const data = await res.json();
+    if(data.error){ showToast(data.error, "warn"); } else {
+      showToast(`🦆 Claimed ${quacksToAdd} Quacks!`, "success");
+      const userRow = Array.isArray(data) ? data.find(r => (r.address||"").toLowerCase() === userAddress.toLowerCase()) : null;
+      document.getElementById("quacksCount").innerText = "Daily Quacks: " + (data.new_quacks_total || (userRow ? userRow.quacks_collected : 0));
     }
+  }catch(err){ console.error(err); showToast("Error claiming quacks","error"); }
+});
+
+/* ===== CHECKOUT / PURCHASE LOGGING (unchanged) ===== */
+document.getElementById("checkoutBtn").addEventListener("click", checkout);
+async function checkout(){
+  try{
+    if(!window.ethereum){ showToast("MetaMask not found","error"); return; }
+    if(!userAddress){ showToast("Connect wallet first","error"); return; }
+    if(cart.length === 0){ showToast("Cart is empty","info"); return; }
+    try{
+      const chain = await ethereum.request({ method: 'eth_chainId' });
+      if(chain !== BASE_CHAIN_ID_HEX){
+        await ethereum.request({ method: 'wallet_switchEthereumChain', params:[{chainId: BASE_CHAIN_ID_HEX}] });
+        showToast("Switched to Base mainnet","success");
+      }
+    }catch(switchErr){ console.warn("Chain switch issue:", switchErr); }
+    const totalEth = cart.reduce((s,i)=>s + (Number(i.price) * i.q), 0);
+    const valueHex = totalEth > 0 ? "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16) : "0x0";
+    const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
+    showToast("Please confirm the transaction in your wallet...", "info", 8000);
+    let txHash;
+    try{
+      txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
+    }catch(txErr){ console.warn("tx aborted", txErr); showToast("Transaction cancelled or failed — purchase not logged", "error"); return; }
+    showToast("Transaction sent — logging purchase...", "success", 4000);
+    await new Promise(r=>setTimeout(r,1200));
+    const baseScanUrl = `https://basescan.org/tx/${txHash}`;
+    const linkToast = document.createElement("div");
+    linkToast.className = "toast success";
+    linkToast.innerHTML = `✅ Purchase sent — <a href="${baseScanUrl}" target="_blank" style="color:#fff;text-decoration:underline">View on BaseScan</a>`;
+    document.getElementById("toast-container").appendChild(linkToast);
+    setTimeout(()=>linkToast.remove(), 8000);
+    for(const ci of cart){
+      const payload = { wallet: userAddress, itemName: ci.title, color: ci.color || "", size: ci.size || "", quantity: ci.q || 1, price: Number(ci.price || 0), txHash };
+      const params = new URLSearchParams(payload).toString();
+      try{ await fetch(`${PURCHASE_API}?${params}`); }catch(logErr){ console.warn("Logging failed for item", payload, logErr); }
+    }
+    cart = []; updateCartUI(); closeCart(); showToast("✅ Purchase logged successfully!", "success", 4000);
+  }catch(err){ console.error("checkout error", err); showToast("Checkout failed", "error"); }
+}
+
+/* ===== MENU behavior & overlay safety net ===== */
+const menuBtn = document.getElementById('menuBtn');
+const shopMenu = document.getElementById('shopMenu');
+menuBtn.addEventListener('click', (e)=>{ e.stopPropagation(); shopMenu.style.display = shopMenu.style.display === "flex" ? "none" : "flex"; });
+document.addEventListener('click', (e)=>{ if(!menuBtn.contains(e.target) && !shopMenu.contains(e.target)){ shopMenu.style.display = "none"; } });
+
+// clicking overlay closes ephemeral modals (cart remains controlled)
+document.getElementById('modalOverlay').addEventListener('click', ()=>{
+  // close size guide if open
+  const sg = document.getElementById("sizeGuideModal");
+  if (sg.classList.contains('open')) closeSizeGuide();
+  // close profile panel if visible
+  const profile = document.getElementById('profileSection');
+  if (profile.style.display === 'block') profile.style.display = 'none';
+  // if cart open, close it too
+  if (cartModal.classList.contains('open')) closeCart();
+  hideOverlay();
+});
+
+// safety net: remove overlay if no modal open
+document.addEventListener('click', ()=>{
+  const overlay = document.getElementById('modalOverlay');
+  const anyOpen = document.getElementById('sizeGuideModal').classList.contains('open') || cartModal.classList.contains('open');
+  if (!anyOpen) hideOverlay();
+});
+
+// Ensure overlay never blocks clicks when not active
+hideOverlay();
+
+/* ===== INIT: show tees by default ===== */
+document.addEventListener('DOMContentLoaded', ()=>{  });
+  
+/* --- Dynamic zoom follow effect --- */
+document.querySelectorAll('.item img').forEach(img => {
+  img.addEventListener('mousemove', (e) => {
+    const rect = e.target.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    e.target.style.transformOrigin = `${x}% ${y}%`;
+    e.target.style.transform = 'scale(1.5)';
+  });
+
+  img.addEventListener('mouseleave', (e) => {
+    e.target.style.transformOrigin = 'center center';
+    e.target.style.transform = 'scale(1)';
+  });
+});
+
+
+
+  function attachZoomFollow(){
+  // remove old listeners safely by cloning nodes
+  document.querySelectorAll('.item img').forEach(img => {
+    // ensure image is visible and pointer events are correct
+    img.style.willChange = 'transform';
+    // attach handlers (use pointermove if you prefer)
+    img.onmousemove = function(e){
+      const rect = img.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      img.style.transformOrigin = `${x}% ${y}%`;
+      img.style.transform = 'scale(1.5)';
+    };
+    img.onmouseleave = function(){
+      img.style.transformOrigin = 'center center';
+      img.style.transform = 'scale(1)';
+    };
+  });
+
+  // precaution: ensure carousel inactive images don't block clicks
+  document.querySelectorAll('.carousel').forEach(car => {
+    car.querySelectorAll('img').forEach(im => {
+      if (!im.classList.contains('active')) {
+        im.style.pointerEvents = 'none';
+        im.style.opacity = '0';
+        im.style.position = 'absolute';
+      } else {
+        im.style.pointerEvents = 'auto';
+        im.style.opacity = '1';
+        im.style.position = 'relative';
+      }
+    });
   });
 }
 
-function setupCarousel(id) {
-  const carousel = document.getElementById(`carousel_${id}`);
-  const imgs = Array.from(carousel.querySelectorAll('img'));
-  let index = 0;
-  const nextBtn = carousel.querySelector('.next-btn');
-  const prevBtn = carousel.querySelector('.prev-btn');
 
-  const setIndex = (newIdx) => {
-    imgs[index].classList.remove('active');
-    index = newIdx;
-    imgs[index].classList.add('active');
-  };
-
-  nextBtn.addEventListener('click', ()=> setIndex((index+1)%imgs.length));
-  prevBtn.addEventListener('click', ()=> setIndex((index-1+imgs.length)%imgs.length));
-
-  // Swipe
-  let startX = null;
-  carousel.addEventListener('touchstart', (ev)=> startX = ev.touches[0].clientX);
-  carousel.addEventListener('touchend', (ev)=> {
-    const diff = ev.changedTouches[0].clientX - startX;
-    if (diff > 30) setIndex((index-1+imgs.length)%imgs.length);
-    else if (diff < -30) setIndex((index+1)%imgs.length);
-    startX = null;
-  });
-
-  // Auto-slide every 4s
-  setInterval(()=> setIndex((index+1)%imgs.length), 4000);
-}
-
-// Default category
-showCategory('tapestry');
 </script>
 </body>
 </html>
