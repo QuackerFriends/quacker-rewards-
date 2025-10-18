@@ -550,7 +550,14 @@ if (p.id === "quackheads_keychain") labelText = "Top Accessory";
 
 let sizeSelectHtml = "";
 
-// For Quackheads → show color + top accessory
+// 🧩 Quackheads Keychain: show Color + Top Accessory (uses existing size field)
+// 🧩 All others: show normal Size dropdown
+let labelText = "Size";
+if (p.id === "quackheads_keychain") labelText = "Top Accessory";
+
+let sizeSelectHtml = "";
+
+// Quackheads — add Color dropdown and relabel size
 if (p.id === "quackheads_keychain") {
   const colors = ["Green", "Mustard", "Pink"];
 
@@ -565,10 +572,16 @@ if (p.id === "quackheads_keychain") {
       ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
     </select>
   `;
-}
-// For all other products → normal size dropdown
+} 
+// All other items — normal size dropdown
 else if (p.sizes && p.sizes.length) {
   sizeSelectHtml = `
+    <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
+    <select id="${sizeId}" class="size-select">
+      ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
+    </select>
+  `;
+}
     <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
     <select id="${sizeId}" class="size-select">
       ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
