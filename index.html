@@ -210,8 +210,6 @@ header, .nav-container, .nav-actions, .nav-actions button {
           <button class="dropdown-item" onclick="showCategory('tees')">Tees</button>
           <button class="dropdown-item" onclick="showCategory('plushies')">Plushies</button>
           <button class="dropdown-item" onclick="showCategory('tapestry')">Tapestry</button>
-          <button class="dropdown-item" onclick="showCategory('keychains')">Keychains</button>
-
         </div>
       </div>
 
@@ -335,60 +333,6 @@ const PRODUCTS = {
     ]
   }
 ]
-, 
-    keychains: [
-    {
-      id: "alucard_keychain",
-      title: "Alucard Keychain",
-      price: 0.015,
-      sizes: ["S", "M", "L"],
-      images: [ 
-        "https://files.catbox.moe/n2wk7z.png" , "https://files.catbox.moe/zi9q31.png" 
-      ]
-    },
-    {
-      id: "cosmichead_keychain",
-      title: "Cosmic Head Keychain",
-      price: 0.015,
-      sizes: ["S", "M", "L"],
-      images: ["https://files.catbox.moe/mlir6f.png","https://files.catbox.moe/j7eg63.png"]
-    },
-    {
-      id: "ghostduck_green_keychain",
-      title: "Ghost Duck – Green Wizard Hat",
-      price: 0.015,
-      sizes: ["S", "M", "L"],
-      images: ["https://files.catbox.moe/1x6tm7.png","https://files.catbox.moe/vdikpt.png"]
-    },
-    {
-      id: "ghostduck_purple_keychain",
-      title: "Ghost Duck – Purple Wizard Hat",
-      price: 0.015,
-      sizes: ["S", "M", "L"],
-      images: ["https://files.catbox.moe/73b0b3.png","https://files.catbox.moe/2g5kn1.png"]
-    },
-    {
-      id: "ghostduck_red_keychain",
-      title: "Ghost Duck – Red Wizard Hat",
-      price: 0.015,
-      sizes: ["S", "M", "L"],
-      images: ["https://files.catbox.moe/56r8hn.png","https://files.catbox.moe/vqnc8x.png"]
-    },
-    {
-      id: "quackheads_keychain",
-      title: "Quackheads Keychain",
-      price: 0.015,
-      sizes: ["S", "M", "L"],
-      images: ["https://files.catbox.moe/ckcrbb.png","https://files.catbox.moe/gnm9n0.png"]
-    },
-    {
-      id: "sam_keychain",
-      title: "Sam Keychain",
-      price: 0.015,
-      sizes: ["S", "M", "L"],
-      images: ["https://files.catbox.moe/mitsox.png","https://files.catbox.moe/tzcg0h.png"]
-    }
-  ]
 
   
 
@@ -428,12 +372,9 @@ function showCategory(cat) {
     const el = document.createElement('div');
     el.className = 'item';
 
-    // If item has multiple images -> render carousel
-    if (Array.isArray(p.images) && p.images.length > 1) {
-      const imgsHtml = p.images.map((src, i) =>
-        `<img src="${src}" class="${i===0 ? 'active' : ''}" data-index="${i}" alt="${p.title} - ${i+1}" />`
-      ).join('');
-
+    if (cat === "tapestry") {
+      // render all images inside carousel (one img per source)
+      const imgsHtml = p.images.map((src, i) => `<img src="${src}" class="${i===0 ? 'active' : ''}" data-index="${i}" alt="${p.title} - ${i+1}" />`).join('');
       el.innerHTML = `
         <div class="carousel" id="carousel_${p.id}">
           ${imgsHtml}
@@ -443,15 +384,7 @@ function showCategory(cat) {
         <h3>${p.title}</h3>
         <div class="price">${p.price.toFixed(4)} ETH</div>
         <div style="margin-top:12px">
-          ${ (p.sizes && p.sizes.length) ? `
-            <label style="display:block;text-align:left;font-weight:600">Size</label>
-            <select id="size_${p.id}">
-              ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-            </select>
-          ` : '' }
-          <div style="margin-top:8px">
-            <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
-          </div>
+          <button class="btn" onclick="addTapestryToCart('${p.id}')">Add to cart</button>
         </div>
       `;
       container.appendChild(el);
@@ -468,59 +401,51 @@ function showCategory(cat) {
       carousel.querySelector('.next-btn').addEventListener('click', (e)=>{ e.stopPropagation(); setIndex((index+1)%imgs.length); });
       carousel.querySelector('.prev-btn').addEventListener('click', (e)=>{ e.stopPropagation(); setIndex((index-1+imgs.length)%imgs.length); });
 
-      // swipe support (mobile)
+      // also support swipe on mobile (simple)
       let startX = null;
       carousel.addEventListener('touchstart', (ev)=>{ startX = ev.touches[0].clientX; });
       carousel.addEventListener('touchend', (ev)=>{ if (startX===null) return; const diff = ev.changedTouches[0].clientX - startX; if (diff > 30) setIndex((index-1+imgs.length)%imgs.length); else if (diff < -30) setIndex((index+1)%imgs.length); startX = null; });
 
     } else {
-      // single-image items (tees, keychains single image)
+      // Tees (original behavior)
       const imgId = `img_${p.id}`;
+      const colorId = `color_${p.id}`;
       const sizeId = `size_${p.id}`;
-      const sizeSelectHtml = (p.sizes && p.sizes.length) ? `
-        <label style="display:block;text-align:left;font-weight:600">Size</label>
-        <select id="${sizeId}">
-          ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-        </select>
-      ` : '';
-
-      // For tees with color objects you might still have p.images as object; handle both
-      const mainSrc = Array.isArray(p.images) ? (p.images[0]||'') : (p.images.Black || Object.values(p.images)[0]);
+      const colorOptions = Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('');
+      const sizeOptions = (p.sizes||[]).map(s => `<option value="${s}">${s}</option>`).join('');
 
       el.innerHTML = `
-        <img id="${imgId}" src="${mainSrc}" alt="${p.title}" />
+        <img id="${imgId}" src="${p.images.Black || (Object.values(p.images)[0])}" alt="${p.title}" />
         <h3>${p.title}</h3>
         <div class="price">${p.price.toFixed(4)} ETH</div>
-        ${ sizeSelectHtml }
+        <label style="display:block;text-align:left;font-weight:600">Color</label>
+        <select id="${colorId}">
+          ${colorOptions}
+        </select>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+          <label style="font-weight:600">Size</label>
+          <button class="btn size-guide-btn" style="margin-left:8px;padding:6px 8px;font-size:12px" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
+        </div>
+        <select id="${sizeId}" style="margin-top:6px">
+          ${sizeOptions}
+        </select>
         <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
           <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
         </div>
       `;
       container.appendChild(el);
 
-      // If tee images is an object (colors), wire color select (keeps backwards compatibility)
-      if (p.images && typeof p.images === 'object' && !Array.isArray(p.images)) {
-        // create color select dynamically if not present already
-        const colorKey = `color_${p.id}`;
-        if (!el.querySelector(`#${colorKey}`)) {
-          const colorHtml = `<label style="display:block;text-align:left;font-weight:600">Color</label>
-            <select id="${colorKey}">${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}</select>`;
-          el.insertAdjacentHTML('beforeend', colorHtml);
-          const colorSelect = el.querySelector(`#${colorKey}`);
-          colorSelect.addEventListener('change', (e)=> {
-            const imgEl = el.querySelector(`#${imgId}`);
-            if (imgEl && p.images[e.target.value]) imgEl.src = p.images[e.target.value];
-          });
-        }
+      // wire color change
+      const colorSelect = el.querySelector(`#${colorId}`);
+      if (colorSelect){
+        colorSelect.addEventListener('change', (e) => {
+          const imgEl = el.querySelector(`#${imgId}`);
+          if (imgEl && p.images[e.target.value]) imgEl.src = p.images[e.target.value];
+        });
       }
     }
   });
-
-  // after render: attach zoom-follow handlers to any newly created images
-  attachZoomFollow();
-  
 }
-
 
 /* ===== OPEN/CLOSE common modals & overlay helpers ===== */
 function showOverlay(){ const ov = document.getElementById('tees'); ov.classList.add('active'); ov.style.display='block'; }
@@ -752,44 +677,6 @@ document.querySelectorAll('.item img').forEach(img => {
     e.target.style.transform = 'scale(1)';
   });
 });
-
-
-
-  function attachZoomFollow(){
-  // remove old listeners safely by cloning nodes
-  document.querySelectorAll('.item img').forEach(img => {
-    // ensure image is visible and pointer events are correct
-    img.style.willChange = 'transform';
-    // attach handlers (use pointermove if you prefer)
-    img.onmousemove = function(e){
-      const rect = img.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      img.style.transformOrigin = `${x}% ${y}%`;
-      img.style.transform = 'scale(1.5)';
-    };
-    img.onmouseleave = function(){
-      img.style.transformOrigin = 'center center';
-      img.style.transform = 'scale(1)';
-    };
-  });
-
-  // precaution: ensure carousel inactive images don't block clicks
-  document.querySelectorAll('.carousel').forEach(car => {
-    car.querySelectorAll('img').forEach(im => {
-      if (!im.classList.contains('active')) {
-        im.style.pointerEvents = 'none';
-        im.style.opacity = '0';
-        im.style.position = 'absolute';
-      } else {
-        im.style.pointerEvents = 'auto';
-        im.style.opacity = '1';
-        im.style.position = 'relative';
-      }
-    });
-  });
-}
-
 
 </script>
 </body>
