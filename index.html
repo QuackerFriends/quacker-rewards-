@@ -555,7 +555,7 @@ function addTapestryToCart(prodId){
   if(!product){ showToast("Product not found","error"); return; }
   cart.push({ id: product.id, title: product.title, price: product.price, color: "N/A", size: "N/A", q:1, thumb: product.images[0] });
   updateCartUI();
- /* showToast(`${product.title} added to cart`,"success"); */
+ showToast(`${product.title} added to cart`,"success"); 
 }
 
 function addToCart(prodId){
@@ -573,7 +573,7 @@ function addToCart(prodId){
       const size = sizeEl ? sizeEl.value : "N/A";
       cart.push({ id: product.id, title: product.title, price: product.price, color, size, q:1, thumb });
       updateCartUI();
-    /*  showToast(`${product.title} (${color}, ${size}) added to cart`,"success"); */
+    showToast(`${product.title} added to cart`,"success"); 
       return;
     }
   }
