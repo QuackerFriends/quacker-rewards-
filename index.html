@@ -436,7 +436,7 @@ function showCategory(cat) {
     /* --- MULTI-IMAGE CAROUSEL --- */
     if (Array.isArray(p.images) && p.images.length > 1) {
       const imgsHtml = p.images.map((src, i) =>
-        `<img src="${src}" class="${i===0 ? 'active' : ''}" alt="${p.title} ${i+1}" />`
+        `<img src="${src}" class="${i === 0 ? 'active' : ''}" alt="${p.title} ${i + 1}" />`
       ).join('');
       el.innerHTML = `
         <div class="carousel">
@@ -461,7 +461,7 @@ function showCategory(cat) {
       return;
     }
 
-    /* --- SINGLE IMAGE (tees, keychains, etc) --- */
+    /* --- SINGLE IMAGE ITEMS --- */
     const mainSrc = Array.isArray(p.images)
       ? (p.images[0] || '')
       : (typeof p.images === 'object' ? Object.values(p.images)[0] : '');
@@ -472,30 +472,58 @@ function showCategory(cat) {
       <div class="price">${p.price.toFixed(4)} ETH</div>
     `;
 
-    // Size or color options
-    let optionsHtml = '';
-    if (p.sizes && p.sizes.length) {
-      const label = p.id === "quackheads_keychain" ? "Color" : "Size";
+    let optionsHtml = "";
+
+    // ✅ TEES: color changes image
+    if (p.images && typeof p.images === "object" && !Array.isArray(p.images) && p.id !== "quackheads_keychain") {
+      const colors = Object.keys(p.images);
       optionsHtml += `
-        <label style="display:block;text-align:left;font-weight:600">${label}</label>
+        <label style="display:block;text-align:left;font-weight:600">Color</label>
+        <select id="color_${p.id}" onchange="document.querySelector('#item_${p.id} img').src=this.value">
+          ${colors.map(c => `<option value="${p.images[c]}">${c}</option>`).join('')}
+        </select>
+      `;
+    }
+
+    // ✅ QUACKHEADS: color is text only (no image change)
+    if (p.id === "quackheads_keychain") {
+      const colors = ["Green", "Mustard", "Pink"];
+      optionsHtml += `
+        <label style="display:block;text-align:left;font-weight:600">Color</label>
+        <select id="color_${p.id}">
+          ${colors.map(c => `<option value="${c}">${c}</option>`).join('')}
+        </select>
+      `;
+    }
+
+    // ✅ SIZE (or Top Accessory for Quackheads)
+    if (p.sizes && p.sizes.length) {
+      let labelText = "Size";
+      if (p.id === "quackheads_keychain") labelText = "Top Accessory";
+
+      optionsHtml += `
+        <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">${labelText}</label>
         <select id="size_${p.id}">
           ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
         </select>
       `;
     }
 
-    // Append options + add to cart below them
+    // ✅ Add to Cart at the end
     el.innerHTML += `
       ${optionsHtml}
-      <div style="margin-top:12px">
-        <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
+      <div style="margin-top:12px;">
+        <button class="btn" onclick="addToCart('${p.id}')">Add to Cart</button>
       </div>
     `;
+
+    // Give each item an ID for color switch targeting
+    el.id = `item_${p.id}`;
 
     container.appendChild(el);
   });
 
-  attachZoomFollow(); // restore zoom behavior
+  attachZoomFollow();
 }
 
 
