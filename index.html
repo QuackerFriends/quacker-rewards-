@@ -432,49 +432,41 @@ function showCategory(cat) {
   items.forEach(p => {
     const el = document.createElement('div');
     el.className = 'item';
+    el.id = `item_${p.id}`;
 
-    /* --- MULTI-IMAGE CAROUSEL --- */
+    let imageHtml = '';
+
+    // 🌀 If product has multiple images → show carousel
     if (Array.isArray(p.images) && p.images.length > 1) {
       const imgsHtml = p.images.map((src, i) =>
         `<img src="${src}" class="${i === 0 ? 'active' : ''}" alt="${p.title} ${i + 1}" />`
       ).join('');
-      el.innerHTML = `
+      imageHtml = `
         <div class="carousel">
           ${imgsHtml}
           <button class="prev-btn">‹</button>
           <button class="next-btn">›</button>
         </div>
-        <h3>${p.title}</h3>
-        <div class="price">${p.price.toFixed(4)} ETH</div>
       `;
-      container.appendChild(el);
-
-      const imgs = el.querySelectorAll('.carousel img');
-      let index = 0;
-      const update = i => {
-        imgs[index].classList.remove('active');
-        index = (i + imgs.length) % imgs.length;
-        imgs[index].classList.add('active');
-      };
-      el.querySelector('.next-btn').onclick = e => { e.stopPropagation(); update(index + 1); };
-      el.querySelector('.prev-btn').onclick = e => { e.stopPropagation(); update(index - 1); };
-      return;
+    } else {
+      // 🖼️ Single image
+      const mainSrc = Array.isArray(p.images)
+        ? (p.images[0] || '')
+        : (typeof p.images === 'object' ? Object.values(p.images)[0] : '');
+      imageHtml = `<img src="${mainSrc}" alt="${p.title}" />`;
     }
 
-    /* --- SINGLE IMAGE ITEMS --- */
-    const mainSrc = Array.isArray(p.images)
-      ? (p.images[0] || '')
-      : (typeof p.images === 'object' ? Object.values(p.images)[0] : '');
-
+    // 🏷️ Title + Price
     el.innerHTML = `
-      <img src="${mainSrc}" alt="${p.title}" />
+      ${imageHtml}
       <h3>${p.title}</h3>
       <div class="price">${p.price.toFixed(4)} ETH</div>
     `;
 
-    let optionsHtml = "";
+    // 🧩 Options (color/size)
+    let optionsHtml = '';
 
-    // ✅ TEES: color changes image
+    // 👕 TEES: color switches image
     if (p.images && typeof p.images === "object" && !Array.isArray(p.images) && p.id !== "quackheads_keychain") {
       const colors = Object.keys(p.images);
       optionsHtml += `
@@ -485,7 +477,7 @@ function showCategory(cat) {
       `;
     }
 
-    // ✅ QUACKHEADS: color is text only (no image change)
+    // 🦆 QUACKHEADS: colors only, no image switch
     if (p.id === "quackheads_keychain") {
       const colors = ["Green", "Mustard", "Pink"];
       optionsHtml += `
@@ -496,11 +488,10 @@ function showCategory(cat) {
       `;
     }
 
-    // ✅ SIZE (or Top Accessory for Quackheads)
+    // 📏 SIZE / TOP ACCESSORY
     if (p.sizes && p.sizes.length) {
       let labelText = "Size";
       if (p.id === "quackheads_keychain") labelText = "Top Accessory";
-
       optionsHtml += `
         <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">${labelText}</label>
         <select id="size_${p.id}">
@@ -509,7 +500,7 @@ function showCategory(cat) {
       `;
     }
 
-    // ✅ Add to Cart at the end
+    // 🛒 Add to Cart (below everything)
     el.innerHTML += `
       ${optionsHtml}
       <div style="margin-top:12px;">
@@ -517,10 +508,20 @@ function showCategory(cat) {
       </div>
     `;
 
-    // Give each item an ID for color switch targeting
-    el.id = `item_${p.id}`;
-
     container.appendChild(el);
+
+    // 🎞️ If carousel exists, wire buttons
+    if (Array.isArray(p.images) && p.images.length > 1) {
+      const imgs = el.querySelectorAll('.carousel img');
+      let index = 0;
+      const update = i => {
+        imgs[index].classList.remove('active');
+        index = (i + imgs.length) % imgs.length;
+        imgs[index].classList.add('active');
+      };
+      el.querySelector('.next-btn').onclick = e => { e.stopPropagation(); update(index + 1); };
+      el.querySelector('.prev-btn').onclick = e => { e.stopPropagation(); update(index - 1); };
+    }
   });
 
   attachZoomFollow();
