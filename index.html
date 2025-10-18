@@ -457,10 +457,11 @@ function showCategory(cat) {
           <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
         </div>
       `;
-      container.appendChild(el);
+     container.appendChild(el);
 
-      // --- FIXED Carousel logic ---
-      const carousel = el.querySelector('.carousel');
+// --- FIXED Carousel logic (scoped safely for each item) ---
+(() => {
+  const carousel = el.querySelector('.carousel');
   const imgs = Array.from(carousel.querySelectorAll('img'));
   let index = 0;
 
@@ -493,10 +494,14 @@ function showCategory(cat) {
     startX = null;
   });
 
-  // Auto-slide (independent for each carousel)
+  // Auto-slide (independent per carousel)
   let autoSlide = setInterval(() => setIndex(index + 1), 4000);
   carousel.addEventListener('mouseenter', () => clearInterval(autoSlide));
-  carousel.addEventListener('mouseleave', () => autoSlide = setInterval(() => setIndex(index + 1), 4000));
+  carousel.addEventListener('mouseleave', () => {
+    autoSlide = setInterval(() => setIndex(index + 1), 4000);
+  });
+})();
+
 
     } else {
       // === Single image items (Tees, Keychains) ===
