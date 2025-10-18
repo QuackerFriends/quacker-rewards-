@@ -341,57 +341,52 @@ const PRODUCTS = {
       id: "alucard_keychain",
       title: "Alucard Keychain",
       price: 0.015,
-    
+      sizes: ["S", "M", "L"],
       images: [ 
-         "https://files.catbox.moe/zi9q31.png" 
+        "https://files.catbox.moe/n2wk7z.png" , "https://files.catbox.moe/zi9q31.png" 
       ]
     },
     {
       id: "cosmichead_keychain",
       title: "Cosmic Head Keychain",
       price: 0.015,
-      
-      images: ["https://files.catbox.moe/j7eg63.png"]
+      sizes: ["S", "M", "L"],
+      images: ["https://files.catbox.moe/mlir6f.png","https://files.catbox.moe/j7eg63.png"]
     },
     {
       id: "ghostduck_green_keychain",
       title: "Ghost Duck – Green Wizard Hat",
       price: 0.015,
-      
-      images: ["https://files.catbox.moe/vdikpt.png"]
+      sizes: ["S", "M", "L"],
+      images: ["https://files.catbox.moe/1x6tm7.png","https://files.catbox.moe/vdikpt.png"]
     },
     {
       id: "ghostduck_purple_keychain",
       title: "Ghost Duck – Purple Wizard Hat",
       price: 0.015,
-      
-      images: ["https://files.catbox.moe/2g5kn1.png"]
+      sizes: ["S", "M", "L"],
+      images: ["https://files.catbox.moe/73b0b3.png","https://files.catbox.moe/2g5kn1.png"]
     },
     {
       id: "ghostduck_red_keychain",
       title: "Ghost Duck – Red Wizard Hat",
       price: 0.015,
-      images: ["https://files.catbox.moe/vqnc8x.png"]
+      sizes: ["S", "M", "L"],
+      images: ["https://files.catbox.moe/56r8hn.png","https://files.catbox.moe/vqnc8x.png"]
     },
-   {
-  id: "quackheads_keychain",
-  title: "Quackheads Keychain",
-  price: 0,
-     
-     sizes: ["Green", "Mustard", "Pink"],
-      images: ["https://files.catbox.moe/gnm9n0.png"] ,
-  images: {
-    Green: "https://files.catbox.moe/gnm9n0.png",
-    Mustard: "https://files.catbox.moe/gnm9n0.png",
-    Pink: "https://files.catbox.moe/gnm9n0.png"
-  }
-},
-
+    {
+      id: "quackheads_keychain",
+      title: "Quackheads Keychain",
+      price: 0.015,
+      sizes: ["S", "M", "L"],
+      images: ["https://files.catbox.moe/ckcrbb.png","https://files.catbox.moe/gnm9n0.png"]
+    },
     {
       id: "sam_keychain",
       title: "Sam Keychain",
       price: 0.015,
-      images: ["https://files.catbox.moe/tzcg0h.png"]
+      sizes: ["S", "M", "L"],
+      images: ["https://files.catbox.moe/mitsox.png","https://files.catbox.moe/tzcg0h.png"]
     }
   ]
 
@@ -482,19 +477,12 @@ function showCategory(cat) {
       // single-image items (tees, keychains single image)
       const imgId = `img_${p.id}`;
       const sizeId = `size_${p.id}`;
-      
-     // Hide the size dropdown for Quackheads Keychain specifically
-let labelText = "Size";
-if (p.id === "quackheads_keychain") labelText = "Top Accesory";
-
-const sizeSelectHtml = (p.sizes && p.sizes.length) ? `
-  <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
-  <select id="${sizeId}">
-    ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-  </select>
-` : '';
-
-
+      const sizeSelectHtml = (p.sizes && p.sizes.length) ? `
+        <label style="display:block;text-align:left;font-weight:600">Size</label>
+        <select id="${sizeId}">
+          ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
+        </select>
+      ` : '';
 
       // For tees with color objects you might still have p.images as object; handle both
       const mainSrc = Array.isArray(p.images) ? (p.images[0]||'') : (p.images.Black || Object.values(p.images)[0]);
