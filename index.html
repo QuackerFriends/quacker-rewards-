@@ -461,31 +461,42 @@ function showCategory(cat) {
 
       // --- FIXED Carousel logic ---
       const carousel = el.querySelector('.carousel');
-      const imgs = Array.from(carousel.querySelectorAll('img'));
-      let index = 0;
-      const setIndex = (newIdx) => {
-        imgs[index].classList.remove('active');
-        index = (newIdx + imgs.length) % imgs.length;
-        imgs[index].classList.add('active');
-      };
-      carousel.querySelector('.next-btn').addEventListener('click', e => {
-        e.stopPropagation();
-        setIndex(index + 1);
-      });
-      carousel.querySelector('.prev-btn').addEventListener('click', e => {
-        e.stopPropagation();
-        setIndex(index - 1);
-      });
-      let startX = null;
-      carousel.addEventListener('touchstart', ev => startX = ev.touches[0].clientX);
-      carousel.addEventListener('touchend', ev => {
-        if (startX === null) return;
-        const diff = ev.changedTouches[0].clientX - startX;
-        if (diff > 30) setIndex(index - 1);
-        else if (diff < -30) setIndex(index + 1);
-        startX = null;
-      });
-      setInterval(() => setIndex(index + 1), 4000);
+  const imgs = Array.from(carousel.querySelectorAll('img'));
+  let index = 0;
+
+  const setIndex = (newIdx) => {
+    imgs[index].classList.remove('active');
+    index = (newIdx + imgs.length) % imgs.length;
+    imgs[index].classList.add('active');
+  };
+
+  const nextBtn = carousel.querySelector('.next-btn');
+  const prevBtn = carousel.querySelector('.prev-btn');
+
+  nextBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setIndex(index + 1);
+  });
+  prevBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setIndex(index - 1);
+  });
+
+  // Swipe support (mobile)
+  let startX = null;
+  carousel.addEventListener('touchstart', (ev) => startX = ev.touches[0].clientX);
+  carousel.addEventListener('touchend', (ev) => {
+    if (!startX) return;
+    const diff = ev.changedTouches[0].clientX - startX;
+    if (diff > 30) setIndex(index - 1);
+    else if (diff < -30) setIndex(index + 1);
+    startX = null;
+  });
+
+  // Auto-slide (independent for each carousel)
+  let autoSlide = setInterval(() => setIndex(index + 1), 4000);
+  carousel.addEventListener('mouseenter', () => clearInterval(autoSlide));
+  carousel.addEventListener('mouseleave', () => autoSlide = setInterval(() => setIndex(index + 1), 4000));
 
     } else {
       // === Single image items (Tees, Keychains) ===
