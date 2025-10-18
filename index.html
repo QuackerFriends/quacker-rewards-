@@ -33,49 +33,6 @@
     header h1{margin:0;font-size:20px;display:flex;align-items:center;gap:10px}
     .btn{padding:10px 16px;background:var(--brand-orange-dark);color:white;border:none;border-radius:999px;cursor:pointer;font-weight:600;transition:all .18s;display:inline-flex;gap:8px;align-items:center}
     .btn.secondary{background:transparent;color:white;border:1px solid rgba(255,255,255,.25);padding:8px 12px;border-radius:10px}
-/* 🛒 Fix Add to Cart button shape */
-.btn {
-  display: inline-block;
- background-color: #ff6600;   /* bright orange like your original */
-  color: white;
-  border: none;
-  border-radius: 8px !important; /* ✅ no more circle */
-  padding: 10px 16px;            /* ✅ comfortable size */
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-}
-
-.btn:hover {
-  background-color: #e65c00;   /* slightly darker orange on hover */
-  transform: translateY(-1px);
-}
-
-
-/* 🎨 Normalize color & size dropdowns */
-.size-select,
-.color-select,
-select {
-  display: inline-block;
-  min-width: 140px;
-  max-width: 180px;
-  padding: 6px 10px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background-color: #fff;
-  cursor: pointer;
-  appearance: none;
-}
-
-label {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 13px;
-  color: #555;
-}
-
     main{flex:1;padding:30px 20px;max-width:var(--maxWidth);margin:0 auto 80px}
     .shop-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
     .item{background:var(--card);padding:16px;border-radius:14px;box-shadow:var(--shadow);text-align:center;position:relative}
@@ -105,31 +62,9 @@ label {
     select{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-bottom:8px}
 
     /* carousel */
-    .carousel {
-  position: relative;
-  overflow: hidden;
-  border-radius: 12px;
-  background: #f6f6f6;
-  height: 220px; /* ✅ ensures consistent height even when img is hidden */
-}
-
-.carousel img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-.carousel img.active {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-
+    .carousel { position: relative; overflow: hidden; border-radius: 12px; background:#f6f6f6; }
+    .carousel img { width:100%; height:220px; object-fit:contain; display:none; transition:opacity .25s ease; }
+    .carousel img.active { display:block; }
     .carousel button { position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.85); border:none; border-radius:999px; width:34px; height:34px; cursor:pointer; font-size:18px; color:#333; display:flex; align-items:center; justify-content:center; }
     .carousel .prev-btn{ left:8px } .carousel .next-btn{ right:8px }
     .carousel button:hover{ background:var(--brand-orange); color:#fff }
@@ -408,7 +343,7 @@ const PRODUCTS = {
       price: 0.015,
     
       images: [ 
-        "https://files.catbox.moe/sr7tnl.png", "https://files.catbox.moe/zi9q31.png" 
+         "https://files.catbox.moe/zi9q31.png" 
       ]
     },
     {
@@ -416,27 +351,27 @@ const PRODUCTS = {
       title: "Cosmic Head Keychain",
       price: 0.015,
       
-      images: [ "https://files.catbox.moe/eb953c.png", "https://files.catbox.moe/j7eg63.png"]
+      images: ["https://files.catbox.moe/j7eg63.png"]
     },
     {
       id: "ghostduck_green_keychain",
       title: "Ghost Duck – Green Wizard Hat",
       price: 0.015,
       
-      images: [ "https://files.catbox.moe/wkvsi4.png","https://files.catbox.moe/vdikpt.png"]
+      images: ["https://files.catbox.moe/vdikpt.png"]
     },
     {
       id: "ghostduck_purple_keychain",
       title: "Ghost Duck – Purple Wizard Hat",
       price: 0.015,
       
-      images: [ "https://files.catbox.moe/6fo0mq.png", "https://files.catbox.moe/2g5kn1.png"]
+      images: ["https://files.catbox.moe/2g5kn1.png"]
     },
     {
       id: "ghostduck_red_keychain",
       title: "Ghost Duck – Red Wizard Hat",
       price: 0.015,
-      images: ["https://files.catbox.moe/3lnabu.png","https://files.catbox.moe/vqnc8x.png"]
+      images: ["https://files.catbox.moe/vqnc8x.png"]
     },
    {
   id: "quackheads_keychain",
@@ -444,15 +379,19 @@ const PRODUCTS = {
   price: 0,
      
      sizes: ["Green", "Mustard", "Pink"],
-      images: ["https://files.catbox.moe/f8ybtj.png","https://files.catbox.moe/gnm9n0.png"] ,
-
+      images: ["https://files.catbox.moe/gnm9n0.png"] ,
+  images: {
+    Green: "https://files.catbox.moe/gnm9n0.png",
+    Mustard: "https://files.catbox.moe/gnm9n0.png",
+    Pink: "https://files.catbox.moe/gnm9n0.png"
+  }
 },
 
     {
       id: "sam_keychain",
       title: "Sam Keychain",
       price: 0.015,
-      images: ["https://files.catbox.moe/5ger5x.png","https://files.catbox.moe/tzcg0h.png"]
+      images: ["https://files.catbox.moe/tzcg0h.png"]
     }
   ]
 
@@ -544,51 +483,16 @@ function showCategory(cat) {
       const imgId = `img_${p.id}`;
       const sizeId = `size_${p.id}`;
       
-  // 🧩 Show Color + Top Accessory for Quackheads, or normal Size for others
+     // Hide the size dropdown for Quackheads Keychain specifically
 let labelText = "Size";
-if (p.id === "quackheads_keychain") labelText = "Top Accessory";
+if (p.id === "quackheads_keychain") labelText = "Top Accesory";
 
-let sizeSelectHtml = "";
-
-// 🧩 Quackheads Keychain: show Color + Top Accessory (uses existing size field)
-// 🧩 All others: show normal Size dropdown
-let labelText = "Size";
-if (p.id === "quackheads_keychain") labelText = "Top Accessory";
-
-let sizeSelectHtml = "";
-
-// Quackheads — add Color dropdown and relabel size
-if (p.id === "quackheads_keychain") {
-  const colors = ["Green", "Mustard", "Pink"];
-
-  sizeSelectHtml = `
-    <label style="display:block;text-align:left;font-weight:600">Color</label>
-    <select id="color_${p.id}" class="color-select">
-      ${colors.map(c => `<option value="${c}">${c}</option>`).join('')}
-    </select>
-
-    <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">${labelText}</label>
-    <select id="${sizeId}" class="size-select">
-      ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-    </select>
-  `;
-} 
-// All other items — normal size dropdown
-else if (p.sizes && p.sizes.length) {
-  sizeSelectHtml = `
-    <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
-    <select id="${sizeId}" class="size-select">
-      ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-    </select>
-  `;
-}
-    <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
-    <select id="${sizeId}" class="size-select">
-      ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-    </select>
-  `;
-}
-
+const sizeSelectHtml = (p.sizes && p.sizes.length) ? `
+  <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
+  <select id="${sizeId}">
+    ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
+  </select>
+` : '';
 
 
 
@@ -613,7 +517,7 @@ else if (p.sizes && p.sizes.length) {
         if (!el.querySelector(`#${colorKey}`)) {
           const colorHtml = `<label style="display:block;text-align:left;font-weight:600">Color</label>
             <select id="${colorKey}">${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}</select>`;
-          const addBtn = el.querySelector('.btn'); if (addBtn) addBtn.insertAdjacentHTML('beforebegin', colorHtml);
+          el.insertAdjacentHTML('beforeend', colorHtml);
           const colorSelect = el.querySelector(`#${colorKey}`);
           colorSelect.addEventListener('change', (e)=> {
             const imgEl = el.querySelector(`#${imgId}`);
@@ -651,7 +555,7 @@ function addTapestryToCart(prodId){
   if(!product){ showToast("Product not found","error"); return; }
   cart.push({ id: product.id, title: product.title, price: product.price, color: "N/A", size: "N/A", q:1, thumb: product.images[0] });
   updateCartUI();
- showToast(`${product.title} added to cart`,"success"); 
+  showToast(`${product.title} added to cart`,"success");
 }
 
 function addToCart(prodId){
@@ -669,7 +573,7 @@ function addToCart(prodId){
       const size = sizeEl ? sizeEl.value : "N/A";
       cart.push({ id: product.id, title: product.title, price: product.price, color, size, q:1, thumb });
       updateCartUI();
-    showToast(`${product.title} added to cart`,"success"); 
+      showToast(`${product.title} (${color}, ${size}) added to cart`,"success");
       return;
     }
   }
