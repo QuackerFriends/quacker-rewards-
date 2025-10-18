@@ -433,10 +433,10 @@ function showCategory(cat) {
     const el = document.createElement('div');
     el.className = 'item';
 
-    // If item has multiple images -> render carousel (tapestry, multi-image keychains, etc.)
+    // === If multiple images => Carousel (Tapestry) ===
     if (Array.isArray(p.images) && p.images.length > 1) {
       const imgsHtml = p.images.map((src, i) =>
-        `<img src="${src}" class="${i === 0 ? 'active' : ''}" data-index="${i}" alt="${p.title} - ${i + 1}" />`
+        `<img src="${src}" class="${i === 0 ? 'active' : ''}" data-index="${i}" alt="${p.title} ${i+1}" />`
       ).join('');
 
       el.innerHTML = `
@@ -447,66 +447,50 @@ function showCategory(cat) {
         </div>
         <h3>${p.title}</h3>
         <div class="price">${p.price.toFixed(4)} ETH</div>
+        ${ (p.sizes && p.sizes.length) ? `
+          <label style="display:block;text-align:left;font-weight:600">Size</label>
+          <select id="size_${p.id}">
+            ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
+          </select>
+        ` : '' }
         <div style="margin-top:12px">
-          ${ (p.sizes && p.sizes.length) ? `
-            <label style="display:block;text-align:left;font-weight:600">
-              ${p.id === "quackheads_keychain" ? "Top Accessory" : "Size"}
-            </label>
-            <select id="size_${p.id}">
-              ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-            </select>
-          ` : '' }
-          <div style="margin-top:8px">
-            <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
-          </div>
+          <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
         </div>
       `;
       container.appendChild(el);
 
-      // ✅ Carousel logic (same as setupCarousel but inline)
+      // --- FIXED Carousel logic ---
       const carousel = el.querySelector('.carousel');
       const imgs = Array.from(carousel.querySelectorAll('img'));
       let index = 0;
-
       const setIndex = (newIdx) => {
         imgs[index].classList.remove('active');
         index = (newIdx + imgs.length) % imgs.length;
         imgs[index].classList.add('active');
       };
-
-      carousel.querySelector('.next-btn').addEventListener('click', (e) => {
+      carousel.querySelector('.next-btn').addEventListener('click', e => {
         e.stopPropagation();
         setIndex(index + 1);
       });
-
-      carousel.querySelector('.prev-btn').addEventListener('click', (e) => {
+      carousel.querySelector('.prev-btn').addEventListener('click', e => {
         e.stopPropagation();
         setIndex(index - 1);
       });
-
-      // Swipe support (mobile)
       let startX = null;
-      carousel.addEventListener('touchstart', (ev) => startX = ev.touches[0].clientX);
-      carousel.addEventListener('touchend', (ev) => {
-        if (!startX) return;
+      carousel.addEventListener('touchstart', ev => startX = ev.touches[0].clientX);
+      carousel.addEventListener('touchend', ev => {
+        if (startX === null) return;
         const diff = ev.changedTouches[0].clientX - startX;
         if (diff > 30) setIndex(index - 1);
         else if (diff < -30) setIndex(index + 1);
         startX = null;
       });
-
-      // ✅ Auto-slide every 4s
-      let autoSlide = setInterval(() => setIndex(index + 1), 4000);
-
-      // Optional: pause auto-slide when hovering
-      carousel.addEventListener('mouseenter', () => clearInterval(autoSlide));
-      carousel.addEventListener('mouseleave', () => autoSlide = setInterval(() => setIndex(index + 1), 4000));
+      setInterval(() => setIndex(index + 1), 4000);
 
     } else {
-      // single-image items (tees, single-image keychains)
+      // === Single image items (Tees, Keychains) ===
       const imgId = `img_${p.id}`;
       const sizeId = `size_${p.id}`;
-      
       let labelText = "Size";
       if (p.id === "quackheads_keychain") labelText = "Top Accessory";
 
@@ -526,35 +510,37 @@ function showCategory(cat) {
         <h3>${p.title}</h3>
         <div class="price">${p.price.toFixed(4)} ETH</div>
         ${sizeSelectHtml}
+        <div id="colorWrap_${p.id}" style="margin-top:8px"></div>
         <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
           <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
         </div>
       `;
       container.appendChild(el);
 
-      // ✅ Color switching for tees (object-based images)
+      // === Tees Color selector (keep color images logic) ===
       if (p.images && typeof p.images === 'object' && !Array.isArray(p.images)) {
         const colorKey = `color_${p.id}`;
-        if (!el.querySelector(`#${colorKey}`)) {
-          const colorHtml = `
-            <label style="display:block;text-align:left;font-weight:600">Color</label>
-            <select id="${colorKey}">
-              ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
-            </select>`;
-          el.insertAdjacentHTML('beforeend', colorHtml);
-          const colorSelect = el.querySelector(`#${colorKey}`);
-          colorSelect.addEventListener('change', (e) => {
-            const imgEl = el.querySelector(`#${imgId}`);
-            if (imgEl && p.images[e.target.value]) imgEl.src = p.images[e.target.value];
-          });
-        }
+        const colorWrap = el.querySelector(`#colorWrap_${p.id}`);
+        const colorHtml = `
+          <label style="display:block;text-align:left;font-weight:600">Color</label>
+          <select id="${colorKey}">
+            ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
+          </select>`;
+        colorWrap.innerHTML = colorHtml;
+
+        const colorSelect = colorWrap.querySelector(`#${colorKey}`);
+        colorSelect.addEventListener('change', e => {
+          const imgEl = el.querySelector(`#${imgId}`);
+          if (imgEl && p.images[e.target.value]) imgEl.src = p.images[e.target.value];
+        });
       }
     }
   });
 
-  // After render: attach zoom-follow handlers to any newly created images
+  // restore zoom/hover effects
   attachZoomFollow();
 }
+
 
 
 /* ===== OPEN/CLOSE common modals & overlay helpers ===== */
