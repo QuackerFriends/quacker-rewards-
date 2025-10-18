@@ -1,97 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Shop</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Shop</title>
 <style>
-  :root {
-    --brand-orange: #ff6600;
-  }
-  body {
-    font-family: Arial, sans-serif;
-    background: #fafafa;
-    color: #333;
-  }
-  .product-card {
-    background: white;
-    border-radius: 16px;
-    padding: 12px;
-    margin: 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    width: 240px;
-    display: inline-block;
-    vertical-align: top;
-  }
-  .product-card img {
-    width: 100%;
-    border-radius: 12px;
-  }
-  .product-card label {
-    display: block;
-    margin-top: 6px;
-    font-weight: 600;
-  }
-  select {
-    width: 100%;
-    padding: 6px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    margin-bottom: 8px;
-  }
-  button.add-btn {
-    background: var(--brand-orange);
-    color: white;
-    border: none;
-    border-radius: 999px;
-    padding: 8px 16px;
-    font-weight: 600;
-    cursor: pointer;
-    width: 100%;
-  }
-  button.add-btn:hover {
-    background: #e65c00;
-  }
+:root { --brand-orange: #ff6600; }
 
-  /* Carousel styling */
-  .carousel {
-    position: relative;
-    overflow: hidden;
-    border-radius: 12px;
-    background: #f6f6f6;
-  }
-  .carousel img {
-    width: 100%;
-    height: 220px;
-    object-fit: contain;
-    display: none;
-    transition: opacity .25s ease;
-  }
-  .carousel img.active {
-    display: block;
-  }
-  .carousel button {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(255,255,255,0.85);
-    border: none;
-    border-radius: 999px;
-    width: 34px;
-    height: 34px;
-    cursor: pointer;
-    font-size: 18px;
-    color: #333;
-  }
-  .carousel .prev-btn { left: 8px; }
-  .carousel .next-btn { right: 8px; }
-  .carousel button:hover {
-    background: var(--brand-orange);
-    color: white;
-  }
+body {
+  font-family: Arial, sans-serif;
+  background: #fafafa;
+  color: #333;
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+}
+
+h2 {
+  color: var(--brand-orange);
+}
+
+.category-buttons {
+  margin-bottom: 20px;
+}
+
+.category-buttons button {
+  background: var(--brand-orange);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  margin: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.category-buttons button:hover {
+  background: #e65c00;
+}
+
+.product-card {
+  background: white;
+  border-radius: 16px;
+  padding: 12px;
+  margin: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  width: 260px;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.product-card img {
+  width: 100%;
+  border-radius: 12px;
+}
+
+.product-card label {
+  display: block;
+  text-align: left;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+select {
+  width: 100%;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-bottom: 8px;
+}
+
+button.add-btn {
+  background: var(--brand-orange);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+}
+
+button.add-btn:hover {
+  background: #e65c00;
+}
+
+/* Carousel styling */
+.carousel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #f6f6f6;
+}
+.carousel img {
+  width: 100%;
+  height: 220px;
+  object-fit: contain;
+  display: none;
+  transition: opacity .25s ease;
+}
+.carousel img.active {
+  display: block;
+}
+.carousel button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.85);
+  border: none;
+  border-radius: 999px;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+  font-size: 18px;
+  color: #333;
+}
+.carousel .prev-btn { left: 8px; }
+.carousel .next-btn { right: 8px; }
+.carousel button:hover {
+  background: var(--brand-orange);
+  color: white;
+}
 </style>
 </head>
 <body>
+
+<h2>🛍️ Welcome to the Shop</h2>
+<div class="category-buttons">
+  <button onclick="showCategory('tapestry')">Tapestries</button>
+  <button onclick="showCategory('tees')">Tees</button>
+  <button onclick="showCategory('keychains')">Keychains</button>
+</div>
 
 <div id="shop"></div>
 
@@ -104,8 +143,32 @@ const PRODUCTS = {
       price: 0.05,
       images: [
         "https://files.catbox.moe/3lplph.png",
-        "https://files.catbox.moe/n8lx8c.png"
+        "https://files.catbox.moe/n8lx8c.png",
+        "https://files.catbox.moe/qthm2g.png"
       ]
+    },
+    {
+      id: "sky_tapestry",
+      title: "Sky Dreams Tapestry",
+      price: 0.05,
+      images: [
+        "https://files.catbox.moe/9msz4m.png",
+        "https://files.catbox.moe/sy6x2u.png"
+      ]
+    }
+  ],
+  tees: [
+    {
+      id: "ghostduck_tee",
+      title: "Ghost Duck Tee",
+      price: 0.025,
+      sizes: ["S", "M", "L", "XL"],
+      colors: ["Black", "White", "Pink"],
+      images: {
+        Black: "https://files.catbox.moe/8txxhf.png",
+        White: "https://files.catbox.moe/fjw31l.png",
+        Pink: "https://files.catbox.moe/j0z3a9.png"
+      }
     }
   ],
   keychains: [
@@ -135,7 +198,8 @@ function addToCart(prodId){
   for (const cat of Object.keys(PRODUCTS)) {
     product = (PRODUCTS[cat]||[]).find(p=>p.id===prodId);
     if (product) {
-      const thumb = product.images && Array.isArray(product.images) ? product.images[0] : product.images;
+      const thumb = Array.isArray(product.images) ? product.images[0]
+                    : (typeof product.images === 'object' ? Object.values(product.images)[0] : product.images);
       const colorEl = document.getElementById(`color_${prodId}`);
       const sizeEl = document.getElementById(`size_${prodId}`);
       const color = colorEl ? colorEl.value : "";
@@ -156,7 +220,7 @@ function showCategory(cat){
   items.forEach(p=>{
     const sizeId = `size_${p.id}`;
     const colorId = `color_${p.id}`;
-    
+
     let labelText = "Size";
     if (p.id === "quackheads_keychain") labelText = "Top Accessory";
 
@@ -174,7 +238,7 @@ function showCategory(cat){
       </select>
     ` : '';
 
-    // Carousel setup
+    // Image section (carousel or static)
     let imgHtml = '';
     if (Array.isArray(p.images) && p.images.length > 1) {
       imgHtml = `
@@ -184,6 +248,9 @@ function showCategory(cat){
           <button class="next-btn">›</button>
         </div>
       `;
+    } else if (typeof p.images === 'object') {
+      const defaultColor = Object.keys(p.images)[0];
+      imgHtml = `<img id="img_${p.id}" src="${p.images[defaultColor]}">`;
     } else {
       imgHtml = `<img src="${p.images[0]}" alt="${p.title}">`;
     }
@@ -199,9 +266,17 @@ function showCategory(cat){
       </div>
     `;
 
-    // After render, setup carousel if exists
-    if (Array.isArray(p.images) && p.images.length > 1) {
-      setupCarousel(p.id);
+    // Carousel setup
+    if (Array.isArray(p.images) && p.images.length > 1) setupCarousel(p.id);
+
+    // Color switch for tees
+    if (typeof p.images === 'object' && p.colors) {
+      const colorSelect = document.getElementById(colorId);
+      const imgEl = document.getElementById(`img_${p.id}`);
+      colorSelect.addEventListener('change', (e)=>{
+        const val = e.target.value;
+        if (p.images[val]) imgEl.src = p.images[val];
+      });
     }
   });
 }
@@ -236,6 +311,7 @@ function setupCarousel(id) {
   setInterval(()=> setIndex((index+1)%imgs.length), 4000);
 }
 
+// Default category
 showCategory('tapestry');
 </script>
 </body>
