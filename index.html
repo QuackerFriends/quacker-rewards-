@@ -334,7 +334,8 @@ const PRODUCTS = {
       "https://files.catbox.moe/jjmlg1.png" , "https://files.catbox.moe/kg72t2.png"
     ]
   }
-], 
+]
+, 
     keychains: [
     {
       id: "alucard_keychain",
@@ -379,7 +380,11 @@ const PRODUCTS = {
      
      sizes: ["Green", "Mustard", "Pink"],
       images: ["https://files.catbox.moe/gnm9n0.png"] ,
- 
+  images: {
+    Green: "https://files.catbox.moe/gnm9n0.png",
+    Mustard: "https://files.catbox.moe/gnm9n0.png",
+    Pink: "https://files.catbox.moe/gnm9n0.png"
+  }
 },
 
     {
@@ -427,101 +432,106 @@ function showCategory(cat) {
   items.forEach(p => {
     const el = document.createElement('div');
     el.className = 'item';
-    el.id = `item_${p.id}`;
 
-    let imageHtml = '';
-
-    // 🌀 If product has multiple images → show carousel
+    // If item has multiple images -> render carousel
     if (Array.isArray(p.images) && p.images.length > 1) {
       const imgsHtml = p.images.map((src, i) =>
-        `<img src="${src}" class="${i === 0 ? 'active' : ''}" alt="${p.title} ${i + 1}" />`
+        `<img src="${src}" class="${i===0 ? 'active' : ''}" data-index="${i}" alt="${p.title} - ${i+1}" />`
       ).join('');
-      imageHtml = `
-        <div class="carousel">
+
+      el.innerHTML = `
+        <div class="carousel" id="carousel_${p.id}">
           ${imgsHtml}
-          <button class="prev-btn">‹</button>
-          <button class="next-btn">›</button>
+          <button class="prev-btn" aria-label="Previous">‹</button>
+          <button class="next-btn" aria-label="Next">›</button>
+        </div>
+        <h3>${p.title}</h3>
+        <div class="price">${p.price.toFixed(4)} ETH</div>
+        <div style="margin-top:12px">
+          ${ (p.sizes && p.sizes.length) ? `
+            <label style="display:block;text-align:left;font-weight:600">Size</label>
+            <select id="size_${p.id}">
+              ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
+            </select>
+          ` : '' }
+          <div style="margin-top:8px">
+            <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
+          </div>
         </div>
       `;
-    } else {
-      // 🖼️ Single image
-      const mainSrc = Array.isArray(p.images)
-        ? (p.images[0] || '')
-        : (typeof p.images === 'object' ? Object.values(p.images)[0] : '');
-      imageHtml = `<img src="${mainSrc}" alt="${p.title}" />`;
-    }
+      container.appendChild(el);
 
-    // 🏷️ Title + Price
-    el.innerHTML = `
-      ${imageHtml}
-      <h3>${p.title}</h3>
-      <div class="price">${p.price.toFixed(4)} ETH</div>
-    `;
-
-    // 🧩 Options (color/size)
-    let optionsHtml = '';
-
-    // 👕 TEES: color switches image
-    if (p.images && typeof p.images === "object" && !Array.isArray(p.images) && p.id !== "quackheads_keychain") {
-      const colors = Object.keys(p.images);
-      optionsHtml += `
-        <label style="display:block;text-align:left;font-weight:600">Color</label>
-        <select id="color_${p.id}" onchange="document.querySelector('#item_${p.id} img').src=this.value">
-          ${colors.map(c => `<option value="${p.images[c]}">${c}</option>`).join('')}
-        </select>
-      `;
-    }
-
-    // 🦆 QUACKHEADS: colors only, no image switch
-    if (p.id === "quackheads_keychain") {
-      const colors = ["Green", "Mustard", "Pink"];
-      optionsHtml += `
-        <label style="display:block;text-align:left;font-weight:600">Color</label>
-        <select id="color_${p.id}">
-          ${colors.map(c => `<option value="${c}">${c}</option>`).join('')}
-        </select>
-      `;
-    }
-
-    // 📏 SIZE / TOP ACCESSORY
-    if (p.sizes && p.sizes.length) {
-      let labelText = "Size";
-      if (p.id === "quackheads_keychain") labelText = "Top Accessory";
-      optionsHtml += `
-        <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">${labelText}</label>
-        <select id="size_${p.id}">
-          ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-        </select>
-      `;
-    }
-
-    // 🛒 Add to Cart (below everything)
-    el.innerHTML += `
-      ${optionsHtml}
-      <div style="margin-top:12px;">
-        <button class="btn" onclick="addToCart('${p.id}')">Add to Cart</button>
-      </div>
-    `;
-
-    container.appendChild(el);
-
-    // 🎞️ If carousel exists, wire buttons
-    if (Array.isArray(p.images) && p.images.length > 1) {
-      const imgs = el.querySelectorAll('.carousel img');
+      // attach carousel behavior
+      const carousel = el.querySelector('.carousel');
+      const imgs = Array.from(carousel.querySelectorAll('img'));
       let index = 0;
-      const update = i => {
+      const setIndex = (newIdx) => {
         imgs[index].classList.remove('active');
-        index = (i + imgs.length) % imgs.length;
+        index = newIdx;
         imgs[index].classList.add('active');
       };
-      el.querySelector('.next-btn').onclick = e => { e.stopPropagation(); update(index + 1); };
-      el.querySelector('.prev-btn').onclick = e => { e.stopPropagation(); update(index - 1); };
+      carousel.querySelector('.next-btn').addEventListener('click', (e)=>{ e.stopPropagation(); setIndex((index+1)%imgs.length); });
+      carousel.querySelector('.prev-btn').addEventListener('click', (e)=>{ e.stopPropagation(); setIndex((index-1+imgs.length)%imgs.length); });
+
+      // swipe support (mobile)
+      let startX = null;
+      carousel.addEventListener('touchstart', (ev)=>{ startX = ev.touches[0].clientX; });
+      carousel.addEventListener('touchend', (ev)=>{ if (startX===null) return; const diff = ev.changedTouches[0].clientX - startX; if (diff > 30) setIndex((index-1+imgs.length)%imgs.length); else if (diff < -30) setIndex((index+1)%imgs.length); startX = null; });
+
+    } else {
+      // single-image items (tees, keychains single image)
+      const imgId = `img_${p.id}`;
+      const sizeId = `size_${p.id}`;
+      
+     // Hide the size dropdown for Quackheads Keychain specifically
+let labelText = "Size";
+if (p.id === "quackheads_keychain") labelText = "Top Accesory";
+
+const sizeSelectHtml = (p.sizes && p.sizes.length) ? `
+  <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
+  <select id="${sizeId}">
+    ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
+  </select>
+` : '';
+
+
+
+      // For tees with color objects you might still have p.images as object; handle both
+      const mainSrc = Array.isArray(p.images) ? (p.images[0]||'') : (p.images.Black || Object.values(p.images)[0]);
+
+      el.innerHTML = `
+        <img id="${imgId}" src="${mainSrc}" alt="${p.title}" />
+        <h3>${p.title}</h3>
+        <div class="price">${p.price.toFixed(4)} ETH</div>
+        ${ sizeSelectHtml }
+        <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+          <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
+        </div>
+      `;
+      container.appendChild(el);
+
+      // If tee images is an object (colors), wire color select (keeps backwards compatibility)
+      if (p.images && typeof p.images === 'object' && !Array.isArray(p.images)) {
+        // create color select dynamically if not present already
+        const colorKey = `color_${p.id}`;
+        if (!el.querySelector(`#${colorKey}`)) {
+          const colorHtml = `<label style="display:block;text-align:left;font-weight:600">Color</label>
+            <select id="${colorKey}">${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}</select>`;
+          el.insertAdjacentHTML('beforeend', colorHtml);
+          const colorSelect = el.querySelector(`#${colorKey}`);
+          colorSelect.addEventListener('change', (e)=> {
+            const imgEl = el.querySelector(`#${imgId}`);
+            if (imgEl && p.images[e.target.value]) imgEl.src = p.images[e.target.value];
+          });
+        }
+      }
     }
   });
 
+  // after render: attach zoom-follow handlers to any newly created images
   attachZoomFollow();
+  
 }
-
 
 
 /* ===== OPEN/CLOSE common modals & overlay helpers ===== */
