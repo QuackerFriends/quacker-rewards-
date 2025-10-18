@@ -465,11 +465,22 @@ function showCategory(cat) {
   const imgs = Array.from(carousel.querySelectorAll('img'));
   let index = 0;
 
-  const setIndex = (newIdx) => {
-    imgs[index].classList.remove('active');
-    index = (newIdx + imgs.length) % imgs.length;
-    imgs[index].classList.add('active');
-  };
+ const setIndex = (newIdx) => {
+  imgs.forEach((img, i) => {
+    if(i === index) {
+      img.classList.remove('active');
+      img.style.opacity = '0';
+      img.style.position = 'absolute';
+      img.style.pointerEvents = 'none';
+    }
+  });
+  index = (newIdx + imgs.length) % imgs.length;
+  imgs[index].classList.add('active');
+  imgs[index].style.opacity = '1';
+  imgs[index].style.position = 'relative';
+  imgs[index].style.pointerEvents = 'auto';
+};
+
 
   const nextBtn = carousel.querySelector('.next-btn');
   const prevBtn = carousel.querySelector('.prev-btn');
