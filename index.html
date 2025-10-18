@@ -299,7 +299,7 @@ const PRODUCTS = {
     title: "All Characters Tapestry",
     price: 0.03,
     images: [
-      "https://files.catbox.moe/fvvfv3.png" , "https://files.catbox.moe/fvvfv3.png"
+      "https://files.catbox.moe/fvvfv3.png"
     ]
   },
   {
@@ -415,7 +415,7 @@ function showToast(message, type="info", duration=3000){
   setTimeout(()=>el.remove(), duration);
 }
 
-/* ===== RENDER (works for tees & tapestry) ===== */
+/* ===== RENDER (works for tees, keychains & tapestry) ===== */
 function showCategory(cat) {
   currentCategory = cat;
   const container = document.getElementById('items');
@@ -433,10 +433,10 @@ function showCategory(cat) {
     const el = document.createElement('div');
     el.className = 'item';
 
-    // If item has multiple images -> render carousel
+    // If item has multiple images -> render carousel (tapestry, multi-image keychains, etc.)
     if (Array.isArray(p.images) && p.images.length > 1) {
       const imgsHtml = p.images.map((src, i) =>
-        `<img src="${src}" class="${i===0 ? 'active' : ''}" data-index="${i}" alt="${p.title} - ${i+1}" />`
+        `<img src="${src}" class="${i === 0 ? 'active' : ''}" data-index="${i}" alt="${p.title} - ${i + 1}" />`
       ).join('');
 
       el.innerHTML = `
@@ -449,7 +449,9 @@ function showCategory(cat) {
         <div class="price">${p.price.toFixed(4)} ETH</div>
         <div style="margin-top:12px">
           ${ (p.sizes && p.sizes.length) ? `
-            <label style="display:block;text-align:left;font-weight:600">Size</label>
+            <label style="display:block;text-align:left;font-weight:600">
+              ${p.id === "quackheads_keychain" ? "Top Accessory" : "Size"}
+            </label>
             <select id="size_${p.id}">
               ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
             </select>
@@ -461,65 +463,87 @@ function showCategory(cat) {
       `;
       container.appendChild(el);
 
-      // attach carousel behavior
+      // ✅ Carousel logic (same as setupCarousel but inline)
       const carousel = el.querySelector('.carousel');
       const imgs = Array.from(carousel.querySelectorAll('img'));
       let index = 0;
+
       const setIndex = (newIdx) => {
         imgs[index].classList.remove('active');
-        index = newIdx;
+        index = (newIdx + imgs.length) % imgs.length;
         imgs[index].classList.add('active');
       };
-      carousel.querySelector('.next-btn').addEventListener('click', (e)=>{ e.stopPropagation(); setIndex((index+1)%imgs.length); });
-      carousel.querySelector('.prev-btn').addEventListener('click', (e)=>{ e.stopPropagation(); setIndex((index-1+imgs.length)%imgs.length); });
 
-      // swipe support (mobile)
+      carousel.querySelector('.next-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        setIndex(index + 1);
+      });
+
+      carousel.querySelector('.prev-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        setIndex(index - 1);
+      });
+
+      // Swipe support (mobile)
       let startX = null;
-      carousel.addEventListener('touchstart', (ev)=>{ startX = ev.touches[0].clientX; });
-      carousel.addEventListener('touchend', (ev)=>{ if (startX===null) return; const diff = ev.changedTouches[0].clientX - startX; if (diff > 30) setIndex((index-1+imgs.length)%imgs.length); else if (diff < -30) setIndex((index+1)%imgs.length); startX = null; });
+      carousel.addEventListener('touchstart', (ev) => startX = ev.touches[0].clientX);
+      carousel.addEventListener('touchend', (ev) => {
+        if (!startX) return;
+        const diff = ev.changedTouches[0].clientX - startX;
+        if (diff > 30) setIndex(index - 1);
+        else if (diff < -30) setIndex(index + 1);
+        startX = null;
+      });
+
+      // ✅ Auto-slide every 4s
+      let autoSlide = setInterval(() => setIndex(index + 1), 4000);
+
+      // Optional: pause auto-slide when hovering
+      carousel.addEventListener('mouseenter', () => clearInterval(autoSlide));
+      carousel.addEventListener('mouseleave', () => autoSlide = setInterval(() => setIndex(index + 1), 4000));
 
     } else {
-      // single-image items (tees, keychains single image)
+      // single-image items (tees, single-image keychains)
       const imgId = `img_${p.id}`;
       const sizeId = `size_${p.id}`;
       
-     // Hide the size dropdown for Quackheads Keychain specifically
-let labelText = "Size";
-if (p.id === "quackheads_keychain") labelText = "Top Accesory";
+      let labelText = "Size";
+      if (p.id === "quackheads_keychain") labelText = "Top Accessory";
 
-const sizeSelectHtml = (p.sizes && p.sizes.length) ? `
-  <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
-  <select id="${sizeId}">
-    ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-  </select>
-` : '';
+      const sizeSelectHtml = (p.sizes && p.sizes.length) ? `
+        <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
+        <select id="${sizeId}">
+          ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
+        </select>
+      ` : '';
 
-
-
-      // For tees with color objects you might still have p.images as object; handle both
-      const mainSrc = Array.isArray(p.images) ? (p.images[0]||'') : (p.images.Black || Object.values(p.images)[0]);
+      const mainSrc = Array.isArray(p.images)
+        ? (p.images[0] || '')
+        : (p.images.Black || Object.values(p.images)[0]);
 
       el.innerHTML = `
         <img id="${imgId}" src="${mainSrc}" alt="${p.title}" />
         <h3>${p.title}</h3>
         <div class="price">${p.price.toFixed(4)} ETH</div>
-        ${ sizeSelectHtml }
+        ${sizeSelectHtml}
         <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
           <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
         </div>
       `;
       container.appendChild(el);
 
-      // If tee images is an object (colors), wire color select (keeps backwards compatibility)
+      // ✅ Color switching for tees (object-based images)
       if (p.images && typeof p.images === 'object' && !Array.isArray(p.images)) {
-        // create color select dynamically if not present already
         const colorKey = `color_${p.id}`;
         if (!el.querySelector(`#${colorKey}`)) {
-          const colorHtml = `<label style="display:block;text-align:left;font-weight:600">Color</label>
-            <select id="${colorKey}">${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}</select>`;
+          const colorHtml = `
+            <label style="display:block;text-align:left;font-weight:600">Color</label>
+            <select id="${colorKey}">
+              ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
+            </select>`;
           el.insertAdjacentHTML('beforeend', colorHtml);
           const colorSelect = el.querySelector(`#${colorKey}`);
-          colorSelect.addEventListener('change', (e)=> {
+          colorSelect.addEventListener('change', (e) => {
             const imgEl = el.querySelector(`#${imgId}`);
             if (imgEl && p.images[e.target.value]) imgEl.src = p.images[e.target.value];
           });
@@ -528,9 +552,8 @@ const sizeSelectHtml = (p.sizes && p.sizes.length) ? `
     }
   });
 
-  // after render: attach zoom-follow handlers to any newly created images
+  // After render: attach zoom-follow handlers to any newly created images
   attachZoomFollow();
-  
 }
 
 
