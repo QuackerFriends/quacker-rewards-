@@ -294,7 +294,7 @@ const PRODUCTS = {
     { id: "higherducktee", title: "Higher Tee", price: 0, images:{ Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/higher%20black.png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/higher%20white.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" },
 {
   id: "customtee",
-  title: "Customized Quacker Design Tee",
+  title: "Customized Quacker NFT Design Tee",
   price: 0.03,
   hasCustomField: true,
   images: {
@@ -791,7 +791,7 @@ items.forEach(p => {
 let customInputHtml = "";
 if (p.hasCustomField) {
   customInputHtml = `
-    <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Your Quacker Friend ID</label>
+    <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Your Quacker Friend ID# </label>
     <input type="text" id="custom_${p.id}" placeholder="Enter your ID" 
       style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;" />
   `;
