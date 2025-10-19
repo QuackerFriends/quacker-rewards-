@@ -309,6 +309,7 @@ const PRODUCTS = {
 
 
   ],
+  
   plushies: [
     {
     id: "strawberry_quacker",
@@ -873,6 +874,9 @@ function addToCart(prodId){
       // read selects if present
       const colorEl = document.getElementById(`color_${prodId}`);
       const sizeEl = document.getElementById(`size_${prodId}`);
+      const customEl = document.getElementById(`custom_${prodId}`);
+      const customText = customEl ? customEl.value.trim() : null;
+
       const color = colorEl ? colorEl.value : (product.images && typeof product.images === 'object' ? Object.keys(product.images)[0] : '');
       const size = sizeEl ? sizeEl.value : "N/A";
       
