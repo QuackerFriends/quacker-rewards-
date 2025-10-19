@@ -347,47 +347,62 @@ const PRODUCTS = {
   ],
   
   miniplushies: [
-    {
+  {
     id: "ghost_quacker_purple_wizard_hat",
     title: "Ghost Quacker with Purple Wizard Hat",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images//fvvfv3.png"
+    variants: [
+      {
+        name: "No Pad",
+        price: 0.030,
+        images: [
+          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/purple.png"
+        ]
+      },
+      {
+        name: "Moss Pad",
+        price: 0.035,
+        images: [
+          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/purple%20dark.png"
+        ]
+      },
+      {
+        name: "Grass Pad",
+        price: 0.040,
+        images: [
+          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/purple%20light.png"
+        ]
+      }
     ]
   },
   {
-    id: "ghost_quacker_red_wizard_hat",
-    title: "Ghost Quacker with Red Wizard Hat",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images//mhfu3w.png" ,"https://quackerfriends.github.io/quackheads-assets/images//2o5m5o.png"
-    ]
-  },
-     {
-    id: "ghost_quacker_green_wizard_hat",
-    title: "Ghost Quacker with Green Wizard Hat",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images//mhfu3w.png" ,"https://quackerfriends.github.io/quackheads-assets/images//2o5m5o.png"
-    ]
-  },
-     {
     id: "mini_sam",
     title: "Mini Sam",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images//mhfu3w.png" ,"https://quackerfriends.github.io/quackheads-assets/images//2o5m5o.png"
-    ]
-  },
-     {
-    id: "mini_alucard",
-    title: "Mini Alucard",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images//mhfu3w.png" ,"https://quackerfriends.github.io/quackheads-assets/images//2o5m5o.png"
+    variants: [
+      {
+        name: "No Pad",
+        price: 0.030,
+        images: [
+          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/sam.png"
+        ]
+      },
+      {
+        name: "Moss Pad",
+        price: 0.035,
+        images: [
+          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/sam%20dark.png"
+        ]
+      },
+       {
+        name: "Grass Pad",
+        price: 0.030,
+        images: [
+          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/sam%20light.png"
+        ]
+      }
     ]
   }
-  ],
+]
+,
   
   tapestry: [
   {
@@ -536,9 +551,48 @@ function showCategory(cat) {
 
   document.body.classList.add('blur-bg');
 
-  items.forEach(p => {
-    const el = document.createElement('div');
-    el.className = 'item';
+items.forEach(p => {
+  const el = document.createElement('div');
+  el.className = 'item';
+
+  // 🟡 CASE 1: Product has variants (e.g., Mini Plushies)
+  if (p.variants && Array.isArray(p.variants)) {
+    const defaultVar = p.variants[0];
+    const imgId = `img_${p.id}`;
+    const variantId = `variant_${p.id}`;
+
+    el.innerHTML = `
+      <img id="${imgId}" src="${defaultVar.images[0]}" alt="${p.title}" />
+      <h3>${p.title}</h3>
+      <div class="price" id="price_${p.id}">${defaultVar.price.toFixed(3)} ETH</div>
+
+      <label style="display:block;text-align:left;font-weight:600">Variant</label>
+      <select id="${variantId}">
+        ${p.variants.map(v => `<option value="${v.name}">${v.name}</option>`).join('')}
+      </select>
+
+      <div style="margin-top:12px">
+        <button class="btn" onclick="addVariantToCart('${p.id}')">Add to cart</button>
+      </div>
+    `;
+
+    container.appendChild(el);
+
+    // 🟢 Variant change listener
+    const variantSelect = el.querySelector(`#${variantId}`);
+    const imgEl = el.querySelector(`#${imgId}`);
+    const priceEl = el.querySelector(`#price_${p.id}`);
+
+    variantSelect.addEventListener('change', e => {
+      const v = p.variants.find(x => x.name === e.target.value);
+      if (!v) return;
+      imgEl.src = v.images[0];
+      priceEl.textContent = `${v.price.toFixed(3)} ETH`;
+    });
+
+    return; // move to next item
+  }
+
 
     // === If multiple images => Carousel (Tapestry) ===
     if (Array.isArray(p.images) && p.images.length > 1) {
@@ -721,6 +775,33 @@ function addToCart(prodId){
     }
   }
   showToast("Product not found","error");
+}
+
+  function addVariantToCart(prodId) {
+  const catProducts = Object.values(PRODUCTS).flat();
+  const product = catProducts.find(p => p.id === prodId);
+  if (!product || !product.variants) return;
+
+  const variantEl = document.getElementById(`variant_${prodId}`);
+  const variantName = variantEl ? variantEl.value : product.variants[0].name;
+  const selectedVar = product.variants.find(v => v.name === variantName);
+
+  if (!selectedVar) {
+    showToast("Variant not found", "error");
+    return;
+  }
+
+  cart.push({
+    id: product.id,
+    title: product.title,
+    variant: selectedVar.name,
+    price: selectedVar.price,
+    q: 1,
+    thumb: selectedVar.images[0]
+  });
+
+  updateCartUI();
+  showToast(`${product.title} (${selectedVar.name}) added to cart`, "success");
 }
 
 function updateCartUI(){
