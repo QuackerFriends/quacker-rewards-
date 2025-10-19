@@ -806,7 +806,11 @@ if (p.hasCustomField) {
         <div class="price">${p.price.toFixed(4)} ETH</div>
         ${sizeSelectHtml}
     
-        <button class="btn size-guide-btn" style="margin-left:8px;padding:6px 8px;font-size:12px" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
+${p.sizeGuide && p.id.includes("tee") ? `
+  <button class="btn size-guide-btn" 
+    style="margin-left:8px;padding:6px 8px;font-size:12px" 
+    onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
+` : ''}
   
         <div id="colorWrap_${p.id}" style="margin-top:8px"></div>
         <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
@@ -834,15 +838,7 @@ if (p.hasCustomField) {
           const imgEl = el.querySelector(`#${imgId}`);
           if (imgEl && p.images[e.target.value]) imgEl.src = p.images[e.target.value];
         });
-          // 🧡 Add custom text input if this tee allows customization
-  if (p.hasCustomField) {
-    const customFieldHTML = `
-      <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Your Quacker Friend ID</label>
-      <input type="text" id="custom_${p.id}" placeholder="Enter your Quacker Friend ID" 
-        style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;" />
-    `;
-    el.insertAdjacentHTML('beforeend', customFieldHTML);
-  }
+          
 
 
       }
