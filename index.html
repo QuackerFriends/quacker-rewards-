@@ -645,10 +645,7 @@ function showCategory(cat) {
     container.innerHTML = `<div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:var(--shadow);">No items yet in ${cat}.</div>`;
     return;
   }
-  if (item.customText) {
-  html += `<div style="font-size:12px;color:#555;">Custom ID: ${item.customText}</div>`;
-}
-
+ 
 
   document.body.classList.add('blur-bg');
 
@@ -867,48 +864,114 @@ function addTapestryToCart(prodId){
   showToast(`${product.title} added to cart`,"success");
 }
 
-function addToCart(prodId){
-  // prefer searching all categories for the id
+// ---- Add to Cart (handles normal, variants, and custom field items) ----
+function addToCart(prodId) {
+  // Find product in all categories
   let product = null;
   for (const cat of Object.keys(PRODUCTS)) {
-    product = (PRODUCTS[cat]||[]).find(p=>p.id===prodId);
-    if (product) {
-      // store thumbnail (for tapestry, first image; for tees, Black or first)
-      const thumb = product.images?.Black || (Array.isArray(product.images) ? product.images[0] : Object.values(product.images)[0]);
-      // read selects if present
-      const colorEl = document.getElementById(`color_${prodId}`);
-      const sizeEl = document.getElementById(`size_${prodId}`);
-      const customEl = document.getElementById(`custom_${prodId}`);
-      const customEl = document.getElementById
-
-  function addVariantToCart(prodId) {
-  const catProducts = Object.values(PRODUCTS).flat();
-  const product = catProducts.find(p => p.id === prodId);
-  if (!product || !product.variants) return;
-
-  const variantEl = document.getElementById(`variant_${prodId}`);
-  const variantName = variantEl ? variantEl.value : product.variants[0].name;
-  const selectedVar = product.variants.find(v => v.name === variantName);
-
-  if (!selectedVar) {
-    showToast("Variant not found", "error");
+    product = (PRODUCTS[cat] || []).find(p => p.id === prodId);
+    if (product) break;
+  }
+  if (!product) {
+    showToast("Product not found", "error");
     return;
   }
 
-  cart.push({
-    id: product.id,
-    title: product.title,
-    variant: selectedVar.name,
-    size: selectedVar.name,
-    price: selectedVar.price,
-    q: 1,
-    thumb: selectedVar.images[0]
-  });
+  // ✅ If product has variants (like moss/grass pad), handle separately
+  if (product.variants && product.variants.length) {
+    const variantEl = document.getElementById(`variant_${prodId}`);
+    const variantName = variantEl ? variantEl.value : product.variants[0].name;
+    const selectedVar = product.variants.find(v => v.name === variantName);
+
+    if (!selectedVar) {
+      showToast("Variant not found", "error");
+      return;
+    }
+
+    const thumb = selectedVar.images ? selectedVar.images[0] : "";
+    const existing = cart.find(item =>
+      item.id === product.id &&
+      item.variant === selectedVar.name
+    );
+
+    if (existing) {
+      existing.q = (existing.q || 1) + 1;
+    } else {
+      cart.push({
+        id: product.id,
+        title: product.title,
+        variant: selectedVar.name,
+        price: Number(selectedVar.price || 0),
+        q: 1,
+        thumb
+      });
+    }
+
+    updateCartUI();
+    showToast(`${product.title} (${selectedVar.name}) added to cart`, "success");
+    return;
+  }
+
+  // ✅ Otherwise: handle normal or custom-field product
+  const thumb =
+    product.images?.Black ||
+    (Array.isArray(product.images)
+      ? product.images[0]
+      : Object.values(product.images)[0]);
+
+  // read selects / inputs if present
+  const colorEl = document.getElementById(`color_${prodId}`);
+  const sizeEl = document.getElementById(`size_${prodId}`);
+  const customEl = document.getElementById(`custom_${prodId}`);
+
+  const color = colorEl
+    ? colorEl.value
+    : product.images && typeof product.images === "object"
+    ? Object.keys(product.images)[0]
+    : "N/A";
+  const size = sizeEl
+    ? sizeEl.value
+    : product.sizes && product.sizes.length
+    ? product.sizes[0]
+    : "N/A";
+  const customText = customEl ? customEl.value.trim() : "";
+
+  // Validate custom field if required
+  if (product.hasCustomField && !customText) {
+    showToast("Please enter your Quacker Friend ID before adding to cart.", "error");
+    return;
+  }
+
+  // Merge with existing identical item (same id/color/size/customText)
+  const existing = cart.find(
+    (item) =>
+      item.id === product.id &&
+      item.color === color &&
+      item.size === size &&
+      (product.hasCustomField ? item.customText === customText : true)
+  );
+
+  if (existing) {
+    existing.q = (existing.q || 1) + 1;
+  } else {
+    cart.push({
+      id: product.id,
+      title: product.title,
+      price: Number(product.price || 0),
+      color,
+      size,
+      customText: customText || "",
+      q: 1,
+      thumb,
+    });
+  }
 
   updateCartUI();
-  showToast(`${product.title} (${selectedVar.name}) added to cart`, "success");
+  showToast(`${product.title} (${color}, ${size}) added to cart`, "success");
 }
 
+
+  
 function updateCartUI(){
   const countEl = document.getElementById("cartCount");
   const listEl = document.getElementById("cartList");
