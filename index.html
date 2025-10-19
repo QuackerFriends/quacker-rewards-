@@ -296,14 +296,15 @@ const PRODUCTS = {
   id: "customtee",
   title: "Customized Quacker Design Tee",
   price: 0.03,
+   hasCustomField: true,
   images: [
     "https://quackerfriends.github.io/quackheads-assets/images/tees/customtee_1.png",
     "https://quackerfriends.github.io/quackheads-assets/images/tees/customtee_3.png"
   ],
   colors: ["Black", "White"],
   sizes: ["S", "M", "L", "XL"],
-  sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png",
-  hasCustomField: true
+  sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
+ 
 }
 
 
@@ -787,6 +788,17 @@ items.forEach(p => {
         </select>
       ` : '';
 
+      // === Custom Field for Custom Tee ===
+let customInputHtml = "";
+if (p.hasCustomField) {
+  customInputHtml = `
+    <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Your Quacker Friend ID</label>
+    <input type="text" id="custom_${p.id}" placeholder="Enter your ID" 
+      style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;" />
+  `;
+}
+
+
       const mainSrc = Array.isArray(p.images)
         ? (p.images[0] || '')
         : (p.images.Black || Object.values(p.images)[0]);
@@ -798,6 +810,8 @@ items.forEach(p => {
         ${sizeSelectHtml}
         <div id="colorWrap_${p.id}" style="margin-top:8px"></div>
         <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+          ${customInputHtml}
+
           <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
         </div>
       `;
