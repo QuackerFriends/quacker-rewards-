@@ -295,15 +295,18 @@ const PRODUCTS = {
 {
   id: "customtee",
   title: "Customized Quacker Design Tee",
+  basePrice: 0.03,
   price: 0.03,
-  hasCustomField: true,
-  images: {
-    Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/Untitled%20design%20(2).png",
-    White: "https://quackerfriends.github.io/quackheads-assets/images/tees/custom.png"
-  },
+  images: [
+    "https://quackerfriends.github.io/quackheads-assets/images/tees/custom.png",
+    "https://quackerfriends.github.io/quackheads-assets/images/tees/Untitled%20design%20(2).png",
+
+  ],
   sizes: ["S", "M", "L", "XL"],
-  sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
+  sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png",
+  hasCustomField: true
 }
+
 
 
   ],
@@ -806,11 +809,12 @@ if (p.hasCustomField) {
         <div class="price">${p.price.toFixed(4)} ETH</div>
         ${sizeSelectHtml}
     
-${p.sizeGuide && p.id.includes("tee") ? `
+${p.sizeGuide ? `
   <button class="btn size-guide-btn" 
     style="margin-left:8px;padding:6px 8px;font-size:12px" 
     onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
 ` : ''}
+
   
         <div id="colorWrap_${p.id}" style="margin-top:8px"></div>
         <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
