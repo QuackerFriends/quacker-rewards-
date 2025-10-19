@@ -139,8 +139,8 @@ header, .nav-container, .nav-actions, .nav-actions button {
     .sizeguide-modal img{max-width:100%;height:auto;display:block;border-radius:8px}
     .sizeguide-modal .close-btn{position:absolute;right:12px;top:12px;background:transparent;border:none;font-size:20px;cursor:pointer}
 
-    .cart-modal{position:fixed;right:0;top:0;height:100vh;width:420px;background:var(--card);box-shadow:-12px 0 40px rgba(0,0,0,0.12);transform:translateX(110%);transition:transform .28s ease;z-index:2500;padding:18px;display:flex;flex-direction:column}
-    .cart-modal.open{transform:translateX(0); z-index: 2000;}
+    .cart-modal{position:fixed;right:0;top:0;height:100vh;width:420px;background:var(--card);box-shadow:-12px 0 40px rgba(0,0,0,0.12);transform:translateX(110%);transition:transform .28s ease;z-index:z-index: 3000 !important;padding:18px;display:flex;flex-direction:column}
+    .cart-modal.open{transform:translateX(0); z-index: 3000 !important;}
     .cart-modal .close-x{position:absolute;right:12px;top:8px;background:transparent;border:none;font-size:20px;cursor:pointer}
     .cart-list{flex:1;overflow:auto;margin-bottom:12px}
     .cart-item{display:flex;gap:12px;align-items:center;padding:10px;border-bottom:1px solid #f1f1f1}
