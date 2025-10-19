@@ -295,16 +295,17 @@ const PRODUCTS = {
 {
   id: "customtee",
   title: "Customized Quacker Design Tee",
-  basePrice: 0.03,
-  images: {
-    Black: ["https://quackerfriends.github.io/quackheads-assets/images/tees/higher%20black.png"],
-    White: ["https://quackerfriends.github.io/quackheads-assets/images/tees/higher%20white.png"]
-  },
+  price: 0.03,
+  images: [
+    "https://quackerfriends.github.io/quackheads-assets/images/tees/customtee_1.png",
+    "https://quackerfriends.github.io/quackheads-assets/images/tees/customtee_3.png"
+  ],
   colors: ["Black", "White"],
   sizes: ["S", "M", "L", "XL"],
   sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png",
   hasCustomField: true
 }
+
 
 
   ],
@@ -816,6 +817,17 @@ items.forEach(p => {
           const imgEl = el.querySelector(`#${imgId}`);
           if (imgEl && p.images[e.target.value]) imgEl.src = p.images[e.target.value];
         });
+          // 🧡 Add custom text input if this tee allows customization
+  if (p.hasCustomField) {
+    const customFieldHTML = `
+      <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Your Quacker Friend ID</label>
+      <input type="text" id="custom_${p.id}" placeholder="Enter your Quacker Friend ID" 
+        style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;" />
+    `;
+    el.insertAdjacentHTML('beforeend', customFieldHTML);
+  }
+
+
       }
     }
   });
@@ -863,7 +875,17 @@ function addToCart(prodId){
       const sizeEl = document.getElementById(`size_${prodId}`);
       const color = colorEl ? colorEl.value : (product.images && typeof product.images === 'object' ? Object.keys(product.images)[0] : '');
       const size = sizeEl ? sizeEl.value : "N/A";
-      cart.push({ id: product.id, title: product.title, price: product.price, color, size, q:1, thumb });
+      
+      // Read custom text input if this product supports it
+let customText = "";
+if (product.hasCustomField) {
+  const inputEl = document.getElementById(`custom_${prodId}`);
+  if (inputEl && inputEl.value.trim()) {
+    customText = inputEl.value.trim();
+  }
+}
+
+      cart.push({ id: product.id, title: product.title, price: product.price, color, size, q:1, thumb,  customText });
       updateCartUI();
       showToast(`${product.title} (${color}, ${size}) added to cart`,"success");
       return;
