@@ -808,6 +808,14 @@ if (p.hasCustomField) {
         <h3>${p.title}</h3>
         <div class="price">${p.price.toFixed(4)} ETH</div>
         ${sizeSelectHtml}
+        <label style="display:block;text-align:left;font-weight:600">Color</label>
+      <select id="${colorId}">
+        ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
+      </select>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+        <label style="font-weight:600">Size</label>
+        <button class="btn size-guide-btn" style="margin-left:8px;padding:6px 8px;font-size:12px" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
+      </div>
         <div id="colorWrap_${p.id}" style="margin-top:8px"></div>
         <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
           ${customInputHtml}
@@ -858,15 +866,17 @@ if (p.hasCustomField) {
 function showOverlay(){ const ov = document.getElementById('tees'); ov.classList.add('active'); ov.style.display='block'; }
 function hideOverlay(){ const ov = document.getElementById('tees'); ov.classList.remove('active'); ov.style.display='none'; }
 
-// Size guide
+/* ===== SIZE GUIDE POPUP ===== */
 function openSizeGuide(url){
   document.getElementById("sizeGuideImage").src = url;
-  document.getElementById("sizeGuideModal").classList.add("open");
-  showOverlay();
+  const modal = document.getElementById("sizeGuideModal");
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden","false");
 }
 function closeSizeGuide(){
-  document.getElementById("sizeGuideModal").classList.remove("open");
-  hideOverlay();
+  const modal = document.getElementById("sizeGuideModal");
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden","true");
 }
 
 /* ===== CART helpers (add image thumbnails to cart entries so UI is robust) ===== */
