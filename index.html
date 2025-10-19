@@ -707,7 +707,7 @@ items.forEach(p => {
         <h3>${p.title}</h3>
         <div class="price">${p.price.toFixed(4)} ETH</div>
         ${ (p.sizes && p.sizes.length) ? `
-          <label style="display:block;text-align:left;font-weight:600">Size</label>
+          <label style="display:block;text-align:left;font-weight:600">Size</label> 
           <select id="size_${p.id}">
             ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
           </select>
@@ -829,8 +829,7 @@ ${p.sizeGuide ? `
         const colorKey = `color_${p.id}`;
         const colorWrap = el.querySelector(`#colorWrap_${p.id}`);
         const colorHtml = `
-          <label style="display:block;text-align:left;f
-          ont-weight:600">Color</label>
+          <label style="display:block;text-align:left;font-weight:600">Color</label>
           <select id="${colorKey}">
             ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
           </select>`;
