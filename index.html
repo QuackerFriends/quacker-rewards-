@@ -260,15 +260,15 @@ header, .nav-container, .nav-actions, .nav-actions button {
       <div style="margin-top:8px;font-size:12px;color:#666;text-align:center">Network: Base Mainnet</div>
     </div>
   </div>
-
-  <!-- Size guide modal -->
+  
+ <!-- Size guide modal -->
   <div id="sizeGuideModal" class="sizeguide-modal" aria-hidden="true">
     <div class="card">
       <button class="close-btn" onclick="closeSizeGuide()">✕</button>
       <img id="sizeGuideImage" src="" alt="Size guide" />
     </div>
   </div>
-
+  
   <footer>
     <p>Follow Quacker Friends:</p>
     <a href="https://x.com/" target="_blank"><i class="fab fa-x fa-lg"></i></a>
@@ -809,13 +809,10 @@ if (p.hasCustomField) {
         <div class="price">${p.price.toFixed(4)} ETH</div>
         ${sizeSelectHtml}
         <label style="display:block;text-align:left;font-weight:600">Color</label>
-      <select id="${colorId}">
-        ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
-      </select>
-      <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
-        <label style="font-weight:600">Size</label>
+     
+     
         <button class="btn size-guide-btn" style="margin-left:8px;padding:6px 8px;font-size:12px" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
-      </div>
+    
         <div id="colorWrap_${p.id}" style="margin-top:8px"></div>
         <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
           ${customInputHtml}
@@ -830,7 +827,8 @@ if (p.hasCustomField) {
         const colorKey = `color_${p.id}`;
         const colorWrap = el.querySelector(`#colorWrap_${p.id}`);
         const colorHtml = `
-          <label style="display:block;text-align:left;font-weight:600">Color</label>
+          <label style="display:block;text-align:left;f
+          ont-weight:600">Color</label>
           <select id="${colorKey}">
             ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
           </select>`;
@@ -1139,25 +1137,7 @@ const shopMenu = document.getElementById('shopMenu');
 menuBtn.addEventListener('click', (e)=>{ e.stopPropagation(); shopMenu.style.display = shopMenu.style.display === "flex" ? "none" : "flex"; });
 document.addEventListener('click', (e)=>{ if(!menuBtn.contains(e.target) && !shopMenu.contains(e.target)){ shopMenu.style.display = "none"; } });
 
-// clicking overlay closes ephemeral modals (cart remains controlled)
-document.getElementById('modalOverlay').addEventListener('click', ()=>{
-  // close size guide if open
-  const sg = document.getElementById("sizeGuideModal");
-  if (sg.classList.contains('open')) closeSizeGuide();
-  // close profile panel if visible
-  const profile = document.getElementById('profileSection');
-  if (profile.style.display === 'block') profile.style.display = 'none';
-  // if cart open, close it too
-  if (cartModal.classList.contains('open')) closeCart();
-  hideOverlay();
-});
 
-// safety net: remove overlay if no modal open
-document.addEventListener('click', ()=>{
-  const overlay = document.getElementById('modalOverlay');
-  const anyOpen = document.getElementById('sizeGuideModal').classList.contains('open') || cartModal.classList.contains('open');
-  if (!anyOpen) hideOverlay();
-});
 
 // Ensure overlay never blocks clicks when not active
 hideOverlay();
