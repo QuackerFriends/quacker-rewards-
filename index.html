@@ -290,7 +290,20 @@ const PRODUCTS = {
   tees: [
     { id: "battle", title: "Battle Duck Tee", price: 0.0075, images:{ Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/battle%20duck%20black.png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/battle%20duck%20white.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" },
     { id: "sus", title: "Sus Duck Tee", price: 0.0075, images:{ Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/sus%20duck%20black.png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/sus%20duck%20white.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" },
-    { id: "thisisfine", title: "This Is Ducking Fine Tee", price: 0.0075, images:{ Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/this%20is%20fine%20black.png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/this%20is%20fine%20white.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" } ,
+{
+  id: "thisisfine",
+  title: "This Is Ducking Fine Tee",
+  variants: [
+    { name: "T-Shirt", price: 0.0075 },
+    { name: "Drop Shoulder", price: 0.0090 }
+  ],
+  images: {
+    Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/this%20is%20fine%20black.png",
+    White: "https://quackerfriends.github.io/quackheads-assets/images/tees/this%20is%20fine%20white.png"
+  },
+  sizes: ["S","M","L","XL"],
+  sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
+}
     { id: "higherducktee", title: "Higher Tee", price: 0.0075, images:{ Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/higher%20black.png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/higher%20white.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" },
 {
   id: "customtee",
@@ -803,76 +816,101 @@ items.forEach(p => {
 
 
     } else {
-      // === Single image items (Tees, Keychains) ===
-      const imgId = `img_${p.id}`;
-      const sizeId = `size_${p.id}`;
-      let labelText = "Size";
-      if (p.id === "quackheads_keychain") labelText = "Top Accessory";
+      // === Single image items (Tees, Keychains, etc.) ===
+const imgId = `img_${p.id}`;
+const sizeId = `size_${p.id}`;
+let labelText = "Size";
+if (p.id === "quackheads_keychain") labelText = "Top Accessory";
 
-      const sizeSelectHtml = (p.sizes && p.sizes.length) ? `
-        <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
-        <select id="${sizeId}">
-          ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-        </select>
-      ` : '';
+const sizeSelectHtml = (p.sizes && p.sizes.length) ? `
+  <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
+  <select id="${sizeId}">
+    ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
+  </select>
+` : "";
 
-      // === Custom Field for Custom Tee ===
+// === 🆕 Variant dropdown for Tees ===
+let variantSelectHtml = "";
+if (p.title.includes("Tee") || p.id.includes("tee")) {
+  variantSelectHtml = `
+    <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Variant</label>
+    <select id="variant_${p.id}">
+      <option value="T-Shirt" data-price="0.0075">T-Shirt</option>
+      <option value="Drop Shoulder" data-price="0.0090">Drop Shoulder</option>
+    </select>
+  `;
+}
+
+// === Custom Field (optional) ===
 let customInputHtml = "";
 if (p.hasCustomField) {
   customInputHtml = `
-    <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Your Quacker Friend ID# </label>
+    <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Your Quacker Friend ID#</label>
     <input type="text" id="custom_${p.id}" placeholder="Enter your ID" 
       style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;" />
   `;
 }
 
+// === Image handling ===
+const mainSrc = Array.isArray(p.images)
+  ? (p.images[0] || "")
+  : (p.images.Black || Object.values(p.images)[0]);
 
-      const mainSrc = Array.isArray(p.images)
-        ? (p.images[0] || '')
-        : (p.images.Black || Object.values(p.images)[0]);
+el.innerHTML = `
+  <img id="${imgId}" src="${mainSrc}" alt="${p.title}" />
+  <h3>${p.title}</h3>
+  <div class="price" id="price_${p.id}">${p.price.toFixed(4)} ETH</div>
 
-      el.innerHTML = `
-        <img id="${imgId}" src="${mainSrc}" alt="${p.title}" />
-        <h3>${p.title}</h3>
-        <div class="price">${p.price.toFixed(4)} ETH</div>
-        ${sizeSelectHtml}
-    
-${p.sizeGuide ? `
-  <button class="btn size-guide-btn" 
-    style="margin-left:8px;padding:6px 8px;font-size:12px" 
-    onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
-` : ''}
+  ${variantSelectHtml}
+  ${sizeSelectHtml}
 
-  
-        <div id="colorWrap_${p.id}" style="margin-top:8px"></div>
-        <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
-          ${customInputHtml}
+  ${p.sizeGuide ? `
+    <button class="btn size-guide-btn" 
+      style="margin-left:8px;padding:6px 8px;font-size:12px" 
+      onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
+  ` : ""}
 
-          <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
-        </div>
-      `;
-      container.appendChild(el);
+  <div id="colorWrap_${p.id}" style="margin-top:8px"></div>
 
-      // === Tees Color selector (keep color images logic) ===
-      if (p.images && typeof p.images === 'object' && !Array.isArray(p.images)) {
-        const colorKey = `color_${p.id}`;
-        const colorWrap = el.querySelector(`#colorWrap_${p.id}`);
-        const colorHtml = `
-          <label style="display:block;text-align:left;font-weight:600">Color</label>
-          <select id="${colorKey}">
-            ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
-          </select>`;
-        colorWrap.innerHTML = colorHtml;
+  <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+    ${customInputHtml}
+    <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
+  </div>
+`;
 
-        const colorSelect = colorWrap.querySelector(`#${colorKey}`);
-        colorSelect.addEventListener('change', e => {
-          const imgEl = el.querySelector(`#${imgId}`);
-          if (imgEl && p.images[e.target.value]) imgEl.src = p.images[e.target.value];
-        });
-          
+container.appendChild(el);
 
+// === 🧠 Color Selector ===
+if (p.images && typeof p.images === "object" && !Array.isArray(p.images)) {
+  const colorKey = `color_${p.id}`;
+  const colorWrap = el.querySelector(`#colorWrap_${p.id}`);
+  const colorHtml = `
+    <label style="display:block;text-align:left;font-weight:600">Color</label>
+    <select id="${colorKey}">
+      ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
+    </select>`;
+  colorWrap.innerHTML = colorHtml;
 
-      }
+  const colorSelect = colorWrap.querySelector(`#${colorKey}`);
+  colorSelect.addEventListener("change", e => {
+    const imgEl = el.querySelector(`#${imgId}`);
+    if (imgEl && p.images[e.target.value]) imgEl.src = p.images[e.target.value];
+  });
+}
+
+// === 🧮 Variant price update ===
+const variantSelect = el.querySelector(`#variant_${p.id}`);
+if (variantSelect) {
+  variantSelect.addEventListener("change", e => {
+    const selectedOption = e.target.options[e.target.selectedIndex];
+    const newPrice = parseFloat(selectedOption.getAttribute("data-price"));
+    const priceEl = document.querySelector(`#price_${p.id}`);
+    if (priceEl) priceEl.textContent = `${newPrice.toFixed(4)} ETH`;
+  });
+}
+
+      
+      
     }
   });
 
