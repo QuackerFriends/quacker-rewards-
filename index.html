@@ -676,6 +676,22 @@ function showCategory(cat) {
 
   document.body.classList.add('blur-bg');
 
+   function addVariantToCart(prodId) {
+    const product = items.find(p => p.id === prodId);
+    if (!product) return;
+
+    const variantSelect = document.getElementById(`variant_${prodId}`);
+    const selectedVarName = variantSelect ? variantSelect.value : null;
+
+    let selectedVar = product.variants?.find(v => v.name === selectedVarName);
+    if (!selectedVar) selectedVar = product.variants ? product.variants[0] : product;
+
+    // Add to cart (replace with your cart logic)
+    cart.push({ productId: prodId, variant: selectedVar.name, price: selectedVar.price });
+    updateCartUI(); // your existing cart update function
+    alert(`Added ${product.title} - ${selectedVar.name} to cart!`);
+  }
+
 items.forEach(p => {
   const el = document.createElement('div');
   el.className = 'item';
