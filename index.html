@@ -677,269 +677,141 @@ function showToast(message, type="info", duration=3000){
 /* ===== RENDER (works for tees, keychains & tapestry) ===== */
 function showCategory(cat) {
   currentCategory = cat;
-  const container = document.getElementById('items');
+  const container = document.getElementById("items");
   const items = PRODUCTS[cat] || [];
-  container.innerHTML = '';
+  container.innerHTML = "";
 
   if (items.length === 0) {
     container.innerHTML = `<div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:var(--shadow);">No items yet in ${cat}.</div>`;
     return;
   }
- 
 
-  document.body.classList.add('blur-bg');
+  document.body.classList.add("blur-bg");
 
+  items.forEach(p => {
+    const el = document.createElement("div");
+    el.className = "item";
 
-items.forEach(p => {
-  const el = document.createElement('div');
-  el.className = 'item';
-
-  // 🟡 CASE 1: Product has variants (e.g., Mini Plushies)
-  if (p.variants && Array.isArray(p.variants)) {
-  const defaultVar = p.variants[0];
-  const imgId = `img_${p.id}`;
-  const variantId = `variant_${p.id}`;
-
-  // pick default image
-  const defaultImg =
-    (p.images && typeof p.images === "object")
-      ? Object.values(p.images)[0]
-      : defaultVar.images?.[0] || "";
-
-  el.innerHTML = `
-    <img id="${imgId}" src="${defaultImg}" alt="${p.title}" />
-    <h3>${p.title}</h3>
-    <div class="price" id="price_${p.id}">${defaultVar.price.toFixed(4)} ETH</div>
-
-    <label style="display:block;text-align:left;font-weight:600">Variant</label>
-    <select id="${variantId}">
-      ${p.variants.map(v => `<option value="${v.name}" data-price="${v.price}">${v.name}</option>`).join('')}
-    </select>
-
-    ${p.sizes ? `
-      <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Size</label>
-      <select id="size_${p.id}">
-        ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-      </select>
-    ` : ""}
-
-    <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Color</label>
-    <select id="color_${p.id}">
-      ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
-    </select>
-
-    <div style="margin-top:12px">
-      <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
-    </div>
-  `;
-
-  container.appendChild(el);
-
-  // 🟢 variant listener
-  const variantSelect = el.querySelector(`#${variantId}`);
-  const imgEl = el.querySelector(`#${imgId}`);
-  const priceEl = el.querySelector(`#price_${p.id}`);
-
-  variantSelect.addEventListener("change", (e) => {
-    const selectedOption = e.target.options[e.target.selectedIndex];
-    const newPrice = parseFloat(selectedOption.getAttribute("data-price"));
-    priceEl.textContent = `${newPrice.toFixed(4)} ETH`;
-  });
-
-  // 🟢 color listener
-  const colorSelect = el.querySelector(`#color_${p.id}`);
-  colorSelect.addEventListener("change", (e) => {
-    const newColor = e.target.value;
-    imgEl.src = p.images[newColor] || defaultImg;
-  });
-
-  return; // safely continue to next product
-}
-
-
-    // === If multiple images => Carousel (Tapestry) ===
-    if (Array.isArray(p.images) && p.images.length > 1) {
-      const imgsHtml = p.images.map((src, i) =>
-        `<img src="${src}" class="${i === 0 ? 'active' : ''}" data-index="${i}" alt="${p.title} ${i+1}" />`
-      ).join('');
+    // 🧸 CASE 1: Mini Plushies (have variants but not tees)
+    if (p.variants && Array.isArray(p.variants) && !p.title.includes("Tee")) {
+      const defaultVar = p.variants[0];
+      const imgId = `img_${p.id}`;
+      const variantId = `variant_${p.id}`;
 
       el.innerHTML = `
-        <div class="carousel" id="carousel_${p.id}">
-          ${imgsHtml}
-          <button class="prev-btn" aria-label="Previous">‹</button>
-          <button class="next-btn" aria-label="Next">›</button>
-        </div>
+        <img id="${imgId}" src="${defaultVar.images?.[0] || ""}" alt="${p.title}" />
         <h3>${p.title}</h3>
-        <div class="price">${p.price.toFixed(4)} ETH</div>
-        ${ (p.sizes && p.sizes.length) ? `
-          <label style="display:block;text-align:left;font-weight:600">Size</label> 
-          <select id="size_${p.id}">
-            ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-          </select>
-        ` : '' }
+        <div class="price" id="price_${p.id}">${defaultVar.price.toFixed(4)} ETH</div>
+
+        <label style="display:block;text-align:left;font-weight:600">Variant</label>
+        <select id="${variantId}">
+          ${p.variants.map(v => `<option value="${v.name}">${v.name}</option>`).join("")}
+        </select>
+
         <div style="margin-top:12px">
           <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
         </div>
       `;
-     container.appendChild(el);
+      container.appendChild(el);
 
-// --- FIXED Carousel logic (scoped safely for each item) ---
-(() => {
-  const carousel = el.querySelector('.carousel');
-  const imgs = Array.from(carousel.querySelectorAll('img'));
-  let index = 0;
+      const variantSelect = el.querySelector(`#${variantId}`);
+      const imgEl = el.querySelector(`#${imgId}`);
+      const priceEl = el.querySelector(`#price_${p.id}`);
 
- const setIndex = (newIdx) => {
-  imgs.forEach((img, i) => {
-    if(i === index) {
-      img.classList.remove('active');
-      img.style.opacity = '0';
-      img.style.position = 'absolute';
-      img.style.pointerEvents = 'none';
+      variantSelect.addEventListener("change", e => {
+        const v = p.variants.find(x => x.name === e.target.value);
+        if (!v) return;
+        imgEl.src = v.images?.[0] || imgEl.src;
+        priceEl.textContent = `${v.price.toFixed(4)} ETH`;
+      });
+      return;
     }
-  });
-  index = (newIdx + imgs.length) % imgs.length;
-  imgs[index].classList.add('active');
-  imgs[index].style.opacity = '1';
-  imgs[index].style.position = 'relative';
-  imgs[index].style.pointerEvents = 'auto';
-};
 
+    // 👕 CASE 2: Tees, Keychains, Custom, etc.
+    const imgId = `img_${p.id}`;
+    const sizeId = `size_${p.id}`;
+    const variantId = `variant_${p.id}`;
+    let labelText = p.id === "quackheads_keychain" ? "Top Accessory" : "Size";
 
-  const nextBtn = carousel.querySelector('.next-btn');
-  const prevBtn = carousel.querySelector('.prev-btn');
+    const mainSrc = Array.isArray(p.images)
+      ? p.images[0]
+      : (p.images.Black || Object.values(p.images || {})[0]);
 
-  nextBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    setIndex(index + 1);
-  });
-  prevBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    setIndex(index - 1);
-  });
+    const sizeSelectHtml = p.sizes
+      ? `
+        <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
+        <select id="${sizeId}">
+          ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join("")}
+        </select>`
+      : "";
 
-  // Swipe support (mobile)
-  let startX = null;
-  carousel.addEventListener('touchstart', (ev) => startX = ev.touches[0].clientX);
-  carousel.addEventListener('touchend', (ev) => {
-    if (!startX) return;
-    const diff = ev.changedTouches[0].clientX - startX;
-    if (diff > 30) setIndex(index - 1);
-    else if (diff < -30) setIndex(index + 1);
-    startX = null;
-  });
+    const variantSelectHtml =
+      p.title.includes("Tee") || p.id.includes("tee")
+        ? `
+          <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Variant</label>
+          <select id="${variantId}">
+            <option value="T-Shirt" data-price="0.0075">T-Shirt</option>
+            <option value="Drop Shoulder" data-price="0.0090">Drop Shoulder</option>
+          </select>`
+        : "";
 
-  // Auto-slide (independent per carousel)
-  let autoSlide = setInterval(() => setIndex(index + 1), 4000);
-  carousel.addEventListener('mouseenter', () => clearInterval(autoSlide));
-  carousel.addEventListener('mouseleave', () => {
-    autoSlide = setInterval(() => setIndex(index + 1), 4000);
-  });
-})();
+    const customInputHtml = p.hasCustomField
+      ? `
+        <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Your Quacker Friend ID#</label>
+        <input type="text" id="custom_${p.id}" placeholder="Enter your ID"
+          style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;" />`
+      : "";
 
+    el.innerHTML = `
+      <img id="${imgId}" src="${mainSrc}" alt="${p.title}" />
+      <h3>${p.title}</h3>
+      <div class="price" id="price_${p.id}">${p.price.toFixed(4)} ETH</div>
+      ${variantSelectHtml}
+      ${sizeSelectHtml}
+      ${p.sizeGuide ? `<button class="btn size-guide-btn" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>` : ""}
+      <div id="colorWrap_${p.id}" style="margin-top:8px"></div>
+      ${customInputHtml}
+      <div style="margin-top:12px">
+        <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
+      </div>
+    `;
 
-    } else {
-      // === Single image items (Tees, Keychains, etc.) ===
-const imgId = `img_${p.id}`;
-const sizeId = `size_${p.id}`;
-let labelText = "Size";
-if (p.id === "quackheads_keychain") labelText = "Top Accessory";
+    container.appendChild(el);
 
-const sizeSelectHtml = (p.sizes && p.sizes.length) ? `
-  <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
-  <select id="${sizeId}">
-    ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-  </select>
-` : "";
+    // 🎨 Color dropdown
+    if (p.images && typeof p.images === "object" && !Array.isArray(p.images)) {
+      const colorKey = `color_${p.id}`;
+      const colorWrap = el.querySelector(`#colorWrap_${p.id}`);
+      const colorHtml = `
+        <label style="display:block;text-align:left;font-weight:600">Color</label>
+        <select id="${colorKey}">
+          ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join("")}
+        </select>`;
+      colorWrap.innerHTML = colorHtml;
 
-// === 🆕 Variant dropdown for Tees ===
-let variantSelectHtml = "";
-if (p.title.includes("Tee") || p.id.includes("tee")) {
-  variantSelectHtml = `
-    <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Variant</label>
-    <select id="variant_${p.id}">
-      <option value="T-Shirt" data-price="0.0075">T-Shirt</option>
-      <option value="Drop Shoulder" data-price="0.0090">Drop Shoulder</option>
-    </select>
-  `;
-}
+      const colorSelect = colorWrap.querySelector(`#${colorKey}`);
+      colorSelect.addEventListener("change", e => {
+        const imgEl = el.querySelector(`#${imgId}`);
+        imgEl.src = p.images[e.target.value];
+      });
+    }
 
-// === Custom Field (optional) ===
-let customInputHtml = "";
-if (p.hasCustomField) {
-  customInputHtml = `
-    <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Your Quacker Friend ID#</label>
-    <input type="text" id="custom_${p.id}" placeholder="Enter your ID" 
-      style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;" />
-  `;
-}
-
-// === Image handling ===
-const mainSrc = Array.isArray(p.images)
-  ? (p.images[0] || "")
-  : (p.images.Black || Object.values(p.images)[0]);
-
-el.innerHTML = `
-  <img id="${imgId}" src="${mainSrc}" alt="${p.title}" />
-  <h3>${p.title}</h3>
-  <div class="price" id="price_${p.id}">${p.price.toFixed(4)} ETH</div>
-
-  ${variantSelectHtml}
-  ${sizeSelectHtml}
-
-  ${p.sizeGuide ? `
-    <button class="btn size-guide-btn" 
-      style="margin-left:8px;padding:6px 8px;font-size:12px" 
-      onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
-  ` : ""}
-
-  <div id="colorWrap_${p.id}" style="margin-top:8px"></div>
-
-  <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
-    ${customInputHtml}
-    <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
-  </div>
-`;
-
-container.appendChild(el);
-
-// === 🧠 Color Selector ===
-if (p.images && typeof p.images === "object" && !Array.isArray(p.images)) {
-  const colorKey = `color_${p.id}`;
-  const colorWrap = el.querySelector(`#colorWrap_${p.id}`);
-  const colorHtml = `
-    <label style="display:block;text-align:left;font-weight:600">Color</label>
-    <select id="${colorKey}">
-      ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
-    </select>`;
-  colorWrap.innerHTML = colorHtml;
-
-  const colorSelect = colorWrap.querySelector(`#${colorKey}`);
-  colorSelect.addEventListener("change", e => {
-    const imgEl = el.querySelector(`#${imgId}`);
-    if (imgEl && p.images[e.target.value]) imgEl.src = p.images[e.target.value];
-  });
-}
-
-// === 🧮 Variant price update ===
-const variantSelect = el.querySelector(`#variant_${p.id}`);
-if (variantSelect) {
-  variantSelect.addEventListener("change", e => {
-    const selectedOption = e.target.options[e.target.selectedIndex];
-    const newPrice = parseFloat(selectedOption.getAttribute("data-price"));
-    const priceEl = document.querySelector(`#price_${p.id}`);
-    if (priceEl) priceEl.textContent = `${newPrice.toFixed(4)} ETH`;
-  });
-}
-
-      
-      
+    // 💰 Variant price update for tees
+    const variantSelect = el.querySelector(`#${variantId}`);
+    if (variantSelect) {
+      variantSelect.addEventListener("change", e => {
+        const newPrice = parseFloat(
+          e.target.options[e.target.selectedIndex].getAttribute("data-price")
+        );
+        const priceEl = el.querySelector(`#price_${p.id}`);
+        priceEl.textContent = `${newPrice.toFixed(4)} ETH`;
+      });
     }
   });
 
-  // restore zoom/hover effects
   attachZoomFollow();
 }
+
 
 
 
@@ -971,117 +843,69 @@ function addTapestryToCart(prodId){
 
 // ---- Add to Cart (handles normal, variants, and custom field items) ----
 function addToCart(prodId) {
-  // Find product in all categories
   let product = null;
   for (const cat of Object.keys(PRODUCTS)) {
     product = (PRODUCTS[cat] || []).find(p => p.id === prodId);
     if (product) break;
   }
-  if (!product) {
-    showToast("Product not found", "error");
-    return;
-  }
+  if (!product) return showToast("Product not found", "error");
 
- // ✅ If product has variants (like moss/grass pad, Mini Plushies, etc.)
-if (product.variants && product.variants.length) {
-  const variantEl = document.getElementById(`variant_${prodId}`);
-  const variantName = variantEl ? variantEl.value : product.variants[0].name;
-  const selectedVar = product.variants.find(v => v.name === variantName);
-
-  if (!selectedVar) {
-    showToast("Variant not found", "error");
-    return;
-  }
-
-  const thumb = selectedVar.images?.[0] || product.images?.[0] || "";
-  const variantPrice = Number(selectedVar.price || product.price || 0);
-
-  // 🟡 merge variant and base id
-  const existing = cart.find(item =>
-    item.id === product.id &&
-    item.variant === selectedVar.name
-  );
-
-  if (existing) {
-    existing.q += 1;
-  } else {
-    cart.push({
-      id: product.id,
-      title: product.title,
-      variant: selectedVar.name,
-      price: variantPrice,
-      q: 1,
-      thumb
-    });
-  }
-
-  updateCartUI();
-  showToast(`${product.title} (${selectedVar.name}) added to cart`, "success");
-  return;
-}
-
-
-  // ✅ Otherwise: handle normal or custom-field product
   const thumb =
     product.images?.Black ||
     (Array.isArray(product.images)
       ? product.images[0]
-      : Object.values(product.images)[0]);
+      : Object.values(product.images || {})[0]);
 
-  // read selects / inputs if present
   const colorEl = document.getElementById(`color_${prodId}`);
   const sizeEl = document.getElementById(`size_${prodId}`);
+  const variantEl = document.getElementById(`variant_${prodId}`);
   const customEl = document.getElementById(`custom_${prodId}`);
 
-  const color = colorEl
-    ? colorEl.value
-    : product.images && typeof product.images === "object"
-    ? Object.keys(product.images)[0]
-    : "N/A";
-  const size = sizeEl
-    ? sizeEl.value
-    : product.sizes && product.sizes.length
-    ? product.sizes[0]
-    : "N/A";
+  const color = colorEl ? colorEl.value : "Default";
+  const size = sizeEl ? sizeEl.value : "N/A";
+  const variant = variantEl ? variantEl.value : "Default";
   const customText = customEl ? customEl.value.trim() : "";
-  // Merge Quacker ID into size if desired
-const finalSize = customText ? `${size} (ID: ${customText})` : size;
 
-
-  // Validate custom field if required
   if (product.hasCustomField && !customText) {
     showToast("Please enter your Quacker Friend ID before adding to cart.", "error");
     return;
   }
 
-  // Merge with existing identical item (same id/color/size/customText)
+  const variantPrice = variantEl
+    ? parseFloat(
+        variantEl.options[variantEl.selectedIndex].getAttribute("data-price") || product.price
+      )
+    : product.price;
+
+  const finalSize = customText ? `${size} (ID: ${customText})` : size;
+
   const existing = cart.find(
-    (item) =>
+    item =>
       item.id === product.id &&
+      item.variant === variant &&
       item.color === color &&
-      item.size === size &&
-      (product.hasCustomField ? item.customText === customText : true)
+      item.size === finalSize
   );
 
-  if (existing) {
-    existing.q = (existing.q || 1) + 1;
-  } else {
+  if (existing) existing.q += 1;
+  else {
     cart.push({
       id: product.id,
       title: product.title,
-      price: Number(product.price || 0),
+      price: variantPrice,
       color,
-      size,
-      size: finalSize, // 🟡 changed from just 'size'
-      customText: customText || "",
+      size: finalSize,
+      variant,
+      customText,
       q: 1,
       thumb,
     });
   }
 
   updateCartUI();
-  showToast(`${product.title} (${color}, ${size}) added to cart`, "success");
+  showToast(`${product.title} (${variant}, ${color}, ${size}) added to cart`, "success");
 }
+
 
 
   
