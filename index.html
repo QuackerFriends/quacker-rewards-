@@ -25,7 +25,7 @@
       margin:0;padding:0;color:#222;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;position:relative;
     }
     body::before{
-      content:"";position:fixed;inset:0;background:url('https://quackerfriends.github.io/quackheads-assets/images//n3gp1o.png') no-repeat center center fixed;background-size:cover;z-index:-1;transition:filter .4s;pointer-events:none;
+      content:"";position:fixed;inset:0;background:url('https://files.catbox.moe/n3gp1o.png') no-repeat center center fixed;background-size:cover;z-index:-1;transition:filter .4s;pointer-events:none;
     }
     body.blur-bg::before{filter:blur(6px) brightness(.7);}
 
@@ -208,7 +208,6 @@ header, .nav-container, .nav-actions, .nav-actions button {
         <button class="btn secondary" id="menuBtn">Shop ▾</button>
         <div id="shopMenu">
           <button class="dropdown-item" onclick="showCategory('tees')">Tees</button>
-          <button class="dropdown-item" onclick="showCategory('miniplushies')">Mini Plushies</button>
           <button class="dropdown-item" onclick="showCategory('plushies')">Plushies</button>
           <button class="dropdown-item" onclick="showCategory('tapestry')">Tapestry</button>
           <button class="dropdown-item" onclick="showCategory('keychains')">Keychains</button>
@@ -288,129 +287,19 @@ const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 /* ===== PRODUCTS ===== */
 const PRODUCTS = {
   tees: [
-    { id: "battle", title: "Battle Duck Tee", price: 0, images:{ Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/battle%20duck%20black.png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/battle%20duck%20white.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" },
-    { id: "sus", title: "Sus Duck Tee", price: 0, images:{ Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/sus%20duck%20black.png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/sus%20duck%20white.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" },
-    { id: "thisisfine", title: "This Is Ducking Fine Tee", price: 0, images:{ Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/this%20is%20fine%20black.png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/this%20is%20fine%20white.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" } ,
-    { id: "higherducktee", title: "Higher Tee", price: 0, images:{ Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/higher%20black.png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/higher%20white.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" }
-
+    { id: "battle", title: "Battle Duck Tee", price: 0, images:{ Black: "https://files.catbox.moe/dw04zw.png", White: "https://files.catbox.moe/d6zm2s.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://files.catbox.moe/ynmqnw.png" },
+    { id: "higher", title: "Higher Duck Tee", price: 0, images:{ Black: "https://files.catbox.moe/qi081o.png", White: "https://files.catbox.moe/0gn3r2.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://files.catbox.moe/ynmqnw.png" },
+    { id: "sus", title: "Sus Duck Tee", price: 0, images:{ Black: "https://files.catbox.moe/zqtvvw.png", White: "https://files.catbox.moe/mgu7nu.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://files.catbox.moe/ynmqnw.png" },
+    { id: "thisisfine", title: "This Is Fine Tee", price: 0, images:{ Black: "https://files.catbox.moe/nbl7st.png", White: "https://files.catbox.moe/5n618u.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://files.catbox.moe/41dvss.png" }
   ],
-  plushies: [
-    {
-    id: "strawberry_quacker",
-    title: "Strawberry Quacker",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images/plushies/Strawberry%20Quacker.png"
-    ]
-  },
-    
-  {
-    id: "mosswing_quacker",
-    title: "Mosswing Quacker",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images/plushies/Mosswing%20Quacker.png" 
-    ]
-  },
-     {
-    id: "azurewing_quacker",
-    title: "Azurewing Quacker",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images/plushies/Azurewing%20Quacker.png" 
-    ]
-  },
-     {
-    id: "pumpkin_beanie_alucard",
-    title: "Pumpkin Beanie Alucard",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images/plushies/Pumpkin%20Beanie%20Alucard.png" 
-    ]
-  },
-     {
-    id: "alucard",
-    title: "Alucard",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images/plushies/Alucard.png"
-    ]
-  },
-     {
-    id: "kirby",
-    title: "Kirby",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images/plushies/Kirby.png"
-    ]
-     }
-  ],
-  
-  miniplushies: [
-  {
-    id: "ghost_quacker_purple_wizard_hat",
-    title: "Ghost Quacker with Purple Wizard Hat",
-    variants: [
-      {
-        name: "No Pad",
-        price: 0.030,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/purple.png"
-        ]
-      },
-      {
-        name: "Moss Pad",
-        price: 0.035,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/purple%20dark.png"
-        ]
-      },
-      {
-        name: "Grass Pad",
-        price: 0.040,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/purple%20light.png"
-        ]
-      }
-    ]
-  },
-  {
-    id: "mini_sam",
-    title: "Mini Sam",
-    variants: [
-      {
-        name: "No Pad",
-        price: 0.030,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/sam.png"
-        ]
-      },
-      {
-        name: "Moss Pad",
-        price: 0.035,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/sam%20dark.png"
-        ]
-      },
-       {
-        name: "Grass Pad",
-        price: 0.030,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/sam%20light.png"
-        ]
-      }
-    ]
-  }
-]
-,
-  
+  plushies: [],
   tapestry: [
   {
     id: "all_characters_tapestry",
     title: "All Characters Tapestry",
     price: 0.03,
     images: [
-      "https://quackerfriends.github.io/quackheads-assets/images//fvvfv3.png"
+      "https://files.catbox.moe/fvvfv3.png"
     ]
   },
   {
@@ -418,7 +307,7 @@ const PRODUCTS = {
     title: "Alucard Tapestry",
     price: 0.03,
     images: [
-      "https://quackerfriends.github.io/quackheads-assets/images//mhfu3w.png" ,"https://quackerfriends.github.io/quackheads-assets/images//2o5m5o.png"
+      "https://files.catbox.moe/mhfu3w.png" ,"https://files.catbox.moe/2o5m5o.png"
     ]
   },
   {
@@ -426,7 +315,7 @@ const PRODUCTS = {
     title: "Sam Tapestry",
     price: 0.03,
     images: [
-      "https://quackerfriends.github.io/quackheads-assets/images//yd9d3t.png" , "https://quackerfriends.github.io/quackheads-assets/images//6ictom.png"
+      "https://files.catbox.moe/yd9d3t.png" , "https://files.catbox.moe/6ictom.png"
     ]
   },
   {
@@ -434,7 +323,7 @@ const PRODUCTS = {
     title: "Tipu Tapestry",
     price: 0.03,
     images: [
-      "https://quackerfriends.github.io/quackheads-assets/images//8s9x67.png" , "https://quackerfriends.github.io/quackheads-assets/images//nrz3bw.png"
+      "https://files.catbox.moe/8s9x67.png" , "https://files.catbox.moe/nrz3bw.png"
     ]
   },
   {
@@ -442,11 +331,11 @@ const PRODUCTS = {
     title: "Yumeko Tapestry",
     price: 0.03,
     images: [
-      "https://quackerfriends.github.io/quackheads-assets/images//jjmlg1.png" , "https://quackerfriends.github.io/quackheads-assets/images//kg72t2.png"
+      "https://files.catbox.moe/jjmlg1.png" , "https://files.catbox.moe/kg72t2.png"
     ]
   }
-], 
-  
+]
+, 
     keychains: [
     {
       id: "alucard_keychain",
@@ -454,7 +343,7 @@ const PRODUCTS = {
       price: 0.015,
     
       images: [ 
-         "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Alucard.png" ,  "https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Alucard.png" 
+         "https://files.catbox.moe/zi9q31.png" 
       ]
     },
     {
@@ -462,62 +351,51 @@ const PRODUCTS = {
       title: "Cosmic Head Keychain",
       price: 0.015,
       
-      images: [ 
-         "https://QuackerFriends.github.io/quackheads-assets/images/keychain/cosmichead.png" ,  "https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Cosmichead.png" 
-      ]
+      images: ["https://files.catbox.moe/j7eg63.png"]
     },
     {
       id: "ghostduck_green_keychain",
       title: "Ghost Duck – Green Wizard Hat",
       price: 0.015,
       
-      images:[ 
-         "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Ghost%20Duck%20with%20Green%20Wizard%20Hat.png" ,  "https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Ghost%20Duck%20with%20Green%20Wizard%20Hat.png" 
-      ]
+      images: ["https://files.catbox.moe/vdikpt.png"]
     },
     {
       id: "ghostduck_purple_keychain",
       title: "Ghost Duck – Purple Wizard Hat",
       price: 0.015,
       
-      images: [ 
-         "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Ghost%20Duck%20with%20Purple%20Wizard%20Hat.png" ,  "https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Ghost%20Duck%20with%20Purple%20Wizard%20Hat.png" 
-      ]
+      images: ["https://files.catbox.moe/2g5kn1.png"]
     },
     {
       id: "ghostduck_red_keychain",
       title: "Ghost Duck – Red Wizard Hat",
       price: 0.015,
-      images: [ 
-         "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Ghost%20Duck%20with%20Red%20Wizard%20Hat.png" ,  "https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Ghost%20Duck%20with%20Red%20Wizard%20Hat.png" 
-      ]
+      images: ["https://files.catbox.moe/vqnc8x.png"]
     },
 
     {
       id: "sam_keychain",
       title: "Sam Keychain",
       price: 0.015,
-      images: [ 
-         "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Sam.png" ,  "https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Sam.png" 
-      ]
+      images: ["https://files.catbox.moe/tzcg0h.png"]
     } ,
       {
   id: "quackheads_keychain",
   title: "Quackheads Keychain",
   price: 0,
      
-     sizes: ["Bucket Hat", "Headphones", "Sprout"],
-      images: [ 
-         "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Quackheads.png" ,  "https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Quackheads.png" 
-      ] ,
-        images: {
-    Green: "https://quackerfriends.github.io/quackheads-assets/images//gnm9n0.png",
-    Mustard: "https://quackerfriends.github.io/quackheads-assets/images//gnm9n0.png",
-    Pink: "https://quackerfriends.github.io/quackheads-assets/images//gnm9n0.png"
+     sizes: ["Green", "Mustard", "Pink"],
+      images: ["https://files.catbox.moe/gnm9n0.png"] ,
+  images: {
+    Green: "https://files.catbox.moe/gnm9n0.png",
+    Mustard: "https://files.catbox.moe/gnm9n0.png",
+    Pink: "https://files.catbox.moe/gnm9n0.png"
   }
 }
   ]
 
+  
 
 };
 
@@ -551,48 +429,9 @@ function showCategory(cat) {
 
   document.body.classList.add('blur-bg');
 
-items.forEach(p => {
-  const el = document.createElement('div');
-  el.className = 'item';
-
-  // 🟡 CASE 1: Product has variants (e.g., Mini Plushies)
-  if (p.variants && Array.isArray(p.variants)) {
-    const defaultVar = p.variants[0];
-    const imgId = `img_${p.id}`;
-    const variantId = `variant_${p.id}`;
-
-    el.innerHTML = `
-      <img id="${imgId}" src="${defaultVar.images[0]}" alt="${p.title}" />
-      <h3>${p.title}</h3>
-      <div class="price" id="price_${p.id}">${defaultVar.price.toFixed(3)} ETH</div>
-
-      <label style="display:block;text-align:left;font-weight:600">Variant</label>
-      <select id="${variantId}">
-        ${p.variants.map(v => `<option value="${v.name}">${v.name}</option>`).join('')}
-      </select>
-
-      <div style="margin-top:12px">
-        <button class="btn" onclick="addVariantToCart('${p.id}')">Add to cart</button>
-      </div>
-    `;
-
-    container.appendChild(el);
-
-    // 🟢 Variant change listener
-    const variantSelect = el.querySelector(`#${variantId}`);
-    const imgEl = el.querySelector(`#${imgId}`);
-    const priceEl = el.querySelector(`#price_${p.id}`);
-
-    variantSelect.addEventListener('change', e => {
-      const v = p.variants.find(x => x.name === e.target.value);
-      if (!v) return;
-      imgEl.src = v.images[0];
-      priceEl.textContent = `${v.price.toFixed(3)} ETH`;
-    });
-
-    return; // move to next item
-  }
-
+  items.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'item';
 
     // === If multiple images => Carousel (Tapestry) ===
     if (Array.isArray(p.images) && p.images.length > 1) {
@@ -775,33 +614,6 @@ function addToCart(prodId){
     }
   }
   showToast("Product not found","error");
-}
-
-  function addVariantToCart(prodId) {
-  const catProducts = Object.values(PRODUCTS).flat();
-  const product = catProducts.find(p => p.id === prodId);
-  if (!product || !product.variants) return;
-
-  const variantEl = document.getElementById(`variant_${prodId}`);
-  const variantName = variantEl ? variantEl.value : product.variants[0].name;
-  const selectedVar = product.variants.find(v => v.name === variantName);
-
-  if (!selectedVar) {
-    showToast("Variant not found", "error");
-    return;
-  }
-
-  cart.push({
-    id: product.id,
-    title: product.title,
-    variant: selectedVar.name,
-    price: selectedVar.price,
-    q: 1,
-    thumb: selectedVar.images[0]
-  });
-
-  updateCartUI();
-  showToast(`${product.title} (${selectedVar.name}) added to cart`, "success");
 }
 
 function updateCartUI(){
