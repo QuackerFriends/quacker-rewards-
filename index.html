@@ -696,42 +696,65 @@ items.forEach(p => {
 
   // 🟡 CASE 1: Product has variants (e.g., Mini Plushies)
   if (p.variants && Array.isArray(p.variants)) {
-    const defaultVar = p.variants[0];
-    const imgId = `img_${p.id}`;
-    const variantId = `variant_${p.id}`;
+  const defaultVar = p.variants[0];
+  const imgId = `img_${p.id}`;
+  const variantId = `variant_${p.id}`;
 
-    el.innerHTML = `
-      <img id="${imgId}" src="${defaultVar.images[0]}" alt="${p.title}" />
-      <h3>${p.title}</h3>
-      <div class="price" id="price_${p.id}">${defaultVar.price.toFixed(3)} ETH</div>
+  // pick default image
+  const defaultImg =
+    (p.images && typeof p.images === "object")
+      ? Object.values(p.images)[0]
+      : defaultVar.images?.[0] || "";
 
-      <label style="display:block;text-align:left;font-weight:600">Variant</label>
-      <select id="${variantId}">
-        ${p.variants.map(v => `<option value="${v.name}">${v.name}</option>`).join('')}
+  el.innerHTML = `
+    <img id="${imgId}" src="${defaultImg}" alt="${p.title}" />
+    <h3>${p.title}</h3>
+    <div class="price" id="price_${p.id}">${defaultVar.price.toFixed(4)} ETH</div>
+
+    <label style="display:block;text-align:left;font-weight:600">Variant</label>
+    <select id="${variantId}">
+      ${p.variants.map(v => `<option value="${v.name}" data-price="${v.price}">${v.name}</option>`).join('')}
+    </select>
+
+    ${p.sizes ? `
+      <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Size</label>
+      <select id="size_${p.id}">
+        ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
       </select>
+    ` : ""}
 
-      <div style="margin-top:12px">
-        <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
+    <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Color</label>
+    <select id="color_${p.id}">
+      ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
+    </select>
 
-      </div>
-    `;
+    <div style="margin-top:12px">
+      <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
+    </div>
+  `;
 
-    container.appendChild(el);
+  container.appendChild(el);
 
-    // 🟢 Variant change listener
-    const variantSelect = el.querySelector(`#${variantId}`);
-    const imgEl = el.querySelector(`#${imgId}`);
-    const priceEl = el.querySelector(`#price_${p.id}`);
+  // 🟢 variant listener
+  const variantSelect = el.querySelector(`#${variantId}`);
+  const imgEl = el.querySelector(`#${imgId}`);
+  const priceEl = el.querySelector(`#price_${p.id}`);
 
-    variantSelect.addEventListener('change', e => {
-      const v = p.variants.find(x => x.name === e.target.value);
-      if (!v) return;
-      imgEl.src = v.images[0];
-      priceEl.textContent = `${v.price.toFixed(3)} ETH`;
-    });
+  variantSelect.addEventListener("change", (e) => {
+    const selectedOption = e.target.options[e.target.selectedIndex];
+    const newPrice = parseFloat(selectedOption.getAttribute("data-price"));
+    priceEl.textContent = `${newPrice.toFixed(4)} ETH`;
+  });
 
-    return; // move to next item
-  }
+  // 🟢 color listener
+  const colorSelect = el.querySelector(`#color_${p.id}`);
+  colorSelect.addEventListener("change", (e) => {
+    const newColor = e.target.value;
+    imgEl.src = p.images[newColor] || defaultImg;
+  });
+
+  return; // safely continue to next product
+}
 
 
     // === If multiple images => Carousel (Tapestry) ===
