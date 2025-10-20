@@ -694,17 +694,17 @@ items.forEach(p => {
   const el = document.createElement('div');
   el.className = 'item';
 
-  // 🟡 CASE 1: Product has variants (e.g., Mini Plushies)
-  if (p.variants && Array.isArray(p.variants)) {
+ // 🟡 CASE 1: Product has variants (e.g., Mini Plushies, or special Tees)
+if (p.variants && Array.isArray(p.variants)) {
   const defaultVar = p.variants[0];
   const imgId = `img_${p.id}`;
   const variantId = `variant_${p.id}`;
 
-  // pick default image
+  // fallback default image
   const defaultImg =
     (p.images && typeof p.images === "object")
       ? Object.values(p.images)[0]
-      : defaultVar.images?.[0] || "";
+      : (defaultVar.images?.[0] || "");
 
   el.innerHTML = `
     <img id="${imgId}" src="${defaultImg}" alt="${p.title}" />
@@ -723,10 +723,12 @@ items.forEach(p => {
       </select>
     ` : ""}
 
-    <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Color</label>
-    <select id="color_${p.id}">
-      ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
-    </select>
+    ${(p.images && typeof p.images === "object" && Object.keys(p.images).length > 1) ? `
+      <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Color</label>
+      <select id="color_${p.id}">
+        ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
+      </select>
+    ` : ""}
 
     <div style="margin-top:12px">
       <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
@@ -735,25 +737,31 @@ items.forEach(p => {
 
   container.appendChild(el);
 
-  // 🟢 variant listener
+  // === 🟢 Variant change listener ===
   const variantSelect = el.querySelector(`#${variantId}`);
   const imgEl = el.querySelector(`#${imgId}`);
   const priceEl = el.querySelector(`#price_${p.id}`);
 
-  variantSelect.addEventListener("change", (e) => {
-    const selectedOption = e.target.options[e.target.selectedIndex];
-    const newPrice = parseFloat(selectedOption.getAttribute("data-price"));
+  variantSelect.addEventListener("change", e => {
+    const selectedOpt = e.target.options[e.target.selectedIndex];
+    const newPrice = parseFloat(selectedOpt.getAttribute("data-price"));
     priceEl.textContent = `${newPrice.toFixed(4)} ETH`;
+
+    // Optional: update image if variant has its own
+    const varData = p.variants.find(v => v.name === e.target.value);
+    if (varData && varData.images && varData.images[0]) imgEl.src = varData.images[0];
   });
 
-  // 🟢 color listener
+  // === 🟢 Color change listener ===
   const colorSelect = el.querySelector(`#color_${p.id}`);
-  colorSelect.addEventListener("change", (e) => {
-    const newColor = e.target.value;
-    imgEl.src = p.images[newColor] || defaultImg;
-  });
+  if (colorSelect) {
+    colorSelect.addEventListener("change", e => {
+      const newColor = e.target.value;
+      if (p.images[newColor]) imgEl.src = p.images[newColor];
+    });
+  }
 
-  return; // safely continue to next product
+  return; // ✅ important: skip rest of showCategory for this product
 }
 
 
@@ -982,44 +990,43 @@ function addToCart(prodId) {
     return;
   }
 
- // ✅ If product has variants (like moss/grass pad, Mini Plushies, etc.)
-if (product.variants && product.variants.length) {
-  const variantEl = document.getElementById(`variant_${prodId}`);
-  const variantName = variantEl ? variantEl.value : product.variants[0].name;
-  const selectedVar = product.variants.find(v => v.name === variantName);
+  // ✅ If product has variants (like moss/grass pad, Mini Plushies, etc.)
+  if (product.variants && product.variants.length) {
+    const variantEl = document.getElementById(`variant_${prodId}`);
+    const variantName = variantEl ? variantEl.value : product.variants[0].name;
+    const selectedVar = product.variants.find(v => v.name === variantName);
 
-  if (!selectedVar) {
-    showToast("Variant not found", "error");
+    if (!selectedVar) {
+      showToast("Variant not found", "error");
+      return;
+    }
+
+    const thumb = selectedVar.images?.[0] || product.images?.[0] || "";
+    const variantPrice = Number(selectedVar.price || product.price || 0);
+
+    // 🟡 merge variant and base id
+    const existing = cart.find(item =>
+      item.id === product.id &&
+      item.variant === selectedVar.name
+    );
+
+    if (existing) {
+      existing.q += 1;
+    } else {
+      cart.push({
+        id: product.id,
+        title: product.title,
+        variant: selectedVar.name, // ✅ this is what your sheet will log
+        price: variantPrice,
+        q: 1,
+        thumb
+      });
+    }
+
+    updateCartUI();
+    showToast(`${product.title} (${selectedVar.name}) added to cart`, "success");
     return;
   }
-
-  const thumb = selectedVar.images?.[0] || product.images?.[0] || "";
-  const variantPrice = Number(selectedVar.price || product.price || 0);
-
-  // 🟡 merge variant and base id
-  const existing = cart.find(item =>
-    item.id === product.id &&
-    item.variant === selectedVar.name
-  );
-
-  if (existing) {
-    existing.q += 1;
-  } else {
-    cart.push({
-      id: product.id,
-      title: product.title,
-      variant: selectedVar.name,
-      price: variantPrice,
-      q: 1,
-      thumb
-    });
-  }
-
-  updateCartUI();
-  showToast(`${product.title} (${selectedVar.name}) added to cart`, "success");
-  return;
-}
-
 
   // ✅ Otherwise: handle normal or custom-field product
   const thumb =
@@ -1032,34 +1039,36 @@ if (product.variants && product.variants.length) {
   const colorEl = document.getElementById(`color_${prodId}`);
   const sizeEl = document.getElementById(`size_${prodId}`);
   const customEl = document.getElementById(`custom_${prodId}`);
+  const variantEl = document.getElementById(`variant_${prodId}`); // 🆕 added here
+  const variant = variantEl ? variantEl.value : "N/A"; // 🆕 captures tee variant
 
   const color = colorEl
     ? colorEl.value
     : product.images && typeof product.images === "object"
     ? Object.keys(product.images)[0]
     : "N/A";
+
   const size = sizeEl
     ? sizeEl.value
     : product.sizes && product.sizes.length
     ? product.sizes[0]
     : "N/A";
+
   const customText = customEl ? customEl.value.trim() : "";
-  // Merge Quacker ID into size if desired
-const finalSize = customText ? `${size} (ID: ${customText})` : size;
+  const finalSize = customText ? `${size} (ID: ${customText})` : size;
 
-
-  // Validate custom field if required
   if (product.hasCustomField && !customText) {
     showToast("Please enter your Quacker Friend ID before adding to cart.", "error");
     return;
   }
 
-  // Merge with existing identical item (same id/color/size/customText)
+  // Merge with existing identical item
   const existing = cart.find(
     (item) =>
       item.id === product.id &&
       item.color === color &&
       item.size === size &&
+      item.variant === variant && // 🆕 include variant match
       (product.hasCustomField ? item.customText === customText : true)
   );
 
@@ -1071,16 +1080,16 @@ const finalSize = customText ? `${size} (ID: ${customText})` : size;
       title: product.title,
       price: Number(product.price || 0),
       color,
-      size,
-      size: finalSize, // 🟡 changed from just 'size'
+      size: finalSize,
       customText: customText || "",
+      variant, // ✅ added here for Tee variants
       q: 1,
       thumb,
     });
   }
 
   updateCartUI();
-  showToast(`${product.title} (${color}, ${size}) added to cart`, "success");
+  showToast(`${product.title} (${color}, ${size}${variant !== "N/A" ? ", " + variant : ""}) added to cart`, "success");
 }
 
 
