@@ -1223,7 +1223,7 @@ async function checkout(){
     document.getElementById("toast-container").appendChild(linkToast);
     setTimeout(()=>linkToast.remove(), 8000);
     for(const ci of cart){
-      const payload = { wallet: userAddress, itemName: ci.title, color: ci.color || "", size: ci.size || "", quantity: ci.q || 1, price: Number(ci.price || 0), txHash };
+      const payload = { wallet: userAddress, itemName: ci.title,  variant: ci.variant || "", color: ci.color || "", size: ci.size || "", quantity: ci.q || 1, price: Number(ci.price || 0), txHash };
       const params = new URLSearchParams(payload).toString();
       try{ await fetch(`${PURCHASE_API}?${params}`); }catch(logErr){ console.warn("Logging failed for item", payload, logErr); }
     }
