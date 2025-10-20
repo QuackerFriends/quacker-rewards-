@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -424,21 +423,21 @@ const PRODUCTS = {
     variants: [
       {
         name: "No Pad",
-        price: 0.0042,
+        price: 0.030,
         images: [
           "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/Green.png"
         ]
       },
       {
         name: "Moss Pad",
-        price: 0.008,
+        price: 0,
         images: [
           "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/green%20dark.png"
         ]
       },
       {
         name: "Grass Pad",
-        price: 0.008,
+        price: 0,
         images: [
           "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/green%20light.png"
         ]
@@ -451,21 +450,21 @@ const PRODUCTS = {
     variants: [
       {
         name: "No Pad",
-        price: 0.0042,
+        price: 0.030,
         images: [
           "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/sam.png"
         ]
       },
       {
         name: "Moss Pad",
-        price: 0.008,
+        price: 0.035,
         images: [
           "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/sam%20dark.png"
         ]
       },
        {
         name: "Grass Pad",
-        price: 0.008,
+        price: 0.030,
         images: [
           "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/sam%20light.png"
         ]
@@ -478,54 +477,27 @@ const PRODUCTS = {
     variants: [
       {
         name: "No Pad",
-        price: 0.0042,
+        price: 0.030,
         images: [
           "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/alucard.png"
         ]
       },
       {
         name: "Moss Pad",
-        price: 0.008,
+        price: 0.035,
         images: [
           "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/alucard%20dark.png"
         ]
       },
        {
         name: "Grass Pad",
-        price: 0.008,
+        price: 0.030,
         images: [
           "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/alucard%20light.png"
         ]
       }
     ]
-  },
-     {
-    id: "pumpkin_family",
-    title: "Mini Pumpkin Family with Grass Pad",
-    variants: [
-      {
-        name: "Simple Pumpkin",
-        price: 0.0042,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/pumpkin%20Family.png"
-        ]
-      },
-      {
-        name: "Smiling Pumpkin",
-        price: 0.0042,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/pumpkin%20Family.png"
-        ]
-      },
-      {
-        name: "Duck Pumpkin",
-        price: 0.0042,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/pumpkin%20Family.png"
-        ]
-      }
-    ]
-  },
+  }
 ]
 ,
   
@@ -978,9 +950,6 @@ function addToCart(prodId) {
     ? product.sizes[0]
     : "N/A";
   const customText = customEl ? customEl.value.trim() : "";
-  // Merge Quacker ID into size if desired
-const finalSize = customText ? `${size} (ID: ${customText})` : size;
-
 
   // Validate custom field if required
   if (product.hasCustomField && !customText) {
@@ -1006,7 +975,6 @@ const finalSize = customText ? `${size} (ID: ${customText})` : size;
       price: Number(product.price || 0),
       color,
       size,
-      size: finalSize, // 🟡 changed from just 'size'
       customText: customText || "",
       q: 1,
       thumb,
