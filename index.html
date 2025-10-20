@@ -959,40 +959,44 @@ function addToCart(prodId) {
     return;
   }
 
-  // ✅ If product has variants (like moss/grass pad), handle separately
-  if (product.variants && product.variants.length) {
-    const variantEl = document.getElementById(`variant_${prodId}`);
-    const variantName = variantEl ? variantEl.value : product.variants[0].name;
-    const selectedVar = product.variants.find(v => v.name === variantName);
+ // ✅ If product has variants (like moss/grass pad, Mini Plushies, etc.)
+if (product.variants && product.variants.length) {
+  const variantEl = document.getElementById(`variant_${prodId}`);
+  const variantName = variantEl ? variantEl.value : product.variants[0].name;
+  const selectedVar = product.variants.find(v => v.name === variantName);
 
-    if (!selectedVar) {
-      showToast("Variant not found", "error");
-      return;
-    }
-
-    const thumb = selectedVar.images ? selectedVar.images[0] : "";
-    const existing = cart.find(item =>
-      item.id === product.id &&
-      item.variant === selectedVar.name
-    );
-
-    if (existing) {
-      existing.q = (existing.q || 1) + 1;
-    } else {
-      cart.push({
-        id: product.id,
-        title: product.title,
-        variant: selectedVar.name,
-        price: Number(selectedVar.price || 0),
-        q: 1,
-        thumb
-      });
-    }
-
-    updateCartUI();
-    showToast(`${product.title} (${selectedVar.name}) added to cart`, "success");
+  if (!selectedVar) {
+    showToast("Variant not found", "error");
     return;
   }
+
+  const thumb = selectedVar.images?.[0] || product.images?.[0] || "";
+  const variantPrice = Number(selectedVar.price || product.price || 0);
+
+  // 🟡 merge variant and base id
+  const existing = cart.find(item =>
+    item.id === product.id &&
+    item.variant === selectedVar.name
+  );
+
+  if (existing) {
+    existing.q += 1;
+  } else {
+    cart.push({
+      id: product.id,
+      title: product.title,
+      variant: selectedVar.name,
+      price: variantPrice,
+      q: 1,
+      thumb
+    });
+  }
+
+  updateCartUI();
+  showToast(`${product.title} (${selectedVar.name}) added to cart`, "success");
+  return;
+}
+
 
   // ✅ Otherwise: handle normal or custom-field product
   const thumb =
