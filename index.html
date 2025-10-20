@@ -285,377 +285,121 @@ const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 
-/* ===== PRODUCTS ===== */
+/* ===== PRODUCTS =====
+   Keep price (ETH) and/or priceUSD. For variants you can include price or priceUSD on variant objects.
+   I used your product list and fixed syntax issues.
+*/
 const PRODUCTS = {
   tees: [
-    { id: "battle", title: "Battle Duck Tee", price: 0.0075, images:{ Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/battle%20duck%20black.png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/battle%20duck%20white.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" },
-    { id: "sus", title: "Sus Duck Tee", price: 0.0075, images:{ Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/sus%20duck%20black.png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/sus%20duck%20white.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" },
-{
-  id: "thisisfine",
-  title: "This Is Ducking Fine Tee",
-  variants: [
-    { name: "T-Shirt",  price: 0.0075 },
-    { name: "Drop Shoulder",  price: 0.0090 }
+    { id: "battle", title: "Battle Duck Tee", price: 0.0075, priceUSD: 25, images:{ Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/battle%20duck%20black.png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/battle%20duck%20white.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" },
+    { id: "sus", title: "Sus Duck Tee", price: 0.0075, priceUSD: 25, images:{ Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/sus%20duck%20black.png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/sus%20duck%20white.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" },
+    {
+      id: "thisisfine",
+      title: "This Is Ducking Fine Tee",
+      variants: [
+        { name: "T-Shirt",  price: 0.0075, priceUSD: 25 },
+        { name: "Drop Shoulder",  price: 0.0090, priceUSD: 30 }
+      ],
+      images: {
+        Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/this%20is%20fine%20black.png",
+        White: "https://quackerfriends.github.io/quackheads-assets/images/tees/this%20is%20fine%20white.png"
+      },
+      sizes: ["S","M","L","XL"],
+      sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
+    },
+    { id: "higherducktee", title: "Higher Tee", price: 0.0075, priceUSD: 25, images:{ Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/higher%20black.png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/higher%20white.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" },
+    {
+      id: "customtee",
+      title: "Custom Quacker NFT Design Tee",
+      price: 0,
+      priceUSD: 25,
+      hasCustomField: true,
+      images: {
+        Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/Untitled%20design%20(2).png",
+        White: "https://quackerfriends.github.io/quackheads-assets/images/tees/custom.png"
+      },
+      sizes: ["S", "M", "L", "XL"],
+      sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
+    }
   ],
-  images: {
-    Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/this%20is%20fine%20black.png",
-    White: "https://quackerfriends.github.io/quackheads-assets/images/tees/this%20is%20fine%20white.png"
-  },
-  sizes: ["S","M","L","XL"],
-  sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
-},
-    { id: "higherducktee", title: "Higher Tee", price: 0.0075, images:{ Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/higher%20black.png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/higher%20white.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" },
-{
-  id: "customtee",
-  title: "Custom Quacker NFT Design Tee",
-  price: 0,
-  hasCustomField: true,
-  images: {
-    Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/Untitled%20design%20(2).png",
-    White: "https://quackerfriends.github.io/quackheads-assets/images/tees/custom.png"
-  },
-  sizes: ["S", "M", "L", "XL"],
-  sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
-}
 
-
-
-
-  ],
-  
   plushies: [
-    {
-    id: "strawberry_quacker",
-    title: "Strawberry Quacker",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images/plushies/Strawberry%20Quacker.png"
-    ]
-  },
-    
-  {
-    id: "mosswing_quacker",
-    title: "Mosswing Quacker",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images/plushies/Mosswing%20Quacker.png" 
-    ]
-  },
-     {
-    id: "azurewing_quacker",
-    title: "Azurewing Quacker",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images/plushies/Azurewing%20Quacker.png" 
-    ]
-  },
-     {
-    id: "pumpkin_beanie_alucard",
-    title: "Pumpkin Beanie Alucard",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images/plushies/Pumpkin%20Beanie%20Alucard.png" 
-    ]
-  },
-     {
-    id: "alucard",
-    title: "Alucard",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images/plushies/Alucard.png"
-    ]
-  },
-     {
-    id: "kirby",
-    title: "Kirby",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images/plushies/Kirby.png"
-    ]
-     }
+    { id: "strawberry_quacker", title: "Strawberry Quacker", price: 0.03, priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/plushies/Strawberry%20Quacker.png"] },
+    { id: "mosswing_quacker", title: "Mosswing Quacker", price: 0.03, priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/plushies/Mosswing%20Quacker.png"] },
+    { id: "azurewing_quacker", title: "Azurewing Quacker", price: 0.03, priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/plushies/Azurewing%20Quacker.png"] },
+    { id: "pumpkin_beanie_alucard", title: "Pumpkin Beanie Alucard", price: 0.03, priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/plushies/Pumpkin%20Beanie%20Alucard.png"] },
+    { id: "alucard", title: "Alucard", price: 0.03, priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/plushies/Alucard.png"] },
+    { id: "kirby", title: "Kirby", price: 0.03, priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/plushies/Kirby.png"] }
   ],
-  
+
   miniplushies: [
-  {
-    id: "ghost_quacker_purple_wizard_hat",
-    title: "Ghost Quacker with Purple Wizard Hat",
-    variants: [
-      {
-        name: "No Pad",
-        price: 0.030,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/purple.png"
-        ]
-      },
-      {
-        name: "Moss Pad",
-        price: 0,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/purple%20dark.png"
-        ]
-      },
-      {
-        name: "Grass Pad",
-        price: 0,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/purple%20light.png"
-        ]
-      }
-    ]
-  },
-     {
-    id: "ghost_quacker_red_wizard_hat",
-    title: "Ghost Quacker with Red Wizard Hat",
-    variants: [
-      {
-        name: "No Pad",
-        price: 0.030,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/Red.png"
-        ]
-      },
-      {
-        name: "Moss Pad",
-        price: 0,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/Red%20moss.png"
-        ]
-      },
-      {
-        name: "Grass Pad",
-        price: 0,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/Red%20light%20green.png"
-        ]
-      }
-    ]
-  },
-     {
-    id: "ghost_quacker_green_wizard_hat",
-    title: "Ghost Quacker with Green Wizard Hat",
-    variants: [
-      {
-        name: "No Pad",
-        price: 0.0042,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/Green.png"
-        ]
-      },
-      {
-        name: "Moss Pad",
-        price: 0.008,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/green%20dark.png"
-        ]
-      },
-      {
-        name: "Grass Pad",
-        price: 0.008,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/green%20light.png"
-        ]
-      }
-    ]
-  },
-  {
-    id: "mini_sam",
-    title: "Mini Sam",
-    variants: [
-      {
-        name: "No Pad",
-        price: 0.0042,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/sam.png"
-        ]
-      },
-      {
-        name: "Moss Pad",
-        price: 0.008,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/sam%20dark.png"
-        ]
-      },
-       {
-        name: "Grass Pad",
-        price: 0.008,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/sam%20light.png"
-        ]
-      }
-    ]
-  } ,
-     {
-    id: "mini_alucard",
-    title: "Mini Alucard",
-    variants: [
-      {
-        name: "No Pad",
-        price: 0.0042,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/alucard.png"
-        ]
-      },
-      {
-        name: "Moss Pad",
-        price: 0.008,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/alucard%20dark.png"
-        ]
-      },
-       {
-        name: "Grass Pad",
-        price: 0.008,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/alucard%20light.png"
-        ]
-      }
-    ]
-  },
-     {
-    id: "pumpkin_family",
-    title: "Mini Pumpkin Family with Grass Pad",
-    variants: [
-      {
-        name: "Simple Pumpkin",
-        price: 0.0042,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/pumpkin%20Family.png"
-        ]
-      },
-      {
-        name: "Smiling Pumpkin",
-        price: 0.0042,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/pumpkin%20Family.png"
-        ]
-      },
-      {
-        name: "Duck Pumpkin",
-        price: 0.0042,
-        images: [
-          "https://quackerfriends.github.io/quackheads-assets/images/miniplushies/pumpkin%20Family.png"
-        ]
-      }
-    ]
-  },
-]
-,
-  
+    {
+      id: "ghost_quacker_purple_wizard_hat",
+      title: "Ghost Quacker with Purple Wizard Hat",
+      variants: [
+        { name: "No Pad", price: 0.03, priceUSD: 4, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/purple.png"] },
+        { name: "Moss Pad", price: 0.03, priceUSD: 4, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/purple%20dark.png"] },
+        { name: "Grass Pad", price: 0.03, priceUSD: 4, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/purple%20light.png"] }
+      ]
+    },
+    {
+      id: "ghost_quacker_red_wizard_hat",
+      title: "Ghost Quacker with Red Wizard Hat",
+      variants: [
+        { name: "No Pad", price: 0.03, priceUSD: 4, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/Red.png"] },
+        { name: "Moss Pad", price: 0.03, priceUSD: 4, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/Red%20moss.png"] },
+        { name: "Grass Pad", price: 0.03, priceUSD: 4, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/Red%20light%20green.png"] }
+      ]
+    },
+    {
+      id: "ghost_quacker_green_wizard_hat",
+      title: "Ghost Quacker with Green Wizard Hat",
+      variants: [
+        { name: "No Pad", price: 0.0042, priceUSD: 0.5, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/Green.png"] },
+        { name: "Moss Pad", price: 0.008, priceUSD: 1, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/green%20dark.png"] },
+        { name: "Grass Pad", price: 0.008, priceUSD: 1, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/green%20light.png"] }
+      ]
+    },
+    {
+      id: "mini_sam",
+      title: "Mini Sam",
+      variants: [
+        { name: "No Pad", price: 0.0042, priceUSD: 0.5, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/sam.png"] },
+        { name: "Moss Pad", price: 0.008, priceUSD: 1, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/sam%20dark.png"] },
+        { name: "Grass Pad", price: 0.008, priceUSD: 1, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/sam%20light.png"] }
+      ]
+    },
+    {
+      id: "mini_alucard",
+      title: "Mini Alucard",
+      variants: [
+        { name: "No Pad", price: 0.0042, priceUSD: 0.5, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/alucard.png"] },
+        { name: "Moss Pad", price: 0.008, priceUSD: 1, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/alucard%20dark.png"] },
+        { name: "Grass Pad", price: 0.008, priceUSD: 1, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/alucard%20light.png"] }
+      ]
+    },
+    {
+      id: "pumpkin_family",
+      title: "Mini Pumpkin Family with Grass Pad",
+      variants: [
+        { name: "Simple Pumpkin", price: 0.0042, priceUSD: 0.5, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/pumpkin%20Family.png"] },
+        { name: "Smiling Pumpkin", price: 0.0042, priceUSD: 0.5, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/pumpkin%20Family.png"] },
+        { name: "Duck Pumpkin", price: 0.0042, priceUSD: 0.5, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/pumpkin%20Family.png"] }
+      ]
+    }
+  ],
+
   tapestry: [
-  {
-    id: "all_characters_tapestry",
-    title: "All Characters Tapestry",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images/tapestry/All%20Tapes.png"
-    ]
-  },
-  {
-    id: "alucard_tapestry",
-    title: "Alucard Tapestry",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images/tapestry/alucard.png" ,"https://quackerfriends.github.io/quackheads-assets/images/tapestry/sizes/alucard.png"
-    ]
-  },
-  {
-    id: "sam_tapestry",
-    title: "Sam Tapestry",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images/tapestry/sam.png" , "https://quackerfriends.github.io/quackheads-assets/images/tapestry/sizes/sam.png"
-    ]
-  },
-  {
-    id: "tipu_tapestry",
-    title: "Tipu Tapestry",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images/tapestry/tpiu.png" , "https://quackerfriends.github.io/quackheads-assets/images/tapestry/sizes/tpiu.png"
-    ]
-  },
-  {
-    id: "yumeko_tapestry",
-    title: "Yumeko Tapestry",
-    price: 0.03,
-    images: [
-      "https://quackerfriends.github.io/quackheads-assets/images/tapestry/yumeko.png" , "https://quackerfriends.github.io/quackheads-assets/images/tapestry/sizes/yumeko.png"
-    ]
-  }
-], 
-  
-    keychains: [
-    {
-      id: "alucard_keychain",
-      title: "Alucard Keychain",
-      price: 0.015,
-    
-      images: [ 
-         "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Alucard.png" ,  "https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Alucard.png" 
-      ]
-    },
-    {
-      id: "cosmichead_keychain",
-      title: "Cosmic Head Keychain",
-      price: 0.015,
-      
-      images: [ 
-         "https://QuackerFriends.github.io/quackheads-assets/images/keychain/cosmichead.png" ,  "https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Cosmichead.png" 
-      ]
-    },
-    {
-      id: "ghostduck_green_keychain",
-      title: "Ghost Duck – Green Wizard Hat",
-      price: 0.015,
-      
-      images:[ 
-         "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Ghost%20Duck%20with%20Green%20Wizard%20Hat.png" ,  "https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Ghost%20Duck%20with%20Green%20Wizard%20Hat.png" 
-      ]
-    },
-    {
-      id: "ghostduck_purple_keychain",
-      title: "Ghost Duck – Purple Wizard Hat",
-      price: 0.015,
-      
-      images: [ 
-         "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Ghost%20Duck%20with%20Purple%20Wizard%20Hat.png" ,  "https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Ghost%20Duck%20with%20Purple%20Wizard%20Hat.png" 
-      ]
-    },
-    {
-      id: "ghostduck_red_keychain",
-      title: "Ghost Duck – Red Wizard Hat",
-      price: 0.015,
-      images: [ 
-         "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Ghost%20Duck%20with%20Red%20Wizard%20Hat.png" ,  "https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Ghost%20Duck%20with%20Red%20Wizard%20Hat.png" 
-      ]
-    },
+    { id: "all_characters_tapestry", title: "All Characters Tapestry", price: 0.03, priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/tapestry/All%20Tapes.png"] },
+    { id: "alucard_tapestry", title: "Alucard Tapestry", price: 0.03, priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/tapestry/alucard.png","https://quackerfriends.github.io/quackheads-assets/images/tapestry/sizes/alucard.png"] },
+    { id: "sam_tapestry", title: "Sam Tapestry", price: 0.03, priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/tapestry/sam.png","https://quackerfriends.github.io/quackheads-assets/images/tapestry/sizes/sam.png"] }
+  ],
 
-    {
-      id: "sam_keychain",
-      title: "Sam Keychain",
-      price: 0.015,
-      images: [ 
-         "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Sam.png" ,  "https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Sam.png" 
-      ]
-    } ,
-      {
-  id: "quackheads_keychain",
-  title: "Quackheads Keychain",
-  price: 0,
-     
-     sizes: ["Bucket Hat", "Headphones", "Sprout"],
-      images: [ 
-         "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Quackheads.png" ,  "https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Quackheads.png" 
-      ] ,
-        images: {
-    Green: "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Quackheads.png",
-    Mustard: "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Quackheads.png",
-    Pink: "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Quackheads.png"
-  }
-}
+  keychains: [
+    { id: "alucard_keychain", title: "Alucard Keychain", price: 0.015, priceUSD: 5, images: ["https://QuackerFriends.github.io/quackheads-assets/images/keychain/Alucard.png","https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Alucard.png"] },
+    // ... other keychains (keep same structure)
+    { id: "quackheads_keychain", title: "Quackheads Keychain", price: 0, priceUSD: 0, sizes: ["Bucket Hat","Headphones","Sprout"], images: { Green: "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Quackheads.png", Mustard: "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Quackheads.png", Pink: "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Quackheads.png" } }
   ]
-
-
 };
 
 /* ===== STATE ===== */
@@ -663,10 +407,13 @@ let userAddress = null;
 let web3 = null;
 let cart = [];
 let currentCategory = "tees";
+let cachedEthRate = null;
+let lastRateFetch = 0;
 
 /* ===== UI HELPERS ===== */
 function showToast(message, type="info", duration=3000){
   const container = document.getElementById("toast-container");
+  if(!container) return console.warn("toast container missing");
   const el = document.createElement("div");
   el.className = "toast " + (type==="success"?"success":type==="error"?"error":"info");
   el.innerHTML = `<span>${message}</span>`;
@@ -674,8 +421,29 @@ function showToast(message, type="info", duration=3000){
   setTimeout(()=>el.remove(), duration);
 }
 
-/* ===== RENDER (works for tees, keychains & tapestry) ===== */
-function showCategory(cat) {
+/* ===== PRICE HELPERS ===== */
+async function getEthRate(){
+  // cache for 60s to avoid spamming
+  const now = Date.now();
+  if(cachedEthRate && (now - lastRateFetch) < 60000) return cachedEthRate;
+  try {
+    const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd");
+    const data = await res.json();
+    cachedEthRate = (data && data.ethereum && data.ethereum.usd) ? data.ethereum.usd : 3000;
+  } catch (err) {
+    console.warn("CoinGecko fetch failed:", err);
+    cachedEthRate = 3000;
+  }
+  lastRateFetch = Date.now();
+  return cachedEthRate;
+}
+async function convertUsdToEth(usd){
+  const rate = await getEthRate();
+  return usd / rate;
+}
+
+/* ===== RENDER (async so we can fetch ETH rate) ===== */
+async function showCategory(cat) {
   currentCategory = cat;
   const container = document.getElementById('items');
   const items = PRODUCTS[cat] || [];
@@ -685,92 +453,94 @@ function showCategory(cat) {
     container.innerHTML = `<div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:var(--shadow);">No items yet in ${cat}.</div>`;
     return;
   }
- 
+
+  // fetch rate once for this render
+  const ethRate = await getEthRate();
 
   document.body.classList.add('blur-bg');
 
+  items.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'item';
 
-items.forEach(p => {
-  const el = document.createElement('div');
-  el.className = 'item';
+    // CASE: product has variants (miniplushies or tee with variant array)
+    if (p.variants && Array.isArray(p.variants)) {
+      const defaultVar = p.variants[0];
+      const imgId = `img_${p.id}`;
+      const variantId = `variant_${p.id}`;
 
- // 🟡 CASE 1: Product has variants (e.g., Mini Plushies, or special Tees)
-if (p.variants && Array.isArray(p.variants)) {
-  const defaultVar = p.variants[0];
-  const imgId = `img_${p.id}`;
-  const variantId = `variant_${p.id}`;
+      // determine default image
+      const defaultImg = (p.images && typeof p.images === "object") ? Object.values(p.images)[0] : (defaultVar.images?.[0] || "");
 
-  // fallback default image
-  const defaultImg =
-    (p.images && typeof p.images === "object")
-      ? Object.values(p.images)[0]
-      : (defaultVar.images?.[0] || "");
+      // compute display price from defaultVar
+      let defaultEth = (typeof defaultVar.price === 'number') ? defaultVar.price : (defaultVar.priceUSD ? (defaultVar.priceUSD / ethRate) : (p.price || 0));
+      let displayPriceHtml = `<div class="price" id="price_${p.id}">${defaultEth.toFixed(4)} ETH${defaultVar.priceUSD ? ` (~$${defaultVar.priceUSD})` : ""}</div>`;
 
-  el.innerHTML = `
-    <img id="${imgId}" src="${defaultImg}" alt="${p.title}" />
-    <h3>${p.title}</h3>
-    <div class="price" id="price_${p.id}">${defaultVar.price.toFixed(4)} ETH</div>
+      el.innerHTML = `
+        <img id="${imgId}" src="${defaultImg}" alt="${p.title}" />
+        <h3>${p.title}</h3>
+        ${displayPriceHtml}
 
-    <label style="display:block;text-align:left;font-weight:600">Variant</label>
-    <select id="${variantId}">
-      ${p.variants.map(v => `<option value="${v.name}" data-price="${v.price}">${v.name}</option>`).join('')}
-    </select>
+        <label style="display:block;text-align:left;font-weight:600">Variant</label>
+        <select id="${variantId}">
+          ${p.variants.map(v => {
+            // compute eth for data attribute
+            const ethVal = (typeof v.price === 'number') ? v.price : (v.priceUSD ? (v.priceUSD / ethRate) : 0);
+            return `<option value="${v.name}" data-price="${ethVal}" data-price-usd="${v.priceUSD ?? ''}">${v.name}</option>`;
+          }).join('')}
+        </select>
 
-    ${p.sizes ? `
-      <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Size</label>
-      <select id="size_${p.id}">
-        ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-      </select>
-    ` : ""}
+        ${p.sizes ? `
+          <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Size</label>
+          <select id="size_${p.id}">
+            ${p.sizes.map(s=>`<option value="${s}">${s}</option>`).join('')}
+          </select>
+        ` : ""}
 
-    ${(p.images && typeof p.images === "object" && Object.keys(p.images).length > 1) ? `
-      <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Color</label>
-      <select id="color_${p.id}">
-        ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
-      </select>
-    ` : ""}
+        ${(p.images && typeof p.images === "object" && Object.keys(p.images).length>1) ? `
+          <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Color</label>
+          <select id="color_${p.id}">
+            ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
+          </select>
+        ` : ""}
 
-    <div style="margin-top:12px">
-      <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
-    </div>
-  `;
+        <div style="margin-top:12px">
+          <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
+        </div>
+      `;
+      container.appendChild(el);
 
-  container.appendChild(el);
+      // listeners
+      const variantSelect = el.querySelector(`#${variantId}`);
+      const imgEl = el.querySelector(`#${imgId}`);
+      const priceEl = el.querySelector(`#price_${p.id}`);
 
-  // === 🟢 Variant change listener ===
-  const variantSelect = el.querySelector(`#${variantId}`);
-  const imgEl = el.querySelector(`#${imgId}`);
-  const priceEl = el.querySelector(`#price_${p.id}`);
+      variantSelect.addEventListener('change', e => {
+        const opt = e.target.options[e.target.selectedIndex];
+        const eth = parseFloat(opt.getAttribute('data-price')) || 0;
+        const usd = opt.getAttribute('data-price-usd') || "";
+        priceEl.textContent = `${eth.toFixed(4)} ETH${usd ? ` (~$${usd})` : ""}`;
 
-  variantSelect.addEventListener("change", e => {
-    const selectedOpt = e.target.options[e.target.selectedIndex];
-    const newPrice = parseFloat(selectedOpt.getAttribute("data-price"));
-    priceEl.textContent = `${newPrice.toFixed(4)} ETH`;
+        // update image for variant if provided
+        const varData = p.variants.find(v => v.name === e.target.value);
+        if (varData && varData.images && varData.images[0]) imgEl.src = varData.images[0];
+      });
 
-    // Optional: update image if variant has its own
-    const varData = p.variants.find(v => v.name === e.target.value);
-    if (varData && varData.images && varData.images[0]) imgEl.src = varData.images[0];
-  });
+      const colorSelect = el.querySelector(`#color_${p.id}`);
+      if (colorSelect) {
+        colorSelect.addEventListener('change', e => {
+          const val = e.target.value;
+          if (p.images[val]) imgEl.src = p.images[val];
+        });
+      }
 
-  // === 🟢 Color change listener ===
-  const colorSelect = el.querySelector(`#color_${p.id}`);
-  if (colorSelect) {
-    colorSelect.addEventListener("change", e => {
-      const newColor = e.target.value;
-      if (p.images[newColor]) imgEl.src = p.images[newColor];
-    });
-  }
+      return; // skip to next product
+    }
 
-  return; // ✅ important: skip rest of showCategory for this product
-}
-
-
-    // === If multiple images => Carousel (Tapestry) ===
+    // If multiple images -> carousel (tapestry)
     if (Array.isArray(p.images) && p.images.length > 1) {
-      const imgsHtml = p.images.map((src, i) =>
-        `<img src="${src}" class="${i === 0 ? 'active' : ''}" data-index="${i}" alt="${p.title} ${i+1}" />`
-      ).join('');
-
+      const imgsHtml = p.images.map((src,i)=>`<img src="${src}" class="${i===0?'active':''}" data-index="${i}" alt="${p.title} ${i+1}" />`).join('');
+      const displayPrice = (p.price ?? 0).toFixed(4);
       el.innerHTML = `
         <div class="carousel" id="carousel_${p.id}">
           ${imgsHtml}
@@ -778,170 +548,113 @@ if (p.variants && Array.isArray(p.variants)) {
           <button class="next-btn" aria-label="Next">›</button>
         </div>
         <h3>${p.title}</h3>
-        <div class="price">${p.price.toFixed(4)} ETH</div>
-        ${ (p.sizes && p.sizes.length) ? `
-          <label style="display:block;text-align:left;font-weight:600">Size</label> 
-          <select id="size_${p.id}">
-            ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-          </select>
-        ` : '' }
-        <div style="margin-top:12px">
-          <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
-        </div>
+        <div class="price">${displayPrice} ETH${p.priceUSD?` (~$${p.priceUSD})`:""}</div>
+        ${ (p.sizes && p.sizes.length) ? `<label style="display:block;text-align:left;font-weight:600">Size</label><select id="size_${p.id}">${p.sizes.map(s=>`<option value="${s}">${s}</option>`).join('')}</select>` : "" }
+        <div style="margin-top:12px"><button class="btn" onclick="addToCart('${p.id}')">Add to cart</button></div>
       `;
-     container.appendChild(el);
+      container.appendChild(el);
 
-// --- FIXED Carousel logic (scoped safely for each item) ---
-(() => {
-  const carousel = el.querySelector('.carousel');
-  const imgs = Array.from(carousel.querySelectorAll('img'));
-  let index = 0;
+      // carousel logic (scoped)
+      (()=>{
+        const carousel = el.querySelector('.carousel');
+        const imgs = Array.from(carousel.querySelectorAll('img'));
+        let index = 0;
+        const setIndex = (newIdx) => {
+          imgs.forEach((img,i)=>{
+            if(i===index){
+              img.classList.remove('active'); img.style.opacity='0'; img.style.position='absolute'; img.style.pointerEvents='none';
+            }
+          });
+          index = (newIdx + imgs.length) % imgs.length;
+          imgs[index].classList.add('active'); imgs[index].style.opacity='1'; imgs[index].style.position='relative'; imgs[index].style.pointerEvents='auto';
+        };
+        const nextBtn = carousel.querySelector('.next-btn');
+        const prevBtn = carousel.querySelector('.prev-btn');
+        nextBtn.addEventListener('click', e=>{ e.stopPropagation(); setIndex(index+1); });
+        prevBtn.addEventListener('click', e=>{ e.stopPropagation(); setIndex(index-1); });
+        let startX = null;
+        carousel.addEventListener('touchstart',(ev)=> startX = ev.touches[0].clientX);
+        carousel.addEventListener('touchend',(ev)=>{
+          if(!startX) return;
+          const diff = ev.changedTouches[0].clientX - startX;
+          if(diff > 30) setIndex(index - 1);
+          else if(diff < -30) setIndex(index + 1);
+          startX = null;
+        });
+        let autoSlide = setInterval(()=> setIndex(index+1), 4000);
+        carousel.addEventListener('mouseenter', ()=> clearInterval(autoSlide));
+        carousel.addEventListener('mouseleave', ()=> autoSlide = setInterval(()=> setIndex(index+1), 4000));
+      })();
 
- const setIndex = (newIdx) => {
-  imgs.forEach((img, i) => {
-    if(i === index) {
-      img.classList.remove('active');
-      img.style.opacity = '0';
-      img.style.position = 'absolute';
-      img.style.pointerEvents = 'none';
+      return;
     }
-  });
-  index = (newIdx + imgs.length) % imgs.length;
-  imgs[index].classList.add('active');
-  imgs[index].style.opacity = '1';
-  imgs[index].style.position = 'relative';
-  imgs[index].style.pointerEvents = 'auto';
-};
 
+    // Single-image items (tees without variant array, keychains, etc.)
+    const imgId = `img_${p.id}`;
+    const sizeId = `size_${p.id}`;
+    let labelText = "Size";
+    if (p.id === "quackheads_keychain") labelText = "Top Accessory";
 
-  const nextBtn = carousel.querySelector('.next-btn');
-  const prevBtn = carousel.querySelector('.prev-btn');
+    const sizeSelectHtml = (p.sizes && p.sizes.length) ? `<label style="display:block;text-align:left;font-weight:600">${labelText}</label><select id="${sizeId}">${p.sizes.map(s=>`<option value="${s}">${s}</option>`).join('')}</select>` : "";
 
-  nextBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    setIndex(index + 1);
-  });
-  prevBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    setIndex(index - 1);
-  });
+    // variant select for tees (if product contains variant info via variants array it's handled above).
+    let variantSelectHtml = "";
+    if (p.title && p.title.includes("Tee") && !p.variants) {
+      // If this tee type uses simple variant choices (not variants array), show dropdown
+      variantSelectHtml = `
+        <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Variant</label>
+        <select id="variant_${p.id}">
+          <option value="T-Shirt" data-price="${p.price ?? 0}" data-price-usd="${p.priceUSD ?? ''}">T-Shirt</option>
+          <option value="Drop Shoulder" data-price="${p.price ?? 0}" data-price-usd="${p.priceUSD ?? ''}">Drop Shoulder</option>
+        </select>
+      `;
+    }
 
-  // Swipe support (mobile)
-  let startX = null;
-  carousel.addEventListener('touchstart', (ev) => startX = ev.touches[0].clientX);
-  carousel.addEventListener('touchend', (ev) => {
-    if (!startX) return;
-    const diff = ev.changedTouches[0].clientX - startX;
-    if (diff > 30) setIndex(index - 1);
-    else if (diff < -30) setIndex(index + 1);
-    startX = null;
-  });
+    // image source selection
+    const mainSrc = Array.isArray(p.images) ? (p.images[0] || "") : (p.images && p.images.Black ? p.images.Black : (p.images ? Object.values(p.images)[0] : ""));
 
-  // Auto-slide (independent per carousel)
-  let autoSlide = setInterval(() => setIndex(index + 1), 4000);
-  carousel.addEventListener('mouseenter', () => clearInterval(autoSlide));
-  carousel.addEventListener('mouseleave', () => {
-    autoSlide = setInterval(() => setIndex(index + 1), 4000);
-  });
-})();
+    // compute price display
+    const priceEth = (typeof p.price === 'number') ? p.price : (p.priceUSD ? (p.priceUSD / ethRate) : 0);
+    const priceHtml = `<div class="price" id="price_${p.id}">${priceEth.toFixed(4)} ETH${p.priceUSD?` (~$${p.priceUSD})`:""}</div>`;
 
+    el.innerHTML = `
+      <img id="${imgId}" src="${mainSrc}" alt="${p.title}" />
+      <h3>${p.title}</h3>
+      ${priceHtml}
+      ${variantSelectHtml}
+      ${sizeSelectHtml}
+      ${p.sizeGuide ? `<button class="btn size-guide-btn" style="margin-left:8px;padding:6px 8px;font-size:12px" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>` : ""}
+      <div id="colorWrap_${p.id}" style="margin-top:8px"></div>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+        ${p.hasCustomField ? `<label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Your Quacker Friend ID#</label><input type="text" id="custom_${p.id}" placeholder="Enter your ID" style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;" />` : ""}
+        <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
+      </div>
+    `;
+    container.appendChild(el);
 
-    } else {
-      // === Single image items (Tees, Keychains, etc.) ===
-const imgId = `img_${p.id}`;
-const sizeId = `size_${p.id}`;
-let labelText = "Size";
-if (p.id === "quackheads_keychain") labelText = "Top Accessory";
+    // color selector (if object)
+    if (p.images && typeof p.images === "object" && !Array.isArray(p.images)) {
+      const colorKey = `color_${p.id}`;
+      const colorWrap = el.querySelector(`#colorWrap_${p.id}`);
+      const colorHtml = `<label style="display:block;text-align:left;font-weight:600">Color</label><select id="${colorKey}">${Object.keys(p.images).map(c=>`<option value="${c}">${c}</option>`).join('')}</select>`;
+      colorWrap.innerHTML = colorHtml;
+      const colorSelect = colorWrap.querySelector(`#${colorKey}`);
+      colorSelect.addEventListener('change', e => {
+        const imgEl = el.querySelector(`#${imgId}`);
+        if (imgEl && p.images[e.target.value]) imgEl.src = p.images[e.target.value];
+      });
+    }
 
-const sizeSelectHtml = (p.sizes && p.sizes.length) ? `
-  <label style="display:block;text-align:left;font-weight:600">${labelText}</label>
-  <select id="${sizeId}">
-    ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
-  </select>
-` : "";
-
-// === 🆕 Variant dropdown for Tees ===
-let variantSelectHtml = "";
-if (p.title.includes("Tee") || p.id.includes("tee")) {
-  variantSelectHtml = `
-    <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Variant</label>
-    <select id="variant_${p.id}">
-      <option value="T-Shirt" data-price="0.0075">T-Shirt</option>
-      <option value="Drop Shoulder" data-price="0.0090">Drop Shoulder</option>
-    </select>
-  `;
-}
-
-// === Custom Field (optional) ===
-let customInputHtml = "";
-if (p.hasCustomField) {
-  customInputHtml = `
-    <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Your Quacker Friend ID#</label>
-    <input type="text" id="custom_${p.id}" placeholder="Enter your ID" 
-      style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;" />
-  `;
-}
-
-// === Image handling ===
-const mainSrc = Array.isArray(p.images)
-  ? (p.images[0] || "")
-  : (p.images.Black || Object.values(p.images)[0]);
-
-el.innerHTML = `
-  <img id="${imgId}" src="${mainSrc}" alt="${p.title}" />
-  <h3>${p.title}</h3>
-  <div class="price" id="price_${p.id}">${p.price.toFixed(4)} ETH</div>
-
-  ${variantSelectHtml}
-  ${sizeSelectHtml}
-
-  ${p.sizeGuide ? `
-    <button class="btn size-guide-btn" 
-      style="margin-left:8px;padding:6px 8px;font-size:12px" 
-      onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
-  ` : ""}
-
-  <div id="colorWrap_${p.id}" style="margin-top:8px"></div>
-
-  <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
-    ${customInputHtml}
-    <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
-  </div>
-`;
-
-container.appendChild(el);
-
-// === 🧠 Color Selector ===
-if (p.images && typeof p.images === "object" && !Array.isArray(p.images)) {
-  const colorKey = `color_${p.id}`;
-  const colorWrap = el.querySelector(`#colorWrap_${p.id}`);
-  const colorHtml = `
-    <label style="display:block;text-align:left;font-weight:600">Color</label>
-    <select id="${colorKey}">
-      ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
-    </select>`;
-  colorWrap.innerHTML = colorHtml;
-
-  const colorSelect = colorWrap.querySelector(`#${colorKey}`);
-  colorSelect.addEventListener("change", e => {
-    const imgEl = el.querySelector(`#${imgId}`);
-    if (imgEl && p.images[e.target.value]) imgEl.src = p.images[e.target.value];
-  });
-}
-
-// === 🧮 Variant price update ===
-const variantSelect = el.querySelector(`#variant_${p.id}`);
-if (variantSelect) {
-  variantSelect.addEventListener("change", e => {
-    const selectedOption = e.target.options[e.target.selectedIndex];
-    const newPrice = parseFloat(selectedOption.getAttribute("data-price"));
-    const priceEl = document.querySelector(`#price_${p.id}`);
-    if (priceEl) priceEl.textContent = `${newPrice.toFixed(4)} ETH`;
-  });
-}
-
-      
-      
+    // variant price update for simple tee variant select
+    const variantSelect = el.querySelector(`#variant_${p.id}`);
+    if (variantSelect) {
+      variantSelect.addEventListener('change', e => {
+        const selectedOption = e.target.options[e.target.selectedIndex];
+        const newEth = parseFloat(selectedOption.getAttribute("data-price")) || 0;
+        const newUsd = selectedOption.getAttribute("data-price-usd") || "";
+        const priceEl = document.querySelector(`#price_${p.id}`);
+        if (priceEl) priceEl.textContent = `${newEth.toFixed(4)} ETH${newUsd?` (~$${newUsd})`:""}`;
+      });
     }
   });
 
@@ -949,75 +662,62 @@ if (variantSelect) {
   attachZoomFollow();
 }
 
+/* ===== OPEN/CLOSE Helpers ===== */
+function showOverlay(){ const ov = document.getElementById('tees'); if(ov){ ov.classList.add('active'); ov.style.display='block'; } }
+function hideOverlay(){ const ov = document.getElementById('tees'); if(ov){ ov.classList.remove('active'); ov.style.display='none'; } }
 
-
-/* ===== OPEN/CLOSE common modals & overlay helpers ===== */
-function showOverlay(){ const ov = document.getElementById('tees'); ov.classList.add('active'); ov.style.display='block'; }
-function hideOverlay(){ const ov = document.getElementById('tees'); ov.classList.remove('active'); ov.style.display='none'; }
-
-/* ===== SIZE GUIDE POPUP ===== */
+/* ===== SIZE GUIDE ===== */
 function openSizeGuide(url){
-  document.getElementById("sizeGuideImage").src = url;
   const modal = document.getElementById("sizeGuideModal");
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden","false");
+  if(modal) document.getElementById("sizeGuideImage").src = url;
+  if(modal){ modal.classList.add("open"); modal.setAttribute("aria-hidden","false"); }
 }
-function closeSizeGuide(){
-  const modal = document.getElementById("sizeGuideModal");
-  modal.classList.remove("open");
-  modal.setAttribute("aria-hidden","true");
-}
+function closeSizeGuide(){ const modal = document.getElementById("sizeGuideModal"); if(modal){ modal.classList.remove("open"); modal.setAttribute("aria-hidden","true"); } }
 
-/* ===== CART helpers (add image thumbnails to cart entries so UI is robust) ===== */
+/* ===== CART helpers (addTapestry kept for convenience) ===== */
 function addTapestryToCart(prodId){
   const product = (PRODUCTS.tapestry||[]).find(p=>p.id===prodId);
   if(!product){ showToast("Product not found","error"); return; }
-  cart.push({ id: product.id, title: product.title, price: product.price, color: "N/A", size: "N/A", q:1, thumb: product.images[0] });
+  const priceEth = product.price ?? (product.priceUSD ? product.priceUSD / (cachedEthRate||3000) : 0);
+  cart.push({ id: product.id, title: product.title, price: priceEth, priceUSD: product.priceUSD||"", color: "N/A", size:"N/A", variant: "", q:1, thumb: product.images[0] });
   updateCartUI();
   showToast(`${product.title} added to cart`,"success");
 }
 
-// ---- Add to Cart (handles normal, variants, and custom field items) ----
-function addToCart(prodId) {
-  // Find product in all categories
+/* ---- Add to Cart (async to handle USD→ETH conversions) ---- */
+async function addToCart(prodId) {
+  // find product
   let product = null;
   for (const cat of Object.keys(PRODUCTS)) {
     product = (PRODUCTS[cat] || []).find(p => p.id === prodId);
     if (product) break;
   }
-  if (!product) {
-    showToast("Product not found", "error");
-    return;
-  }
+  if(!product){ showToast("Product not found","error"); return; }
 
-  // ✅ If product has variants (like moss/grass pad, Mini Plushies, etc.)
+  // variant path (product.variants array) - mini plushies and some tees
   if (product.variants && product.variants.length) {
     const variantEl = document.getElementById(`variant_${prodId}`);
     const variantName = variantEl ? variantEl.value : product.variants[0].name;
     const selectedVar = product.variants.find(v => v.name === variantName);
+    if(!selectedVar){ showToast("Variant not found","error"); return; }
 
-    if (!selectedVar) {
-      showToast("Variant not found", "error");
-      return;
-    }
+    // compute price in ETH
+    let priceEth;
+    if (typeof selectedVar.price === 'number') priceEth = selectedVar.price;
+    else if (selectedVar.priceUSD) priceEth = await convertUsdToEth(Number(selectedVar.priceUSD));
+    else priceEth = product.price ?? (product.priceUSD ? (await convertUsdToEth(product.priceUSD)) : 0);
 
     const thumb = selectedVar.images?.[0] || product.images?.[0] || "";
-    const variantPrice = Number(selectedVar.price || product.price || 0);
 
-    // 🟡 merge variant and base id
-    const existing = cart.find(item =>
-      item.id === product.id &&
-      item.variant === selectedVar.name
-    );
-
-    if (existing) {
-      existing.q += 1;
-    } else {
+    const existing = cart.find(item => item.id === product.id && item.variant === selectedVar.name);
+    if (existing) { existing.q += 1; }
+    else {
       cart.push({
         id: product.id,
         title: product.title,
-        variant: selectedVar.name, // ✅ this is what your sheet will log
-        price: variantPrice,
+        variant: selectedVar.name,
+        price: Number(priceEth),
+        priceUSD: selectedVar.priceUSD ?? product.priceUSD ?? "",
         q: 1,
         thumb
       });
@@ -1028,76 +728,61 @@ function addToCart(prodId) {
     return;
   }
 
-  // ✅ Otherwise: handle normal or custom-field product
-  const thumb =
-    product.images?.Black ||
-    (Array.isArray(product.images)
-      ? product.images[0]
-      : Object.values(product.images)[0]);
-
-  // read selects / inputs if present
+  // non-variants (tees with simple variantSelect, keychains, etc.)
   const colorEl = document.getElementById(`color_${prodId}`);
   const sizeEl = document.getElementById(`size_${prodId}`);
   const customEl = document.getElementById(`custom_${prodId}`);
-  const variantEl = document.getElementById(`variant_${prodId}`); // 🆕 added here
-  const variant = variantEl ? variantEl.value : "N/A"; // 🆕 captures tee variant
+  const variantElSimple = document.getElementById(`variant_${prodId}`);
 
-  const color = colorEl
-    ? colorEl.value
-    : product.images && typeof product.images === "object"
-    ? Object.keys(product.images)[0]
-    : "N/A";
-
-  const size = sizeEl
-    ? sizeEl.value
-    : product.sizes && product.sizes.length
-    ? product.sizes[0]
-    : "N/A";
-
+  const color = colorEl ? colorEl.value : (product.images && typeof product.images === "object" ? Object.keys(product.images)[0] : "N/A");
+  const size = sizeEl ? sizeEl.value : (product.sizes && product.sizes.length ? product.sizes[0] : "N/A");
   const customText = customEl ? customEl.value.trim() : "";
-  const finalSize = customText ? `${size} (ID: ${customText})` : size;
+  const variant = variantElSimple ? variantElSimple.value : "";
 
   if (product.hasCustomField && !customText) {
     showToast("Please enter your Quacker Friend ID before adding to cart.", "error");
     return;
   }
 
-  // Merge with existing identical item
-  const existing = cart.find(
-    (item) =>
-      item.id === product.id &&
-      item.color === color &&
-      item.size === size &&
-      item.variant === variant && // 🆕 include variant match
-      (product.hasCustomField ? item.customText === customText : true)
-  );
+  // price in ETH (product may have price or priceUSD)
+  let priceEth;
+  if (typeof product.price === 'number') priceEth = product.price;
+  else if (product.priceUSD) priceEth = await convertUsdToEth(Number(product.priceUSD));
+  else priceEth = 0;
 
+  const finalSize = customText ? `${size} (ID: ${customText})` : size;
+  const thumb = (Array.isArray(product.images) ? product.images[0] : (product.images?.Black || (product.images ? Object.values(product.images)[0] : ""))) || "";
+
+  // merge logic: include variant in identity (so tees + minis with same id but different variant don't merge)
+  const existing = cart.find((item) => item.id === product.id && item.color === color && item.size === size && item.variant === variant && (product.hasCustomField ? item.customText === customText : true));
   if (existing) {
     existing.q = (existing.q || 1) + 1;
   } else {
     cart.push({
       id: product.id,
       title: product.title,
-      price: Number(product.price || 0),
+      price: Number(priceEth),
+      priceUSD: product.priceUSD ?? "",
       color,
       size: finalSize,
       customText: customText || "",
-      variant, // ✅ added here for Tee variants
+      variant: variant || "",
       q: 1,
       thumb,
     });
   }
 
   updateCartUI();
-  showToast(`${product.title} (${color}, ${size}${variant !== "N/A" ? ", " + variant : ""}) added to cart`, "success");
+  showToast(`${product.title} (${color}, ${size}${variant ? `, ${variant}` : ""}) added to cart`, "success");
 }
 
-
-  
+/* ===== CART UI ===== */
 function updateCartUI(){
   const countEl = document.getElementById("cartCount");
   const listEl = document.getElementById("cartList");
   const totalEl = document.getElementById("cartTotal");
+  if(!countEl || !listEl || !totalEl) return console.warn("Cart UI elements missing");
+
   const cartCount = cart.reduce((s,i)=>s+i.q,0);
   if(cartCount>0){ countEl.style.display="inline-block"; countEl.innerText = cartCount; } else countEl.style.display="none";
 
@@ -1112,9 +797,9 @@ function updateCartUI(){
     row.innerHTML = `
       <img src="${thumb}" alt="${ci.title}" />
       <div style="flex:1">
-        <div style="font-weight:700">${ci.title}</div>
-        <div style="font-size:13px;color:#666">${ci.color} • ${ci.size}</div>
-        <div style="margin-top:6px">${ci.price.toFixed(6)} ETH</div>
+        <div style="font-weight:700">${ci.title}${ci.variant?` — ${ci.variant}`:""}</div>
+        <div style="font-size:13px;color:#666">${ci.color || "N/A"} • ${ci.size || "N/A"}</div>
+        <div style="margin-top:6px">${(ci.price || 0).toFixed(6)} ETH</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
         <input class="qty" type="number" min="1" value="${ci.q}" onchange="changeQty(${idx}, this.value)" style="width:56px;padding:6px;border-radius:6px;border:1px solid #ddd;text-align:center" />
@@ -1122,7 +807,7 @@ function updateCartUI(){
       </div>
     `;
     listEl.appendChild(row);
-    total += ci.price * ci.q;
+    total += (ci.price || 0) * ci.q;
   });
   totalEl.innerText = total.toFixed(6) + " ETH";
 }
@@ -1131,52 +816,61 @@ function removeFromCart(index){ cart.splice(index,1); updateCartUI(); }
 
 /* ===== CART MODAL UI ===== */
 const cartModal = document.getElementById("cartModal");
-document.getElementById("openCartBtn").addEventListener("click", ()=> {
+const openCartBtn = document.getElementById("openCartBtn");
+if(openCartBtn) openCartBtn.addEventListener("click", ()=> {
   if(cart.length === 0){ showToast("Cart is empty", "info"); return; }
-  cartModal.classList.add("open"); cartModal.setAttribute("aria-hidden","false");
+  if(cartModal){ cartModal.classList.add("open"); cartModal.setAttribute("aria-hidden","false"); }
   showOverlay();
   updateCartUI();
 });
-function closeCart(){ cartModal.classList.remove("open"); cartModal.setAttribute("aria-hidden","true"); hideOverlay(); }
+function closeCart(){ if(cartModal){ cartModal.classList.remove("open"); cartModal.setAttribute("aria-hidden","true"); } hideOverlay(); }
 
-/* ===== WALLET & PROFILE (unchanged) ===== */
+/* ===== WALLET & PROFILE ===== */
 async function connectWallet(){
   if(!window.ethereum){ showToast("MetaMask not found","error"); return; }
   try{
     web3 = new Web3(window.ethereum);
     const accounts = await ethereum.request({ method: "eth_requestAccounts" });
     userAddress = accounts[0];
-    document.getElementById("connectBtn").innerText = userAddress.slice(0,6) + "..." + userAddress.slice(-4);
-    document.getElementById("profileBtn").style.display = "inline-block";
-    document.getElementById("walletAddr").innerText = userAddress;
+    const connectBtn = document.getElementById("connectBtn");
+    if(connectBtn) connectBtn.innerText = userAddress.slice(0,6) + "..." + userAddress.slice(-4);
+    const profileBtn = document.getElementById("profileBtn");
+    if(profileBtn) profileBtn.style.display = "inline-block";
+    const walletAddr = document.getElementById("walletAddr");
+    if(walletAddr) walletAddr.innerText = userAddress;
     showToast("Wallet connected","success");
   }catch(err){
     console.error(err);
     showToast("Connect failed","error");
   }
 }
-document.getElementById("connectBtn").addEventListener("click", connectWallet);
+const connectBtn = document.getElementById("connectBtn");
+if(connectBtn) connectBtn.addEventListener("click", connectWallet);
 
-document.getElementById("profileBtn").addEventListener("click", async ()=>{
+const profileBtn = document.getElementById("profileBtn");
+if(profileBtn) profileBtn.addEventListener("click", async ()=>{
   const panel = document.getElementById("profileSection");
-  panel.style.display = panel.style.display === "block" ? "none" : "block";
+  if(panel) panel.style.display = panel.style.display === "block" ? "none" : "block";
   if(!userAddress) return;
   try{
     const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
     const balance = await contract.methods.balanceOf(userAddress).call();
-    document.getElementById("nftCount").innerText = "NFTs Owned: " + balance;
+    const nftCountEl = document.getElementById("nftCount");
+    if(nftCountEl) nftCountEl.innerText = "NFTs Owned: " + balance;
     const res = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(userAddress)}`);
     const data = await res.json();
     const userRow = Array.isArray(data) ? data.find(r => (r.address||"").toLowerCase() === userAddress.toLowerCase()) : null;
-    document.getElementById("quacksCount").innerText = "Daily Quacks: " + (userRow ? userRow.quacks_collected : 0);
+    const quacksCount = document.getElementById("quacksCount");
+    if(quacksCount) quacksCount.innerText = "Daily Quacks: " + (userRow ? userRow.quacks_collected : 0);
   }catch(err){ console.error(err); showToast("Error loading profile","warn"); }
 });
 
-async function switchWallet(){ try{ await ethereum.request({ method:"wallet_requestPermissions", params:[{eth_accounts:{}}] }); const accounts = await ethereum.request({ method:"eth_requestAccounts" }); userAddress = accounts[0]; document.getElementById("walletAddr").innerText = userAddress; showToast("Wallet switched","success"); }catch(err){ console.error(err); } }
-function disconnectWallet(){ userAddress = null; web3 = null; document.getElementById("connectBtn").innerText = "Connect Wallet"; document.getElementById("profileBtn").style.display = "none"; document.getElementById("profileSection").style.display = "none"; showToast("Wallet disconnected","info"); }
+async function switchWallet(){ try{ await ethereum.request({ method:"wallet_requestPermissions", params:[{eth_accounts:{}}] }); const accounts = await ethereum.request({ method:"eth_requestAccounts" }); userAddress = accounts[0]; const walletAddr = document.getElementById("walletAddr"); if(walletAddr) walletAddr.innerText = userAddress; showToast("Wallet switched","success"); }catch(err){ console.error(err); } }
+function disconnectWallet(){ userAddress = null; web3 = null; const cbo = document.getElementById("connectBtn"); if(cbo) cbo.innerText = "Connect Wallet"; const profileBtn = document.getElementById("profileBtn"); if(profileBtn) profileBtn.style.display = "none"; const profileSection = document.getElementById("profileSection"); if(profileSection) profileSection.style.display = "none"; showToast("Wallet disconnected","info"); }
 
 /* ===== CLAIM QUACKS ===== */
-document.getElementById("claimQuacksBtn").addEventListener("click", async ()=>{
+const claimQuacksBtn = document.getElementById("claimQuacksBtn");
+if(claimQuacksBtn) claimQuacksBtn.addEventListener("click", async ()=>{
   if(!userAddress){ showToast("Connect wallet first","warn"); return; }
   try{
     const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
@@ -1187,18 +881,22 @@ document.getElementById("claimQuacksBtn").addEventListener("click", async ()=>{
     if(data.error){ showToast(data.error, "warn"); } else {
       showToast(`🦆 Claimed ${quacksToAdd} Quacks!`, "success");
       const userRow = Array.isArray(data) ? data.find(r => (r.address||"").toLowerCase() === userAddress.toLowerCase()) : null;
-      document.getElementById("quacksCount").innerText = "Daily Quacks: " + (data.new_quacks_total || (userRow ? userRow.quacks_collected : 0));
+      const quacksCount = document.getElementById("quacksCount");
+      if(quacksCount) quacksCount.innerText = "Daily Quacks: " + (data.new_quacks_total || (userRow ? userRow.quacks_collected : 0));
     }
   }catch(err){ console.error(err); showToast("Error claiming quacks","error"); }
 });
 
-/* ===== CHECKOUT / PURCHASE LOGGING (unchanged) ===== */
-document.getElementById("checkoutBtn").addEventListener("click", checkout);
+/* ===== CHECKOUT / PURCHASE LOGGING ===== */
+const checkoutBtn = document.getElementById("checkoutBtn");
+if(checkoutBtn) checkoutBtn.addEventListener("click", checkout);
+
 async function checkout(){
   try{
     if(!window.ethereum){ showToast("MetaMask not found","error"); return; }
     if(!userAddress){ showToast("Connect wallet first","error"); return; }
     if(cart.length === 0){ showToast("Cart is empty","info"); return; }
+
     try{
       const chain = await ethereum.request({ method: 'eth_chainId' });
       if(chain !== BASE_CHAIN_ID_HEX){
@@ -1206,69 +904,78 @@ async function checkout(){
         showToast("Switched to Base mainnet","success");
       }
     }catch(switchErr){ console.warn("Chain switch issue:", switchErr); }
-    const totalEth = cart.reduce((s,i)=>s + (Number(i.price) * i.q), 0);
+
+    // compute total ETH using stored ci.price (ETH). If some items have priceUSD only, convert (but addToCart already sets price in ETH when possible)
+    let totalEth = cart.reduce((s,i)=> s + ((Number(i.price) || 0) * (i.q || 1)), 0);
+
+    // fallback: if totalEth is 0 but there are priceUSD entries, sum and convert
+    if(totalEth === 0) {
+      let totalUsd = 0;
+      cart.forEach(ci => { totalUsd += Number(ci.priceUSD || 0) * (ci.q || 1); });
+      const rate = await getEthRate();
+      totalEth = totalUsd / rate;
+    }
+
     const valueHex = totalEth > 0 ? "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16) : "0x0";
     const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
     showToast("Please confirm the transaction in your wallet...", "info", 8000);
+
     let txHash;
     try{
       txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
     }catch(txErr){ console.warn("tx aborted", txErr); showToast("Transaction cancelled or failed — purchase not logged", "error"); return; }
+
     showToast("Transaction sent — logging purchase...", "success", 4000);
     await new Promise(r=>setTimeout(r,1200));
+
     const baseScanUrl = `https://basescan.org/tx/${txHash}`;
     const linkToast = document.createElement("div");
     linkToast.className = "toast success";
     linkToast.innerHTML = `✅ Purchase sent — <a href="${baseScanUrl}" target="_blank" style="color:#fff;text-decoration:underline">View on BaseScan</a>`;
     document.getElementById("toast-container").appendChild(linkToast);
     setTimeout(()=>linkToast.remove(), 8000);
+
+    // log each cart item (includes variant field)
     for(const ci of cart){
-      const payload = { wallet: userAddress, itemName: ci.title,  variant: ci.variant || "", color: ci.color || "", size: ci.size || "", quantity: ci.q || 1, price: Number(ci.price || 0), txHash };
+      const payload = {
+        wallet: userAddress,
+        itemName: ci.title,
+        variant: ci.variant || "",
+        color: ci.color || "",
+        size: ci.size || "",
+        quantity: ci.q || 1,
+        price: Number(ci.price || 0),
+        txHash
+      };
       const params = new URLSearchParams(payload).toString();
       try{ await fetch(`${PURCHASE_API}?${params}`); }catch(logErr){ console.warn("Logging failed for item", payload, logErr); }
     }
+
     cart = []; updateCartUI(); closeCart(); showToast("✅ Purchase logged successfully!", "success", 4000);
   }catch(err){ console.error("checkout error", err); showToast("Checkout failed", "error"); }
 }
 
-/* ===== MENU behavior & overlay safety net ===== */
+/* ===== MENU & overlay safety ===== */
 const menuBtn = document.getElementById('menuBtn');
 const shopMenu = document.getElementById('shopMenu');
-menuBtn.addEventListener('click', (e)=>{ e.stopPropagation(); shopMenu.style.display = shopMenu.style.display === "flex" ? "none" : "flex"; });
-document.addEventListener('click', (e)=>{ if(!menuBtn.contains(e.target) && !shopMenu.contains(e.target)){ shopMenu.style.display = "none"; } });
+if(menuBtn && shopMenu) {
+  menuBtn.addEventListener('click', (e)=>{ e.stopPropagation(); shopMenu.style.display = shopMenu.style.display === "flex" ? "none" : "flex"; });
+  document.addEventListener('click', (e)=>{ if(!menuBtn.contains(e.target) && !shopMenu.contains(e.target)){ shopMenu.style.display = "none"; } });
+}
 
-
-
-// Ensure overlay never blocks clicks when not active
+// ensure overlay never blocks clicks if not active
 hideOverlay();
 
-/* ===== INIT: show tees by default ===== */
-document.addEventListener('DOMContentLoaded', ()=>{  });
-  
-/* --- Dynamic zoom follow effect --- */
-document.querySelectorAll('.item img').forEach(img => {
-  img.addEventListener('mousemove', (e) => {
-    const rect = e.target.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    e.target.style.transformOrigin = `${x}% ${y}%`;
-    e.target.style.transform = 'scale(1.5)';
-  });
-
-  img.addEventListener('mouseleave', (e) => {
-    e.target.style.transformOrigin = 'center center';
-    e.target.style.transform = 'scale(1)';
-  });
+/* ===== INIT ===== */
+document.addEventListener('DOMContentLoaded', async ()=>{
+  // show default category
+  await showCategory(currentCategory);
 });
 
-
-
-  function attachZoomFollow(){
-  // remove old listeners safely by cloning nodes
+/* --- zoom follow helpers --- */
+function attachZoomFollow(){
   document.querySelectorAll('.item img').forEach(img => {
-    // ensure image is visible and pointer events are correct
     img.style.willChange = 'transform';
-    // attach handlers (use pointermove if you prefer)
     img.onmousemove = function(e){
       const rect = img.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -1282,7 +989,7 @@ document.querySelectorAll('.item img').forEach(img => {
     };
   });
 
-  // precaution: ensure carousel inactive images don't block clicks
+  // ensure non-active carousel images don't block clicks
   document.querySelectorAll('.carousel').forEach(car => {
     car.querySelectorAll('img').forEach(im => {
       if (!im.classList.contains('active')) {
@@ -1297,8 +1004,7 @@ document.querySelectorAll('.item img').forEach(img => {
     });
   });
 }
-
-
 </script>
+
 </body>
 </html>
