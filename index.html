@@ -676,7 +676,6 @@ function showCategory(cat) {
 
   document.body.classList.add('blur-bg');
 
-
 items.forEach(p => {
   const el = document.createElement('div');
   el.className = 'item';
@@ -698,8 +697,7 @@ items.forEach(p => {
       </select>
 
       <div style="margin-top:12px">
-        <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
-
+        <button class="btn" onclick="addVariantToCart('${p.id}')">Add to cart</button>
       </div>
     `;
 
