@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 
-  <style>
+  <style>`
     :root{
       --brand-orange:#ff914d;
       --brand-orange-dark:#ff7b2c;
@@ -249,6 +249,14 @@ header, .nav-container, .nav-actions, .nav-actions button {
     <h3>Your Cart</h3>
     <div style="font-size:13px;color:#c0392b;margin-bottom:8px;">Shipping only available in the US and Canada</div>
     <div class="cart-list" id="cartList"></div>
+    
+<div id="voucher-section" style="margin: 12px 0; text-align: center;">
+  <input id="voucherInput" 
+         placeholder="Enter voucher code" 
+         style="padding:6px;border-radius:6px;border:1px solid #ccc;width:60%;margin-right:6px;">
+  <button class="btn" 
+          onclick="applyVoucher(document.getElementById('voucherInput').value)">Apply</button>
+</div>
 
     <div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -831,6 +839,9 @@ function updateCartUI(){
   const countEl = document.getElementById("cartCount");
   const listEl = document.getElementById("cartList");
   const totalEl = document.getElementById("cartTotal");
+  const total = calculateCartTotalUSD();
+  document.getElementById('cart-total').innerText = `Total: $${total.toFixed(2)} USD`;
+}
   if(!countEl || !listEl || !totalEl) return console.warn("Cart UI elements missing");
 
   const cartCount = cart.reduce((s,i)=>s+i.q,0);
@@ -985,6 +996,13 @@ async function checkout(){
     document.getElementById("toast-container").appendChild(linkToast);
     setTimeout(()=>linkToast.remove(), 8000);
 
+    // Detect referral in URL
+const urlParams = new URLSearchParams(window.location.search);
+const referrer = urlParams.get("ref");
+if (referrer) {
+  localStorage.setItem("referrer", referrer);
+}
+
     // log each cart item (includes variant field)
     for(const ci of cart){
       const payload = {
@@ -995,7 +1013,9 @@ async function checkout(){
         size: ci.size || "",
         quantity: ci.q || 1,
         price: Number(ci.price || 0),
-        txHash
+        txHash,
+        referrer: localStorage.getItem("referrer") || ""
+
       };
       const params = new URLSearchParams(payload).toString();
       try{ await fetch(`${PURCHASE_API}?${params}`); }catch(logErr){ console.warn("Logging failed for item", payload, logErr); }
@@ -1015,6 +1035,42 @@ if(menuBtn && shopMenu) {
 
 // ensure overlay never blocks clicks if not active
 hideOverlay();
+
+  /* ===============================
+   🪙 VOUCHER SYSTEM
+================================= */
+
+let activeVoucher = null;
+
+const vouchers = {
+  "QUACK10": { type: "percent", value: 10, description: "10% off your total order" },
+  "DUCK25": { type: "fixed", value: 25, description: "$25 off your order" },
+  "PLUSHFREE": { type: "item", target: "miniplush", newPrice: 0, description: "Free Mini Plushie!" }
+};
+
+function applyVoucher(code) {
+  const voucher = vouchers[code.toUpperCase()];
+  if (!voucher) {
+    showToast("Invalid voucher code 🥲", "error");
+    return;
+  }
+  activeVoucher = voucher;
+  showToast(`🎟️ Voucher applied: ${voucher.description}`, "success");
+  updateCartUI(); // make sure this refreshes the display total
+}
+
+// Update cart total function
+function calculateCartTotalUSD() {
+  let total = cart.reduce((s, i) => s + i.priceUSD * i.q, 0);
+  if (activeVoucher) {
+    if (activeVoucher.type === "percent")
+      total -= total * (activeVoucher.value / 100);
+    else if (activeVoucher.type === "fixed")
+      total -= activeVoucher.value;
+  }
+  return Math.max(total, 0);
+}
+
 
 /* ===== INIT ===== */
 document.addEventListener('DOMContentLoaded', async ()=>{
