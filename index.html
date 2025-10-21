@@ -746,37 +746,60 @@ async function addToCart(prodId) {
 
   // variant path (product.variants array) - mini plushies and some tees
   if (product.variants && product.variants.length) {
-    const variantEl = document.getElementById(`variant_${prodId}`);
-    const variantName = variantEl ? variantEl.value : product.variants[0].name;
-    const selectedVar = product.variants.find(v => v.name === variantName);
-    if(!selectedVar){ showToast("Variant not found","error"); return; }
+  const variantEl = document.getElementById(`variant_${prodId}`);
+  const colorEl = document.getElementById(`color_${prodId}`);
+  const sizeEl = document.getElementById(`size_${prodId}`);
+  const customEl = document.getElementById(`custom_${prodId}`);
 
-    // compute price in ETH
-    let priceEth;
-    if (typeof selectedVar.price === 'number') priceEth = selectedVar.price;
-    else if (selectedVar.priceUSD) priceEth = await convertUsdToEth(Number(selectedVar.priceUSD));
-    else priceEth = product.price ?? (product.priceUSD ? (await convertUsdToEth(product.priceUSD)) : 0);
+  const variantName = variantEl ? variantEl.value : product.variants[0].name;
+  const selectedVar = product.variants.find(v => v.name === variantName);
+  if(!selectedVar){ showToast("Variant not found","error"); return; }
 
-    const thumb = selectedVar.images?.[0] || product.images?.[0] || "";
+  const color = colorEl ? colorEl.value : (product.images && typeof product.images === "object" ? Object.keys(product.images)[0] : "N/A");
+  const size = sizeEl ? sizeEl.value : (product.sizes && product.sizes.length ? product.sizes[0] : "N/A");
+  const customText = customEl ? customEl.value.trim() : "";
 
-    const existing = cart.find(item => item.id === product.id && item.variant === selectedVar.name);
-    if (existing) { existing.q += 1; }
-    else {
-      cart.push({
-        id: product.id,
-        title: product.title,
-        variant: selectedVar.name,
-        price: Number(priceEth),
-        priceUSD: selectedVar.priceUSD ?? product.priceUSD ?? "",
-        q: 1,
-        thumb
-      });
-    }
-
-    updateCartUI();
-    showToast(`${product.title} (${selectedVar.name}) added to cart`, "success");
+  if (product.hasCustomField && !customText) {
+    showToast("Please enter your Quacker Friend ID before adding to cart.", "error");
     return;
   }
+
+  // compute price in ETH
+  let priceEth;
+  if (typeof selectedVar.price === 'number') priceEth = selectedVar.price;
+  else if (selectedVar.priceUSD) priceEth = await convertUsdToEth(Number(selectedVar.priceUSD));
+  else priceEth = product.price ?? (product.priceUSD ? (await convertUsdToEth(product.priceUSD)) : 0);
+
+  const thumb = selectedVar.images?.[0] || product.images?.[0] || "";
+
+  const existing = cart.find(
+    (item) => item.id === product.id &&
+      item.variant === selectedVar.name &&
+      item.color === color &&
+      item.size === size &&
+      (product.hasCustomField ? item.customText === customText : true)
+  );
+
+  if (existing) existing.q += 1;
+  else {
+    cart.push({
+      id: product.id,
+      title: product.title,
+      variant: selectedVar.name,
+      price: Number(priceEth),
+      priceUSD: selectedVar.priceUSD ?? product.priceUSD ?? "",
+      color,
+      size,
+      customText,
+      q: 1,
+      thumb
+    });
+  }
+
+  updateCartUI();
+  showToast(`${product.title} (${variantName}, ${color}, ${size}) added to cart`, "success");
+  return;
+}
 
   // non-variants (tees with simple variantSelect, keychains, etc.)
   const colorEl = document.getElementById(`color_${prodId}`);
