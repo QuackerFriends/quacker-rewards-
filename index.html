@@ -294,37 +294,80 @@ const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
    Keep price (ETH) and/or priceUSD. For variants include priceUSD on variant objects.
 */
 const PRODUCTS = {
-  tees: [
-    { id: "battle", title: "Battle Duck Tee", priceUSD: 25, images:{ Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/battle%20duck%20black.png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/battle%20duck%20white.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" },
-    { id: "sus", title: "Sus Duck Tee",  priceUSD: 25, images:{ Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/sus%20duck%20black.png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/sus%20duck%20white.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" },
-    {
-      id: "thisisfine",
-      title: "This Is Ducking Fine Tee",
-      variants: [
-        { name: "T-Shirt",  priceUSD: 25 },
-        { name: "Drop Shoulder",  priceUSD: 30 }
-      ],
-      images: {
-        Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/this%20is%20fine%20black.png",
-        White: "https://quackerfriends.github.io/quackheads-assets/images/tees/this%20is%20fine%20white.png"
-      },
-      sizes: ["S","M","L","XL"],
-      sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
+ tees: [
+  {
+    id: "battle",
+    title: "Battle Duck Tee",
+    variants: [
+      { name: "T-Shirt", priceUSD: 25 },
+      { name: "Drop Shoulder", priceUSD: 30 }
+    ],
+    images: {
+      Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/battle%20duck%20black.png",
+      White: "https://quackerfriends.github.io/quackheads-assets/images/tees/battle%20duck%20white.png"
     },
-    { id: "higherducktee", title: "Higher Tee", priceUSD: 25, images:{ Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/higher%20black.png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/higher%20white.png" }, sizes: ["S","M","L","XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" },
-    {
-      id: "customtee",
-      title: "Custom Quacker NFT Design Tee",
-      priceUSD: 25,
-      hasCustomField: true,
-      images: {
-        Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/Untitled%20design%20(2).png",
-        White: "https://quackerfriends.github.io/quackheads-assets/images/tees/custom.png"
-      },
-      sizes: ["S", "M", "L", "XL"],
-      sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
-    }
-  ],
+    sizes: ["S", "M", "L", "XL"],
+    sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
+  },
+  {
+    id: "sus",
+    title: "Sus Duck Tee",
+    variants: [
+      { name: "T-Shirt", priceUSD: 25 },
+      { name: "Drop Shoulder", priceUSD: 30 }
+    ],
+    images: {
+      Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/sus%20duck%20black.png",
+      White: "https://quackerfriends.github.io/quackheads-assets/images/tees/sus%20duck%20white.png"
+    },
+    sizes: ["S", "M", "L", "XL"],
+    sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
+  },
+  {
+    id: "thisisfine",
+    title: "This Is Ducking Fine Tee",
+    variants: [
+      { name: "T-Shirt", priceUSD: 25 },
+      { name: "Drop Shoulder", priceUSD: 30 }
+    ],
+    images: {
+      Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/this%20is%20fine%20black.png",
+      White: "https://quackerfriends.github.io/quackheads-assets/images/tees/this%20is%20fine%20white.png"
+    },
+    sizes: ["S", "M", "L", "XL"],
+    sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
+  },
+  {
+    id: "higherducktee",
+    title: "Higher Duck Tee",
+    variants: [
+      { name: "T-Shirt", priceUSD: 25 },
+      { name: "Drop Shoulder", priceUSD: 30 }
+    ],
+    images: {
+      Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/higher%20black.png",
+      White: "https://quackerfriends.github.io/quackheads-assets/images/tees/higher%20white.png"
+    },
+    sizes: ["S", "M", "L", "XL"],
+    sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
+  },
+  {
+    id: "customtee",
+    title: "Custom Quacker NFT Design Tee",
+    variants: [
+      { name: "T-Shirt", priceUSD: 25 },
+      { name: "Drop Shoulder", priceUSD: 30 }
+    ],
+    hasCustomField: true,
+    images: {
+      Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/Untitled%20design%20(2).png",
+      White: "https://quackerfriends.github.io/quackheads-assets/images/tees/custom.png"
+    },
+    sizes: ["S", "M", "L", "XL"],
+    sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
+  }
+],
+
 
   plushies: [
     { id: "strawberry_quacker", title: "Strawberry Quacker",    priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/plushies/Strawberry%20Quacker.png"] },
