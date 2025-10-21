@@ -472,25 +472,36 @@ function showToast(message, type="info", duration=3000){
 }
 
 /* ===== PRICE HELPERS ===== */
-async function getEthRate(){
-  // cache for 60s to avoid spamming
+let cachedEthRate = null;
+let lastRateFetch = 0;
+
+async function getEthRate() {
   const now = Date.now();
-  if(cachedEthRate && (now - lastRateFetch) < 60000) return cachedEthRate;
+  if (cachedEthRate && now - lastRateFetch < 60000) return cachedEthRate;
   try {
     const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd");
     const data = await res.json();
-    cachedEthRate = (data && data.ethereum && data.ethereum.usd) ? data.ethereum.usd : 3000;
+    cachedEthRate = data.ethereum.usd;
+    lastRateFetch = now;
   } catch (err) {
     console.warn("CoinGecko fetch failed:", err);
     cachedEthRate = 3000;
   }
-  lastRateFetch = Date.now();
   return cachedEthRate;
 }
-async function convertUsdToEth(usd){
+
+async function convertUsdToEth(usd) {
   const rate = await getEthRate();
   return usd / rate;
 }
+
+/* 🧾 NEW FORMAT: show USD first, ETH in brackets */
+function formatPrice(priceUSD, ethRate) {
+  if (!priceUSD) return "$0.00";
+  const eth = ethRate ? (priceUSD / ethRate).toFixed(4) : "...";
+  return `$${priceUSD} (≈${eth} ETH)`;
+}
+
 
 /* ===== RENDER (async so we can fetch ETH rate) ===== */
 async function showCategory(cat) {
