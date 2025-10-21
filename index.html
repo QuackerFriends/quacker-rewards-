@@ -472,24 +472,33 @@ function showToast(message, type="info", duration=3000){
 }
 
 /* ===== PRICE HELPERS ===== */
-async function getEthRate(){
-  // cache for 60s to avoid spamming
+let cachedEthRate = null;
+let lastRateFetch = 0;
+
+async function getEthRate() {
   const now = Date.now();
-  if(cachedEthRate && (now - lastRateFetch) < 60000) return cachedEthRate;
+  if (cachedEthRate && now - lastRateFetch < 60000) return cachedEthRate; // cache 1 min
   try {
     const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd");
     const data = await res.json();
-    cachedEthRate = (data && data.ethereum && data.ethereum.usd) ? data.ethereum.usd : 3000;
+    cachedEthRate = data.ethereum.usd;
+    lastRateFetch = now;
   } catch (err) {
     console.warn("CoinGecko fetch failed:", err);
     cachedEthRate = 3000;
   }
-  lastRateFetch = Date.now();
   return cachedEthRate;
 }
-async function convertUsdToEth(usd){
+
+async function convertUsdToEth(usd) {
   const rate = await getEthRate();
   return usd / rate;
+}
+
+function formatPrice(priceUSD, ethRate) {
+  if (!ethRate) return `$${priceUSD} (~... ETH)`;
+  const eth = (priceUSD / ethRate).toFixed(4);
+  return `$${priceUSD} (~${eth} ETH)`;
 }
 
 /* ===== RENDER (async so we can fetch ETH rate) ===== */
@@ -513,18 +522,14 @@ async function showCategory(cat) {
     const el = document.createElement('div');
     el.className = 'item';
 
-    // CASE: product has variants (miniplushies or tee with variant array)
+    // CASE: product has variants (miniplushies or tees with variant array)
     if (p.variants && Array.isArray(p.variants)) {
       const defaultVar = p.variants[0];
       const imgId = `img_${p.id}`;
       const variantId = `variant_${p.id}`;
-
-      // determine default image
       const defaultImg = (p.images && typeof p.images === "object") ? Object.values(p.images)[0] : (defaultVar.images?.[0] || "");
 
-      // compute display price from defaultVar
-      let defaultEth = (typeof defaultVar.price === 'number') ? defaultVar.price : (defaultVar.priceUSD ? (defaultVar.priceUSD / ethRate) : (p.price || 0));
-      let displayPriceHtml = `<div class="price" id="price_${p.id}">${defaultEth.toFixed(4)} ETH${defaultVar.priceUSD ? ` (~$${defaultVar.priceUSD})` : ""}</div>`;
+      const displayPriceHtml = `<div class="price" id="price_${p.id}">${formatPrice(defaultVar.priceUSD || p.priceUSD || 0, ethRate)}</div>`;
 
       el.innerHTML = `
         <img id="${imgId}" src="${defaultImg}" alt="${p.title}" />
@@ -534,8 +539,7 @@ async function showCategory(cat) {
         <label style="display:block;text-align:left;font-weight:600">Variant</label>
         <select id="${variantId}">
           ${p.variants.map(v => {
-            // compute eth for data attribute
-            const ethVal = (typeof v.price === 'number') ? v.price : (v.priceUSD ? (v.priceUSD / ethRate) : 0);
+            const ethVal = v.priceUSD ? (v.priceUSD / ethRate).toFixed(4) : "0.0000";
             return `<option value="${v.name}" data-price="${ethVal}" data-price-usd="${v.priceUSD ?? ''}">${v.name}</option>`;
           }).join('')}
         </select>
@@ -567,11 +571,9 @@ async function showCategory(cat) {
 
       variantSelect.addEventListener('change', e => {
         const opt = e.target.options[e.target.selectedIndex];
-        const eth = parseFloat(opt.getAttribute('data-price')) || 0;
-        const usd = opt.getAttribute('data-price-usd') || "";
-        priceEl.textContent = `${eth.toFixed(4)} ETH${usd ? ` (~$${usd})` : ""}`;
+        const usd = opt.getAttribute('data-price-usd');
+        priceEl.textContent = formatPrice(Number(usd), ethRate);
 
-        // update image for variant if provided
         const varData = p.variants.find(v => v.name === e.target.value);
         if (varData && varData.images && varData.images[0]) imgEl.src = varData.images[0];
       });
@@ -583,134 +585,55 @@ async function showCategory(cat) {
           if (p.images[val]) imgEl.src = p.images[val];
         });
       }
-
-      return; // skip to next product
-    }
-
-    // If multiple images -> carousel (tapestry)
-    if (Array.isArray(p.images) && p.images.length > 1) {
-      const imgsHtml = p.images.map((src,i)=>`<img src="${src}" class="${i===0?'active':''}" data-index="${i}" alt="${p.title} ${i+1}" />`).join('');
-      const displayPrice = (p.price ?? 0).toFixed(4);
-      el.innerHTML = `
-        <div class="carousel" id="carousel_${p.id}">
-          ${imgsHtml}
-          <button class="prev-btn" aria-label="Previous">‹</button>
-          <button class="next-btn" aria-label="Next">›</button>
-        </div>
-        <h3>${p.title}</h3>
-        <div class="price">${displayPrice} ETH${p.priceUSD?` (~$${p.priceUSD})`:""}</div>
-        ${ (p.sizes && p.sizes.length) ? `<label style="display:block;text-align:left;font-weight:600">Size</label><select id="size_${p.id}">${p.sizes.map(s=>`<option value="${s}">${s}</option>`).join('')}</select>` : "" }
-        <div style="margin-top:12px"><button class="btn" onclick="addToCart('${p.id}')">Add to cart</button></div>
-      `;
-      container.appendChild(el);
-
-      // carousel logic (scoped)
-      (()=>{
-        const carousel = el.querySelector('.carousel');
-        const imgs = Array.from(carousel.querySelectorAll('img'));
-        let index = 0;
-        const setIndex = (newIdx) => {
-          imgs.forEach((img,i)=>{
-            if(i===index){
-              img.classList.remove('active'); img.style.opacity='0'; img.style.position='absolute'; img.style.pointerEvents='none';
-            }
-          });
-          index = (newIdx + imgs.length) % imgs.length;
-          imgs[index].classList.add('active'); imgs[index].style.opacity='1'; imgs[index].style.position='relative'; imgs[index].style.pointerEvents='auto';
-        };
-        const nextBtn = carousel.querySelector('.next-btn');
-        const prevBtn = carousel.querySelector('.prev-btn');
-        nextBtn.addEventListener('click', e=>{ e.stopPropagation(); setIndex(index+1); });
-        prevBtn.addEventListener('click', e=>{ e.stopPropagation(); setIndex(index-1); });
-        let startX = null;
-        carousel.addEventListener('touchstart',(ev)=> startX = ev.touches[0].clientX);
-        carousel.addEventListener('touchend',(ev)=>{
-          if(!startX) return;
-          const diff = ev.changedTouches[0].clientX - startX;
-          if(diff > 30) setIndex(index - 1);
-          else if(diff < -30) setIndex(index + 1);
-          startX = null;
-        });
-        let autoSlide = setInterval(()=> setIndex(index+1), 4000);
-        carousel.addEventListener('mouseenter', ()=> clearInterval(autoSlide));
-        carousel.addEventListener('mouseleave', ()=> autoSlide = setInterval(()=> setIndex(index+1), 4000));
-      })();
-
       return;
     }
 
-    // Single-image items (tees without variant array, keychains, etc.)
+    // Non-variant single items (tees, plushies, tapestries, etc.)
     const imgId = `img_${p.id}`;
     const sizeId = `size_${p.id}`;
-    let labelText = "Size";
-    if (p.id === "quackheads_keychain") labelText = "Top Accessory";
-
-    const sizeSelectHtml = (p.sizes && p.sizes.length) ? `<label style="display:block;text-align:left;font-weight:600">${labelText}</label><select id="${sizeId}">${p.sizes.map(s=>`<option value="${s}">${s}</option>`).join('')}</select>` : "";
-
-    // variant select for tees (if product contains variant info via variants array it's handled above).
-    let variantSelectHtml = "";
-    if (p.title && p.title.includes("Tee") && !p.variants) {
-      // If this tee type uses simple variant choices (not variants array), show dropdown
-      variantSelectHtml = `
-        <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Variant</label>
-        <select id="variant_${p.id}">
-          <option value="T-Shirt" data-price="${p.price ?? 0}" data-price-usd="${p.priceUSD ?? ''}">T-Shirt</option>
-          <option value="Drop Shoulder" data-price="${p.price ?? 0}" data-price-usd="${p.priceUSD ?? ''}">Drop Shoulder</option>
-        </select>
-      `;
-    }
-
-    // image source selection
-    const mainSrc = Array.isArray(p.images) ? (p.images[0] || "") : (p.images && p.images.Black ? p.images.Black : (p.images ? Object.values(p.images)[0] : ""));
-
-    // compute price display
-    const priceEth = (typeof p.price === 'number') ? p.price : (p.priceUSD ? (p.priceUSD / ethRate) : 0);
-    const priceHtml = `<div class="price" id="price_${p.id}">${priceEth.toFixed(4)} ETH${p.priceUSD?` (~$${p.priceUSD})`:""}</div>`;
+    const mainSrc = Array.isArray(p.images)
+      ? (p.images[0] || "")
+      : (p.images && p.images.Black ? p.images.Black : (Object.values(p.images || {})[0] || ""));
+    const priceHtml = `<div class="price" id="price_${p.id}">${formatPrice(p.priceUSD || 0, ethRate)}</div>`;
 
     el.innerHTML = `
       <img id="${imgId}" src="${mainSrc}" alt="${p.title}" />
       <h3>${p.title}</h3>
       ${priceHtml}
-      ${variantSelectHtml}
-      ${sizeSelectHtml}
-      ${p.sizeGuide ? `<button class="btn size-guide-btn" style="margin-left:8px;padding:6px 8px;font-size:12px" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>` : ""}
-      <div id="colorWrap_${p.id}" style="margin-top:8px"></div>
-      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
-        ${p.hasCustomField ? `<label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Your Quacker Friend ID#</label><input type="text" id="custom_${p.id}" placeholder="Enter your ID" style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;" />` : ""}
+
+      ${(p.sizes && p.sizes.length) ? `
+        <label style="display:block;text-align:left;font-weight:600">Size</label>
+        <select id="${sizeId}">
+          ${p.sizes.map(s=>`<option value="${s}">${s}</option>`).join('')}
+        </select>
+      ` : ""}
+
+      ${(p.images && typeof p.images === "object" && Object.keys(p.images).length>1) ? `
+        <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Color</label>
+        <select id="color_${p.id}">
+          ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
+        </select>
+      ` : ""}
+
+      ${p.hasCustomField ? `
+        <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Your Quacker Friend ID#</label>
+        <input type="text" id="custom_${p.id}" placeholder="Enter your ID" style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;" />
+      ` : ""}
+
+      ${p.sizeGuide ? `
+        <button class="btn size-guide-btn" style="margin-left:8px;padding:6px 8px;font-size:12px" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>
+      ` : ""}
+
+      <div style="margin-top:12px">
         <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
       </div>
     `;
     container.appendChild(el);
-
-    // color selector (if object)
-    if (p.images && typeof p.images === "object" && !Array.isArray(p.images)) {
-      const colorKey = `color_${p.id}`;
-      const colorWrap = el.querySelector(`#colorWrap_${p.id}`);
-      const colorHtml = `<label style="display:block;text-align:left;font-weight:600">Color</label><select id="${colorKey}">${Object.keys(p.images).map(c=>`<option value="${c}">${c}</option>`).join('')}</select>`;
-      colorWrap.innerHTML = colorHtml;
-      const colorSelect = colorWrap.querySelector(`#${colorKey}`);
-      colorSelect.addEventListener('change', e => {
-        const imgEl = el.querySelector(`#${imgId}`);
-        if (imgEl && p.images[e.target.value]) imgEl.src = p.images[e.target.value];
-      });
-    }
-
-    // variant price update for simple tee variant select
-    const variantSelect = el.querySelector(`#variant_${p.id}`);
-    if (variantSelect) {
-      variantSelect.addEventListener('change', e => {
-        const selectedOption = e.target.options[e.target.selectedIndex];
-        const newEth = parseFloat(selectedOption.getAttribute("data-price")) || 0;
-        const newUsd = selectedOption.getAttribute("data-price-usd") || "";
-        const priceEl = document.querySelector(`#price_${p.id}`);
-        if (priceEl) priceEl.textContent = `${newEth.toFixed(4)} ETH${newUsd?` (~$${newUsd})`:""}`;
-      });
-    }
   });
 
-  // restore zoom/hover effects
   attachZoomFollow();
 }
+
 
 /* ===== OPEN/CLOSE Helpers ===== */
 function showOverlay(){ const ov = document.getElementById('tees'); if(ov){ ov.classList.add('active'); ov.style.display='block'; } }
