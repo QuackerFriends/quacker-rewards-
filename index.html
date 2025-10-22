@@ -532,8 +532,12 @@ async function showCategory(cat) {
       el.innerHTML = `
         <img id="${imgId}" src="${defaultImg}" alt="${p.title}" />
         <h3>${p.title}</h3>
-    ${formatPrice(p.priceUSD, ethRate)}
-
+${formatPrice(
+  p.priceUSD ??
+  (p.variants && p.variants[0]?.priceUSD) ??
+  (p.price ? p.price * ethRate : 0),
+  ethRate
+)}
         <label style="display:block;text-align:left;font-weight:600">Variant</label>
         <select id="${variantId}">
           ${p.variants.map(v => {
