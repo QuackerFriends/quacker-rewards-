@@ -495,6 +495,14 @@ function formatEthFromUsd(priceUSD, ethRate) {
   return `${eth} ETH`;
 }
 
+  /* 💵 Always get USD price from product */
+function getProductUsd(p) {
+  if (p.priceUSD) return p.priceUSD;
+  if (p.variants && p.variants[0]?.priceUSD) return p.variants[0].priceUSD;
+  if (p.price) return Math.round(p.price * (cachedEthRate || 3000));
+  return 0;
+}
+
 /* ===== RENDER (async so we can fetch ETH rate) ===== */
 async function showCategory(cat) {
   currentCategory = cat;
@@ -576,7 +584,7 @@ ${formatPrice(
         const opt = e.target.options[e.target.selectedIndex];
         const eth = parseFloat(opt.getAttribute('data-price')) || 0;
         const usd = opt.getAttribute('data-price-usd') || "";
-        priceEl.textContent = formatPrice(Number(usd), ethRate);
+     priceEl.textContent = formatPrice(Number(usd), ethRate);
 
         // update image for variant if provided
         const varData = p.variants.find(v => v.name === e.target.value);
@@ -605,7 +613,7 @@ ${formatPrice(
           <button class="next-btn" aria-label="Next">›</button>
         </div>
         <h3>${p.title}</h3>
-        <div class="price">${displayPrice} ETH${p.priceUSD?` (~$${p.priceUSD})`:""}</div>
+        <div class="price" id="price_${p.id}">${formatPrice(getProductUsd(p), ethRate)}</div>
         ${ (p.sizes && p.sizes.length) ? `<label style="display:block;text-align:left;font-weight:600">Size</label><select id="size_${p.id}">${p.sizes.map(s=>`<option value="${s}">${s}</option>`).join('')}</select>` : "" }
         <div style="margin-top:12px"><button class="btn" onclick="addToCart('${p.id}')">Add to cart</button></div>
       `;
