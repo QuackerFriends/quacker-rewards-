@@ -351,21 +351,7 @@ const PRODUCTS = {
     sizes: ["S", "M", "L", "XL"],
     sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
   },
-  {
-    id: "customtee",
-    title: "Custom Quacker NFT Design Tee",
-    variants: [
-      { name: "T-Shirt", priceUSD: 0 },
-      { name: "Drop Shoulder", priceUSD: 0 }
-    ],
-    hasCustomField: true,
-    images: {
-      Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/Untitled%20design%20(2).png",
-      White: "https://quackerfriends.github.io/quackheads-assets/images/tees/custom.png"
-    },
-    sizes: ["S", "M", "L", "XL"],
-    sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
-  }
+  { id: "customtee", title: "Custom Quacker NFT Design Tee", priceUSD: 25, hasCustomField: true, images: { Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/Untitled%20design%20(2).png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/custom.png" }, sizes: ["S", "M", "L", "XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" }
 ],
 
 
@@ -492,12 +478,15 @@ async function convertUsdToEth(usd){
   return usd / rate;
 }
 
-  /* 🧾 NEW FORMAT: show USD first, ETH in brackets */
+ 
+/* 🧾 NEW FORMAT: show USD first, ETH in brackets */
 function formatPrice(priceUSD, ethRate) {
-  if (!priceUSD) return "$0.00";
-  const eth = ethRate ? (priceUSD / ethRate).toFixed(4) : "...";
-  return `$${priceUSD} (≈${eth} ETH)`;  // USD main, ETH in parentheses
+  const usd = Number(priceUSD) || 0;
+  if (!ethRate) return `$${usd} (≈... ETH)`;
+  const eth = (usd / ethRate).toFixed(4);
+  return `$${usd} (≈${eth} ETH)`;
 }
+
 
 /* Small helper for places that use ETH only */
 function formatEthFromUsd(priceUSD, ethRate) {
@@ -583,7 +572,7 @@ async function showCategory(cat) {
         const opt = e.target.options[e.target.selectedIndex];
         const eth = parseFloat(opt.getAttribute('data-price')) || 0;
         const usd = opt.getAttribute('data-price-usd') || "";
-        priceEl.textContent = `${eth.toFixed(4)} ETH${usd ? ` (~$${usd})` : ""}`;
+        priceEl.textContent = formatPrice(Number(usd), ethRate);
 
         // update image for variant if provided
         const varData = p.variants.find(v => v.name === e.target.value);
