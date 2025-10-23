@@ -993,6 +993,12 @@ const checkoutBtn = document.getElementById("checkoutBtn");
 if(checkoutBtn) checkoutBtn.addEventListener("click", checkout);
 
 async function checkout(){
+  // 🧾 Check that user entered shipping address
+const shippingAddress = document.getElementById("userAddressInput")?.value || "";
+if (!shippingAddress.trim()) {
+  alert("Please enter your shipping address before completing your purchase!");
+  return; // stop the function here if empty
+}
   
   try{
     if(!window.ethereum){ showToast("MetaMask not found","error"); return; }
@@ -1038,12 +1044,7 @@ async function checkout(){
     setTimeout(()=>linkToast.remove(), 8000);
 
 
-// 🧾 Check that user entered shipping address
-const shippingAddress = document.getElementById("userAddressInput")?.value || "";
-if (!shippingAddress.trim()) {
-  alert("Please enter your shipping address before completing your purchase!");
-  return; // stop the function here if empty
-}
+
 
     // log each cart item (includes variant field)
     for(const ci of cart){
