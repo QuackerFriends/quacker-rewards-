@@ -305,10 +305,6 @@ const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 
 /* ===== PRODUCTS =====
-   Keep price (ETH) and/or priceUSD. For variants you can include price or priceUSD on variant objects.
-   I used your product list and fixed syntax issues.
-*/
-/* ===== PRODUCTS =====
    Keep price (ETH) and/or priceUSD. For variants include priceUSD on variant objects.
 */
 const PRODUCTS = {
@@ -457,6 +453,9 @@ const PRODUCTS = {
     { id: "quackheads_keychain", title: "Quackheads Keychain",  priceUSD: 0, sizes: ["Bucket Hat","Headphones","Sprout"], images: { Green: "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Quackheads.png", Mustard: "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Quackheads.png", Pink: "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Quackheads.png" } }
   ]
 };
+
+  window.products = Object.values(PRODUCTS).flat();
+
 
 /* ===== STATE ===== */
 let userAddress = null;
@@ -1111,33 +1110,30 @@ if (!shippingAddress.trim()) {
   }catch(err){ console.error("checkout error", err); showToast("Checkout failed", "error"); }
 }
 
-  /* ===== POINTS REDEMPTION ===== */
+ 
 /* ===== POINTS REDEMPTION ===== */
 function redeemWithPoints(productId, cost) {
-  console.log("Redeem clicked for", productId, "cost", cost);
-
   const wallet = (userAddress || "").toLowerCase();
   if (!wallet) {
     showToast("Please connect your wallet first.", "error");
     return;
   }
 
-  const product = products.find(p => p.id === productId);
+  // ✅ Search through all product categories
+  const allProducts = Object.values(PRODUCTS).flat();
+  const product = allProducts.find(p => p.id === productId);
   if (!product) {
-    console.warn("Product not found for ID:", productId);
     showToast("Product not found", "error");
     return;
   }
 
-  // Prevent duplicate redemption
   const alreadyInCart = cart.find(i => i.id === productId && i.redeem);
   if (alreadyInCart) {
     showToast("Item already added for redemption.", "info");
     return;
   }
 
-  // Add item to cart as a redeemed item
-  const redeemItem = {
+  cart.push({
     id: productId,
     title: product.title,
     price: 0,
@@ -1148,10 +1144,7 @@ function redeemWithPoints(productId, cost) {
     variant: "",
     color: "",
     size: ""
-  };
-
-  cart.push(redeemItem);
-  console.log("Redeem item added to cart:", redeemItem);
+  });
 
   updateCartUI();
   showToast(`🪙 "${product.title}" added to cart for ${cost} points`, "success");
