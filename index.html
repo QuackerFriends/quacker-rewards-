@@ -1038,18 +1038,29 @@ if (!shippingAddress.trim()) {
       const rate = await getEthRate();
       totalEth = totalUsd / rate;
     }
+    
+let txHash = "";
+const isRedeemOnly = cart.every(ci => ci.redeem);
 
-    const valueHex = totalEth > 0 ? "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16) : "0x0";
-    const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
-    showToast("Please confirm the transaction in your wallet...", "info", 8000);
+if (!isRedeemOnly) {
+  const valueHex = totalEth > 0 ? "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16) : "0x0";
+  const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
+  showToast("Please confirm the transaction in your wallet...", "info", 8000);
 
-    let txHash;
-    try{
-      txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
-    }catch(txErr){ console.warn("tx aborted", txErr); showToast("Transaction cancelled or failed — purchase not logged", "error"); return; }
+  try {
+    txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
+  } catch (txErr) {
+    console.warn("tx aborted", txErr);
+    showToast("Transaction cancelled or failed — purchase not logged", "error");
+    return;
+  }
 
-    showToast("Transaction sent — logging purchase...", "success", 4000);
-    await new Promise(r=>setTimeout(r,1200));
+  showToast("Transaction sent — logging purchase...", "success", 4000);
+  await new Promise(r => setTimeout(r, 1200));
+} else {
+  showToast("Redeeming item with points...", "info", 4000);
+}
+);
 
     const baseScanUrl = `https://basescan.org/tx/${txHash}`;
     const linkToast = document.createElement("div");
@@ -1062,57 +1073,78 @@ if (!shippingAddress.trim()) {
 
 
     // log each cart item (includes variant field)
-    for(const ci of cart){
-      const payload = {
-        wallet: userAddress,
-        itemName: ci.title,
-        variant: ci.variant || "",
-        color: ci.color || "",
-        size: ci.size || "",
-        quantity: ci.q || 1,
-        price: Number(ci.price || 0),
-        address: shippingAddress,     
-        txHash,
-        referrer 
+    for (const ci of cart) {
+  const payload = {
+    wallet: userAddress,
+    itemName: ci.title,
+    variant: ci.variant || "",
+    color: ci.color || "",
+    size: ci.size || "",
+    quantity: ci.q || 1,
+    price: ci.redeem ? "REDEEMED" : Number(ci.price || 0),
+    address: shippingAddress,
+    txHash,
+    referrer
+  };
 
-      };
-      const params = new URLSearchParams(payload).toString();
-      try{ await fetch(`${PURCHASE_API}?${params}`); }catch(logErr){ console.warn("Logging failed for item", payload, logErr); }
-    }
+  // if redeem item → deduct points after successful checkout
+  if (ci.redeem) {
+    payload.redeem = ci.title;
+    payload.cost = ci.cost;
+  }
+
+  const params = new URLSearchParams(payload).toString();
+  try {
+    await fetch(`${PURCHASE_API}?${params}`);
+  } catch (logErr) {
+    console.warn("Logging failed for item", payload, logErr);
+  }
+}
+
 
     cart = []; updateCartUI(); closeCart(); showToast("✅ Purchase logged successfully!", "success", 4000);
   }catch(err){ console.error("checkout error", err); showToast("Checkout failed", "error"); }
 }
 
   /* ===== POINTS REDEMPTION ===== */
-async function redeemWithPoints(productId, cost) {
-  const wallet = (userAddress || "").toLowerCase(); // ✅ uses same variable as connectWallet
+function redeemWithPoints(productId, cost) {
+  const wallet = (userAddress || "").toLowerCase();
   if (!wallet) {
     showToast("Please connect your wallet first.", "error");
     return;
   }
 
-  if (!confirm(`Redeem this item for ${cost} points?`)) return;
-
-  try {
-    const res = await fetch(`${PURCHASE_API}?wallet=${wallet}&redeem=${encodeURIComponent(productId)}&cost=${cost}`);
-    const data = await res.json();
-
-    if (data.success) {
-      showToast(`✅ Redeemed successfully! ${cost} points deducted.`, "success");
-      // Optionally, disable the button or mark the item as redeemed
-      const btn = document.querySelector(`button[onclick*="${productId}"]`);
-      if (btn) {
-        btn.disabled = true;
-        btn.innerText = "Redeemed ✅";
-      }
-    } else {
-      showToast(`❌ ${data.error || "Could not redeem"}`, "error");
-    }
-  } catch (err) {
-    showToast("Error redeeming item: " + err.message, "error");
+  const product = products.find(p => p.id === productId);
+  if (!product) {
+    showToast("Product not found", "error");
+    return;
   }
+
+  // Check if it's already in the cart
+  const alreadyInCart = cart.find(i => i.id === productId && i.redeem);
+  if (alreadyInCart) {
+    showToast("Item already added for redemption.", "info");
+    return;
+  }
+
+  // Add item to cart like normal, but mark as redeemable
+  cart.push({
+    id: productId,
+    title: product.title,
+    price: 0,       // no ETH/fiat price
+    priceUSD: 0,
+    q: 1,
+    redeem: true,   // special flag for redeemables
+    cost: cost,     // how many points this costs
+    variant: "",
+    color: "",
+    size: ""
+  });
+
+  updateCartUI();
+  showToast(`🪙 "${product.title}" added to cart for ${cost} points`, "success");
 }
+
 
 
 /* ===== MENU & overlay safety ===== */
