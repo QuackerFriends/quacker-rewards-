@@ -996,7 +996,7 @@ async function checkout(){
   // 🧾 Check that user entered shipping address
 const shippingAddress = document.getElementById("userAddressInput")?.value || "";
 if (!shippingAddress.trim()) {
-  alert("Please enter your shipping address before completing your purchase!");
+  showToast("Please enter your shipping address before completing your purchase!", "error");
   return; // stop the function here if empty
 }
   
