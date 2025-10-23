@@ -712,12 +712,13 @@ async function showCategory(cat) {
   ` : ""}
 
   ${
-    p.pointsCost
-      ? `<button class="btn" onclick="redeemWithPoints('${p.id}', ${p.pointsCost})">
-          Redeem for ${p.pointsCost} Points
-        </button>`
-      : `<button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>`
-  }
+  p.pointsCost
+    ? `<button class="btn" onclick="redeemWithPoints('${p.id}', ${p.pointsCost})">
+        Redeem for ${p.pointsCost} Points
+      </button>`
+    : `<button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>`
+}
+
 </div>
 
     `;
@@ -1111,7 +1112,10 @@ if (!shippingAddress.trim()) {
 }
 
   /* ===== POINTS REDEMPTION ===== */
+/* ===== POINTS REDEMPTION ===== */
 function redeemWithPoints(productId, cost) {
+  console.log("Redeem clicked for", productId, "cost", cost);
+
   const wallet = (userAddress || "").toLowerCase();
   if (!wallet) {
     showToast("Please connect your wallet first.", "error");
@@ -1120,34 +1124,39 @@ function redeemWithPoints(productId, cost) {
 
   const product = products.find(p => p.id === productId);
   if (!product) {
+    console.warn("Product not found for ID:", productId);
     showToast("Product not found", "error");
     return;
   }
 
-  // Check if it's already in the cart
+  // Prevent duplicate redemption
   const alreadyInCart = cart.find(i => i.id === productId && i.redeem);
   if (alreadyInCart) {
     showToast("Item already added for redemption.", "info");
     return;
   }
 
-  // Add item to cart like normal, but mark as redeemable
-  cart.push({
+  // Add item to cart as a redeemed item
+  const redeemItem = {
     id: productId,
     title: product.title,
-    price: 0,       // no ETH/fiat price
+    price: 0,
     priceUSD: 0,
     q: 1,
-    redeem: true,   // special flag for redeemables
-    cost: cost,     // how many points this costs
+    redeem: true,
+    cost: cost,
     variant: "",
     color: "",
     size: ""
-  });
+  };
+
+  cart.push(redeemItem);
+  console.log("Redeem item added to cart:", redeemItem);
 
   updateCartUI();
   showToast(`🪙 "${product.title}" added to cart for ${cost} points`, "success");
 }
+
 
 
 
