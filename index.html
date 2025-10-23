@@ -1086,23 +1086,26 @@ if (!shippingAddress.trim()) {
 
   /* ===== POINTS REDEMPTION ===== */
 async function redeemWithPoints(productId, cost) {
-  const wallet = window.userWallet?.toLowerCase();
+  const wallet = (userAddress || "").toLowerCase(); // ✅ uses same variable as connectWallet
   if (!wallet) {
     showToast("Please connect your wallet first.", "error");
     return;
   }
 
-  // Confirm before redeeming
   if (!confirm(`Redeem this item for ${cost} points?`)) return;
 
   try {
-    const res = await fetch(
-      `${PURCHASE_API}?wallet=${wallet}&redeem=${productId}&cost=${cost}`
-    );
+    const res = await fetch(`${PURCHASE_API}?wallet=${wallet}&redeem=${encodeURIComponent(productId)}&cost=${cost}`);
     const data = await res.json();
 
     if (data.success) {
       showToast(`✅ Redeemed successfully! ${cost} points deducted.`, "success");
+      // Optionally, disable the button or mark the item as redeemed
+      const btn = document.querySelector(`button[onclick*="${productId}"]`);
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = "Redeemed ✅";
+      }
     } else {
       showToast(`❌ ${data.error || "Could not redeem"}`, "error");
     }
@@ -1110,6 +1113,7 @@ async function redeemWithPoints(productId, cost) {
     showToast("Error redeeming item: " + err.message, "error");
   }
 }
+
 
 /* ===== MENU & overlay safety ===== */
 const menuBtn = document.getElementById('menuBtn');
