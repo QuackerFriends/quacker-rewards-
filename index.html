@@ -256,6 +256,13 @@ header, .nav-container, .nav-actions, .nav-actions button {
         <strong id="cartTotal">0 ETH</strong>
       </div>
       <div style="margin-top:8px">
+        
+        <div id="addressSection" style="margin-top:20px;">
+  <label for="userAddressInput" style="font-weight:bold;">Shipping Address:</label><br>
+  <textarea id="userAddressInput" placeholder="Enter your full shipping address"
+    style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;min-height:70px;"></textarea>
+</div>
+
         <button id="checkoutBtn" class="btn" style="width:100%">Checkout (Pay in Base)</button>
       </div>
       <div style="margin-top:8px;font-size:12px;color:#666;text-align:center">Network: Base Mainnet</div>
@@ -986,6 +993,7 @@ const checkoutBtn = document.getElementById("checkoutBtn");
 if(checkoutBtn) checkoutBtn.addEventListener("click", checkout);
 
 async function checkout(){
+  
   try{
     if(!window.ethereum){ showToast("MetaMask not found","error"); return; }
     if(!userAddress){ showToast("Connect wallet first","error"); return; }
@@ -1029,6 +1037,14 @@ async function checkout(){
     document.getElementById("toast-container").appendChild(linkToast);
     setTimeout(()=>linkToast.remove(), 8000);
 
+
+// 🧾 Check that user entered shipping address
+const shippingAddress = document.getElementById("userAddressInput")?.value || "";
+if (!shippingAddress.trim()) {
+  alert("Please enter your shipping address before completing your purchase!");
+  return; // stop the function here if empty
+}
+
     // log each cart item (includes variant field)
     for(const ci of cart){
       const payload = {
@@ -1039,6 +1055,7 @@ async function checkout(){
         size: ci.size || "",
         quantity: ci.q || 1,
         price: Number(ci.price || 0),
+        address: shippingAddress,     
         txHash
       };
       const params = new URLSearchParams(payload).toString();
