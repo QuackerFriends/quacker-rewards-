@@ -263,6 +263,17 @@ header, .nav-container, .nav-actions, .nav-actions button {
     style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;min-height:70px;"></textarea>
 </div>
 
+        <div id="referralSection" style="margin-top:16px;">
+  <label for="referrerInput" style="font-weight:bold;">Referral Address (optional):</label><br>
+  <input
+    type="text"
+    id="referrerInput"
+    placeholder="Enter a friend’s wallet address"
+    style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;"
+  />
+</div>
+
+
         <button id="checkoutBtn" class="btn" style="width:100%">Checkout (Pay in Base)</button>
       </div>
       <div style="margin-top:8px;font-size:12px;color:#666;text-align:center">Network: Base Mainnet</div>
@@ -1046,7 +1057,9 @@ if (!shippingAddress.trim()) {
         quantity: ci.q || 1,
         price: Number(ci.price || 0),
         address: shippingAddress,     
-        txHash
+        txHash,
+        referrer 
+
       };
       const params = new URLSearchParams(payload).toString();
       try{ await fetch(`${PURCHASE_API}?${params}`); }catch(logErr){ console.warn("Logging failed for item", payload, logErr); }
