@@ -351,12 +351,24 @@ const PRODUCTS = {
     sizes: ["S", "M", "L", "XL"],
     sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
   },
-  { id: "customtee", title: "Custom Quacker NFT Design Tee", priceUSD: 25, hasCustomField: true, images: { Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/Untitled%20design%20(2).png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/custom.png" }, sizes: ["S", "M", "L", "XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" }
+  {
+    
+    id: "customtee", title: "Custom Quacker NFT Design Tee",
+    variants: [
+      { name: "T-Shirt", priceUSD: 25 },
+      { name: "Drop Shoulder", priceUSD: 30 }
+     ],
+   hasCustomField: true, 
+   images: { 
+     Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/Untitled%20design%20(2).png",
+     White: "https://quackerfriends.github.io/quackheads-assets/images/tees/custom.png" }, 
+   sizes: ["S", "M", "L", "XL"],
+   sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" }
 ],
 
 
   plushies: [
-    { id: "strawberry_quacker", title: "Strawberry Quacker",    priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/plushies/Strawberry%20Quacker.png"] },
+    { id: "strawberry_quacker", title: "Strawberry Quacker",   priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/plushies/Strawberry%20Quacker.png"] },
     { id: "mosswing_quacker", title: "Mosswing Quacker",   priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/plushies/Mosswing%20Quacker.png"] },
     { id: "azurewing_quacker", title: "Azurewing Quacker",   priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/plushies/Azurewing%20Quacker.png"] },
     { id: "pumpkin_beanie_alucard", title: "Pumpkin Beanie Alucard",    priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/plushies/Pumpkin%20Beanie%20Alucard.png"] },
@@ -535,7 +547,7 @@ async function showCategory(cat) {
 
       // compute display price from defaultVar
       let defaultEth = (typeof defaultVar.price === 'number') ? defaultVar.price : (defaultVar.priceUSD ? (defaultVar.priceUSD / ethRate) : (p.price || 0));
-      let displayPriceHtml = `<div class="price" id="price_${p.id}">${defaultEth.toFixed(4)} ETH${defaultVar.priceUSD ? ` (~$${defaultVar.priceUSD})` : ""}</div>`;
+      let displayPriceHtml = `<div class="price">${formatPrice(getProductUsd(p), ethRate)}</div>`;
 
       el.innerHTML = `
         <img id="${imgId}" src="${defaultImg}" alt="${p.title}" />
@@ -580,16 +592,12 @@ ${formatPrice(
       const imgEl = el.querySelector(`#${imgId}`);
       const priceEl = el.querySelector(`#price_${p.id}`);
 
-      variantSelect.addEventListener('change', e => {
-        const opt = e.target.options[e.target.selectedIndex];
-        const eth = parseFloat(opt.getAttribute('data-price')) || 0;
-        const usd = opt.getAttribute('data-price-usd') || "";
-     priceEl.textContent = formatPrice(Number(usd), ethRate);
+      variantSelect.addEventListener("change", e => {
+  const variant = variants.find(v => v.name === e.target.value);
+  const usd = variant ? variant.priceUSD : getProductUsd(p);
+  priceEl.textContent = formatPrice(usd, ethRate);
+});
 
-        // update image for variant if provided
-        const varData = p.variants.find(v => v.name === e.target.value);
-        if (varData && varData.images && varData.images[0]) imgEl.src = varData.images[0];
-      });
 
       const colorSelect = el.querySelector(`#color_${p.id}`);
       if (colorSelect) {
@@ -613,7 +621,7 @@ ${formatPrice(
           <button class="next-btn" aria-label="Next">›</button>
         </div>
         <h3>${p.title}</h3>
-        <div class="price" id="price_${p.id}">${formatPrice(getProductUsd(p), ethRate)}</div>
+   <div class="price">${formatPrice(getProductUsd(p), ethRate)}</div>
         ${ (p.sizes && p.sizes.length) ? `<label style="display:block;text-align:left;font-weight:600">Size</label><select id="size_${p.id}">${p.sizes.map(s=>`<option value="${s}">${s}</option>`).join('')}</select>` : "" }
         <div style="margin-top:12px"><button class="btn" onclick="addToCart('${p.id}')">Add to cart</button></div>
       `;
@@ -680,7 +688,7 @@ ${formatPrice(
 
     // compute price display
     const priceEth = (typeof p.price === 'number') ? p.price : (p.priceUSD ? (p.priceUSD / ethRate) : 0);
-    const priceHtml = `<div class="price" id="price_${p.id}">${priceEth.toFixed(4)} ETH${p.priceUSD?` (~$${p.priceUSD})`:""}</div>`;
+    const priceHtml = `<div class="price">${formatPrice(getProductUsd(p), ethRate)}</div>`;
 
     el.innerHTML = `
       <img id="${imgId}" src="${mainSrc}" alt="${p.title}" />
