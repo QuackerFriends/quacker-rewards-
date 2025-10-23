@@ -1038,29 +1038,29 @@ if (!shippingAddress.trim()) {
       const rate = await getEthRate();
       totalEth = totalUsd / rate;
     }
-    
-let txHash = "";
-const isRedeemOnly = cart.every(ci => ci.redeem);
 
-if (!isRedeemOnly) {
-  const valueHex = totalEth > 0 ? "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16) : "0x0";
-  const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
-  showToast("Please confirm the transaction in your wallet...", "info", 8000);
+     let txHash = "";
+    const isRedeemOnly = cart.every(ci => ci.redeem);
 
-  try {
-    txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
-  } catch (txErr) {
-    console.warn("tx aborted", txErr);
-    showToast("Transaction cancelled or failed — purchase not logged", "error");
-    return;
-  }
+    if (!isRedeemOnly) {
+      const valueHex = totalEth > 0 ? "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16) : "0x0";
+      const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
+      showToast("Please confirm the transaction in your wallet...", "info", 8000);
 
-  showToast("Transaction sent — logging purchase...", "success", 4000);
-  await new Promise(r => setTimeout(r, 1200));
-} else {
-  showToast("Redeeming item with points...", "info", 4000);
-}
-);
+      try {
+        txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
+      } catch (txErr) {
+        console.warn("tx aborted", txErr);
+        showToast("Transaction cancelled or failed — purchase not logged", "error");
+        return;
+      }
+
+      showToast("Transaction sent — logging purchase...", "success", 4000);
+      await new Promise(r => setTimeout(r, 1200));
+    } else {
+      showToast("Redeeming item with points...", "info", 4000);
+    }
+
 
     const baseScanUrl = `https://basescan.org/tx/${txHash}`;
     const linkToast = document.createElement("div");
