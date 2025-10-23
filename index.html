@@ -369,7 +369,8 @@ const PRODUCTS = {
     sizes: ["S", "M", "L", "XL"],
     sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
   },
-    { id: "customtee", title: "Custom Quacker NFT Design Tee", priceUSD: 50, hasCustomField: true, images: { Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/Untitled%20design%20(2).png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/custom.png" }, sizes: ["S", "M", "L", "XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" }
+    { id: "customtee", title: "Custom Quacker NFT Design Tee", priceUSD: 50, pointsCost: 10,
+ hasCustomField: true, images: { Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/Untitled%20design%20(2).png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/custom.png" }, sizes: ["S", "M", "L", "XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" }
 
 ],
 
@@ -703,10 +704,22 @@ async function showCategory(cat) {
       ${sizeSelectHtml}
       ${p.sizeGuide ? `<button class="btn size-guide-btn" style="margin-left:8px;padding:6px 8px;font-size:12px" onclick="openSizeGuide('${p.sizeGuide}')">📝 Size Guide</button>` : ""}
       <div id="colorWrap_${p.id}" style="margin-top:8px"></div>
-      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
-        ${p.hasCustomField ? `<label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Your Quacker Friend ID#</label><input type="text" id="custom_${p.id}" placeholder="Enter your ID" style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;" />` : ""}
-        <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
-      </div>
+     <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;justify-content:center">
+  ${p.hasCustomField ? `
+    <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Your Quacker Friend ID#</label>
+    <input type="text" id="custom_${p.id}" placeholder="Enter your ID" 
+      style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;" />
+  ` : ""}
+
+  ${
+    p.pointsCost
+      ? `<button class="btn" onclick="redeemWithPoints('${p.id}', ${p.pointsCost})">
+          Redeem for ${p.pointsCost} Points
+        </button>`
+      : `<button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>`
+  }
+</div>
+
     `;
     container.appendChild(el);
 
@@ -1069,6 +1082,33 @@ if (!shippingAddress.trim()) {
 
     cart = []; updateCartUI(); closeCart(); showToast("✅ Purchase logged successfully!", "success", 4000);
   }catch(err){ console.error("checkout error", err); showToast("Checkout failed", "error"); }
+}
+
+  /* ===== POINTS REDEMPTION ===== */
+async function redeemWithPoints(productId, cost) {
+  const wallet = window.userWallet?.toLowerCase();
+  if (!wallet) {
+    showToast("Please connect your wallet first.", "error");
+    return;
+  }
+
+  // Confirm before redeeming
+  if (!confirm(`Redeem this item for ${cost} points?`)) return;
+
+  try {
+    const res = await fetch(
+      `${PURCHASE_API}?wallet=${wallet}&redeem=${productId}&cost=${cost}`
+    );
+    const data = await res.json();
+
+    if (data.success) {
+      showToast(`✅ Redeemed successfully! ${cost} points deducted.`, "success");
+    } else {
+      showToast(`❌ ${data.error || "Could not redeem"}`, "error");
+    }
+  } catch (err) {
+    showToast("Error redeeming item: " + err.message, "error");
+  }
 }
 
 /* ===== MENU & overlay safety ===== */
