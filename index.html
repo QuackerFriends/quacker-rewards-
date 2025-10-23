@@ -588,15 +588,22 @@ ${formatPrice(
       container.appendChild(el);
 
       // listeners
-      const variantSelect = el.querySelector(`#${variantId}`);
-      const imgEl = el.querySelector(`#${imgId}`);
-      const priceEl = el.querySelector(`#price_${p.id}`);
+const variantSelect = el.querySelector(`#${variantId}`);
+const imgEl = el.querySelector(`#${imgId}`);
+const priceEl = el.querySelector(".price"); // use class, not id
 
-      variantSelect.addEventListener("change", e => {
-  const variant = variants.find(v => v.name === e.target.value);
-  const usd = variant ? variant.priceUSD : getProductUsd(p);
-  priceEl.textContent = formatPrice(usd, ethRate);
-});
+if (variantSelect) {
+  variantSelect.addEventListener("change", async (e) => {
+    const ethRate = await getEthRate();
+    const selectedVariant = p.variants.find(v => v.name === e.target.value);
+    const usd = selectedVariant ? selectedVariant.priceUSD : getProductUsd(p);
+    priceEl.textContent = formatPrice(usd, ethRate);
+
+    // update image if variant has one
+    if (selectedVariant?.images?.[0]) imgEl.src = selectedVariant.images[0];
+  });
+}
+
 
 
       const colorSelect = el.querySelector(`#color_${p.id}`);
