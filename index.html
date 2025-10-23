@@ -538,84 +538,75 @@ async function showCategory(cat) {
 
     // CASE: product has variants (miniplushies or tee with variant array)
     if (p.variants && Array.isArray(p.variants)) {
-      const defaultVar = p.variants[0];
-      const imgId = `img_${p.id}`;
-      const variantId = `variant_${p.id}`;
+  const defaultVar = p.variants[0];
+  const imgId = `img_${p.id}`;
+  const variantId = `variant_${p.id}`;
 
-      // determine default image
-      const defaultImg = (p.images && typeof p.images === "object") ? Object.values(p.images)[0] : (defaultVar.images?.[0] || "");
+  const defaultImg = (p.images && typeof p.images === "object")
+    ? Object.values(p.images)[0]
+    : (defaultVar.images?.[0] || "");
 
-      // compute display price from defaultVar
-      let defaultEth = (typeof defaultVar.price === 'number') ? defaultVar.price : (defaultVar.priceUSD ? (defaultVar.priceUSD / ethRate) : (p.price || 0));
-      let displayPriceHtml = `<div class="price">${formatPrice(getProductUsd(p), ethRate)}</div>`;
+  const defaultUsd = defaultVar.priceUSD ?? getProductUsd(p);
+  const displayPrice = formatPrice(defaultUsd, ethRate);
 
-      el.innerHTML = `
-        <img id="${imgId}" src="${defaultImg}" alt="${p.title}" />
-        <h3>${p.title}</h3>
-${formatPrice(
-  p.priceUSD ??
-  (p.variants && p.variants[0]?.priceUSD) ??
-  (p.price ? p.price * ethRate : 0),
-  ethRate
-)}
-        <label style="display:block;text-align:left;font-weight:600">Variant</label>
-        <select id="${variantId}">
-          ${p.variants.map(v => {
-            // compute eth for data attribute
-            const ethVal = (typeof v.price === 'number') ? v.price : (v.priceUSD ? (v.priceUSD / ethRate) : 0);
-            return `<option value="${v.name}" data-price="${ethVal}" data-price-usd="${v.priceUSD ?? ''}">${v.name}</option>`;
-          }).join('')}
-        </select>
+  el.innerHTML = `
+    <img id="${imgId}" src="${defaultImg}" alt="${p.title}" />
+    <h3>${p.title}</h3>
+    <div class="price" id="price_${p.id}">${displayPrice}</div>
 
-        ${p.sizes ? `
-          <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Size</label>
-          <select id="size_${p.id}">
-            ${p.sizes.map(s=>`<option value="${s}">${s}</option>`).join('')}
-          </select>
-        ` : ""}
+    <label style="display:block;text-align:left;font-weight:600">Variant</label>
+    <select id="${variantId}">
+      ${p.variants.map(v => `
+        <option value="${v.name}" data-price-usd="${v.priceUSD ?? ''}">
+          ${v.name}
+        </option>`).join('')}
+    </select>
 
-        ${(p.images && typeof p.images === "object" && Object.keys(p.images).length>1) ? `
-          <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Color</label>
-          <select id="color_${p.id}">
-            ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
-          </select>
-        ` : ""}
+    ${p.sizes ? `
+      <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Size</label>
+      <select id="size_${p.id}">
+        ${p.sizes.map(s=>`<option value="${s}">${s}</option>`).join('')}
+      </select>` : ""}
 
-        <div style="margin-top:12px">
-          <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
-        </div>
-      `;
-      container.appendChild(el);
+    ${(p.images && typeof p.images === "object" && Object.keys(p.images).length>1) ? `
+      <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Color</label>
+      <select id="color_${p.id}">
+        ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
+      </select>` : ""}
 
-      // listeners
-const variantSelect = el.querySelector(`#${variantId}`);
-const imgEl = el.querySelector(`#${imgId}`);
-const priceEl = el.querySelector(".price"); // use class, not id
+    <div style="margin-top:12px">
+      <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
+    </div>
+  `;
+  container.appendChild(el);
 
-if (variantSelect) {
-  variantSelect.addEventListener("change", async (e) => {
-    const ethRate = await getEthRate();
-    const selectedVariant = p.variants.find(v => v.name === e.target.value);
-    const usd = selectedVariant ? selectedVariant.priceUSD : getProductUsd(p);
-    priceEl.textContent = formatPrice(usd, ethRate);
+  // --- LISTENERS ---
+  const variantSelect = el.querySelector(`#${variantId}`);
+  const priceEl = el.querySelector(`#price_${p.id}`);
+  const imgEl = el.querySelector(`#${imgId}`);
 
-    // update image if variant has one
-    if (selectedVariant?.images?.[0]) imgEl.src = selectedVariant.images[0];
-  });
+  if (variantSelect) {
+    variantSelect.addEventListener("change", async (e) => {
+      const selectedName = e.target.value;
+      const selectedVar = p.variants.find(v => v.name === selectedName);
+      const usd = selectedVar?.priceUSD ?? getProductUsd(p);
+      const rate = await getEthRate();
+      priceEl.textContent = formatPrice(usd, rate);
+
+      if (selectedVar?.images?.length) imgEl.src = selectedVar.images[0];
+    });
+  }
+
+  const colorSelect = el.querySelector(`#color_${p.id}`);
+  if (colorSelect) {
+    colorSelect.addEventListener("change", e => {
+      const val = e.target.value;
+      if (p.images[val]) imgEl.src = p.images[val];
+    });
+  }
+
+  return; // continue loop
 }
-
-
-
-      const colorSelect = el.querySelector(`#color_${p.id}`);
-      if (colorSelect) {
-        colorSelect.addEventListener('change', e => {
-          const val = e.target.value;
-          if (p.images[val]) imgEl.src = p.images[val];
-        });
-      }
-
-      return; // skip to next product
-    }
 
     // If multiple images -> carousel (tapestry)
     if (Array.isArray(p.images) && p.images.length > 1) {
