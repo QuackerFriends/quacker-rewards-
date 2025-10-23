@@ -1074,31 +1074,35 @@ if (!shippingAddress.trim()) {
 
     // log each cart item (includes variant field)
     for (const ci of cart) {
-  const payload = {
-    wallet: userAddress,
-    itemName: ci.title,
-    variant: ci.variant || "",
-    color: ci.color || "",
-    size: ci.size || "",
-    quantity: ci.q || 1,
-    price: ci.redeem ? "REDEEMED" : Number(ci.price || 0),
-    address: shippingAddress,
-    txHash,
-    referrer
-  };
+        const payload = {
+        wallet: userAddress,
+        variant: ci.variant || "",
+        color: ci.color || "",
+        size: ci.size || "",
+        quantity: ci.q || 1,
+        address: shippingAddress,
+        txHash,
+        referrer
+      };
 
-  // if redeem item → deduct points after successful checkout
-  if (ci.redeem) {
-    payload.redeem = ci.title;
-    payload.cost = ci.cost;
-  }
+      // Distinguish between redeemed and purchased
+      if (ci.redeem) {
+        payload.redeem = ci.title;
+        payload.cost = ci.cost;
+      } else {
+        payload.itemName = ci.title;
+        payload.price = Number(ci.price || 0);
+      }
 
-  const params = new URLSearchParams(payload).toString();
-  try {
-    await fetch(`${PURCHASE_API}?${params}`);
-  } catch (logErr) {
-    console.warn("Logging failed for item", payload, logErr);
-  }
+      const params = new URLSearchParams(payload).toString();
+      try {
+        const res = await fetch(`${PURCHASE_API}?${params}`);
+        const data = await res.json();
+        console.log("Server response:", data);
+      } catch (logErr) {
+        console.warn("Logging failed for item", payload, logErr);
+      }
+
 }
 
 
