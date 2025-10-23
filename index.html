@@ -1106,20 +1106,29 @@ if (!shippingAddress.trim()) {
 }
 
 
-    cart = []; updateCartUI(); closeCart(); showToast("✅ Purchase logged successfully!", "success", 4000);
+    cart = [];
+updateCartUI();
+closeCart();
+
+if (isRedeemOnly) {
+  showToast("✅ Redemption logged successfully!", "success", 4000);
+} else {
+  showToast("✅ Purchase logged successfully!", "success", 4000);
+}
+
+    
   }catch(err){ console.error("checkout error", err); showToast("Checkout failed", "error"); }
 }
 
  
 /* ===== POINTS REDEMPTION ===== */
-function redeemWithPoints(productId, cost) {
+async function redeemWithPoints(productId, cost) {
   const wallet = (userAddress || "").toLowerCase();
   if (!wallet) {
     showToast("Please connect your wallet first.", "error");
     return;
   }
 
-  // ✅ Search through all product categories
   const allProducts = Object.values(PRODUCTS).flat();
   const product = allProducts.find(p => p.id === productId);
   if (!product) {
@@ -1127,6 +1136,27 @@ function redeemWithPoints(productId, cost) {
     return;
   }
 
+  // ✅ Check user points before allowing redemption
+  try {
+    const checkRes = await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`);
+    const checkData = await checkRes.json();
+
+    if (!checkData.success) {
+      showToast(checkData.error || "Could not verify points", "error");
+      return;
+    }
+
+    const currentPoints = checkData.points || 0;
+    if (currentPoints < cost) {
+      showToast(`❌ You only have ${currentPoints} points — need ${cost} to redeem this item.`, "error");
+      return;
+    }
+  } catch (err) {
+    showToast("Error checking points: " + err.message, "error");
+    return;
+  }
+
+  // ✅ Add to cart as redeemable
   const alreadyInCart = cart.find(i => i.id === productId && i.redeem);
   if (alreadyInCart) {
     showToast("Item already added for redemption.", "info");
@@ -1149,6 +1179,7 @@ function redeemWithPoints(productId, cost) {
   updateCartUI();
   showToast(`🪙 "${product.title}" added to cart for ${cost} points`, "success");
 }
+
 
 
 
