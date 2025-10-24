@@ -216,7 +216,7 @@ header, .nav-container, .nav-actions, .nav-actions button {
 
         </div>
       </div>
-
+      <div id="pointsDisplay" style="margin-top:10px;font-weight:600;color:#FFD700"> 🪙 Points: - </div>
       <button id="connectBtn" class="btn">Connect Wallet</button>
       <button id="profileBtn" class="btn secondary" style="display:none">Profile</button>
       <button id="openCartBtn" class="btn" style="position:relative">Cart <span id="cartCount" class="cart-count" style="display:none">0</span></button>
@@ -953,6 +953,8 @@ async function connectWallet(){
     const walletAddr = document.getElementById("walletAddr");
     if(walletAddr) walletAddr.innerText = userAddress;
     showToast("Wallet connected","success");
+    await updatePointsDisplay();
+
   }catch(err){
     console.error(err);
     showToast("Connect failed","error");
@@ -981,6 +983,31 @@ if(profileBtn) profileBtn.addEventListener("click", async ()=>{
 
 async function switchWallet(){ try{ await ethereum.request({ method:"wallet_requestPermissions", params:[{eth_accounts:{}}] }); const accounts = await ethereum.request({ method:"eth_requestAccounts" }); userAddress = accounts[0]; const walletAddr = document.getElementById("walletAddr"); if(walletAddr) walletAddr.innerText = userAddress; showToast("Wallet switched","success"); }catch(err){ console.error(err); } }
 function disconnectWallet(){ userAddress = null; web3 = null; const cbo = document.getElementById("connectBtn"); if(cbo) cbo.innerText = "Connect Wallet"; const profileBtn = document.getElementById("profileBtn"); if(profileBtn) profileBtn.style.display = "none"; const profileSection = document.getElementById("profileSection"); if(profileSection) profileSection.style.display = "none"; showToast("Wallet disconnected","info"); }
+
+  /* ===== Redeem Points Display ===== */
+  async function updatePointsDisplay() {
+  const wallet = (userAddress || "").toLowerCase();
+  const el = document.getElementById("pointsDisplay");
+  if (!el) return;
+
+  if (!wallet) {
+    el.innerText = "🪙 Points: Connect wallet";
+    return;
+  }
+
+  try {
+    const res = await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`);
+    const data = await res.json();
+
+    if (data.success) {
+      el.innerText = `🪙 Points: ${data.points}`;
+    } else {
+      el.innerText = "🪙 Points: Error";
+    }
+  } catch (err) {
+    el.innerText = "🪙 Points: Error";
+  }
+}
 
 /* ===== CLAIM QUACKS ===== */
 const claimQuacksBtn = document.getElementById("claimQuacksBtn");
@@ -1062,16 +1089,6 @@ if (!shippingAddress.trim()) {
     }
 
 
-    const baseScanUrl = `https://basescan.org/tx/${txHash}`;
-    const linkToast = document.createElement("div");
-    linkToast.className = "toast success";
-    linkToast.innerHTML = `✅ Purchase sent — <a href="${baseScanUrl}" target="_blank" style="color:#fff;text-decoration:underline">View on BaseScan</a>`;
-    document.getElementById("toast-container").appendChild(linkToast);
-    setTimeout(()=>linkToast.remove(), 8000);
-
-
-
-
     // log each cart item (includes variant field)
     for (const ci of cart) {
         const payload = {
@@ -1112,9 +1129,16 @@ closeCart();
 
 if (isRedeemOnly) {
   showToast("✅ Redemption logged successfully!", "success", 4000);
+  updatePointsDisplay(); // refresh points right away
 } else {
   showToast("✅ Purchase logged successfully!", "success", 4000);
 }
+ const baseScanUrl = `https://basescan.org/tx/${txHash}`;
+    const linkToast = document.createElement("div");
+    linkToast.className = "toast success";
+    linkToast.innerHTML = `✅ Purchase sent — <a href="${baseScanUrl}" target="_blank" style="color:#fff;text-decoration:underline">View on BaseScan</a>`;
+    document.getElementById("toast-container").appendChild(linkToast);
+    setTimeout(()=>linkToast.remove(), 8000);
 
     
   }catch(err){ console.error("checkout error", err); showToast("Checkout failed", "error"); }
