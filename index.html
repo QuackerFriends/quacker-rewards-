@@ -1065,12 +1065,7 @@ if (!shippingAddress.trim()) {
       const rate = await getEthRate();
       totalEth = totalUsd / rate;
     }
-const baseScanUrl = `https://basescan.org/tx/${txHash}`;
-    const linkToast = document.createElement("div");
-    linkToast.className = "toast success";
-    linkToast.innerHTML = `✅ Purchase sent — <a href="${baseScanUrl}" target="_blank" style="color:#fff;text-decoration:underline">View on BaseScan</a>`;
-    document.getElementById("toast-container").appendChild(linkToast);
-    setTimeout(()=>linkToast.remove(), 8000);
+
      let txHash = "";
     const isRedeemOnly = cart.every(ci => ci.redeem);
 
@@ -1139,11 +1134,15 @@ if (isRedeemOnly) {
   showToast("✅ Purchase logged successfully!", "success", 4000);
 }
  
-
     
   }catch(err){ console.error("checkout error", err); showToast("Checkout failed", "error"); }
 }
-
+const baseScanUrl = `https://basescan.org/tx/${txHash}`;
+    const linkToast = document.createElement("div");
+    linkToast.className = "toast success";
+    linkToast.innerHTML = `✅ Purchase sent — <a href="${baseScanUrl}" target="_blank" style="color:#fff;text-decoration:underline">View on BaseScan</a>`;
+    document.getElementById("toast-container").appendChild(linkToast);
+    setTimeout(()=>linkToast.remove(), 8000);
  
 /* ===== POINTS REDEMPTION ===== */
 async function redeemWithPoints(productId, cost) {
