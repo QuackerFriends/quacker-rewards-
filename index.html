@@ -1096,7 +1096,7 @@ hideOverlay();
 
 /* ===== INIT ===== */
 document.addEventListener('DOMContentLoaded', async ()=>{
-  // show default category
+  await loadProducts();   
   await showCategory(currentCategory);
 });
 
