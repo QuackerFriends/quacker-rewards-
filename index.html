@@ -306,29 +306,45 @@ const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 
 /* ===== PRODUCTS ===== */
 
-/* ===== PRODUCTS ===== */
-let PRODUCTS = {};
-let currentCategory = "Tees"; // 👈 default category name (match sheet)
-
 async function loadProducts() {
   try {
     const res = await fetch(
       "https://script.google.com/macros/s/AKfycbwZMlGQ2REZxTP1lIoWBYzc8n7l-h7C79F9u9MjDY4XIR6jKNO7ky1VXtCm3oP5RM_9qA/exec?action=getItems"
     );
     const data = await res.json();
+
     if (data.success) {
-      PRODUCTS = data.items.reduce((acc, item) => {
-        const category = item.Category || "Other";
-        if (!acc[category]) acc[category] = [];
-        acc[category].push(item);
+      // Normalize keys for consistent use
+      const normalized = data.items.map(item => ({
+        id: item.ID,
+        category: item.Category || "Other",
+        title: item.Title,
+        description: item.Description,
+        priceUSD: Number(item.PriceUSD) || 0,
+        pointsCost: Number(item.PointsCost) || null,
+        variants: item.VariantOptions ? item.VariantOptions.split(",").map(v => v.trim()) : [],
+        colors: item.ColorOptions ? item.ColorOptions.split(",").map(c => c.trim()) : [],
+        sizes: item.SizeOptions ? item.SizeOptions.split(",").map(s => s.trim()) : [],
+        sizeGuide: item.SizeGuide || "",
+        images: item.ImageURL ? [item.ImageURL] : [],
+        stockQty: Number(item.StockQty) || 0,
+        active: item.Active === true || item.Active === "TRUE"
+      }));
+
+      // Group by category
+      PRODUCTS = normalized.reduce((acc, item) => {
+        if (!acc[item.category]) acc[item.category] = [];
+        acc[item.category].push(item);
         return acc;
       }, {});
-      showCategory(currentCategory); // 👈 instead of renderProducts()
+
+      console.log("✅ Loaded products:", PRODUCTS);
+      renderProducts(); // or showCategory(currentCategory)
     } else {
-      console.error("Failed to load items:", data);
+      console.error("❌ Failed to load items:", data);
     }
   } catch (err) {
-    console.error("Error fetching items:", err);
+    console.error("⚠️ Error fetching items:", err);
   }
 }
 
