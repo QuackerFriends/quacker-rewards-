@@ -306,8 +306,9 @@ const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 
 /* ===== PRODUCTS ===== */
 
-  
+/* ===== PRODUCTS ===== */
 let PRODUCTS = {};
+let currentCategory = "Tees"; // 👈 default category name (match sheet)
 
 async function loadProducts() {
   try {
@@ -316,14 +317,13 @@ async function loadProducts() {
     );
     const data = await res.json();
     if (data.success) {
-      // Organize by category
       PRODUCTS = data.items.reduce((acc, item) => {
         const category = item.Category || "Other";
         if (!acc[category]) acc[category] = [];
         acc[category].push(item);
         return acc;
       }, {});
-      renderProducts();
+      showCategory(currentCategory); // 👈 instead of renderProducts()
     } else {
       console.error("Failed to load items:", data);
     }
