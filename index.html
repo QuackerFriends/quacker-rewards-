@@ -357,6 +357,23 @@ async function loadProducts() {
 }
 
 
+/* ===== INIT ===== */
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadProducts();
+
+  // You can later dynamically fill the dropdown with categories:
+  const shopMenu = document.getElementById("shopMenu");
+  if (shopMenu) {
+    shopMenu.innerHTML = Object.keys(PRODUCTS)
+      .map(cat => `<button onclick="showCategory('${cat}')">${cat}</button>`)
+      .join("");
+  }
+});
+
+  // ✅ Show default category (if exists)
+  const firstCat = Object.keys(PRODUCTS)[0] || "Tees";
+  await showCategory(firstCat);
+});
 
 
 
@@ -1120,23 +1137,6 @@ if(menuBtn && shopMenu) {
 // ensure overlay never blocks clicks if not active
 hideOverlay();
 
-/* ===== INIT ===== */
-document.addEventListener("DOMContentLoaded", async () => {
-  await loadProducts();
-
-  // You can later dynamically fill the dropdown with categories:
-  const shopMenu = document.getElementById("shopMenu");
-  if (shopMenu) {
-    shopMenu.innerHTML = Object.keys(PRODUCTS)
-      .map(cat => `<button onclick="showCategory('${cat}')">${cat}</button>`)
-      .join("");
-  }
-});
-
-  // ✅ Show default category (if exists)
-  const firstCat = Object.keys(PRODUCTS)[0] || "Tees";
-  await showCategory(firstCat);
-});
 
 /* --- zoom follow helpers --- */
 function attachZoomFollow(){
