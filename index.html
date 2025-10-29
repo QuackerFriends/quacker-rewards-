@@ -1095,8 +1095,25 @@ if(menuBtn && shopMenu) {
 hideOverlay();
 
 /* ===== INIT ===== */
-document.addEventListener('DOMContentLoaded', async ()=>{
-  await loadProducts();   
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadProducts(); // ✅ Wait for products to load
+
+  // ✅ Dynamically build Shop dropdown from sheet categories
+  const dropdown = document.getElementById("shopDropdown"); // adjust if your dropdown ID differs
+  if (dropdown && Object.keys(PRODUCTS).length) {
+    dropdown.innerHTML = ""; // clear old entries
+    Object.keys(PRODUCTS).forEach(cat => {
+      const item = document.createElement("div");
+      item.className = "dropdown-item";
+      item.textContent = cat;
+      item.addEventListener("click", () => {
+        showCategory(cat);
+        dropdown.classList.remove("show");
+      });
+      dropdown.appendChild(item);
+    });
+  }
+
   await showCategory(currentCategory);
 });
 
