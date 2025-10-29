@@ -304,157 +304,33 @@ const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 
-/* ===== PRODUCTS =====
-   Keep price (ETH) and/or priceUSD. For variants include priceUSD on variant objects.
-*/
-const PRODUCTS = {
- tees: [
-  {
-    id: "battle",
-    title: "Battle Duck Tee",
-    variants: [
-      { name: "T-Shirt", priceUSD: 0 },
-      { name: "Drop Shoulder", priceUSD: 0 }
-    ],
-    images: {
-      Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/battle%20duck%20black.png",
-      White: "https://quackerfriends.github.io/quackheads-assets/images/tees/battle%20duck%20white.png"
-    },
-    sizes: ["S", "M", "L", "XL"],
-    sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
-  },
-  {
-    id: "sus",
-    title: "Sus Duck Tee",
-    variants: [
-      { name: "T-Shirt", priceUSD: 25 },
-      { name: "Drop Shoulder", priceUSD: 30 }
-    ],
-    images: {
-      Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/sus%20duck%20black.png",
-      White: "https://quackerfriends.github.io/quackheads-assets/images/tees/sus%20duck%20white.png"
-    },
-    sizes: ["S", "M", "L", "XL"],
-    sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
-  },
-  {
-    id: "thisisfine",
-    title: "This Is Ducking Fine Tee",
-    variants: [
-      { name: "T-Shirt", priceUSD: 25 },
-      { name: "Drop Shoulder", priceUSD: 30 }
-    ],
-    images: {
-      Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/this%20is%20fine%20black.png",
-      White: "https://quackerfriends.github.io/quackheads-assets/images/tees/this%20is%20fine%20white.png"
-    },
-    sizes: ["S", "M", "L", "XL"],
-    sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
-  },
-  {
-    id: "higherducktee",
-    title: "Higher Duck Tee",
-    variants: [
-      { name: "T-Shirt", priceUSD: 25 },
-      { name: "Drop Shoulder", priceUSD: 30 }
-    ],
-    images: {
-      Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/higher%20black.png",
-      White: "https://quackerfriends.github.io/quackheads-assets/images/tees/higher%20white.png"
-    },
-    sizes: ["S", "M", "L", "XL"],
-    sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png"
-  },
-    { id: "customtee", title: "Custom Quacker NFT Design Tee", priceUSD: 50, pointsCost: 10,
- hasCustomField: true, images: { Black: "https://quackerfriends.github.io/quackheads-assets/images/tees/Untitled%20design%20(2).png", White: "https://quackerfriends.github.io/quackheads-assets/images/tees/custom.png" }, sizes: ["S", "M", "L", "XL"], sizeGuide: "https://quackerfriends.github.io/quackheads-assets/images/tees/size.png" }
+/* ===== PRODUCTS ===== */
 
-],
+  
+let PRODUCTS = {};
 
-
-  plushies: [
-    { id: "strawberry_quacker", title: "Strawberry Quacker",   priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/plushies/Strawberry%20Quacker.png"] },
-    { id: "mosswing_quacker", title: "Mosswing Quacker",   priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/plushies/Mosswing%20Quacker.png"] },
-    { id: "azurewing_quacker", title: "Azurewing Quacker",   priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/plushies/Azurewing%20Quacker.png"] },
-    { id: "pumpkin_beanie_alucard", title: "Pumpkin Beanie Alucard",    priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/plushies/Pumpkin%20Beanie%20Alucard.png"] },
-    { id: "alucard", title: "Alucard",    priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/plushies/Alucard.png"] },
-    { id: "kirby", title: "Kirby",    priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/plushies/Kirby.png"] }
-  ],
-
-  miniplushies: [
-    {
-      id: "ghost_quacker_purple_wizard_hat",
-      title: "Ghost Quacker with Purple Wizard Hat",
-      variants: [
-        { name: "No Pad", priceUSD: 4, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/purple.png"] },
-        { name: "Moss Pad",  priceUSD: 0, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/purple%20dark.png"] },
-        { name: "Grass Pad",  priceUSD: 0, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/purple%20light.png"] }
-      ]
-    },
-    {
-      id: "ghost_quacker_red_wizard_hat",
-      title: "Ghost Quacker with Red Wizard Hat",
-      variants: [
-        { name: "No Pad",    priceUSD: 4, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/Red.png"] },
-        { name: "Moss Pad",    priceUSD: 4, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/Red%20moss.png"] },
-        { name: "Grass Pad",    priceUSD: 4, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/Red%20light%20green.png"] }
-      ]
-    },
-    {
-      id: "ghost_quacker_green_wizard_hat",
-      title: "Ghost Quacker with Green Wizard Hat",
-      variants: [
-        { name: "No Pad",  priceUSD: 0.5, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/Green.png"] },
-        { name: "Moss Pad",  priceUSD: 1, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/green%20dark.png"] },
-        { name: "Grass Pad", priceUSD: 1, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/green%20light.png"] }
-      ]
-    },
-    {
-      id: "mini_sam",
-      title: "Mini Sam",
-      variants: [
-        { name: "No Pad", priceUSD: 0.5, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/sam.png"] },
-        { name: "Moss Pad",  priceUSD: 1, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/sam%20dark.png"] },
-        { name: "Grass Pad", priceUSD: 1, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/sam%20light.png"] }
-      ]
-    },
-    {
-      id: "mini_alucard",
-      title: "Mini Alucard",
-      variants: [
-        { name: "No Pad", priceUSD: 0.5, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/alucard.png"] },
-        { name: "Moss Pad",  priceUSD: 1, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/alucard%20dark.png"] },
-        { name: "Grass Pad",  priceUSD: 1, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/alucard%20light.png"] }
-      ]
-    },
-    {
-      id: "pumpkin_family",
-      title: "Mini Pumpkin Family with Grass Pad",
-      variants: [
-        { name: "Simple Pumpkin",  priceUSD: 60, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/pumpkin%20Family.png"] },
-        { name: "Smiling Pumpkin", priceUSD: 14, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/pumpkin%20Family.png"] },
-        { name: "Duck Pumpkin", priceUSD: 15, images: ["https://quackerfriends.github.io/quackheads-assets/images/miniplushies/pumpkin%20Family.png"] }
-      ]
+async function loadProducts() {
+  try {
+    const res = await fetch(
+      "https://script.google.com/macros/s/AKfycbwZMlGQ2REZxTP1lIoWBYzc8n7l-h7C79F9u9MjDY4XIR6jKNO7ky1VXtCm3oP5RM_9qA/exec?action=getItems"
+    );
+    const data = await res.json();
+    if (data.success) {
+      // Organize by category
+      PRODUCTS = data.items.reduce((acc, item) => {
+        const category = item.Category || "Other";
+        if (!acc[category]) acc[category] = [];
+        acc[category].push(item);
+        return acc;
+      }, {});
+      renderProducts();
+    } else {
+      console.error("Failed to load items:", data);
     }
-  ],
-
-  tapestry: [
-    { id: "all_characters_tapestry", title: "All Characters Tapestry",    priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/tapestry/All%20Tapes.png"] },
-    { id: "alucard_tapestry", title: "Alucard Tapestry",    priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/tapestry/alucard.png","https://quackerfriends.github.io/quackheads-assets/images/tapestry/sizes/alucard.png"] },
-    { id: "sam_tapestry", title: "Sam Tapestry",    priceUSD: 40, images: ["https://quackerfriends.github.io/quackheads-assets/images/tapestry/sam.png","https://quackerfriends.github.io/quackheads-assets/images/tapestry/sizes/sam.png"] }
-  ],
-
-  keychains: [
-    { id: "ghostduck_green_keychain", title: "Ghost Duck – Green Wizard Hat", priceUSD: 5, images:["https://QuackerFriends.github.io/quackheads-assets/images/keychain/Ghost%20Duck%20with%20Green%20Wizard%20Hat.png","https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Ghost%20Duck%20with%20Green%20Wizard%20Hat.png"] },
-    { id: "ghostduck_purple_keychain", title: "Ghost Duck – Purple Wizard Hat", priceUSD: 5, images:["https://QuackerFriends.github.io/quackheads-assets/images/keychain/Ghost%20Duck%20with%20Purple%20Wizard%20Hat.png","https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Ghost%20Duck%20with%20Purple%20Wizard%20Hat.png"] },
-    { id: "ghostduck_red_keychain", title: "Ghost Duck – Red Wizard Hat", priceUSD: 5, images:["https://QuackerFriends.github.io/quackheads-assets/images/keychain/Ghost%20Duck%20with%20Red%20Wizard%20Hat.png","https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Ghost%20Duck%20with%20Red%20Wizard%20Hat.png"] },
-    { id: "alucard_keychain", title: "Alucard Keychain", priceUSD: 5, images: ["https://QuackerFriends.github.io/quackheads-assets/images/keychain/Alucard.png","https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Alucard.png"] },
-    { id: "sam_keychain", title: "Sam Keychain", priceUSD: 50, images:["https://QuackerFriends.github.io/quackheads-assets/images/keychain/Sam.png","https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Sam.png"] },
-    { id: "cosmichead_keychain", title: "Cosmic Head Keychain", priceUSD: 5, images: ["https://QuackerFriends.github.io/quackheads-assets/images/keychain/cosmichead.png","https://QuackerFriends.github.io/quackheads-assets/images/keychain/sizes/Cosmichead.png"] },
-    { id: "quackheads_keychain", title: "Quackheads Keychain",  priceUSD: 0, sizes: ["Bucket Hat","Headphones","Sprout"], images: { Green: "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Quackheads.png", Mustard: "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Quackheads.png", Pink: "https://QuackerFriends.github.io/quackheads-assets/images/keychain/Quackheads.png" } }
-  ]
-};
-
-  window.products = Object.values(PRODUCTS).flat();
+  } catch (err) {
+    console.error("Error fetching items:", err);
+  }
+}
 
 
 /* ===== STATE ===== */
