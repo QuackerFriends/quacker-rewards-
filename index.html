@@ -304,8 +304,12 @@ const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 
-/* ===== PRODUCTS ===== */
+/* ===== GLOBAL VARIABLES ===== */
+let PRODUCTS = {};             // will store products by category
+let currentCategory = "Tees";  // default visible category
 
+
+/* ===== LOAD PRODUCTS FROM SHEET (via Apps Script) ===== */
 async function loadProducts() {
   try {
     const res = await fetch(
@@ -314,39 +318,46 @@ async function loadProducts() {
     const data = await res.json();
 
     if (data.success) {
-      // Normalize keys for consistent use
-      const normalized = data.items.map(item => ({
-        id: item.ID,
-        category: item.Category || "Other",
-        title: item.Title,
-        description: item.Description,
-        priceUSD: Number(item.PriceUSD) || 0,
-        pointsCost: Number(item.PointsCost) || null,
-        variants: item.VariantOptions ? item.VariantOptions.split(",").map(v => v.trim()) : [],
-        colors: item.ColorOptions ? item.ColorOptions.split(",").map(c => c.trim()) : [],
-        sizes: item.SizeOptions ? item.SizeOptions.split(",").map(s => s.trim()) : [],
-        sizeGuide: item.SizeGuide || "",
-        images: item.ImageURL ? [item.ImageURL] : [],
-        stockQty: Number(item.StockQty) || 0,
-        active: item.Active === true || item.Active === "TRUE"
-      }));
-
-      // Group by category
-      PRODUCTS = normalized.reduce((acc, item) => {
-        if (!acc[item.category]) acc[item.category] = [];
-        acc[item.category].push(item);
+      // 🗂️ Organize by category
+      PRODUCTS = data.items.reduce((acc, item) => {
+        const category = item.Category?.trim() || "Other";
+        if (!acc[category]) acc[category] = [];
+        acc[category].push({
+          id: item.ID,
+          title: item.Title,
+          description: item.Description,
+          priceUSD: Number(item.PriceUSD) || 0,
+          pointsCost: Number(item.PointsCost) || null,
+          variants: item.VariantOptions
+            ? item.VariantOptions.split(",").map(v => v.trim()).filter(v => v)
+            : [],
+          colors: item.ColorOptions
+            ? item.ColorOptions.split(",").map(c => c.trim()).filter(c => c)
+            : [],
+          sizes: item.SizeOptions
+            ? item.SizeOptions.split(",").map(s => s.trim()).filter(s => s)
+            : [],
+          sizeGuide: item.SizeGuide || "",
+          image: item.ImageURL || "",
+          active: item.Active === true || item.Active === "TRUE",
+        });
         return acc;
       }, {});
 
       console.log("✅ Loaded products:", PRODUCTS);
-      renderProducts(); // or showCategory(currentCategory)
+
+      // ✅ Automatically show the default category
+      await showCategory(currentCategory);
     } else {
-      console.error("❌ Failed to load items:", data);
+      console.error("⚠️ Failed to load items:", data);
     }
   } catch (err) {
-    console.error("⚠️ Error fetching items:", err);
+    console.error("❌ Error fetching items:", err);
   }
 }
+
+
+
 
 
 /* ===== STATE ===== */
@@ -1110,24 +1121,17 @@ if(menuBtn && shopMenu) {
 hideOverlay();
 
 /* ===== INIT ===== */
-document.addEventListener('DOMContentLoaded', async () => {
-  await loadProducts(); // ✅ Wait for products to load
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadProducts();
 
-  // ✅ Dynamically build Shop dropdown from sheet categories
-  const dropdown = document.getElementById("shopDropdown"); // adjust if your dropdown ID differs
-  if (dropdown && Object.keys(PRODUCTS).length) {
-    dropdown.innerHTML = ""; // clear old entries
-    Object.keys(PRODUCTS).forEach(cat => {
-      const item = document.createElement("div");
-      item.className = "dropdown-item";
-      item.textContent = cat;
-      item.addEventListener("click", () => {
-        showCategory(cat);
-        dropdown.classList.remove("show");
-      });
-      dropdown.appendChild(item);
-    });
+  // You can later dynamically fill the dropdown with categories:
+  const shopMenu = document.getElementById("shopMenu");
+  if (shopMenu) {
+    shopMenu.innerHTML = Object.keys(PRODUCTS)
+      .map(cat => `<button onclick="showCategory('${cat}')">${cat}</button>`)
+      .join("");
   }
+});
 
   // ✅ Show default category (if exists)
   const firstCat = Object.keys(PRODUCTS)[0] || "Tees";
