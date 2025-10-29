@@ -322,6 +322,8 @@ async function loadProducts() {
       PRODUCTS = data.items.reduce((acc, item) => {
         const category = item.Category?.trim() || "Other";
         if (!acc[category]) acc[category] = [];
+
+        // ✅ Normalize each item
         acc[category].push({
           id: item.ID,
           title: item.Title,
@@ -338,7 +340,7 @@ async function loadProducts() {
             ? item.SizeOptions.split(",").map(s => s.trim()).filter(s => s)
             : [],
           sizeGuide: item.SizeGuide || "",
-          image: item.ImageURL || "",
+          images: item.ImageURL ? [item.ImageURL.trim()] : [], // 🧠 key fix here
           active: item.Active === true || item.Active === "TRUE",
         });
         return acc;
@@ -346,8 +348,21 @@ async function loadProducts() {
 
       console.log("✅ Loaded products:", PRODUCTS);
 
-      // ✅ Automatically show the default category
-      await showCategory(currentCategory);
+      // 🛍️ Build dropdown without breaking site structure
+const shopMenu = document.getElementById("shopMenu");
+if (shopMenu) {
+  const categoryListHtml = Object.keys(PRODUCTS)
+    .map(
+      cat => `<a href="#" class="dropdown-item" onclick="showCategory('${cat}')">${cat}</a>`
+    )
+    .join("");
+  shopMenu.innerHTML = categoryListHtml;
+}
+
+
+      // ✅ Automatically show the first or current category
+      const firstCategory = Object.keys(PRODUCTS)[0];
+      await showCategory(currentCategory || firstCategory);
     } else {
       console.error("⚠️ Failed to load items:", data);
     }
@@ -355,7 +370,6 @@ async function loadProducts() {
     console.error("❌ Error fetching items:", err);
   }
 }
-
 
 
 
