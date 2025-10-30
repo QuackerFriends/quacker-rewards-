@@ -560,6 +560,8 @@ function addTapestryToCart(prodId){
 
 
 /* ---- Add to Cart (async to handle USD→ETH conversions) ---- */
+
+/* ---- Add to Cart (async to handle USD→ETH conversions) ---- */
 async function addToCart(prodId) {
   // 🧩 Find the product across all categories
   let product = null;
@@ -599,8 +601,8 @@ async function addToCart(prodId) {
 
     const color = colorEl
       ? colorEl.value
-      : product.images && typeof product.images === "object"
-      ? Object.keys(product.images)[0]
+      : product.colors && product.colors.length
+      ? product.colors[0]
       : "N/A";
 
     const size = sizeEl
@@ -617,7 +619,7 @@ async function addToCart(prodId) {
     }
 
     // 🧮 Determine price (USD → ETH)
-    const usd = selectedVar?.priceUSD ?? product.priceUSD ?? 0;
+    const usd = product.priceUSD ?? 0;
     const ethRate = await getEthRate();
     const ethPrice = usd / ethRate;
 
@@ -636,7 +638,7 @@ async function addToCart(prodId) {
     saveCart();
     showToast(`${product.title} added to cart!`, "success");
     updateCartUI();
-    return;
+    return; // ✅ closes inside the variant branch
   }
 
   // 🧺 Simple products (no variants)
@@ -656,6 +658,7 @@ async function addToCart(prodId) {
   showToast(`${product.title} added to cart!`, "success");
   updateCartUI();
 }
+
 
   // non-variants (tees with simple variantSelect, keychains, etc.)
   const colorEl = document.getElementById(`color_${prodId}`);
