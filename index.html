@@ -513,28 +513,127 @@ async function showCategory(cat) {
   const key = (cat in PRODUCTS)
     ? cat
     : Object.keys(PRODUCTS).find(k => k.toLowerCase() === String(cat).toLowerCase());
-
   currentCategory = key || cat;
+
   const container = document.getElementById("items");
   const items = PRODUCTS[currentCategory] || [];
   container.innerHTML = "";
 
   if (!items.length) {
-    container.innerHTML = `
-      <div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:0 8px 20px rgba(12,12,20,0.06);">
-        No items yet in ${currentCategory}.
-      </div>`;
+    container.innerHTML = `<div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:0 8px 20px rgba(12,12,20,0.06);">No items yet in ${currentCategory}.</div>`;
     return;
   }
 
   const ethRate = await getEthRate();
+
   items.forEach(p => {
-    const cardHTML = renderProductCard(p, ethRate);
-    container.insertAdjacentHTML("beforeend", cardHTML);
+    const el = document.createElement("div");
+    el.className = "item";
+
+    const priceDisplay = formatPrice(getProductUsd(p), ethRate);
+    const imgSrc = p.image || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
+
+    // Variants
+    let variantHTML = "";
+    if (p.variants && p.variants.length) {
+      if (typeof p.variants[0] === "string") {
+        variantHTML = `
+          <label>Variant</label>
+          <select id="variant_${p.id}">
+            ${p.variants.map(v => `<option value="${v}">${v}</option>`).join("")}
+          </select>`;
+      } else if (typeof p.variants[0] === "object") {
+        variantHTML = `
+          <label>Variant</label>
+          <select id="variant_${p.id}">
+            ${p.variants.map(v => `<option value="${v.name}" data-price-usd="${v.priceUSD || ''}">${v.name}</option>`).join("")}
+          </select>`;
+      }
+    }
+
+    // Colors
+    let colorHTML = "";
+    if (p.colors && p.colors.length) {
+      colorHTML = `
+        <label>Color</label>
+        <select id="color_${p.id}">
+          ${p.colors.map(c => `<option value="${c}">${c}</option>`).join("")}
+        </select>`;
+    }
+
+    // Sizes
+    let sizeHTML = "";
+    if (p.sizes && p.sizes.length) {
+      sizeHTML = `
+        <label>Size</label>
+        <select id="size_${p.id}">
+          ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join("")}
+        </select>`;
+    }
+
+    // Custom field (for Quacker ID, if needed)
+    let customHTML = "";
+    if (p.hasCustomField) {
+      customHTML = `
+        <label>Your Quacker Friend ID</label>
+        <input id="custom_${p.id}" type="text" placeholder="Enter your ID" style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc"/>`;
+    }
+
+    // Buttons (Redeem OR Add to Cart)
+    let buttonHTML = "";
+    if (p.pointsCost && Number(p.pointsCost) > 0) {
+      buttonHTML = `<button class="btn" onclick="redeemWithPoints('${p.id}', ${p.pointsCost})">Redeem for ${p.pointsCost} Points</button>`;
+    } else {
+      buttonHTML = `<button class="btn" onclick="addToCart('${p.id}')">Add to Cart</button>`;
+    }
+
+    el.innerHTML = `
+      <img id="img_${p.id}" src="${imgSrc}" alt="${p.title}" />
+      <h3>${p.title}</h3>
+      <div class="price" id="price_${p.id}">${priceDisplay}</div>
+      ${variantHTML}
+      ${colorHTML}
+      ${sizeHTML}
+      ${customHTML}
+      ${p.sizeGuide ? `<button class="btn" onclick="openSizeGuide('${p.sizeGuide}')">Size Guide</button>` : ""}
+      <div style="margin-top:12px">${buttonHTML}</div>
+    `;
+
+    container.appendChild(el);
+
+    // Event listeners — update price/image when variant changes
+    const variantSelect = el.querySelector(`#variant_${p.id}`);
+    const priceEl = el.querySelector(`#price_${p.id}`);
+    const imgEl = el.querySelector(`#img_${p.id}`);
+
+    if (variantSelect) {
+      variantSelect.addEventListener("change", async (e) => {
+        const selected = e.target.value;
+        if (Array.isArray(p.variants) && typeof p.variants[0] === "object") {
+          const matched = p.variants.find(v => v.name === selected);
+          const usd = matched?.priceUSD ?? getProductUsd(p);
+          const rate = await getEthRate();
+          if (priceEl) priceEl.textContent = formatPrice(usd, rate);
+          if (matched?.images?.length && imgEl) imgEl.src = matched.images[0];
+        }
+      });
+    }
+
+    // Color-based image switching
+    const colorSelect = el.querySelector(`#color_${p.id}`);
+    if (colorSelect && imgEl) {
+      colorSelect.addEventListener("change", (e) => {
+        if (p.images && typeof p.images === "object" && !Array.isArray(p.images)) {
+          const v = e.target.value;
+          if (p.images[v]) imgEl.src = p.images[v];
+        }
+      });
+    }
   });
 
   attachZoomFollow();
 }
+
 
 /* ===== OPEN/CLOSE Helpers ===== */
 function showOverlay(){ const ov = document.getElementById('tees'); if(ov){ ov.classList.add('active'); ov.style.display='block'; } }
@@ -558,70 +657,56 @@ function addTapestryToCart(prodId){
   showToast(`${product.title} added to cart`,"success");
 }
 
-/* ---- Add to Cart (robust variant handling) ---- */
-async function addToCart(prodId) {
-  // find product across categories
-  let product = null;
-  for (const cat of Object.keys(PRODUCTS)) {
-    product = (PRODUCTS[cat] || []).find(p => p.id === prodId);
-    if (product) break;
-  }
-  if(!product){ showToast("Product not found","error"); return; }
+/* ===== ADD TO CART ===== */
+async function addToCart(productId) {
+  const allProducts = Object.values(PRODUCTS).flat();
+  const product = allProducts.find(p => p.id === productId);
+  if (!product) return showToast("Product not found", "error");
 
-  // get form controls if present
-  const variantEl = document.getElementById(`variant_${prodId}`);
-  const colorEl = document.getElementById(`color_${prodId}`);
-  const sizeEl = document.getElementById(`size_${prodId}`);
-  const customEl = document.getElementById(`custom_${prodId}`);
+  const variantSel = document.getElementById(`variant_${productId}`);
+  const colorSel = document.getElementById(`color_${productId}`);
+  const sizeSel = document.getElementById(`size_${productId}`);
+  const customInput = document.getElementById(`custom_${productId}`);
 
-  const variantValue = variantEl ? variantEl.value : (Array.isArray(product.variants) && typeof product.variants[0] === "string" ? product.variants[0] : (product.variants && product.variants[0] && product.variants[0].name) || "");
-  const color = colorEl ? colorEl.value : (product.colors?.[0] || "N/A");
-  const size = sizeEl ? sizeEl.value : (product.sizes?.[0] || "N/A");
-  const customText = customEl ? customEl.value.trim() : "";
+  const variant = variantSel ? variantSel.value : "";
+  const color = colorSel ? colorSel.value : "";
+  const size = sizeSel ? sizeSel.value : "";
+  const custom = customInput ? customInput.value.trim() : "";
 
-  if (product.hasCustomField && !customText) {
-    showToast("Please enter your Quacker Friend ID before adding to cart.", "error");
-    return;
-  }
+  const rate = await getEthRate();
+  let priceUSD = getProductUsd(product);
+  let priceETH = priceUSD / rate;
 
-  // compute price in ETH:
-  // - if product.variants contains objects and selected variant has priceUSD, use that
-  // - else if product.priceUSD exists, use that
-  // - else fallback to 0
-  let priceUSDToUse = 0;
-
-  if (Array.isArray(product.variants) && product.variants.length && typeof product.variants[0] === "object") {
-    const matched = product.variants.find(v => v.name === variantValue) || product.variants[0];
-    priceUSDToUse = matched.priceUSD ?? product.priceUSD ?? 0;
-  } else {
-    // variants are simple strings (from sheet) — price comes from product.priceUSD
-    priceUSDToUse = product.priceUSD ?? 0;
+  // If variant object has its own priceUSD
+  if (variantSel && product.variants && typeof product.variants[0] === "object") {
+    const matched = product.variants.find(v => v.name === variant);
+    if (matched?.priceUSD) {
+      priceUSD = matched.priceUSD;
+      priceETH = matched.priceUSD / rate;
+    }
   }
 
-  const priceEth = await convertUsdToEth(Number(priceUSDToUse || 0));
-  const thumb = product.image || (product.images && (Array.isArray(product.images) ? product.images[0] : Object.values(product.images)[0])) || "";
+  // build cart item
+  const item = {
+    id: product.id,
+    title: product.title,
+    variant,
+    color,
+    size,
+    custom,
+    price: priceETH,
+    priceUSD,
+    q: 1,
+    redeem: false,
+    cost: 0,
+    thumb: product.image || ""
+  };
 
-  // merge: include variant/color/size/customText to identify unique cart lines
-  const existing = cart.find(item => item.id === product.id && item.variant === variantValue && item.color === color && item.size === size && (product.hasCustomField ? item.customText === customText : true));
-  if (existing) existing.q += 1;
-  else {
-    cart.push({
-      id: product.id,
-      title: product.title,
-      variant: variantValue || "",
-      price: Number(priceEth),
-      priceUSD: priceUSDToUse || product.priceUSD || "",
-      color,
-      size,
-      customText,
-      q: 1,
-      thumb
-    });
-  }
-
+  cart.push(item);
   updateCartUI();
-  showToast(`${product.title} (${variantValue || "Default"}, ${color}, ${size}) added to cart`, "success");
+  showToast(`🛒 "${product.title}" added to cart!`, "success");
 }
+
 
 /* ===== CART UI (Improved) ===== */
 function updateCartUI() {
@@ -839,7 +924,9 @@ async function checkout(){
     }
 
     let txHash = "";
-    const isRedeemOnly = cart.every(ci => ci.redeem);
+   const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
+   const hasMixed = cart.some(ci => !ci.redeem) && cart.some(ci => ci.redeem);
+
 
     if (!isRedeemOnly) {
       const valueHex = totalEth > 0 ? "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16) : "0x0";
