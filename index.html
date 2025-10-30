@@ -964,12 +964,16 @@ async function checkout(){
       showToast("✅ Purchase logged successfully!", "success", 4000);
     }
 
-    const baseScanUrl = `https://basescan.org/tx/${txHash}`;
-    const linkToast = document.createElement("div");
-    linkToast.className = "toast success";
-    linkToast.innerHTML = `✅ Purchase sent — <a href="${baseScanUrl}" target="_blank" style="color:#fff;text-decoration:underline">View on BaseScan</a>`;
-    document.getElementById("toast-container").appendChild(linkToast);
-    setTimeout(()=>linkToast.remove(), 8000);
+   // ✅ Only show BaseScan link if an ETH transaction actually occurred
+if (!isRedeemOnly && txHash) {
+  const baseScanUrl = `https://basescan.org/tx/${txHash}`;
+  const linkToast = document.createElement("div");
+  linkToast.className = "toast success";
+  linkToast.innerHTML = `✅ Purchase sent — <a href="${baseScanUrl}" target="_blank" style="color:#fff;text-decoration:underline">View on BaseScan</a>`;
+  document.getElementById("toast-container").appendChild(linkToast);
+  setTimeout(() => linkToast.remove(), 8000);
+}
+
 
   }catch(err){ console.error("checkout error", err); showToast("Checkout failed", "error"); }
 }
