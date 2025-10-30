@@ -348,15 +348,24 @@ async function loadProducts() {
 
       console.log("✅ Loaded products:", PRODUCTS);
 
-      // 🛍️ Build dropdown without breaking site structure
+// 🛍️ Build dropdown without overwriting site design
 const shopMenu = document.getElementById("shopMenu");
 if (shopMenu) {
   const categoryListHtml = Object.keys(PRODUCTS)
-    .map(
-      cat => `<a href="#" class="dropdown-item" onclick="showCategory('${cat}')">${cat}</a>`
-    )
+    .map(cat => {
+      const catId = cat.replace(/\s+/g, "_").toLowerCase();
+      return `<a href="#" class="dropdown-item" data-cat="${catId}" onclick="showCategory('${cat}')">${cat}</a>`;
+    })
     .join("");
-  shopMenu.innerHTML = categoryListHtml;
+
+  // ✅ Only inject if menu is empty — don’t override existing pretty dropdown
+  if (!shopMenu.innerHTML.trim()) {
+    shopMenu.innerHTML = categoryListHtml;
+  } else {
+    // If it already exists, just replace the category area inside
+    const dropdownContent = shopMenu.querySelector(".dropdown-content");
+    if (dropdownContent) dropdownContent.innerHTML = categoryListHtml;
+  }
 }
 
 
@@ -456,52 +465,31 @@ async function showCategory(cat) {
   document.body.classList.add('blur-bg');
 
   items.forEach(p => {
-    const el = document.createElement('div');
-    el.className = 'item';
+  if (!p || !p.title) return; // 🛡️ Skip malformed rows
 
-    // CASE: product has variants (miniplushies or tee with variant array)
-    if (p.variants && Array.isArray(p.variants)) {
-  const defaultVar = p.variants[0];
+  const el = document.createElement('div');
+  el.className = 'item';
   const imgId = `img_${p.id}`;
-  const variantId = `variant_${p.id}`;
 
-  const defaultImg = (p.images && typeof p.images === "object")
-    ? Object.values(p.images)[0]
-    : (defaultVar.images?.[0] || "");
+  const mainSrc =
+    p.image ||
+    (Array.isArray(p.images) && p.images[0]) ||
+    "https://via.placeholder.com/300x300?text=No+Image";
 
-  const defaultUsd = defaultVar.priceUSD ?? getProductUsd(p);
-  const displayPrice = formatPrice(defaultUsd, ethRate);
+  const priceHtml = p.pointsCost
+    ? `<div class="price">${p.pointsCost} Points</div>`
+    : `<div class="price">$${p.priceUSD?.toFixed?.(2) || "N/A"}</div>`;
 
   el.innerHTML = `
-    <img id="${imgId}" src="${defaultImg}" alt="${p.title}" />
+    <img id="${imgId}" src="${mainSrc}" alt="${p.title}" />
     <h3>${p.title}</h3>
-    <div class="price" id="price_${p.id}">${displayPrice}</div>
-
-    <label style="display:block;text-align:left;font-weight:600">Variant</label>
-    <select id="${variantId}">
-      ${p.variants.map(v => `
-        <option value="${v.name}" data-price-usd="${v.priceUSD ?? ''}">
-          ${v.name}
-        </option>`).join('')}
-    </select>
-
-    ${p.sizes ? `
-      <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Size</label>
-      <select id="size_${p.id}">
-        ${p.sizes.map(s=>`<option value="${s}">${s}</option>`).join('')}
-      </select>` : ""}
-
-    ${(p.images && typeof p.images === "object" && Object.keys(p.images).length>1) ? `
-      <label style="display:block;text-align:left;font-weight:600;margin-top:8px;">Color</label>
-      <select id="color_${p.id}">
-        ${Object.keys(p.images).map(c => `<option value="${c}">${c}</option>`).join('')}
-      </select>` : ""}
-
-    <div style="margin-top:12px">
-      <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
-    </div>
+    ${priceHtml}
+    <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
   `;
+
   container.appendChild(el);
+});
+
 
   // --- LISTENERS ---
   const variantSelect = el.querySelector(`#${variantId}`);
