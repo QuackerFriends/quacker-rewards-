@@ -974,10 +974,16 @@ async function checkout(){
   }catch(err){ console.error("checkout error", err); showToast("Checkout failed", "error"); }
 }
 
-/* ===== REDEEM WITH POINTS ===== */
+/* ===== REDEEM WITH POINTS (LIVE CHECK + WORKING VARIANTS) ===== */
 async function redeemWithPoints(productId, cost) {
+  const wallet = (userAddress || "").toLowerCase();
+  if (!wallet) {
+    showToast("Please connect your wallet first.", "error");
+    return;
+  }
+
   try {
-    // find product from all categories
+    // find product
     const allProducts = Object.values(PRODUCTS).flat();
     const product = allProducts.find(p => p.id === productId);
     if (!product) {
@@ -985,7 +991,7 @@ async function redeemWithPoints(productId, cost) {
       return;
     }
 
-    // read current selections
+    // get variant/color/size selections
     const variantSel = document.getElementById(`variant_${productId}`);
     const colorSel = document.getElementById(`color_${productId}`);
     const sizeSel = document.getElementById(`size_${productId}`);
@@ -994,39 +1000,52 @@ async function redeemWithPoints(productId, cost) {
     const color = colorSel ? colorSel.value : "";
     const size = sizeSel ? sizeSel.value : "";
 
-    // basic user points check (only skip if you want to allow free demo)
-    if (typeof userPoints !== "number" || userPoints < cost) {
-      showToast("Not enough points to redeem this item", "error");
+    // ✅ Check points live via API
+    const checkRes = await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`);
+    const checkData = await checkRes.json();
+
+    if (!checkData.success) {
+      showToast(checkData.error || "Could not verify points", "error");
       return;
     }
 
-    // ✅ push redeemed item into cart
+    const currentPoints = checkData.points || 0;
+    if (currentPoints < cost) {
+      showToast(`❌ You only have ${currentPoints} points — need ${cost} to redeem this item.`, "error");
+      return;
+    }
+
+    // ✅ Add to cart as redeemable
+    const alreadyInCart = cart.find(i => i.id === productId && i.redeem);
+    if (alreadyInCart) {
+      showToast("Item already added for redemption.", "info");
+      return;
+    }
+
     cart.push({
-      id: product.id,
+      id: productId,
       title: product.title,
+      price: 0,
+      priceUSD: 0,
+      q: 1,
+      redeem: true,
+      cost: cost,
       variant,
       color,
       size,
-      q: 1,
-      redeem: true,
-      cost,
-      price: 0,
-      priceUSD: 0,
       thumb: product.image || ""
     });
 
     updateCartUI();
-    showToast(`🎉 "${product.title}" added to cart (Redeem for ${cost} Points)`, "success");
+    showToast(`🎉 "${product.title}" added to cart for ${cost} points`, "success");
 
-    // OPTIONAL: open cart automatically after redeem
     if (typeof openCart === "function") openCart();
 
   } catch (err) {
-    console.error("Redeem failed:", err);
-    showToast("Something went wrong redeeming this item", "error");
+    console.error("Error redeeming item:", err);
+    showToast("Error redeeming item: " + err.message, "error");
   }
 }
-
 
 
 /* ===== MENU & overlay safety ===== */
