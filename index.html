@@ -661,42 +661,44 @@ function addTapestryToCart(prodId){
 async function addToCart(productId) {
   const allProducts = Object.values(PRODUCTS).flat();
   const product = allProducts.find(p => p.id === productId);
-  if (!product) return showToast("Product not found", "error");
+  if (!product) {
+    showToast("Product not found", "error");
+    return;
+  }
 
+  // Read selections
   const variantSel = document.getElementById(`variant_${productId}`);
   const colorSel = document.getElementById(`color_${productId}`);
   const sizeSel = document.getElementById(`size_${productId}`);
-  const customInput = document.getElementById(`custom_${productId}`);
 
   const variant = variantSel ? variantSel.value : "";
   const color = colorSel ? colorSel.value : "";
   const size = sizeSel ? sizeSel.value : "";
-  const custom = customInput ? customInput.value.trim() : "";
 
+  // Convert USD → ETH
   const rate = await getEthRate();
   let priceUSD = getProductUsd(product);
   let priceETH = priceUSD / rate;
 
-  // If variant object has its own priceUSD
+  // If variant object has custom priceUSD
   if (variantSel && product.variants && typeof product.variants[0] === "object") {
     const matched = product.variants.find(v => v.name === variant);
     if (matched?.priceUSD) {
       priceUSD = matched.priceUSD;
-      priceETH = matched.priceUSD / rate;
+      priceETH = priceUSD / rate;
     }
   }
 
-  // build cart item
+  // ✅ Push all details to cart
   const item = {
     id: product.id,
     title: product.title,
     variant,
     color,
     size,
-    custom,
-    price: priceETH,
-    priceUSD,
     q: 1,
+    priceUSD,
+    price: priceETH,
     redeem: false,
     cost: 0,
     thumb: product.image || ""
@@ -704,8 +706,9 @@ async function addToCart(productId) {
 
   cart.push(item);
   updateCartUI();
-  showToast(`🛒 "${product.title}" added to cart!`, "success");
+  showToast(`🛒 "${product.title}" added to cart`, "success");
 }
+
 
 
 /* ===== CART UI (Improved) ===== */
