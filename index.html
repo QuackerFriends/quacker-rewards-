@@ -351,22 +351,25 @@ async function loadProducts() {
 // 🛍️ Build dropdown without overwriting site design
 const shopMenu = document.getElementById("shopMenu");
 if (shopMenu) {
+  // build new list of categories
   const categoryListHtml = Object.keys(PRODUCTS)
     .map(cat => {
       const catId = cat.replace(/\s+/g, "_").toLowerCase();
-      return `<a href="#" class="dropdown-item" data-cat="${catId}" onclick="showCategory('${cat}')">${cat}</a>`;
+      return `<button class="dropdown-item" onclick="showCategory('${cat}')">${cat}</button>`;
     })
     .join("");
 
-  // ✅ Only inject if menu is empty — don’t override existing pretty dropdown
-  if (!shopMenu.innerHTML.trim()) {
-    shopMenu.innerHTML = categoryListHtml;
+  // 🩷 only update the inner category items, not the container or its styling
+  const existingButtons = shopMenu.querySelectorAll(".dropdown-item");
+  if (existingButtons.length === 0) {
+    // if empty, add the items
+    shopMenu.insertAdjacentHTML("beforeend", categoryListHtml);
   } else {
-    // If it already exists, just replace the category area inside
-    const dropdownContent = shopMenu.querySelector(".dropdown-content");
-    if (dropdownContent) dropdownContent.innerHTML = categoryListHtml;
+    // if already populated, just refresh their labels (optional)
+    shopMenu.innerHTML = categoryListHtml;
   }
 }
+
 
 
       // ✅ Automatically show the first or current category
