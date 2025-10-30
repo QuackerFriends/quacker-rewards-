@@ -976,44 +976,57 @@ async function checkout(){
 
 /* ===== REDEEM WITH POINTS ===== */
 async function redeemWithPoints(productId, cost) {
-  const allProducts = Object.values(PRODUCTS).flat();
-  const product = allProducts.find(p => p.id === productId);
-  if (!product) return showToast("Product not found", "error");
+  try {
+    // find product from all categories
+    const allProducts = Object.values(PRODUCTS).flat();
+    const product = allProducts.find(p => p.id === productId);
+    if (!product) {
+      showToast("Product not found", "error");
+      return;
+    }
 
-  // read selected options
-  const variantSel = document.getElementById(`variant_${productId}`);
-  const colorSel = document.getElementById(`color_${productId}`);
-  const sizeSel = document.getElementById(`size_${productId}`);
+    // read current selections
+    const variantSel = document.getElementById(`variant_${productId}`);
+    const colorSel = document.getElementById(`color_${productId}`);
+    const sizeSel = document.getElementById(`size_${productId}`);
 
-  const variant = variantSel ? variantSel.value : "";
-  const color = colorSel ? colorSel.value : "";
-  const size = sizeSel ? sizeSel.value : "";
+    const variant = variantSel ? variantSel.value : "";
+    const color = colorSel ? colorSel.value : "";
+    const size = sizeSel ? sizeSel.value : "";
 
-  // ensure user has enough points
-  if (!userPoints || userPoints < cost) {
-    showToast("Not enough points to redeem this item", "error");
-    return;
+    // basic user points check (only skip if you want to allow free demo)
+    if (typeof userPoints !== "number" || userPoints < cost) {
+      showToast("Not enough points to redeem this item", "error");
+      return;
+    }
+
+    // ✅ push redeemed item into cart
+    cart.push({
+      id: product.id,
+      title: product.title,
+      variant,
+      color,
+      size,
+      q: 1,
+      redeem: true,
+      cost,
+      price: 0,
+      priceUSD: 0,
+      thumb: product.image || ""
+    });
+
+    updateCartUI();
+    showToast(`🎉 "${product.title}" added to cart (Redeem for ${cost} Points)`, "success");
+
+    // OPTIONAL: open cart automatically after redeem
+    if (typeof openCart === "function") openCart();
+
+  } catch (err) {
+    console.error("Redeem failed:", err);
+    showToast("Something went wrong redeeming this item", "error");
   }
-
-  // add redeemed item to cart with proper details
-  const item = {
-    id: product.id,
-    title: product.title,
-    variant,
-    color,
-    size,
-    q: 1,
-    redeem: true,
-    cost,
-    price: 0,
-    priceUSD: 0,
-    thumb: product.image || ""
-  };
-
-  cart.push(item);
-  updateCartUI();
-  showToast(`✨ Redeemed "${product.title}" for ${cost} Points`, "success");
 }
+
 
 
 /* ===== MENU & overlay safety ===== */
