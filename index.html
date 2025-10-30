@@ -147,6 +147,39 @@ header, .nav-container, .nav-actions, .nav-actions button {
     .cart-item{display:flex;gap:12px;align-items:center;padding:10px;border-bottom:1px solid #f1f1f1}
     .cart-item img{width:64px;height:64px;object-fit:contain;border-radius:6px;background:#f6f6f6}
 
+
+    .image-slider {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+}
+.image-slider img {
+  width: 100%;
+  display: none;
+  transition: opacity 0.3s ease;
+  border-radius: 12px;
+}
+.image-slider img.active {
+  display: block;
+}
+.image-slider .prev,
+.image-slider .next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.4);
+  color: white;
+  border: none;
+  font-size: 20px;
+  padding: 4px 10px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+.image-slider .prev { left: 6px; }
+.image-slider .next { right: 6px; }
+
+
    /* PROFILE DROPDOWN */
 #profileSection {
   display: none;
@@ -507,18 +540,24 @@ function renderProductCard(product, ethRate) {
 }
 
 
-/* ===== RENDER CATEGORY ===== */
+/* ===== RENDER CATEGORY (with image carousel) ===== */
 async function showCategory(cat) {
-  // Normalize category key
-  const key = (cat in PRODUCTS) ? cat : Object.keys(PRODUCTS).find(k => k.toLowerCase() === String(cat).toLowerCase());
-  currentCategory = key || cat;
+  const key = (cat in PRODUCTS)
+    ? cat
+    : Object.keys(PRODUCTS).find(k => k.toLowerCase() === String(cat).toLowerCase());
+  if (key) currentCategory = key;
+  else currentCategory = cat;
 
   const container = document.getElementById("items");
   const items = PRODUCTS[currentCategory] || [];
   container.innerHTML = "";
 
   if (!items.length) {
-    container.innerHTML = `<div style="background:var(--card);padding:20px;border-radius:12px;">No items yet in ${currentCategory}.</div>`;
+    container.innerHTML = `
+      <div style="background:var(--card);padding:20px;border-radius:12px;
+                  box-shadow:0 8px 20px rgba(12,12,20,0.06);">
+        No items yet in ${currentCategory}.
+      </div>`;
     return;
   }
 
@@ -529,9 +568,37 @@ async function showCategory(cat) {
     el.className = "item";
 
     const priceDisplay = formatPrice(getProductUsd(p), ethRate);
-    const imgSrc = p.image || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
 
-    // Variant dropdown
+    // 🖼️ Handle multiple images (comma-separated in sheet)
+    let images = [];
+    if (p.images && Array.isArray(p.images)) {
+      images = p.images;
+    } else if (typeof p.image === "string" && p.image.includes(",")) {
+      images = p.image.split(",").map(u => u.trim()).filter(Boolean);
+    } else if (p.image) {
+      images = [p.image];
+    }
+
+    // build carousel HTML
+    let imageHTML = "";
+    if (images.length > 1) {
+      imageHTML = `
+        <div class="image-slider" id="slider_${p.id}">
+          ${images
+            .map((url, i) =>
+              `<img src="${url}" alt="${p.title}" class="slide ${i === 0 ? "active" : ""}" />`
+            )
+            .join("")}
+          <button class="prev" onclick="prevSlide('${p.id}')">‹</button>
+          <button class="next" onclick="nextSlide('${p.id}')">›</button>
+        </div>
+      `;
+    } else {
+      const imgSrc = images[0] || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
+      imageHTML = `<img id="img_${p.id}" src="${imgSrc}" alt="${p.title}" />`;
+    }
+
+    // 🧩 Variants
     let variantHTML = "";
     if (p.variants && p.variants.length) {
       if (typeof p.variants[0] === "string") {
@@ -544,12 +611,14 @@ async function showCategory(cat) {
         variantHTML = `
           <label>Variant</label>
           <select id="variant_${p.id}">
-            ${p.variants.map(v => `<option value="${v.name}" data-price-usd="${v.priceUSD ?? ''}">${v.name}</option>`).join("")}
+            ${p.variants
+              .map(v => `<option value="${v.name}" data-price-usd="${v.priceUSD ?? ''}">${v.name}</option>`)
+              .join("")}
           </select>`;
       }
     }
 
-    // Color dropdown
+    // 🎨 Colors
     let colorHTML = "";
     if (p.colors && p.colors.length) {
       colorHTML = `
@@ -559,7 +628,7 @@ async function showCategory(cat) {
         </select>`;
     }
 
-    // Size dropdown
+    // 📏 Sizes
     let sizeHTML = "";
     if (p.sizes && p.sizes.length) {
       sizeHTML = `
@@ -569,29 +638,34 @@ async function showCategory(cat) {
         </select>`;
     }
 
-    // Buttons: Add to Cart + Redeem (if pointsCost exists)
-    const addCartHTML = `<button class="btn" onclick="addToCart('${p.id}')">Add to Cart</button>`;
-    const redeemHTML = (p.pointsCost && Number(p.pointsCost) > 0)
-  ? `<button class="btn" style="background:linear-gradient(90deg,#f9d423,#ff4e50);color:#000;font-weight:600" onclick="redeemWithPoints('${p.id}', ${p.pointsCost})">Redeem for ${p.pointsCost} Points</button>`
-  : "";
+    // 🪙 Redeem + Add to Cart buttons
+    const redeemHTML = p.pointsCost
+      ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${p.id}', ${p.pointsCost})">Redeem for ${p.pointsCost} Points</button>`
+      : "";
+
+    const buyHTML = `<button class="btn buy-btn" onclick="addToCart('${p.id}')">Add to Cart</button>`;
 
     el.innerHTML = `
-      <img id="img_${p.id}" src="${imgSrc}" alt="${p.title}" />
+      ${imageHTML}
       <h3>${p.title}</h3>
-      <div id="price_${p.id}" class="price">${priceDisplay}</div>
+      <div class="price" id="price_${p.id}">${priceDisplay}</div>
       ${variantHTML}
       ${colorHTML}
       ${sizeHTML}
       ${p.sizeGuide ? `<button class="btn" onclick="openSizeGuide('${p.sizeGuide}')">Size Guide</button>` : ""}
-      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;">${addCartHTML}${redeemHTML}</div>
+      <div style="margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+        ${buyHTML}
+        ${redeemHTML}
+      </div>
     `;
 
     container.appendChild(el);
 
-    // Handle variant change
+    // update price/image on variant select
     const variantSelect = el.querySelector(`#variant_${p.id}`);
     const priceEl = el.querySelector(`#price_${p.id}`);
     const imgEl = el.querySelector(`#img_${p.id}`);
+
     if (variantSelect) {
       variantSelect.addEventListener("change", async (e) => {
         const selected = e.target.value;
@@ -599,7 +673,7 @@ async function showCategory(cat) {
           const matched = p.variants.find(v => v.name === selected);
           const usd = matched?.priceUSD ?? getProductUsd(p);
           const rate = await getEthRate();
-          priceEl.textContent = formatPrice(usd, rate);
+          if (priceEl) priceEl.textContent = formatPrice(usd, rate);
           if (matched?.images?.length && imgEl) imgEl.src = matched.images[0];
         }
       });
@@ -609,6 +683,24 @@ async function showCategory(cat) {
   attachZoomFollow();
 }
 
+/* ===== SLIDER FUNCTIONS ===== */
+function nextSlide(id) {
+  const slides = document.querySelectorAll(`#slider_${id} .slide`);
+  if (!slides.length) return;
+  let current = Array.from(slides).findIndex(s => s.classList.contains("active"));
+  slides[current].classList.remove("active");
+  const next = (current + 1) % slides.length;
+  slides[next].classList.add("active");
+}
+
+function prevSlide(id) {
+  const slides = document.querySelectorAll(`#slider_${id} .slide`);
+  if (!slides.length) return;
+  let current = Array.from(slides).findIndex(s => s.classList.contains("active"));
+  slides[current].classList.remove("active");
+  const prev = (current - 1 + slides.length) % slides.length;
+  slides[prev].classList.add("active");
+}
 
 /* ===== OPEN/CLOSE Helpers ===== */
 function showOverlay(){ const ov = document.getElementById('tees'); if(ov){ ov.classList.add('active'); ov.style.display='block'; } }
