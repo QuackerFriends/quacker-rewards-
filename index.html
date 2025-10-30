@@ -450,78 +450,91 @@ function getProductUsd(p) {
   return 0;
 }
 
-/* ===== RENDER (async so we can fetch ETH rate) ===== */
+/* ===== RENDER CATEGORY ITEMS ===== */
 async function showCategory(cat) {
   currentCategory = cat;
-  const container = document.getElementById('items');
-  const items = PRODUCTS[cat] || [];
-  container.innerHTML = '';
+  const container = document.getElementById("items");
+  container.innerHTML = "";
 
-  if (items.length === 0) {
-    container.innerHTML = `<div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:var(--shadow);">No items yet in ${cat}.</div>`;
+  const items = PRODUCTS[cat] || [];
+  if (!items.length) {
+    container.innerHTML = `
+      <div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:var(--shadow);">
+        No items yet in ${cat}.
+      </div>`;
     return;
   }
 
-  // fetch rate once for this render
+  // Fetch ETH rate once
   const ethRate = await getEthRate();
+  document.body.classList.add("blur-bg");
 
-  document.body.classList.add('blur-bg');
+  items.forEach((p) => {
+    const el = document.createElement("div");
+    el.className = "item";
 
-  items.forEach(p => {
-  if (!p || !p.title) return; // 🛡️ Skip malformed rows
+    // image
+    const mainImage = p.image || (p.images?.[0] || "https://via.placeholder.com/400x400?text=No+Image");
 
-  const el = document.createElement('div');
-  el.className = 'item';
-  const imgId = `img_${p.id}`;
+    // dropdowns
+    const colorOptions = p.colors?.length
+      ? `<label>Color:</label>
+         <select id="color_${p.id}" class="dropdown-input">
+           ${p.colors.map((c) => `<option value="${c}">${c}</option>`).join("")}
+         </select>`
+      : "";
 
-  const mainSrc =
-    p.image ||
-    (Array.isArray(p.images) && p.images[0]) ||
-    "https://via.placeholder.com/300x300?text=No+Image";
+    const sizeOptions = p.sizes?.length
+      ? `<label>Size:</label>
+         <select id="size_${p.id}" class="dropdown-input">
+           ${p.sizes.map((s) => `<option value="${s}">${s}</option>`).join("")}
+         </select>`
+      : "";
 
-  const priceHtml = p.pointsCost
-    ? `<div class="price">${p.pointsCost} Points</div>`
-    : `<div class="price">$${p.priceUSD?.toFixed?.(2) || "N/A"}</div>`;
+    const variantOptions = p.variants?.length
+      ? `<label>Variant:</label>
+         <select id="variant_${p.id}" class="dropdown-input">
+           ${p.variants.map((v) => `<option value="${v}">${v}</option>`).join("")}
+         </select>`
+      : "";
 
-  el.innerHTML = `
-    <img id="${imgId}" src="${mainSrc}" alt="${p.title}" />
-    <h3>${p.title}</h3>
-    ${priceHtml}
-    <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
-  `;
+    // price (ETH + Points)
+    const usd = p.priceUSD ?? 0;
+    const priceEth = (usd / ethRate).toFixed(4);
+    const points = p.pointsCost ?? null;
+    const priceHtml = points
+      ? `<div class="price">🪙 ${points} pts <span style="opacity:.6">(or ${priceEth} ETH)</span></div>`
+      : `<div class="price">${priceEth} ETH</div>`;
 
-  container.appendChild(el);
-});
+    // product card
+    el.innerHTML = `
+      <img id="img_${p.id}" src="${mainImage}" alt="${p.title}" class="item-img" />
+      <h3>${p.title}</h3>
+      <p>${p.description || ""}</p>
+      ${priceHtml}
+      ${variantOptions}
+      ${colorOptions}
+      ${sizeOptions}
+      <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
+    `;
+    container.appendChild(el);
 
+    // 🌀 listeners
+    const imgEl = el.querySelector(`#img_${p.id}`);
+    const colorSelect = el.querySelector(`#color_${p.id}`);
 
-    // color selector (if object)
-    if (p.images && typeof p.images === "object" && !Array.isArray(p.images)) {
-      const colorKey = `color_${p.id}`;
-      const colorWrap = el.querySelector(`#colorWrap_${p.id}`);
-      const colorHtml = `<label style="display:block;text-align:left;font-weight:600">Color</label><select id="${colorKey}">${Object.keys(p.images).map(c=>`<option value="${c}">${c}</option>`).join('')}</select>`;
-      colorWrap.innerHTML = colorHtml;
-      const colorSelect = colorWrap.querySelector(`#${colorKey}`);
-      colorSelect.addEventListener('change', e => {
-        const imgEl = el.querySelector(`#${imgId}`);
-        if (imgEl && p.images[e.target.value]) imgEl.src = p.images[e.target.value];
+    if (colorSelect) {
+      colorSelect.addEventListener("change", (e) => {
+        const selectedColor = e.target.value;
+        // if using color-based images (future)
+        if (p.images && typeof p.images === "object" && p.images[selectedColor]) {
+          imgEl.src = p.images[selectedColor];
+        }
       });
     }
-
-    // variant price update for simple tee variant select
-    const variantSelect = el.querySelector(`#variant_${p.id}`);
-    if (variantSelect) {
-      variantSelect.addEventListener('change', e => {
-        const selectedOption = e.target.options[e.target.selectedIndex];
-        const newEth = parseFloat(selectedOption.getAttribute("data-price")) || 0;
-        const newUsd = selectedOption.getAttribute("data-price-usd") || "";
-        const priceEl = document.querySelector(`#price_${p.id}`);
-        if (priceEl) priceEl.textContent = `${newEth.toFixed(4)} ETH${newUsd?` (~$${newUsd})`:""}`;
-      });
-    }
-
-  // restore zoom/hover effects
-  attachZoomFollow();
+  });
 }
+
 
 /* ===== OPEN/CLOSE Helpers ===== */
 function showOverlay(){ const ov = document.getElementById('tees'); if(ov){ ov.classList.add('active'); ov.style.display='block'; } }
