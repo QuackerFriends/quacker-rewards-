@@ -432,129 +432,107 @@ async function loadProducts() {
   }
 }
 
+
+  /* ===== RENDER PRODUCT CARD ===== */
+function renderProductCard(product, ethRate) {
+  const priceText = product.priceUSD
+    ? formatPrice(product.priceUSD, ethRate)
+    : product.pointsCost
+    ? `${product.pointsCost} Points`
+    : "Coming soon";
+
+  // --- Variants / Options ---
+  let variantInputs = "";
+
+  if (product.variants && product.variants.length) {
+    const variantOptions = product.variants
+      .map(v => `<option value="${typeof v === "string" ? v : v.name}">
+        ${typeof v === "string" ? v : v.name}
+      </option>`)
+      .join("");
+    variantInputs += `
+      <label>Variant:</label>
+      <select id="variant_${product.id}" class="variant-select">${variantOptions}</select>
+    `;
+  }
+
+  if (product.colors && product.colors.length) {
+    const colorOptions = product.colors.map(c => `<option value="${c}">${c}</option>`).join("");
+    variantInputs += `
+      <label>Color:</label>
+      <select id="color_${product.id}" class="color-select">${colorOptions}</select>
+    `;
+  }
+
+  if (product.sizes && product.sizes.length) {
+    const sizeOptions = product.sizes.map(s => `<option value="${s}">${s}</option>`).join("");
+    variantInputs += `
+      <label>Size:</label>
+      <select id="size_${product.id}" class="size-select">${sizeOptions}</select>
+    `;
+  }
+
+  if (product.hasCustomField) {
+    variantInputs += `
+      <label>Quacker Friend ID:</label>
+      <input id="custom_${product.id}" placeholder="Enter your ID" style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc;" />
+    `;
+  }
+
+  // --- Buttons ---
+  let btnHTML = "";
+  if (product.pointsCost && Number(product.pointsCost) > 0) {
+    btnHTML += `
+      <button class="btn secondary" onclick="redeemWithPoints('${product.id}', ${product.pointsCost})">
+        🪙 Redeem (${product.pointsCost} pts)
+      </button>
+    `;
+  }
+  if (product.priceUSD && Number(product.priceUSD) > 0) {
+    btnHTML += `
+      <button class="btn" onclick="addToCart('${product.id}')">
+        🛒 Add to Cart
+      </button>
+    `;
+  }
+
+  return `
+    <div class="item" style="background:var(--card);padding:16px;border-radius:12px;box-shadow:var(--shadow);">
+      <img src="${product.image || ""}" alt="${product.title || ""}" style="width:100%;border-radius:8px;object-fit:contain;">
+      <h3>${product.title}</h3>
+      <p>${priceText}</p>
+      ${variantInputs}
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">${btnHTML}</div>
+    </div>
+  `;
+}
+
+
 /* ===== RENDER CATEGORY ===== */
 async function showCategory(cat) {
-  // normalize cat key: try exact, then lower-case match
-  const key = (cat in PRODUCTS) ? cat : Object.keys(PRODUCTS).find(k => k.toLowerCase() === String(cat).toLowerCase());
-  if (key) currentCategory = key;
-  else currentCategory = cat;
+  const key = (cat in PRODUCTS)
+    ? cat
+    : Object.keys(PRODUCTS).find(k => k.toLowerCase() === String(cat).toLowerCase());
 
+  currentCategory = key || cat;
   const container = document.getElementById("items");
   const items = PRODUCTS[currentCategory] || [];
   container.innerHTML = "";
 
   if (!items.length) {
-    container.innerHTML = `<div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:0 8px 20px rgba(12,12,20,0.06);">No items yet in ${currentCategory}.</div>`;
+    container.innerHTML = `
+      <div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:0 8px 20px rgba(12,12,20,0.06);">
+        No items yet in ${currentCategory}.
+      </div>`;
     return;
   }
 
   const ethRate = await getEthRate();
-
   items.forEach(p => {
-    const el = document.createElement("div");
-    el.className = "item";
-
-    const priceDisplay = formatPrice(getProductUsd(p), ethRate);
-    const imgSrc = p.image || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
-
-    // Build variant HTML — support two shapes:
-    // 1) p.variants is array of strings (from sheet)
-    // 2) p.variants is array of objects {name, priceUSD, images}
-    let variantHTML = "";
-    if (p.variants && p.variants.length) {
-      if (typeof p.variants[0] === "string") {
-        variantHTML = `
-          <label style="display:block;text-align:left;font-weight:600">Variant</label>
-          <select id="variant_${p.id}">
-            ${p.variants.map(v => `<option value="${v}">${v}</option>`).join("")}
-          </select>
-        `;
-      } else if (typeof p.variants[0] === "object") {
-        variantHTML = `
-          <label style="display:block;text-align:left;font-weight:600">Variant</label>
-          <select id="variant_${p.id}">
-            ${p.variants.map(v => `<option value="${v.name}" data-price-usd="${v.priceUSD ?? ''}">${v.name}</option>`).join("")}
-          </select>
-        `;
-      }
-    }
-
-    let colorHTML = "";
-    if (p.colors && p.colors.length) {
-      colorHTML = `
-        <label style="display:block;text-align:left;font-weight:600">Color</label>
-        <select id="color_${p.id}">
-          ${p.colors.map(c => `<option value="${c}">${c}</option>`).join("")}
-        </select>
-      `;
-    }
-
-    let sizeHTML = "";
-    if (p.sizes && p.sizes.length) {
-      sizeHTML = `
-        <label style="display:block;text-align:left;font-weight:600">Size</label>
-        <select id="size_${p.id}">
-          ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join("")}
-        </select>
-      `;
-    }
-
-    const redeemHTML = (p.pointsCost)
-      ? `<button class="btn" onclick="redeemWithPoints('${p.id}', ${p.pointsCost})">Redeem for ${p.pointsCost} Points</button>`
-      : `<button class="btn" onclick="addToCart('${p.id}')">Add to Cart</button>`;
-
-    el.innerHTML = `
-      <img id="img_${p.id}" src="${imgSrc}" alt="${p.title}" />
-      <h3>${p.title}</h3>
-      <div class="price" id="price_${p.id}">${priceDisplay}</div>
-      ${variantHTML}
-      ${colorHTML}
-      ${sizeHTML}
-      ${p.sizeGuide ? `<button class="btn" onclick="openSizeGuide('${p.sizeGuide}')">Size Guide</button>` : ""}
-      <div style="margin-top:12px">${redeemHTML}</div>
-    `;
-
-    container.appendChild(el);
-
-    // Add listeners for variant -> update price/image if variant objects contain data
-    const variantSelect = el.querySelector(`#variant_${p.id}`);
-    const priceEl = el.querySelector(`#price_${p.id}`);
-    const imgEl = el.querySelector(`#img_${p.id}`);
-
-    if (variantSelect) {
-      variantSelect.addEventListener("change", async (e) => {
-        const selected = e.target.value;
-        // if variant objects with price exist, find and use priceUSD
-        if (Array.isArray(p.variants) && typeof p.variants[0] === "object") {
-          const matched = p.variants.find(v => v.name === selected);
-          const usd = matched?.priceUSD ?? getProductUsd(p);
-          const rate = await getEthRate();
-          if (priceEl) priceEl.textContent = formatPrice(usd, rate);
-          if (matched?.images?.length && imgEl) imgEl.src = matched.images[0];
-        } else {
-          // variant is just a string — price remains the product price
-          const rate = await getEthRate();
-          if (priceEl) priceEl.textContent = formatPrice(getProductUsd(p), rate);
-        }
-      });
-    }
-
-    // color change switches image if you stored color->image mapping on product (sheet uses ColorOptions only)
-    const colorSelect = el.querySelector(`#color_${p.id}`);
-    if (colorSelect && imgEl) {
-      colorSelect.addEventListener("change", (e) => {
-        // if images are a mapping (object) stored earlier in your static products, try to use that
-        if (p.images && typeof p.images === "object" && !Array.isArray(p.images)) {
-          const v = e.target.value;
-          if (p.images[v]) imgEl.src = p.images[v];
-        } else {
-          // otherwise no per-color image available — do nothing
-        }
-      });
-    }
+    const cardHTML = renderProductCard(p, ethRate);
+    container.insertAdjacentHTML("beforeend", cardHTML);
   });
 
-  // re-attach zoom behavior
   attachZoomFollow();
 }
 
@@ -645,30 +623,54 @@ async function addToCart(prodId) {
   showToast(`${product.title} (${variantValue || "Default"}, ${color}, ${size}) added to cart`, "success");
 }
 
-/* ===== CART UI ===== */
-function updateCartUI(){
+/* ===== CART UI (Improved) ===== */
+function updateCartUI() {
   const countEl = document.getElementById("cartCount");
   const listEl = document.getElementById("cartList");
   const totalEl = document.getElementById("cartTotal");
-  if(!countEl || !listEl || !totalEl) return console.warn("Cart UI elements missing");
+  if (!countEl || !listEl || !totalEl) return console.warn("Cart UI elements missing");
 
-  const cartCount = cart.reduce((s,i)=>s+i.q,0);
-  if(cartCount>0){ countEl.style.display="inline-block"; countEl.innerText = cartCount; } else countEl.style.display="none";
+  const cartCount = cart.reduce((s, i) => s + i.q, 0);
+  if (cartCount > 0) {
+    countEl.style.display = "inline-block";
+    countEl.innerText = cartCount;
+  } else {
+    countEl.style.display = "none";
+  }
 
-  if(cart.length===0){ listEl.innerHTML = "<p style='color:#666'>Cart is empty</p>"; totalEl.innerText = "0 ETH"; return; }
+  if (cart.length === 0) {
+    listEl.innerHTML = "<p style='color:#666'>Cart is empty</p>";
+    totalEl.innerText = "0 ETH";
+    return;
+  }
 
   listEl.innerHTML = "";
-  let total = 0;
-  cart.forEach((ci, idx)=>{
+  let totalEth = 0;
+
+  cart.forEach((ci, idx) => {
     const row = document.createElement("div");
     row.className = "cart-item";
-    const thumb = ci.thumb || "";
+    const thumb = ci.thumb || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
+
+    // Build variant & details info
+    const details = [];
+    if (ci.variant && ci.variant !== "N/A") details.push(`Variant: ${ci.variant}`);
+    if (ci.color && ci.color !== "N/A") details.push(`Color: ${ci.color}`);
+    if (ci.size && ci.size !== "N/A") details.push(`Size: ${ci.size}`);
+    if (ci.custom && ci.custom !== "N/A") details.push(`Custom: ${ci.custom}`);
+
+    const detailsText = details.length ? details.join(" • ") : "No options selected";
+
+    // price and qty
+    const priceEth = (ci.price || 0).toFixed(6);
+    totalEth += (ci.price || 0) * ci.q;
+
     row.innerHTML = `
       <img src="${thumb}" alt="${ci.title}" />
       <div style="flex:1">
-        <div style="font-weight:700">${ci.title}${ci.variant?` — ${ci.variant}`:""}</div>
-        <div style="font-size:13px;color:#666">${ci.color || "N/A"} • ${ci.size || "N/A"}</div>
-        <div style="margin-top:6px">${(ci.price || 0).toFixed(6)} ETH</div>
+        <div style="font-weight:700">${ci.title}</div>
+        <div style="font-size:13px;color:#666">${detailsText}</div>
+        <div style="margin-top:6px">${priceEth} ETH</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
         <input class="qty" type="number" min="1" value="${ci.q}" onchange="changeQty(${idx}, this.value)" style="width:56px;padding:6px;border-radius:6px;border:1px solid #ddd;text-align:center" />
@@ -676,11 +678,11 @@ function updateCartUI(){
       </div>
     `;
     listEl.appendChild(row);
-    total += (ci.price || 0) * ci.q;
   });
-  totalEl.innerText = total.toFixed(6) + " ETH";
+
+  totalEl.innerText = `${totalEth.toFixed(6)} ETH`;
 }
-  
+
 function changeQty(index,val){ const v = Number(val)||1; cart[index].q = Math.max(1,v); updateCartUI(); }
 function removeFromCart(index){ cart.splice(index,1); updateCartUI(); }
 
