@@ -638,6 +638,16 @@ async function showCategory(cat) {
         </select>`;
     }
 
+    let customInputHTML = "";
+if (p.CustomInput && p.CustomInput.trim() !== "") {
+  customInputHTML = `
+    <label style="display:block;text-align:left;font-weight:600">${p.CustomInput}</label>
+    <input id="custom_${p.id}" type="text" placeholder="${p.CustomInput}" 
+      style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;margin-top:4px" />
+  `;
+}
+
+
     // 🪙 Redeem + Add to Cart buttons
     const redeemHTML = p.pointsCost
       ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${p.id}', ${p.pointsCost})">Redeem for ${p.pointsCost} Points</button>`
@@ -652,6 +662,7 @@ async function showCategory(cat) {
       ${variantHTML}
       ${colorHTML}
       ${sizeHTML}
+     ${customInputHTML}
       ${p.sizeGuide ? `<button class="btn" onclick="openSizeGuide('${p.sizeGuide}')">Size Guide</button>` : ""}
       <div style="margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
         ${buyHTML}
@@ -734,6 +745,9 @@ async function addToCart(productId) {
   const variantSel = document.getElementById(`variant_${productId}`);
   const colorSel = document.getElementById(`color_${productId}`);
   const sizeSel = document.getElementById(`size_${productId}`);
+  const customEl = document.getElementById(`custom_${p.id}`);
+ const customInput = customEl ? customEl.value.trim() : "";
+
 
   const variant = variantSel ? variantSel.value : "";
   const color = colorSel ? colorSel.value : "";
@@ -763,7 +777,9 @@ async function addToCart(productId) {
     price: priceETH,
     redeem: false,
     cost: 0,
-    thumb: product.image || ""
+    thumb: product.image || "" ,
+      customInput
+
   };
 
   cart.push(item);
@@ -1022,7 +1038,10 @@ async function checkout(){
         quantity: ci.q || 1,
         address: shippingAddress,
         txHash,
-        referrer
+        referrer,
+       customInput: ci.customInput || ""   // ✅ add here inside payload
+
+
       };
 
       if (ci.redeem) {
@@ -1090,6 +1109,9 @@ async function redeemWithPoints(productId, cost) {
     const variantSel = document.getElementById(`variant_${productId}`);
     const colorSel = document.getElementById(`color_${productId}`);
     const sizeSel = document.getElementById(`size_${productId}`);
+    const customEl = document.getElementById(`custom_${id}`);
+   const customInput = customEl ? customEl.value.trim() : "";
+
 
     const variant = variantSel ? variantSel.value : "";
     const color = colorSel ? colorSel.value : "";
