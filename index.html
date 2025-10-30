@@ -510,9 +510,8 @@ function renderProductCard(product, ethRate) {
 
 /* ===== RENDER CATEGORY ===== */
 async function showCategory(cat) {
-  const key = (cat in PRODUCTS)
-    ? cat
-    : Object.keys(PRODUCTS).find(k => k.toLowerCase() === String(cat).toLowerCase());
+  // Normalize category key
+  const key = (cat in PRODUCTS) ? cat : Object.keys(PRODUCTS).find(k => k.toLowerCase() === String(cat).toLowerCase());
   currentCategory = key || cat;
 
   const container = document.getElementById("items");
@@ -520,7 +519,7 @@ async function showCategory(cat) {
   container.innerHTML = "";
 
   if (!items.length) {
-    container.innerHTML = `<div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:0 8px 20px rgba(12,12,20,0.06);">No items yet in ${currentCategory}.</div>`;
+    container.innerHTML = `<div style="background:var(--card);padding:20px;border-radius:12px;">No items yet in ${currentCategory}.</div>`;
     return;
   }
 
@@ -533,7 +532,7 @@ async function showCategory(cat) {
     const priceDisplay = formatPrice(getProductUsd(p), ethRate);
     const imgSrc = p.image || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
 
-    // Variants
+    // Variant dropdown
     let variantHTML = "";
     if (p.variants && p.variants.length) {
       if (typeof p.variants[0] === "string") {
@@ -546,12 +545,12 @@ async function showCategory(cat) {
         variantHTML = `
           <label>Variant</label>
           <select id="variant_${p.id}">
-            ${p.variants.map(v => `<option value="${v.name}" data-price-usd="${v.priceUSD || ''}">${v.name}</option>`).join("")}
+            ${p.variants.map(v => `<option value="${v.name}" data-price-usd="${v.priceUSD ?? ''}">${v.name}</option>`).join("")}
           </select>`;
       }
     }
 
-    // Colors
+    // Color dropdown
     let colorHTML = "";
     if (p.colors && p.colors.length) {
       colorHTML = `
@@ -561,7 +560,7 @@ async function showCategory(cat) {
         </select>`;
     }
 
-    // Sizes
+    // Size dropdown
     let sizeHTML = "";
     if (p.sizes && p.sizes.length) {
       sizeHTML = `
@@ -571,41 +570,29 @@ async function showCategory(cat) {
         </select>`;
     }
 
-    // Custom field (for Quacker ID, if needed)
-    let customHTML = "";
-    if (p.hasCustomField) {
-      customHTML = `
-        <label>Your Quacker Friend ID</label>
-        <input id="custom_${p.id}" type="text" placeholder="Enter your ID" style="width:100%;padding:6px;border-radius:6px;border:1px solid #ccc"/>`;
-    }
-
-    // Buttons (Redeem OR Add to Cart)
-    let buttonHTML = "";
-    if (p.pointsCost && Number(p.pointsCost) > 0) {
-      buttonHTML = `<button class="btn" onclick="redeemWithPoints('${p.id}', ${p.pointsCost})">Redeem for ${p.pointsCost} Points</button>`;
-    } else {
-      buttonHTML = `<button class="btn" onclick="addToCart('${p.id}')">Add to Cart</button>`;
-    }
+    // Buttons: Add to Cart + Redeem (if pointsCost exists)
+    const addCartHTML = `<button class="btn" onclick="addToCart('${p.id}')">Add to Cart</button>`;
+    const redeemHTML = (p.pointsCost && Number(p.pointsCost) > 0)
+      ? `<button class="btn secondary" onclick="redeemWithPoints('${p.id}', ${p.pointsCost})">Redeem for ${p.pointsCost} Points</button>`
+      : "";
 
     el.innerHTML = `
       <img id="img_${p.id}" src="${imgSrc}" alt="${p.title}" />
       <h3>${p.title}</h3>
-      <div class="price" id="price_${p.id}">${priceDisplay}</div>
+      <div id="price_${p.id}" class="price">${priceDisplay}</div>
       ${variantHTML}
       ${colorHTML}
       ${sizeHTML}
-      ${customHTML}
       ${p.sizeGuide ? `<button class="btn" onclick="openSizeGuide('${p.sizeGuide}')">Size Guide</button>` : ""}
-      <div style="margin-top:12px">${buttonHTML}</div>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;">${addCartHTML}${redeemHTML}</div>
     `;
 
     container.appendChild(el);
 
-    // Event listeners — update price/image when variant changes
+    // Handle variant change
     const variantSelect = el.querySelector(`#variant_${p.id}`);
     const priceEl = el.querySelector(`#price_${p.id}`);
     const imgEl = el.querySelector(`#img_${p.id}`);
-
     if (variantSelect) {
       variantSelect.addEventListener("change", async (e) => {
         const selected = e.target.value;
@@ -613,19 +600,8 @@ async function showCategory(cat) {
           const matched = p.variants.find(v => v.name === selected);
           const usd = matched?.priceUSD ?? getProductUsd(p);
           const rate = await getEthRate();
-          if (priceEl) priceEl.textContent = formatPrice(usd, rate);
+          priceEl.textContent = formatPrice(usd, rate);
           if (matched?.images?.length && imgEl) imgEl.src = matched.images[0];
-        }
-      });
-    }
-
-    // Color-based image switching
-    const colorSelect = el.querySelector(`#color_${p.id}`);
-    if (colorSelect && imgEl) {
-      colorSelect.addEventListener("change", (e) => {
-        if (p.images && typeof p.images === "object" && !Array.isArray(p.images)) {
-          const v = e.target.value;
-          if (p.images[v]) imgEl.src = p.images[v];
         }
       });
     }
@@ -661,12 +637,9 @@ function addTapestryToCart(prodId){
 async function addToCart(productId) {
   const allProducts = Object.values(PRODUCTS).flat();
   const product = allProducts.find(p => p.id === productId);
-  if (!product) {
-    showToast("Product not found", "error");
-    return;
-  }
+  if (!product) return showToast("Product not found", "error");
 
-  // Read selections
+  // read selected options
   const variantSel = document.getElementById(`variant_${productId}`);
   const colorSel = document.getElementById(`color_${productId}`);
   const sizeSel = document.getElementById(`size_${productId}`);
@@ -675,12 +648,10 @@ async function addToCart(productId) {
   const color = colorSel ? colorSel.value : "";
   const size = sizeSel ? sizeSel.value : "";
 
-  // Convert USD → ETH
   const rate = await getEthRate();
   let priceUSD = getProductUsd(product);
   let priceETH = priceUSD / rate;
 
-  // If variant object has custom priceUSD
   if (variantSel && product.variants && typeof product.variants[0] === "object") {
     const matched = product.variants.find(v => v.name === variant);
     if (matched?.priceUSD) {
@@ -689,7 +660,7 @@ async function addToCart(productId) {
     }
   }
 
-  // ✅ Push all details to cart
+  // add item to cart
   const item = {
     id: product.id,
     title: product.title,
