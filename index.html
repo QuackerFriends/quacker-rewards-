@@ -703,6 +703,10 @@ function closeCart() {
     if (overlay) overlay.style.display = "none";
   }
 }
+  
+  // 🛒 Cart open button
+const openCartBtn = document.getElementById("openCartBtn");
+if (openCartBtn) openCartBtn.addEventListener("click", openCart);
 
 
 /* ===== WALLET & PROFILE ===== */
