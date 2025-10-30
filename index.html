@@ -304,92 +304,12 @@ const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 
-/* ===== GLOBAL VARIABLES ===== */
-let PRODUCTS = {};             // will store products by category
-let currentCategory = "Tees";  // default visible category
-
-
-/* ===== LOAD PRODUCTS FROM SHEET (via Apps Script) ===== */
-async function loadProducts() {
-  try {
-    const res = await fetch(
-      "https://script.google.com/macros/s/AKfycbwZMlGQ2REZxTP1lIoWBYzc8n7l-h7C79F9u9MjDY4XIR6jKNO7ky1VXtCm3oP5RM_9qA/exec?action=getItems"
-    );
-    const data = await res.json();
-
-    if (data.success) {
-      // 🗂️ Organize by category
-      PRODUCTS = data.items.reduce((acc, item) => {
-        const category = item.Category?.trim() || "Other";
-        if (!acc[category]) acc[category] = [];
-
-        // ✅ Normalize each item
-        acc[category].push({
-          id: item.ID,
-          title: item.Title,
-          description: item.Description,
-          priceUSD: Number(item.PriceUSD) || 0,
-          pointsCost: Number(item.PointsCost) || null,
-          variants: item.VariantOptions
-            ? item.VariantOptions.split(",").map(v => v.trim()).filter(v => v)
-            : [],
-          colors: item.ColorOptions
-            ? item.ColorOptions.split(",").map(c => c.trim()).filter(c => c)
-            : [],
-          sizes: item.SizeOptions
-            ? item.SizeOptions.split(",").map(s => s.trim()).filter(s => s)
-            : [],
-          sizeGuide: item.SizeGuide || "",
-          images: item.ImageURL ? [item.ImageURL.trim()] : [], // 🧠 key fix here
-          active: item.Active === true || item.Active === "TRUE",
-        });
-        return acc;
-      }, {});
-
-      console.log("✅ Loaded products:", PRODUCTS);
-
-// 🛍️ Build dropdown without overwriting site design
-const shopMenu = document.getElementById("shopMenu");
-if (shopMenu) {
-  // build new list of categories
-  const categoryListHtml = Object.keys(PRODUCTS)
-    .map(cat => {
-      const catId = cat.replace(/\s+/g, "_").toLowerCase();
-      return `<button class="dropdown-item" onclick="showCategory('${cat}')">${cat}</button>`;
-    })
-    .join("");
-
-  // 🩷 only update the inner category items, not the container or its styling
-  const existingButtons = shopMenu.querySelectorAll(".dropdown-item");
-  if (existingButtons.length === 0) {
-    // if empty, add the items
-    shopMenu.insertAdjacentHTML("beforeend", categoryListHtml);
-  } else {
-    // if already populated, just refresh their labels (optional)
-    shopMenu.innerHTML = categoryListHtml;
-  }
-}
-
-
-
-      // ✅ Automatically show the first or current category
-      const firstCategory = Object.keys(PRODUCTS)[0];
-      await showCategory(currentCategory || firstCategory);
-    } else {
-      console.error("⚠️ Failed to load items:", data);
-    }
-  } catch (err) {
-    console.error("❌ Error fetching items:", err);
-  }
-}
-
-
-
-
 /* ===== STATE ===== */
 let userAddress = null;
 let web3 = null;
 let cart = [];
+let PRODUCTS = {};                 // will be filled by loadProducts()
+let currentCategory = "tees";      // default (sheet categories may vary in case)
 let cachedEthRate = null;
 let lastRateFetch = 0;
 
@@ -406,7 +326,6 @@ function showToast(message, type="info", duration=3000){
 
 /* ===== PRICE HELPERS ===== */
 async function getEthRate(){
-  // cache for 60s to avoid spamming
   const now = Date.now();
   if(cachedEthRate && (now - lastRateFetch) < 60000) return cachedEthRate;
   try {
@@ -425,8 +344,6 @@ async function convertUsdToEth(usd){
   return usd / rate;
 }
 
- 
-/* 🧾 NEW FORMAT: show USD first, ETH in brackets */
 function formatPrice(priceUSD, ethRate) {
   const usd = Number(priceUSD) || 0;
   if (!ethRate) return `$${usd} (≈... ETH)`;
@@ -434,107 +351,212 @@ function formatPrice(priceUSD, ethRate) {
   return `$${usd} (≈${eth} ETH)`;
 }
 
-
-/* Small helper for places that use ETH only */
-function formatEthFromUsd(priceUSD, ethRate) {
-  if (!priceUSD) return "0.0000 ETH";
-  const eth = ethRate ? (priceUSD / ethRate).toFixed(4) : "...";
-  return `${eth} ETH`;
-}
-
-  /* 💵 Always get USD price from product */
 function getProductUsd(p) {
   if (p.priceUSD) return p.priceUSD;
-  if (p.variants && p.variants[0]?.priceUSD) return p.variants[0].priceUSD;
+  // If variants are objects and first variant has a priceUSD, use that
+  if (p.variants && Array.isArray(p.variants) && typeof p.variants[0] === "object" && p.variants[0].priceUSD) return p.variants[0].priceUSD;
   if (p.price) return Math.round(p.price * (cachedEthRate || 3000));
   return 0;
 }
 
-/* ===== RENDER CATEGORY ITEMS ===== */
+/* ===== LOAD PRODUCTS FROM SHEET =====
+   Expects your Apps Script endpoint returning { success: true, items: [ {ID,Category,Title,PriceUSD,PointsCost,VariantOptions,ColorOptions,SizeOptions,SizeGuide,ImageURL,Active,...} ] }
+*/
+async function loadProducts() {
+  try {
+    const res = await fetch(`${PURCHASE_API}?action=getItems`);
+    const data = await res.json();
+
+    if (data.success && Array.isArray(data.items)) {
+      PRODUCTS = data.items.reduce((acc, item) => {
+        const rawCat = (item.Category || "Other").trim();
+        // normalize category keys to lowercase to avoid mismatches
+        const category = rawCat || "Other";
+        if (!acc[category]) acc[category] = [];
+
+        // Build product object. VariantOptions from sheet are parsed as simple string array.
+        const variantsFromSheet = item.VariantOptions
+          ? item.VariantOptions.toString().split(",").map(v => v.trim()).filter(Boolean)
+          : [];
+
+        const colorsFromSheet = item.ColorOptions
+          ? item.ColorOptions.toString().split(",").map(c => c.trim()).filter(Boolean)
+          : [];
+
+        const sizesFromSheet = item.SizeOptions
+          ? item.SizeOptions.toString().split(",").map(s => s.trim()).filter(Boolean)
+          : [];
+
+        acc[category].push({
+          id: String(item.ID || "").trim(),
+          title: item.Title || "",
+          description: item.Description || "",
+          priceUSD: item.PriceUSD ? Number(item.PriceUSD) : 0,
+          pointsCost: item.PointsCost ? Number(item.PointsCost) : null,
+          // For sheet variants we keep simple strings. Your hardcoded data can still include variant objects.
+          variants: variantsFromSheet,
+          colors: colorsFromSheet,
+          sizes: sizesFromSheet,
+          sizeGuide: item.SizeGuide || "",
+          image: item.ImageURL ? String(item.ImageURL).trim() : "",
+          active: item.Active === true || String(item.Active).toUpperCase() === "TRUE"
+        });
+
+        return acc;
+      }, {});
+
+      console.log("✅ Loaded products from sheet:", PRODUCTS);
+
+      // Build shop menu items (replace current content)
+      const shopMenu = document.getElementById("shopMenu");
+      if (shopMenu) {
+        // create same styled buttons as original — use class "dropdown-item"
+        shopMenu.innerHTML = Object.keys(PRODUCTS)
+          .map(cat => `<button class="dropdown-item" onclick="showCategory('${cat}')">${cat}</button>`)
+          .join("");
+      }
+
+      // If currentCategory isn't present in sheet, pick the first available
+      if (!PRODUCTS[currentCategory]) {
+        const first = Object.keys(PRODUCTS)[0];
+        if (first) currentCategory = first;
+      }
+
+      await showCategory(currentCategory);
+      attachZoomFollow();
+    } else {
+      console.error("⚠️ Failed to load items or items missing:", data);
+    }
+  } catch (err) {
+    console.error("❌ Error fetching items:", err);
+  }
+}
+
+/* ===== RENDER CATEGORY ===== */
 async function showCategory(cat) {
-  currentCategory = cat;
+  // normalize cat key: try exact, then lower-case match
+  const key = (cat in PRODUCTS) ? cat : Object.keys(PRODUCTS).find(k => k.toLowerCase() === String(cat).toLowerCase());
+  if (key) currentCategory = key;
+  else currentCategory = cat;
+
   const container = document.getElementById("items");
+  const items = PRODUCTS[currentCategory] || [];
   container.innerHTML = "";
 
-  const items = PRODUCTS[cat] || [];
   if (!items.length) {
-    container.innerHTML = `
-      <div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:var(--shadow);">
-        No items yet in ${cat}.
-      </div>`;
+    container.innerHTML = `<div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:0 8px 20px rgba(12,12,20,0.06);">No items yet in ${currentCategory}.</div>`;
     return;
   }
 
-  // Fetch ETH rate once
   const ethRate = await getEthRate();
-  document.body.classList.add("blur-bg");
 
-  items.forEach((p) => {
+  items.forEach(p => {
     const el = document.createElement("div");
     el.className = "item";
 
-    // image
-    const mainImage = p.image || (p.images?.[0] || "https://via.placeholder.com/400x400?text=No+Image");
+    const priceDisplay = formatPrice(getProductUsd(p), ethRate);
+    const imgSrc = p.image || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
 
-    // dropdowns
-    const colorOptions = p.colors?.length
-      ? `<label>Color:</label>
-         <select id="color_${p.id}" class="dropdown-input">
-           ${p.colors.map((c) => `<option value="${c}">${c}</option>`).join("")}
-         </select>`
-      : "";
+    // Build variant HTML — support two shapes:
+    // 1) p.variants is array of strings (from sheet)
+    // 2) p.variants is array of objects {name, priceUSD, images}
+    let variantHTML = "";
+    if (p.variants && p.variants.length) {
+      if (typeof p.variants[0] === "string") {
+        variantHTML = `
+          <label style="display:block;text-align:left;font-weight:600">Variant</label>
+          <select id="variant_${p.id}">
+            ${p.variants.map(v => `<option value="${v}">${v}</option>`).join("")}
+          </select>
+        `;
+      } else if (typeof p.variants[0] === "object") {
+        variantHTML = `
+          <label style="display:block;text-align:left;font-weight:600">Variant</label>
+          <select id="variant_${p.id}">
+            ${p.variants.map(v => `<option value="${v.name}" data-price-usd="${v.priceUSD ?? ''}">${v.name}</option>`).join("")}
+          </select>
+        `;
+      }
+    }
 
-    const sizeOptions = p.sizes?.length
-      ? `<label>Size:</label>
-         <select id="size_${p.id}" class="dropdown-input">
-           ${p.sizes.map((s) => `<option value="${s}">${s}</option>`).join("")}
-         </select>`
-      : "";
+    let colorHTML = "";
+    if (p.colors && p.colors.length) {
+      colorHTML = `
+        <label style="display:block;text-align:left;font-weight:600">Color</label>
+        <select id="color_${p.id}">
+          ${p.colors.map(c => `<option value="${c}">${c}</option>`).join("")}
+        </select>
+      `;
+    }
 
-    const variantOptions = p.variants?.length
-      ? `<label>Variant:</label>
-         <select id="variant_${p.id}" class="dropdown-input">
-           ${p.variants.map((v) => `<option value="${v}">${v}</option>`).join("")}
-         </select>`
-      : "";
+    let sizeHTML = "";
+    if (p.sizes && p.sizes.length) {
+      sizeHTML = `
+        <label style="display:block;text-align:left;font-weight:600">Size</label>
+        <select id="size_${p.id}">
+          ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join("")}
+        </select>
+      `;
+    }
 
-    // price (ETH + Points)
-    const usd = p.priceUSD ?? 0;
-    const priceEth = (usd / ethRate).toFixed(4);
-    const points = p.pointsCost ?? null;
-    const priceHtml = points
-      ? `<div class="price">🪙 ${points} pts <span style="opacity:.6">(or ${priceEth} ETH)</span></div>`
-      : `<div class="price">${priceEth} ETH</div>`;
+    const redeemHTML = (p.pointsCost)
+      ? `<button class="btn" onclick="redeemWithPoints('${p.id}', ${p.pointsCost})">Redeem for ${p.pointsCost} Points</button>`
+      : `<button class="btn" onclick="addToCart('${p.id}')">Add to Cart</button>`;
 
-    // product card
     el.innerHTML = `
-      <img id="img_${p.id}" src="${mainImage}" alt="${p.title}" class="item-img" />
+      <img id="img_${p.id}" src="${imgSrc}" alt="${p.title}" />
       <h3>${p.title}</h3>
-      <p>${p.description || ""}</p>
-      ${priceHtml}
-      ${variantOptions}
-      ${colorOptions}
-      ${sizeOptions}
-      <button class="btn" onclick="addToCart('${p.id}')">Add to cart</button>
+      <div class="price" id="price_${p.id}">${priceDisplay}</div>
+      ${variantHTML}
+      ${colorHTML}
+      ${sizeHTML}
+      ${p.sizeGuide ? `<button class="btn" onclick="openSizeGuide('${p.sizeGuide}')">Size Guide</button>` : ""}
+      <div style="margin-top:12px">${redeemHTML}</div>
     `;
+
     container.appendChild(el);
 
-    // 🌀 listeners
+    // Add listeners for variant -> update price/image if variant objects contain data
+    const variantSelect = el.querySelector(`#variant_${p.id}`);
+    const priceEl = el.querySelector(`#price_${p.id}`);
     const imgEl = el.querySelector(`#img_${p.id}`);
-    const colorSelect = el.querySelector(`#color_${p.id}`);
 
-    if (colorSelect) {
+    if (variantSelect) {
+      variantSelect.addEventListener("change", async (e) => {
+        const selected = e.target.value;
+        // if variant objects with price exist, find and use priceUSD
+        if (Array.isArray(p.variants) && typeof p.variants[0] === "object") {
+          const matched = p.variants.find(v => v.name === selected);
+          const usd = matched?.priceUSD ?? getProductUsd(p);
+          const rate = await getEthRate();
+          if (priceEl) priceEl.textContent = formatPrice(usd, rate);
+          if (matched?.images?.length && imgEl) imgEl.src = matched.images[0];
+        } else {
+          // variant is just a string — price remains the product price
+          const rate = await getEthRate();
+          if (priceEl) priceEl.textContent = formatPrice(getProductUsd(p), rate);
+        }
+      });
+    }
+
+    // color change switches image if you stored color->image mapping on product (sheet uses ColorOptions only)
+    const colorSelect = el.querySelector(`#color_${p.id}`);
+    if (colorSelect && imgEl) {
       colorSelect.addEventListener("change", (e) => {
-        const selectedColor = e.target.value;
-        // if using color-based images (future)
-        if (p.images && typeof p.images === "object" && p.images[selectedColor]) {
-          imgEl.src = p.images[selectedColor];
+        // if images are a mapping (object) stored earlier in your static products, try to use that
+        if (p.images && typeof p.images === "object" && !Array.isArray(p.images)) {
+          const v = e.target.value;
+          if (p.images[v]) imgEl.src = p.images[v];
+        } else {
+          // otherwise no per-color image available — do nothing
         }
       });
     }
   });
-}
 
+  // re-attach zoom behavior
+  attachZoomFollow();
+}
 
 /* ===== OPEN/CLOSE Helpers ===== */
 function showOverlay(){ const ov = document.getElementById('tees'); if(ov){ ov.classList.add('active'); ov.style.display='block'; } }
@@ -548,164 +570,79 @@ function openSizeGuide(url){
 }
 function closeSizeGuide(){ const modal = document.getElementById("sizeGuideModal"); if(modal){ modal.classList.remove("open"); modal.setAttribute("aria-hidden","true"); } }
 
-/* ===== CART helpers (addTapestry kept for convenience) ===== */
+/* ===== CART helpers ===== */
 function addTapestryToCart(prodId){
   const product = (PRODUCTS.tapestry||[]).find(p=>p.id===prodId);
   if(!product){ showToast("Product not found","error"); return; }
   const priceEth = product.price ?? (product.priceUSD ? product.priceUSD / (cachedEthRate||3000) : 0);
-  cart.push({ id: product.id, title: product.title, price: priceEth, priceUSD: product.priceUSD||"", color: "N/A", size:"N/A", variant: "", q:1, thumb: product.images[0] });
+  cart.push({ id: product.id, title: product.title, price: priceEth, priceUSD: product.priceUSD||"", color: "N/A", size:"N/A", variant: "", q:1, thumb: product.image || "" });
   updateCartUI();
   showToast(`${product.title} added to cart`,"success");
 }
 
-
-/* ---- Add to Cart (async to handle USD→ETH conversions) ---- */
-
-/* ---- Add to Cart (async to handle USD→ETH conversions) ---- */
+/* ---- Add to Cart (robust variant handling) ---- */
 async function addToCart(prodId) {
-  // 🧩 Find the product across all categories
+  // find product across categories
   let product = null;
   for (const cat of Object.keys(PRODUCTS)) {
     product = (PRODUCTS[cat] || []).find(p => p.id === prodId);
     if (product) break;
   }
+  if(!product){ showToast("Product not found","error"); return; }
 
-  if (!product) {
-    showToast("Product not found", "error");
-    return;
-  }
-
-  // 🧢 Handle variant-based products (tees, plushies, etc.)
-  if (product.variants && product.variants.length) {
-    const variantEl = document.getElementById(`variant_${prodId}`);
-    const colorEl = document.getElementById(`color_${prodId}`);
-    const sizeEl = document.getElementById(`size_${prodId}`);
-    const customEl = document.getElementById(`custom_${prodId}`);
-
-    // ✅ Handle both string-based and object-based variants
-    let variantName = variantEl
-      ? variantEl.value
-      : typeof product.variants[0] === "string"
-      ? product.variants[0]
-      : product.variants[0].name;
-
-    const selectedVar = Array.isArray(product.variants)
-      ? product.variants.find(v => v === variantName || v.name === variantName)
-      : null;
-
-    if (!selectedVar) {
-      showToast("Variant not found", "error");
-      console.warn("⚠️ Variant not found for", product.title, variantName, product.variants);
-      return;
-    }
-
-    const color = colorEl
-      ? colorEl.value
-      : product.colors && product.colors.length
-      ? product.colors[0]
-      : "N/A";
-
-    const size = sizeEl
-      ? sizeEl.value
-      : product.sizes && product.sizes.length
-      ? product.sizes[0]
-      : "N/A";
-
-    const customText = customEl ? customEl.value.trim() : "";
-
-    if (product.hasCustomField && !customText) {
-      showToast("Please enter your Quacker Friend ID before adding to cart.", "error");
-      return;
-    }
-
-    // 🧮 Determine price (USD → ETH)
-    const usd = product.priceUSD ?? 0;
-    const ethRate = await getEthRate();
-    const ethPrice = usd / ethRate;
-
-    // 🛒 Add to cart
-    CART.push({
-      id: prodId,
-      title: `${product.title} - ${variantName}`,
-      priceUSD: usd,
-      priceETH: ethPrice,
-      color,
-      size,
-      custom: customText,
-      qty: 1,
-    });
-
-    saveCart();
-    showToast(`${product.title} added to cart!`, "success");
-    updateCartUI();
-    return; // ✅ closes inside the variant branch
-  }
-
-  // 🧺 Simple products (no variants)
-  const usd = product.priceUSD ?? 0;
-  const ethRate = await getEthRate();
-  const ethPrice = usd / ethRate;
-
-  CART.push({
-    id: prodId,
-    title: product.title,
-    priceUSD: usd,
-    priceETH: ethPrice,
-    qty: 1,
-  });
-
-  saveCart();
-  showToast(`${product.title} added to cart!`, "success");
-  updateCartUI();
-}
-
-
-  // non-variants (tees with simple variantSelect, keychains, etc.)
+  // get form controls if present
+  const variantEl = document.getElementById(`variant_${prodId}`);
   const colorEl = document.getElementById(`color_${prodId}`);
   const sizeEl = document.getElementById(`size_${prodId}`);
   const customEl = document.getElementById(`custom_${prodId}`);
-  const variantElSimple = document.getElementById(`variant_${prodId}`);
 
-  const color = colorEl ? colorEl.value : (product.images && typeof product.images === "object" ? Object.keys(product.images)[0] : "N/A");
-  const size = sizeEl ? sizeEl.value : (product.sizes && product.sizes.length ? product.sizes[0] : "N/A");
+  const variantValue = variantEl ? variantEl.value : (Array.isArray(product.variants) && typeof product.variants[0] === "string" ? product.variants[0] : (product.variants && product.variants[0] && product.variants[0].name) || "");
+  const color = colorEl ? colorEl.value : (product.colors?.[0] || "N/A");
+  const size = sizeEl ? sizeEl.value : (product.sizes?.[0] || "N/A");
   const customText = customEl ? customEl.value.trim() : "";
-  const variant = variantElSimple ? variantElSimple.value : "";
 
   if (product.hasCustomField && !customText) {
     showToast("Please enter your Quacker Friend ID before adding to cart.", "error");
     return;
   }
 
-  // price in ETH (product may have price or priceUSD)
-  let priceEth;
-  if (typeof product.price === 'number') priceEth = product.price;
-  else if (product.priceUSD) priceEth = await convertUsdToEth(Number(product.priceUSD));
-  else priceEth = 0;
+  // compute price in ETH:
+  // - if product.variants contains objects and selected variant has priceUSD, use that
+  // - else if product.priceUSD exists, use that
+  // - else fallback to 0
+  let priceUSDToUse = 0;
 
-  const finalSize = customText ? `${size} (ID: ${customText})` : size;
-  const thumb = (Array.isArray(product.images) ? product.images[0] : (product.images?.Black || (product.images ? Object.values(product.images)[0] : ""))) || "";
-
-  // merge logic: include variant in identity (so tees + minis with same id but different variant don't merge)
-  const existing = cart.find((item) => item.id === product.id && item.color === color && item.size === size && item.variant === variant && (product.hasCustomField ? item.customText === customText : true));
-  if (existing) {
-    existing.q = (existing.q || 1) + 1;
+  if (Array.isArray(product.variants) && product.variants.length && typeof product.variants[0] === "object") {
+    const matched = product.variants.find(v => v.name === variantValue) || product.variants[0];
+    priceUSDToUse = matched.priceUSD ?? product.priceUSD ?? 0;
   } else {
+    // variants are simple strings (from sheet) — price comes from product.priceUSD
+    priceUSDToUse = product.priceUSD ?? 0;
+  }
+
+  const priceEth = await convertUsdToEth(Number(priceUSDToUse || 0));
+  const thumb = product.image || (product.images && (Array.isArray(product.images) ? product.images[0] : Object.values(product.images)[0])) || "";
+
+  // merge: include variant/color/size/customText to identify unique cart lines
+  const existing = cart.find(item => item.id === product.id && item.variant === variantValue && item.color === color && item.size === size && (product.hasCustomField ? item.customText === customText : true));
+  if (existing) existing.q += 1;
+  else {
     cart.push({
       id: product.id,
       title: product.title,
+      variant: variantValue || "",
       price: Number(priceEth),
-      priceUSD: product.priceUSD ?? "",
+      priceUSD: priceUSDToUse || product.priceUSD || "",
       color,
-      size: finalSize,
-      customText: customText || "",
-      variant: variant || "",
+      size,
+      customText,
       q: 1,
-      thumb,
+      thumb
     });
   }
 
   updateCartUI();
-  showToast(`${product.title} (${color}, ${size}${variant ? `, ${variant}` : ""}) added to cart`, "success");
+  showToast(`${product.title} (${variantValue || "Default"}, ${color}, ${size}) added to cart`, "success");
 }
 
 /* ===== CART UI ===== */
@@ -746,17 +683,6 @@ function updateCartUI(){
 function changeQty(index,val){ const v = Number(val)||1; cart[index].q = Math.max(1,v); updateCartUI(); }
 function removeFromCart(index){ cart.splice(index,1); updateCartUI(); }
 
-/* ===== CART MODAL UI ===== */
-const cartModal = document.getElementById("cartModal");
-const openCartBtn = document.getElementById("openCartBtn");
-if(openCartBtn) openCartBtn.addEventListener("click", ()=> {
-  if(cart.length === 0){ showToast("Cart is empty", "info"); return; }
-  if(cartModal){ cartModal.classList.add("open"); cartModal.setAttribute("aria-hidden","false"); }
-  showOverlay();
-  updateCartUI();
-});
-function closeCart(){ if(cartModal){ cartModal.classList.remove("open"); cartModal.setAttribute("aria-hidden","true"); } hideOverlay(); }
-
 /* ===== WALLET & PROFILE ===== */
 async function connectWallet(){
   if(!window.ethereum){ showToast("MetaMask not found","error"); return; }
@@ -772,7 +698,6 @@ async function connectWallet(){
     if(walletAddr) walletAddr.innerText = userAddress;
     showToast("Wallet connected","success");
     await updatePointsDisplay();
-
   }catch(err){
     console.error(err);
     showToast("Connect failed","error");
@@ -781,6 +706,7 @@ async function connectWallet(){
 const connectBtn = document.getElementById("connectBtn");
 if(connectBtn) connectBtn.addEventListener("click", connectWallet);
 
+/* Profile toggle & NFT count (keeps your previous logic) */
 const profileBtn = document.getElementById("profileBtn");
 if(profileBtn) profileBtn.addEventListener("click", async ()=>{
   const panel = document.getElementById("profileSection");
@@ -802,8 +728,8 @@ if(profileBtn) profileBtn.addEventListener("click", async ()=>{
 async function switchWallet(){ try{ await ethereum.request({ method:"wallet_requestPermissions", params:[{eth_accounts:{}}] }); const accounts = await ethereum.request({ method:"eth_requestAccounts" }); userAddress = accounts[0]; const walletAddr = document.getElementById("walletAddr"); if(walletAddr) walletAddr.innerText = userAddress; showToast("Wallet switched","success"); }catch(err){ console.error(err); } }
 function disconnectWallet(){ userAddress = null; web3 = null; const cbo = document.getElementById("connectBtn"); if(cbo) cbo.innerText = "Connect Wallet"; const profileBtn = document.getElementById("profileBtn"); if(profileBtn) profileBtn.style.display = "none"; const profileSection = document.getElementById("profileSection"); if(profileSection) profileSection.style.display = "none"; showToast("Wallet disconnected","info"); }
 
-  /* ===== Redeem Points Display ===== */
-  async function updatePointsDisplay() {
+/* ===== Redeem Points Display ===== */
+async function updatePointsDisplay() {
   const wallet = (userAddress || "").toLowerCase();
   const el = document.getElementById("pointsDisplay");
   if (!el) return;
@@ -851,15 +777,15 @@ const checkoutBtn = document.getElementById("checkoutBtn");
 if(checkoutBtn) checkoutBtn.addEventListener("click", checkout);
 
 async function checkout(){
-  // 🧾 Check that user entered shipping address
-const shippingAddress = document.getElementById("userAddressInput")?.value || "";
- const referrer = document.getElementById("referrerInput").value.trim();
+  // ensure shipping address present for physical orders
+  const shippingAddress = document.getElementById("userAddressInput")?.value || "";
+  const referrer = document.getElementById("referrerInput")?.value?.trim() || "";
 
-if (!shippingAddress.trim()) {
-  showToast("Please enter your shipping address before completing your purchase!", "error");
-  return; // stop the function here if empty
-}
-  
+  if (!shippingAddress.trim()) {
+    showToast("Please enter your shipping address before completing your purchase!", "error");
+    return;
+  }
+
   try{
     if(!window.ethereum){ showToast("MetaMask not found","error"); return; }
     if(!userAddress){ showToast("Connect wallet first","error"); return; }
@@ -873,10 +799,10 @@ if (!shippingAddress.trim()) {
       }
     }catch(switchErr){ console.warn("Chain switch issue:", switchErr); }
 
-    // compute total ETH using stored ci.price (ETH). If some items have priceUSD only, convert (but addToCart already sets price in ETH when possible)
+    // compute total ETH using stored ci.price (ETH)
     let totalEth = cart.reduce((s,i)=> s + ((Number(i.price) || 0) * (i.q || 1)), 0);
 
-    // fallback: if totalEth is 0 but there are priceUSD entries, sum and convert
+    // fallback: convert priceUSD
     if(totalEth === 0) {
       let totalUsd = 0;
       cart.forEach(ci => { totalUsd += Number(ci.priceUSD || 0) * (ci.q || 1); });
@@ -884,7 +810,7 @@ if (!shippingAddress.trim()) {
       totalEth = totalUsd / rate;
     }
 
-     let txHash = "";
+    let txHash = "";
     const isRedeemOnly = cart.every(ci => ci.redeem);
 
     if (!isRedeemOnly) {
@@ -906,10 +832,9 @@ if (!shippingAddress.trim()) {
       showToast("Redeeming item with points...", "info", 4000);
     }
 
-
-    // log each cart item (includes variant field)
+    // log each cart item. If redeem -> payload.redeem & cost so Apps Script will handle point deduction.
     for (const ci of cart) {
-        const payload = {
+      const payload = {
         wallet: userAddress,
         variant: ci.variant || "",
         color: ci.color || "",
@@ -920,7 +845,6 @@ if (!shippingAddress.trim()) {
         referrer
       };
 
-      // Distinguish between redeemed and purchased
       if (ci.redeem) {
         payload.redeem = ci.title;
         payload.cost = ci.cost;
@@ -937,31 +861,30 @@ if (!shippingAddress.trim()) {
       } catch (logErr) {
         console.warn("Logging failed for item", payload, logErr);
       }
+    }
 
-}
-
-
+    // clear cart + UI
     cart = [];
-updateCartUI();
-closeCart();
+    updateCartUI();
+    closeCart();
 
-if (isRedeemOnly) {
-  showToast("✅ Redemption logged successfully!", "success", 4000);
-  updatePointsDisplay(); // refresh points right away
-} else {
-  showToast("✅ Purchase logged successfully!", "success", 4000);
-}
- const baseScanUrl = `https://basescan.org/tx/${txHash}`;
+    if (isRedeemOnly) {
+      showToast("✅ Redemption logged successfully!", "success", 4000);
+      updatePointsDisplay();
+    } else {
+      showToast("✅ Purchase logged successfully!", "success", 4000);
+    }
+
+    const baseScanUrl = `https://basescan.org/tx/${txHash}`;
     const linkToast = document.createElement("div");
     linkToast.className = "toast success";
     linkToast.innerHTML = `✅ Purchase sent — <a href="${baseScanUrl}" target="_blank" style="color:#fff;text-decoration:underline">View on BaseScan</a>`;
     document.getElementById("toast-container").appendChild(linkToast);
     setTimeout(()=>linkToast.remove(), 8000);
-    
+
   }catch(err){ console.error("checkout error", err); showToast("Checkout failed", "error"); }
 }
 
- 
 /* ===== POINTS REDEMPTION ===== */
 async function redeemWithPoints(productId, cost) {
   const wallet = (userAddress || "").toLowerCase();
@@ -977,7 +900,6 @@ async function redeemWithPoints(productId, cost) {
     return;
   }
 
-  // ✅ Check user points before allowing redemption
   try {
     const checkRes = await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`);
     const checkData = await checkRes.json();
@@ -997,7 +919,6 @@ async function redeemWithPoints(productId, cost) {
     return;
   }
 
-  // ✅ Add to cart as redeemable
   const alreadyInCart = cart.find(i => i.id === productId && i.redeem);
   if (alreadyInCart) {
     showToast("Item already added for redemption.", "info");
@@ -1021,10 +942,6 @@ async function redeemWithPoints(productId, cost) {
   showToast(`🪙 "${product.title}" added to cart for ${cost} points`, "success");
 }
 
-
-
-
-
 /* ===== MENU & overlay safety ===== */
 const menuBtn = document.getElementById('menuBtn');
 const shopMenu = document.getElementById('shopMenu');
@@ -1032,24 +949,16 @@ if(menuBtn && shopMenu) {
   menuBtn.addEventListener('click', (e)=>{ e.stopPropagation(); shopMenu.style.display = shopMenu.style.display === "flex" ? "none" : "flex"; });
   document.addEventListener('click', (e)=>{ if(!menuBtn.contains(e.target) && !shopMenu.contains(e.target)){ shopMenu.style.display = "none"; } });
 }
-
-// ensure overlay never blocks clicks if not active
 hideOverlay();
 
 /* ===== INIT ===== */
-document.addEventListener("DOMContentLoaded", () => {
-  loadProducts().then(() => {
-    const shopMenu = document.getElementById("shopMenu");
-    if (shopMenu) {
-      shopMenu.innerHTML = Object.keys(PRODUCTS)
-        .map(cat => `<button onclick="showCategory('${cat}')">${cat}</button>`)
-        .join("");
-    }
-  });
+document.addEventListener('DOMContentLoaded', async ()=>{
+  // load items from sheet first (will render category when loaded)
+  await loadProducts();
+
+  // if sheet failed or returned no products, you can optionally fill PRODUCTS with a local fallback here.
+  // e.g. if (Object.keys(PRODUCTS).length === 0) { PRODUCTS = yourFallbackObject; await showCategory(currentCategory); }
 });
-
-
-
 
 /* --- zoom follow helpers --- */
 function attachZoomFollow(){
@@ -1084,6 +993,7 @@ function attachZoomFollow(){
   });
 }
 </script>
+
 
 </body>
 </html>
