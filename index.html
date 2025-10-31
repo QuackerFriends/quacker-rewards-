@@ -468,8 +468,10 @@ async function loadProducts() {
 }
   
 
+
 /* ===== RENDER PRODUCT CARD ===== */
 function renderProductCard(product, ethRate) {
+  // Parse variant pricing
   const variantPricesMap = {};
   if (product.VariantPrices) {
     product.VariantPrices.split(",").forEach(vp => {
@@ -478,9 +480,9 @@ function renderProductCard(product, ethRate) {
     });
   }
 
-  // Determine initial price (first variant or default)
+  // Determine initial price
   let initialPrice = product.priceUSD || 0;
-  if (product.variants && product.variants.length && variantPricesMap[product.variants[0]]) {
+  if (product.variants && product.variants.length && variantPricesMap[product.variants[0]] != null) {
     initialPrice = variantPricesMap[product.variants[0]];
   }
 
@@ -488,35 +490,26 @@ function renderProductCard(product, ethRate) {
     ? `${product.pointsCost} Points`
     : formatPrice(initialPrice, ethRate);
 
+  // Build variant, color, size inputs
   let variantInputs = "";
 
   if (product.variants && product.variants.length) {
-    const variantOptions = product.variants
-      .map(v => `<option value="${v}">${v}</option>`)
-      .join("");
-    variantInputs += `
-      <label>Variant:</label>
-      <select id="variant_${product.id}" class="variant-select">${variantOptions}</select>
-    `;
+    const options = product.variants.map(v => `<option value="${v}">${v}</option>`).join("");
+    variantInputs += `<label>Variant:</label><select id="variant_${product.id}" class="variant-select">${options}</select>`;
   }
 
   if (product.colors && product.colors.length) {
-    const colorOptions = product.colors.map(c => `<option value="${c}">${c}</option>`).join("");
-    variantInputs += `
-      <label>Color:</label>
-      <select id="color_${product.id}" class="color-select">${colorOptions}</select>
-    `;
+    const options = product.colors.map(c => `<option value="${c}">${c}</option>`).join("");
+    variantInputs += `<label>Color:</label><select id="color_${product.id}" class="color-select">${options}</select>`;
   }
 
   if (product.sizes && product.sizes.length) {
-    const sizeOptions = product.sizes.map(s => `<option value="${s}">${s}</option>`).join("");
-    variantInputs += `
-      <label>Size:</label>
-      <select id="size_${product.id}" class="size-select">${sizeOptions}</select>
-    `;
+    const options = product.sizes.map(s => `<option value="${s}">${s}</option>`).join("");
+    variantInputs += `<label>Size:</label><select id="size_${product.id}" class="size-select">${options}</select>`;
   }
 
-  const customText = product.CustomInput || "";
+  // Custom input
+  const customText = product.CustomInput || product.custominput || "";
   if (customText.trim() !== "") {
     variantInputs += `
       <div class="custom-input">
@@ -527,6 +520,7 @@ function renderProductCard(product, ethRate) {
     `;
   }
 
+  // Buttons
   let btnHTML = "";
   if (product.pointsCost && Number(product.pointsCost) > 0) {
     btnHTML += `<button class="btn secondary" onclick="redeemWithPoints('${product.id}', ${product.pointsCost})">🪙 Redeem (${product.pointsCost} pts)</button>`;
@@ -535,7 +529,7 @@ function renderProductCard(product, ethRate) {
     btnHTML += `<button class="btn" onclick="addToCart('${product.id}')">🛒 Add to Cart</button>`;
   }
 
-  // ✅ Only one return at the end
+  // Return final card
   return `
     <div class="item" style="background:var(--card);padding:16px;border-radius:12px;box-shadow:var(--shadow);">
       <img src="${product.image || ""}" alt="${product.title || ""}" style="width:100%;border-radius:8px;object-fit:contain;">
@@ -731,6 +725,30 @@ if (p.CustomInput && p.CustomInput.trim() !== "") {
   attachZoomFollow();
 }
 
+  /* ===== UPDATE PRICE ON VARIANT CHANGE ===== */
+function attachVariantPriceListeners() {
+  Object.values(PRODUCTS).flat().forEach(product => {
+    const selectEl = document.getElementById(`variant_${product.id}`);
+    if (selectEl && product.VariantPrices) {
+      const variantPrices = {};
+      product.VariantPrices.split(",").forEach(vp => {
+        const [name, price] = vp.split(":");
+        if (name && price) variantPrices[name.trim()] = Number(price.trim());
+      });
+
+      selectEl.addEventListener("change", async function() {
+        const selectedVariant = selectEl.value;
+        const newPriceUSD = variantPrices[selectedVariant] != null
+          ? variantPrices[selectedVariant]
+          : product.priceUSD || 0;
+        const ethRate = await getEthRate();
+        const priceTextEl = selectEl.closest(".item").querySelector("p");
+        if (priceTextEl) priceTextEl.textContent = formatPrice(newPriceUSD, ethRate);
+      });
+    }
+  });
+}
+
 /* ===== SLIDER FUNCTIONS ===== */
 function nextSlide(id) {
   const slides = document.querySelectorAll(`#slider_${id} .slide`);
@@ -784,7 +802,7 @@ async function addToCart(productId) {
   const customEl = document.getElementById(`custom_${productId}`);
   const customInput = customEl ? customEl.value.trim() : "";
 
-  // Require custom input if field exists
+  // Require custom input if defined
   if ((product.CustomInput || product.custominput) && !customInput) {
     showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
     if (customEl) customEl.focus();
@@ -798,21 +816,19 @@ async function addToCart(productId) {
   const rate = await getEthRate();
   let priceUSD = getProductUsd(product);
 
-  // Variant pricing from sheet (VariantPrices: "T-Shirt:0,Drop Shoulder:10")
+  // Variant pricing from sheet
   if (product.VariantPrices && variant) {
     const variantPrices = {};
     product.VariantPrices.split(",").forEach(vp => {
       const [name, price] = vp.split(":");
       if (name && price) variantPrices[name.trim()] = Number(price.trim());
     });
-    if (variantPrices[variant] != null) {
-      priceUSD = variantPrices[variant];
-    }
+    if (variantPrices[variant] != null) priceUSD = variantPrices[variant];
   }
 
   const priceETH = priceUSD / rate;
 
-  // Add item to cart
+  // Add to cart
   const item = {
     id: product.id,
     title: product.title,
