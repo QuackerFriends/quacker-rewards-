@@ -533,7 +533,8 @@ function renderProductCard(product, ethRate) {
     `;
   }
 
-  return `
+  // --- Build final card HTML ---
+  const cardHTML = `
     <div class="item" style="background:var(--card);padding:16px;border-radius:12px;box-shadow:var(--shadow);">
       <img src="${product.image || ""}" alt="${product.title || ""}" style="width:100%;border-radius:8px;object-fit:contain;">
       <h3>${product.title}</h3>
@@ -545,7 +546,10 @@ function renderProductCard(product, ethRate) {
       </div>
     </div>
   `;
+
+  return cardHTML;
 }
+
 
   // --- Buttons ---
   let btnHTML = "";
