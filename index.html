@@ -772,27 +772,19 @@ async function addToCart(productId) {
   const rate = await getEthRate();
   let priceUSD = getProductUsd(product);
 
-  // ✅ Variant-specific pricing
-if (product.VariantPrices) {
-  const variantPriceMap = {};
-  product.VariantPrices.split(",").forEach(vp => {
-    const [name, price] = vp.split(":");
-    variantPriceMap[name.trim()] = Number(price.trim());
-  });
-  if (variantPriceMap[variant] !== undefined) {
-    priceUSD = variantPriceMap[variant];
-  }
-}
-  let priceETH = priceUSD / rate;
-  
-
-  if (variantSel && product.variants && typeof product.variants[0] === "object") {
-    const matched = product.variants.find(v => v.name === variant);
-    if (matched?.priceUSD) {
-      priceUSD = matched.priceUSD;
-      priceETH = priceUSD / rate;
+  // ✅ Variant pricing from sheet
+  if (product.VariantPrices) {
+    const variantPrices = {};
+    product.VariantPrices.split(",").forEach(vp => {
+      const [name, price] = vp.split(":");
+      if (name && price) variantPrices[name.trim()] = Number(price);
+    });
+    if (variant && variantPrices[variant] != null) {
+      priceUSD = variantPrices[variant];
     }
   }
+
+  const priceETH = priceUSD / rate;
 
   // ✅ Add item to cart
   const item = {
@@ -813,6 +805,7 @@ if (product.VariantPrices) {
   cart.push(item);
   updateCartUI();
   showToast(`🛒 "${product.title}" added to cart`, "success");
+}
 }
 
 
