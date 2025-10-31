@@ -480,7 +480,7 @@ function renderProductCard(product, ethRate) {
     });
   }
 
-  // Determine initial price
+  // Determine initial price (default or first variant)
   let initialPrice = product.priceUSD || 0;
   if (product.variants && product.variants.length && variantPricesMap[product.variants[0]] != null) {
     initialPrice = variantPricesMap[product.variants[0]];
@@ -525,7 +525,7 @@ function renderProductCard(product, ethRate) {
   if (product.pointsCost && Number(product.pointsCost) > 0) {
     btnHTML += `<button class="btn secondary" onclick="redeemWithPoints('${product.id}', ${product.pointsCost})">🪙 Redeem (${product.pointsCost} pts)</button>`;
   }
-  if (product.priceUSD && Number(product.priceUSD) > 0) {
+  if ((product.priceUSD || (product.VariantPrices && Object.keys(variantPricesMap).length)) > 0) {
     btnHTML += `<button class="btn" onclick="addToCart('${product.id}')">🛒 Add to Cart</button>`;
   }
 
@@ -541,23 +541,7 @@ function renderProductCard(product, ethRate) {
   `;
 }
 
-  // --- Buttons ---
-  let btnHTML = "";
-  if (product.pointsCost && Number(product.pointsCost) > 0) {
-    btnHTML += `
-      <button class="btn secondary" onclick="redeemWithPoints('${product.id}', ${product.pointsCost})">
-        🪙 Redeem (${product.pointsCost} pts)
-      </button>
-    `;
-  }
-  if (product.priceUSD && Number(product.priceUSD) > 0) {
-    btnHTML += `
-      <button class="btn" onclick="addToCart('${product.id}')">
-        🛒 Add to Cart
-      </button>
-    `;
-  }
-
+ 
  
 
 /* ===== RENDER CATEGORY (with image carousel) ===== */
@@ -790,6 +774,7 @@ async function addToCart(productId) {
   const customEl = document.getElementById(`custom_${productId}`);
   const customInput = customEl ? customEl.value.trim() : "";
 
+  // Require custom input if exists
   if ((product.CustomInput || product.custominput) && !customInput) {
     showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
     if (customEl) customEl.focus();
@@ -800,9 +785,9 @@ async function addToCart(productId) {
   const color = colorSel ? colorSel.value : "";
   const size = sizeSel ? sizeSel.value : "";
 
-  // Grab displayed price
-  const card = variantSel ? variantSel.closest(".item") : null;
+  // Grab displayed price from the card element
   let priceUSD = product.priceUSD || 0;
+  const card = variantSel ? variantSel.closest(".item") : null;
   if (card) {
     const priceEl = card.querySelector("p");
     if (priceEl) {
