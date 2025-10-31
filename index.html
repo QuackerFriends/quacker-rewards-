@@ -468,10 +468,8 @@ async function loadProducts() {
 }
   
 
-
 /* ===== RENDER PRODUCT CARD ===== */
 function renderProductCard(product, ethRate) {
-  // Parse variant pricing
   const variantPricesMap = {};
   if (product.VariantPrices) {
     product.VariantPrices.split(",").forEach(vp => {
@@ -480,7 +478,6 @@ function renderProductCard(product, ethRate) {
     });
   }
 
-  // Determine initial price (default or first variant)
   let initialPrice = product.priceUSD || 0;
   if (product.variants && product.variants.length && variantPricesMap[product.variants[0]] != null) {
     initialPrice = variantPricesMap[product.variants[0]];
@@ -490,7 +487,6 @@ function renderProductCard(product, ethRate) {
     ? `${product.pointsCost} Points`
     : formatPrice(initialPrice, ethRate);
 
-  // Build variant, color, size inputs
   let variantInputs = "";
 
   if (product.variants && product.variants.length) {
@@ -508,7 +504,6 @@ function renderProductCard(product, ethRate) {
     variantInputs += `<label>Size:</label><select id="size_${product.id}" class="size-select">${options}</select>`;
   }
 
-  // Custom input
   const customText = product.CustomInput || product.custominput || "";
   if (customText.trim() !== "") {
     variantInputs += `
@@ -520,7 +515,6 @@ function renderProductCard(product, ethRate) {
     `;
   }
 
-  // Buttons
   let btnHTML = "";
   if (product.pointsCost && Number(product.pointsCost) > 0) {
     btnHTML += `<button class="btn secondary" onclick="redeemWithPoints('${product.id}', ${product.pointsCost})">🪙 Redeem (${product.pointsCost} pts)</button>`;
@@ -529,17 +523,33 @@ function renderProductCard(product, ethRate) {
     btnHTML += `<button class="btn" onclick="addToCart('${product.id}')">🛒 Add to Cart</button>`;
   }
 
-  // Final card HTML
-  return `
+  // --- Card HTML ---
+  const cardHTML = `
     <div class="item" style="background:var(--card);padding:16px;border-radius:12px;box-shadow:var(--shadow);">
       <img src="${product.image || ""}" alt="${product.title || ""}" style="width:100%;border-radius:8px;object-fit:contain;">
       <h3>${product.title}</h3>
-      <p>${priceText}</p>
+      <p id="price_${product.id}">${priceText}</p>
       ${variantInputs}
       <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">${btnHTML}</div>
     </div>
   `;
+
+  // --- Add event listener to update price on variant change ---
+  setTimeout(() => { // timeout to ensure DOM is rendered
+    const variantSelect = document.getElementById(`variant_${product.id}`);
+    const priceEl = document.getElementById(`price_${product.id}`);
+    if (variantSelect && priceEl) {
+      variantSelect.addEventListener("change", () => {
+        const selected = variantSelect.value;
+        const newPrice = variantPricesMap[selected] != null ? variantPricesMap[selected] : product.priceUSD || 0;
+        priceEl.innerText = formatPrice(newPrice, ethRate);
+      });
+    }
+  }, 100);
+
+  return cardHTML;
 }
+
 
  
  
