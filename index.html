@@ -558,19 +558,7 @@ function renderProductCard(product, ethRate) {
     `;
   }
 
-  // --- Return final product card ---
-  return `
-    <div class="item" style="background:var(--card);padding:16px;border-radius:12px;box-shadow:var(--shadow);">
-      <img src="${product.image || ""}" alt="${product.title || ""}" style="width:100%;border-radius:8px;object-fit:contain;">
-      <h3>${product.title}</h3>
-      <p>${priceText}</p>
-      ${variantInputs}
-      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">${btnHTML}</div>
-    </div>
-  `;
-}
-
-
+ 
 
 /* ===== RENDER CATEGORY (with image carousel) ===== */
 async function showCategory(cat) {
