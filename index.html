@@ -691,17 +691,33 @@ if (p.CustomInput && p.CustomInput.trim() !== "") {
     const imgEl = el.querySelector(`#img_${p.id}`);
 
     if (variantSelect) {
-      variantSelect.addEventListener("change", async (e) => {
-        const selected = e.target.value;
-        if (Array.isArray(p.variants) && typeof p.variants[0] === "object") {
-          const matched = p.variants.find(v => v.name === selected);
-          const usd = matched?.priceUSD ?? getProductUsd(p);
-          const rate = await getEthRate();
-          if (priceEl) priceEl.textContent = formatPrice(usd, rate);
-          if (matched?.images?.length && imgEl) imgEl.src = matched.images[0];
-        }
-      });
+  variantSelect.addEventListener("change", async (e) => {
+    const selected = e.target.value;
+    const rate = await getEthRate();
+
+    let newUsd = getProductUsd(p);
+
+    // Case 1: variant objects with their own priceUSD
+    if (Array.isArray(p.variants) && typeof p.variants[0] === "object") {
+      const matched = p.variants.find(v => v.name === selected);
+      if (matched?.priceUSD) newUsd = matched.priceUSD;
+      if (matched?.images?.length && imgEl) imgEl.src = matched.images[0];
     }
+
+    // Case 2: sheet variant + VariantPrices string
+    else if (p.VariantPrices) {
+      const variantPricesMap = {};
+      p.VariantPrices.split(",").forEach(vp => {
+        const [name, price] = vp.split(":");
+        if (name && price) variantPricesMap[name.trim()] = Number(price.trim());
+      });
+      if (variantPricesMap[selected] != null) newUsd = variantPricesMap[selected];
+    }
+
+    if (priceEl) priceEl.textContent = formatPrice(newUsd, rate);
+  });
+}
+
   });
 
   attachZoomFollow();
