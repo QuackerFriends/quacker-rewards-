@@ -488,20 +488,15 @@ function renderProductCard(product, ethRate) {
     ? `${product.pointsCost} Points`
     : formatPrice(initialPrice, ethRate);
 
-  // --- Variants / Options ---
   let variantInputs = "";
 
   if (product.variants && product.variants.length) {
     const variantOptions = product.variants
-      .map(v => `<option value="${typeof v === "string" ? v : v.name}">
-        ${typeof v === "string" ? v : v.name}
-      </option>`)
+      .map(v => `<option value="${v}">${v}</option>`)
       .join("");
     variantInputs += `
       <label>Variant:</label>
-      <select id="variant_${product.id}" class="variant-select">
-        ${variantOptions}
-      </select>
+      <select id="variant_${product.id}" class="variant-select">${variantOptions}</select>
     `;
   }
 
@@ -521,8 +516,7 @@ function renderProductCard(product, ethRate) {
     `;
   }
 
-  // ✅ Custom Input
-  const customText = product.CustomInput || product.custominput || "";
+  const customText = product.CustomInput || "";
   if (customText.trim() !== "") {
     variantInputs += `
       <div class="custom-input">
@@ -533,23 +527,25 @@ function renderProductCard(product, ethRate) {
     `;
   }
 
-  // --- Build final card HTML ---
-  const cardHTML = `
+  let btnHTML = "";
+  if (product.pointsCost && Number(product.pointsCost) > 0) {
+    btnHTML += `<button class="btn secondary" onclick="redeemWithPoints('${product.id}', ${product.pointsCost})">🪙 Redeem (${product.pointsCost} pts)</button>`;
+  }
+  if (product.priceUSD && Number(product.priceUSD) > 0) {
+    btnHTML += `<button class="btn" onclick="addToCart('${product.id}')">🛒 Add to Cart</button>`;
+  }
+
+  // ✅ Only one return at the end
+  return `
     <div class="item" style="background:var(--card);padding:16px;border-radius:12px;box-shadow:var(--shadow);">
       <img src="${product.image || ""}" alt="${product.title || ""}" style="width:100%;border-radius:8px;object-fit:contain;">
       <h3>${product.title}</h3>
       <p>${priceText}</p>
       ${variantInputs}
-      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-        ${product.pointsCost ? `<button class="btn secondary" onclick="redeemWithPoints('${product.id}', ${product.pointsCost})">🪙 Redeem (${product.pointsCost} pts)</button>` : ""}
-        ${product.priceUSD ? `<button class="btn" onclick="addToCart('${product.id}')">🛒 Add to Cart</button>` : ""}
-      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">${btnHTML}</div>
     </div>
   `;
-
-  return cardHTML;
 }
-
 
   // --- Buttons ---
   let btnHTML = "";
@@ -788,7 +784,7 @@ async function addToCart(productId) {
   const customEl = document.getElementById(`custom_${productId}`);
   const customInput = customEl ? customEl.value.trim() : "";
 
-  // ✅ Require custom input if field exists
+  // Require custom input if field exists
   if ((product.CustomInput || product.custominput) && !customInput) {
     showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
     if (customEl) customEl.focus();
@@ -802,7 +798,7 @@ async function addToCart(productId) {
   const rate = await getEthRate();
   let priceUSD = getProductUsd(product);
 
-  // ✅ Variant pricing from sheet
+  // Variant pricing from sheet (VariantPrices: "T-Shirt:0,Drop Shoulder:10")
   if (product.VariantPrices && variant) {
     const variantPrices = {};
     product.VariantPrices.split(",").forEach(vp => {
@@ -816,7 +812,7 @@ async function addToCart(productId) {
 
   const priceETH = priceUSD / rate;
 
-  // ✅ Add item to cart
+  // Add item to cart
   const item = {
     id: product.id,
     title: product.title,
@@ -836,7 +832,6 @@ async function addToCart(productId) {
   updateCartUI();
   showToast(`🛒 "${product.title}" added to cart`, "success");
 }
-
 
 /* ===== CART UI (Improved) ===== */
 function updateCartUI() {
