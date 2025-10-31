@@ -782,28 +782,25 @@ async function addToCart(productId) {
   const colorSel = document.getElementById(`color_${productId}`);
   const sizeSel = document.getElementById(`size_${productId}`);
   const customEl = document.getElementById(`custom_${productId}`);
+  const priceEl = document.getElementById(`price_${productId}`);
+
+  const variant = variantSel ? variantSel.value : "";
+  const color = colorSel ? colorSel.value : "";
+  const size = sizeSel ? sizeSel.value : "";
   const customInput = customEl ? customEl.value.trim() : "";
 
-  // Require custom input if exists
+  // ✅ Require custom input if field exists
   if ((product.CustomInput || product.custominput) && !customInput) {
     showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
     if (customEl) customEl.focus();
     return;
   }
 
-  const variant = variantSel ? variantSel.value : "";
-  const color = colorSel ? colorSel.value : "";
-  const size = sizeSel ? sizeSel.value : "";
-
-  // Grab displayed price from the card element
+  // ✅ Read displayed USD price directly from DOM
   let priceUSD = product.priceUSD || 0;
-  const card = variantSel ? variantSel.closest(".item") : null;
-  if (card) {
-    const priceEl = card.querySelector("p");
-    if (priceEl) {
-      const match = priceEl.innerText.match(/\$(\d+(\.\d+)?)/);
-      if (match) priceUSD = parseFloat(match[1]);
-    }
+  if (priceEl) {
+    const match = priceEl.innerText.match(/\$([\d.]+)/);
+    if (match && match[1]) priceUSD = parseFloat(match[1]);
   }
 
   const rate = await getEthRate();
