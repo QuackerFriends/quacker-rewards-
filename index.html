@@ -431,8 +431,9 @@ async function loadProducts() {
           sizes: sizesFromSheet,
           sizeGuide: item.SizeGuide || "",
           image: item.ImageURL ? String(item.ImageURL).trim() : "",
-          active: item.Active === true || String(item.Active).toUpperCase() === "TRUE"
-          
+          active: item.Active === true || String(item.Active).toUpperCase() === "TRUE",
+          CustomInput: item.CustomInput || "",   // ✅ THIS IS CRITICAL
+
 
         });
 
