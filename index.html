@@ -745,9 +745,8 @@ async function addToCart(productId) {
   const variantSel = document.getElementById(`variant_${productId}`);
   const colorSel = document.getElementById(`color_${productId}`);
   const sizeSel = document.getElementById(`size_${productId}`);
-  const customEl = document.getElementById(`custom_${p.id}`);
- const customInput = customEl ? customEl.value.trim() : "";
-
+  const customEl = document.getElementById(`custom_${productId}`);
+  const customInput = customEl ? customEl.value.trim() : "";
 
   const variant = variantSel ? variantSel.value : "";
   const color = colorSel ? colorSel.value : "";
@@ -777,9 +776,8 @@ async function addToCart(productId) {
     price: priceETH,
     redeem: false,
     cost: 0,
-    thumb: product.image || "" ,
-      customInput
-
+    thumb: product.image || "",
+    customInput
   };
 
   cart.push(item);
@@ -1088,7 +1086,7 @@ if (!isRedeemOnly && txHash) {
   }catch(err){ console.error("checkout error", err); showToast("Checkout failed", "error"); }
 }
 
-/* ===== REDEEM WITH POINTS (LIVE CHECK + WORKING VARIANTS) ===== */
+/* ===== REDEEM WITH POINTS (LIVE CHECK + WORKING VARIANTS + CUSTOM INPUT) ===== */
 async function redeemWithPoints(productId, cost) {
   const wallet = (userAddress || "").toLowerCase();
   if (!wallet) {
@@ -1105,13 +1103,12 @@ async function redeemWithPoints(productId, cost) {
       return;
     }
 
-    // get variant/color/size selections
+    // get variant/color/size/custom input selections
     const variantSel = document.getElementById(`variant_${productId}`);
     const colorSel = document.getElementById(`color_${productId}`);
     const sizeSel = document.getElementById(`size_${productId}`);
-    const customEl = document.getElementById(`custom_${id}`);
-   const customInput = customEl ? customEl.value.trim() : "";
-
+    const customEl = document.getElementById(`custom_${productId}`);
+    const customInput = customEl ? customEl.value.trim() : "";
 
     const variant = variantSel ? variantSel.value : "";
     const color = colorSel ? colorSel.value : "";
@@ -1146,11 +1143,12 @@ async function redeemWithPoints(productId, cost) {
       priceUSD: 0,
       q: 1,
       redeem: true,
-      cost: cost,
+      cost,
       variant,
       color,
       size,
-      thumb: product.image || ""
+      thumb: product.image || "",
+      customInput
     });
 
     updateCartUI();
@@ -1163,7 +1161,6 @@ async function redeemWithPoints(productId, cost) {
     showToast("Error redeeming item: " + err.message, "error");
   }
 }
-
 
 /* ===== MENU & overlay safety ===== */
 const menuBtn = document.getElementById('menuBtn');
