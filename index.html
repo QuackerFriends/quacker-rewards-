@@ -470,13 +470,23 @@ async function loadProducts() {
 
 /* ===== RENDER PRODUCT CARD ===== */
 function renderProductCard(product, ethRate) {
-  console.log("Product sample:", product); // optional debug line
+  const variantPricesMap = {};
+  if (product.VariantPrices) {
+    product.VariantPrices.split(",").forEach(vp => {
+      const [name, price] = vp.split(":");
+      if (name && price) variantPricesMap[name.trim()] = Number(price.trim());
+    });
+  }
 
-  const priceText = product.priceUSD
-    ? formatPrice(product.priceUSD, ethRate)
-    : product.pointsCost
+  // Determine initial price (first variant or default)
+  let initialPrice = product.priceUSD || 0;
+  if (product.variants && product.variants.length && variantPricesMap[product.variants[0]]) {
+    initialPrice = variantPricesMap[product.variants[0]];
+  }
+
+  const priceText = product.pointsCost
     ? `${product.pointsCost} Points`
-    : "Coming soon";
+    : formatPrice(initialPrice, ethRate);
 
   // --- Variants / Options ---
   let variantInputs = "";
@@ -489,7 +499,9 @@ function renderProductCard(product, ethRate) {
       .join("");
     variantInputs += `
       <label>Variant:</label>
-      <select id="variant_${product.id}" class="variant-select">${variantOptions}</select>
+      <select id="variant_${product.id}" class="variant-select">
+        ${variantOptions}
+      </select>
     `;
   }
 
@@ -509,8 +521,8 @@ function renderProductCard(product, ethRate) {
     `;
   }
 
-  // ✅ Custom Input (from sheet column "CustomInput")
-  const customText = product.CustomInput || product.custominput || product.customInput || "";
+  // ✅ Custom Input
+  const customText = product.CustomInput || product.custominput || "";
   if (customText.trim() !== "") {
     variantInputs += `
       <div class="custom-input">
@@ -520,6 +532,20 @@ function renderProductCard(product, ethRate) {
       </div>
     `;
   }
+
+  return `
+    <div class="item" style="background:var(--card);padding:16px;border-radius:12px;box-shadow:var(--shadow);">
+      <img src="${product.image || ""}" alt="${product.title || ""}" style="width:100%;border-radius:8px;object-fit:contain;">
+      <h3>${product.title}</h3>
+      <p>${priceText}</p>
+      ${variantInputs}
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+        ${product.pointsCost ? `<button class="btn secondary" onclick="redeemWithPoints('${product.id}', ${product.pointsCost})">🪙 Redeem (${product.pointsCost} pts)</button>` : ""}
+        ${product.priceUSD ? `<button class="btn" onclick="addToCart('${product.id}')">🛒 Add to Cart</button>` : ""}
+      </div>
+    </div>
+  `;
+}
 
   // --- Buttons ---
   let btnHTML = "";
@@ -759,7 +785,7 @@ async function addToCart(productId) {
   const customInput = customEl ? customEl.value.trim() : "";
 
   // ✅ Require custom input if field exists
-  if ((product.CustomInput || product.customInput) && !customInput) {
+  if ((product.CustomInput || product.custominput) && !customInput) {
     showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
     if (customEl) customEl.focus();
     return;
@@ -772,17 +798,17 @@ async function addToCart(productId) {
   const rate = await getEthRate();
   let priceUSD = getProductUsd(product);
 
- // ✅ Variant pricing from sheet
-if (product.VariantPrices && variant) {
-  const variantPrices = {};
-  product.VariantPrices.split(",").forEach(vp => {
-    const [name, price] = vp.split(":");
-    if (name && price) variantPrices[name.trim()] = Number(price.trim());
-  });
-  if (variantPrices[variant] != null) {
-    priceUSD = variantPrices[variant];
+  // ✅ Variant pricing from sheet
+  if (product.VariantPrices && variant) {
+    const variantPrices = {};
+    product.VariantPrices.split(",").forEach(vp => {
+      const [name, price] = vp.split(":");
+      if (name && price) variantPrices[name.trim()] = Number(price.trim());
+    });
+    if (variantPrices[variant] != null) {
+      priceUSD = variantPrices[variant];
+    }
   }
-}
 
   const priceETH = priceUSD / rate;
 
