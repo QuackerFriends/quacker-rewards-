@@ -772,17 +772,17 @@ async function addToCart(productId) {
   const rate = await getEthRate();
   let priceUSD = getProductUsd(product);
 
-  // ✅ Variant pricing from sheet
-  if (product.VariantPrices) {
-    const variantPrices = {};
-    product.VariantPrices.split(",").forEach(vp => {
-      const [name, price] = vp.split(":");
-      if (name && price) variantPrices[name.trim()] = Number(price);
-    });
-    if (variant && variantPrices[variant] != null) {
-      priceUSD = variantPrices[variant];
-    }
+ // ✅ Variant pricing from sheet
+if (product.VariantPrices && variant) {
+  const variantPrices = {};
+  product.VariantPrices.split(",").forEach(vp => {
+    const [name, price] = vp.split(":");
+    if (name && price) variantPrices[name.trim()] = Number(price.trim());
+  });
+  if (variantPrices[variant] != null) {
+    priceUSD = variantPrices[variant];
   }
+}
 
   const priceETH = priceUSD / rate;
 
