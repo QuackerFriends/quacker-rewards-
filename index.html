@@ -469,6 +469,8 @@ console.log("Product sample:", product);
 
 /* ===== RENDER PRODUCT CARD ===== */
 function renderProductCard(product, ethRate) {
+  console.log("Product sample:", product); // optional debug line
+
   const priceText = product.priceUSD
     ? formatPrice(product.priceUSD, ethRate)
     : product.pointsCost
@@ -506,18 +508,17 @@ function renderProductCard(product, ethRate) {
     `;
   }
 
- // ✅ Add Custom Input if sheet column "CustomInput" (any case) has a value
-const customText = product.CustomInput || product.custominput || product.customInput || "";
-if (customText.trim() !== "") {
-  variantInputs += `
-    <div class="custom-input">
-      <label for="custom_${product.id}" style="font-size:13px;color:#555">${customText}</label>
-      <input id="custom_${product.id}" type="text" placeholder="${customText}" 
-        style="width:100%;padding:6px 8px;margin-top:4px;border:1px solid #ccc;border-radius:6px" />
-    </div>
-  `;
-}
-
+  // ✅ Custom Input (from sheet column "CustomInput")
+  const customText = product.CustomInput || product.custominput || product.customInput || "";
+  if (customText.trim() !== "") {
+    variantInputs += `
+      <div class="custom-input">
+        <label for="custom_${product.id}" style="font-size:13px;color:#555">${customText}</label>
+        <input id="custom_${product.id}" type="text" placeholder="${customText}" 
+          style="width:100%;padding:6px 8px;margin-top:4px;border:1px solid #ccc;border-radius:6px" />
+      </div>
+    `;
+  }
 
   // --- Buttons ---
   let btnHTML = "";
@@ -536,6 +537,7 @@ if (customText.trim() !== "") {
     `;
   }
 
+  // --- Return final product card ---
   return `
     <div class="item" style="background:var(--card);padding:16px;border-radius:12px;box-shadow:var(--shadow);">
       <img src="${product.image || ""}" alt="${product.title || ""}" style="width:100%;border-radius:8px;object-fit:contain;">
@@ -546,6 +548,7 @@ if (customText.trim() !== "") {
     </div>
   `;
 }
+
 
 
 /* ===== RENDER CATEGORY (with image carousel) ===== */
@@ -749,12 +752,18 @@ async function addToCart(productId) {
   const product = allProducts.find(p => p.id === productId);
   if (!product) return showToast("Product not found", "error");
 
-  // read selected options
   const variantSel = document.getElementById(`variant_${productId}`);
   const colorSel = document.getElementById(`color_${productId}`);
   const sizeSel = document.getElementById(`size_${productId}`);
   const customEl = document.getElementById(`custom_${productId}`);
   const customInput = customEl ? customEl.value.trim() : "";
+
+  // ✅ Require custom input if field exists
+  if ((product.CustomInput || product.customInput) && !customInput) {
+    showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
+    if (customEl) customEl.focus();
+    return;
+  }
 
   const variant = variantSel ? variantSel.value : "";
   const color = colorSel ? colorSel.value : "";
@@ -772,7 +781,7 @@ async function addToCart(productId) {
     }
   }
 
-  // add item to cart
+  // ✅ Add item to cart
   const item = {
     id: product.id,
     title: product.title,
@@ -792,7 +801,6 @@ async function addToCart(productId) {
   updateCartUI();
   showToast(`🛒 "${product.title}" added to cart`, "success");
 }
-
 
 
 /* ===== CART UI (Improved) ===== */
@@ -1094,7 +1102,7 @@ if (!isRedeemOnly && txHash) {
   }catch(err){ console.error("checkout error", err); showToast("Checkout failed", "error"); }
 }
 
-/* ===== REDEEM WITH POINTS (LIVE CHECK + WORKING VARIANTS + CUSTOM INPUT) ===== */
+/* ===== REDEEM WITH POINTS ===== */
 async function redeemWithPoints(productId, cost) {
   const wallet = (userAddress || "").toLowerCase();
   if (!wallet) {
@@ -1103,7 +1111,6 @@ async function redeemWithPoints(productId, cost) {
   }
 
   try {
-    // find product
     const allProducts = Object.values(PRODUCTS).flat();
     const product = allProducts.find(p => p.id === productId);
     if (!product) {
@@ -1111,18 +1118,24 @@ async function redeemWithPoints(productId, cost) {
       return;
     }
 
-    // get variant/color/size/custom input selections
     const variantSel = document.getElementById(`variant_${productId}`);
     const colorSel = document.getElementById(`color_${productId}`);
     const sizeSel = document.getElementById(`size_${productId}`);
     const customEl = document.getElementById(`custom_${productId}`);
     const customInput = customEl ? customEl.value.trim() : "";
 
+    // ✅ Require custom input if field exists
+    if ((product.CustomInput || product.customInput) && !customInput) {
+      showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
+      if (customEl) customEl.focus();
+      return;
+    }
+
     const variant = variantSel ? variantSel.value : "";
     const color = colorSel ? colorSel.value : "";
     const size = sizeSel ? sizeSel.value : "";
 
-    // ✅ Check points live via API
+    // ✅ Live points check
     const checkRes = await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`);
     const checkData = await checkRes.json();
 
@@ -1137,7 +1150,6 @@ async function redeemWithPoints(productId, cost) {
       return;
     }
 
-    // ✅ Add to cart as redeemable
     const alreadyInCart = cart.find(i => i.id === productId && i.redeem);
     if (alreadyInCart) {
       showToast("Item already added for redemption.", "info");
@@ -1151,7 +1163,7 @@ async function redeemWithPoints(productId, cost) {
       priceUSD: 0,
       q: 1,
       redeem: true,
-      cost,
+      cost: cost,
       variant,
       color,
       size,
@@ -1161,7 +1173,6 @@ async function redeemWithPoints(productId, cost) {
 
     updateCartUI();
     showToast(`🎉 "${product.title}" added to cart for ${cost} points`, "success");
-
     if (typeof openCart === "function") openCart();
 
   } catch (err) {
@@ -1169,6 +1180,7 @@ async function redeemWithPoints(productId, cost) {
     showToast("Error redeeming item: " + err.message, "error");
   }
 }
+
 
 /* ===== MENU & overlay safety ===== */
 const menuBtn = document.getElementById('menuBtn');
