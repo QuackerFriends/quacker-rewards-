@@ -529,7 +529,7 @@ function renderProductCard(product, ethRate) {
     btnHTML += `<button class="btn" onclick="addToCart('${product.id}')">🛒 Add to Cart</button>`;
   }
 
-  // Return final card
+  // Final card HTML
   return `
     <div class="item" style="background:var(--card);padding:16px;border-radius:12px;box-shadow:var(--shadow);">
       <img src="${product.image || ""}" alt="${product.title || ""}" style="width:100%;border-radius:8px;object-fit:contain;">
@@ -790,7 +790,6 @@ async function addToCart(productId) {
   const customEl = document.getElementById(`custom_${productId}`);
   const customInput = customEl ? customEl.value.trim() : "";
 
-  // Require custom input if defined
   if ((product.CustomInput || product.custominput) && !customInput) {
     showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
     if (customEl) customEl.focus();
@@ -801,22 +800,20 @@ async function addToCart(productId) {
   const color = colorSel ? colorSel.value : "";
   const size = sizeSel ? sizeSel.value : "";
 
-  const rate = await getEthRate();
-  let priceUSD = getProductUsd(product);
-
-  // Variant pricing from sheet
-  if (product.VariantPrices && variant) {
-    const variantPrices = {};
-    product.VariantPrices.split(",").forEach(vp => {
-      const [name, price] = vp.split(":");
-      if (name && price) variantPrices[name.trim()] = Number(price.trim());
-    });
-    if (variantPrices[variant] != null) priceUSD = variantPrices[variant];
+  // Grab displayed price
+  const card = variantSel ? variantSel.closest(".item") : null;
+  let priceUSD = product.priceUSD || 0;
+  if (card) {
+    const priceEl = card.querySelector("p");
+    if (priceEl) {
+      const match = priceEl.innerText.match(/\$(\d+(\.\d+)?)/);
+      if (match) priceUSD = parseFloat(match[1]);
+    }
   }
 
+  const rate = await getEthRate();
   const priceETH = priceUSD / rate;
 
-  // Add to cart
   const item = {
     id: product.id,
     title: product.title,
