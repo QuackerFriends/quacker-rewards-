@@ -729,6 +729,40 @@ if (p.CustomInput && p.CustomInput.trim() !== "") {
 
   attachZoomFollow();
 }
+
+  setTimeout(() => {
+  document.querySelectorAll('.variant-select').forEach(sel => {
+    sel.addEventListener('change', async e => {
+      const productId = e.target.id.replace('variant_', '');
+      const selected = e.target.value;
+      const product = Object.values(PRODUCTS).flat().find(p => p.id === productId);
+      console.log("🟡 Variant changed:", { productId, selected, product });
+
+      if (!product) return;
+      const ethRate = await getEthRate();
+
+      let newPrice = product.priceUSD || 0;
+
+      if (product.VariantPrices) {
+        const map = {};
+        product.VariantPrices.split(",").forEach(vp => {
+          const [name, price] = vp.split(":");
+          if (name && price) map[name.trim()] = Number(price.trim());
+        });
+
+        console.log("🟢 VariantPrices map:", map);
+
+        if (map[selected] != null) newPrice = map[selected];
+      }
+
+      const priceEl = document.getElementById(`price_${productId}`);
+      console.log("🔵 Updating price element:", priceEl, "→", newPrice);
+
+      if (priceEl) priceEl.textContent = formatPrice(newPrice, ethRate);
+    });
+  });
+}, 1000); // <-- wait a sec so elements exist
+
   
 // === Variant change listener (updates displayed price) ===
 document.querySelectorAll('.variant-select').forEach(sel => {
