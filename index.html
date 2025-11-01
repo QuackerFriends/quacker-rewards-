@@ -391,9 +391,7 @@ function getProductUsd(p) {
   return 0;
 }
 
-/* ===== LOAD PRODUCTS FROM SHEET =====
-   Expects your Apps Script endpoint returning { success: true, items: [ {ID,Category,Title,PriceUSD,PointsCost,VariantOptions,ColorOptions,SizeOptions,SizeGuide,ImageURL,Active,...} ] }
-*/
+/* ===== LOAD PRODUCTS FROM SHEET ===== */
 async function loadProducts() {
   try {
     const res = await fetch(`${PURCHASE_API}?action=getItems`);
@@ -402,11 +400,9 @@ async function loadProducts() {
     if (data.success && Array.isArray(data.items)) {
       PRODUCTS = data.items.reduce((acc, item) => {
         const rawCat = (item.Category || "Other").trim();
-        // normalize category keys to lowercase to avoid mismatches
         const category = rawCat || "Other";
         if (!acc[category]) acc[category] = [];
 
-        // Build product object. VariantOptions from sheet are parsed as simple string array.
         const variantsFromSheet = item.VariantOptions
           ? item.VariantOptions.toString().split(",").map(v => v.trim()).filter(Boolean)
           : [];
@@ -419,39 +415,48 @@ async function loadProducts() {
           ? item.SizeOptions.toString().split(",").map(s => s.trim()).filter(Boolean)
           : [];
 
-        acc[category].push({
+        // --- Create product object ---
+        const product = {
           id: String(item.ID || "").trim(),
           title: item.Title || "",
           description: item.Description || "",
           priceUSD: item.PriceUSD ? Number(item.PriceUSD) : 0,
           pointsCost: item.PointsCost ? Number(item.PointsCost) : null,
-          // For sheet variants we keep simple strings. Your hardcoded data can still include variant objects.
           variants: variantsFromSheet,
           colors: colorsFromSheet,
           sizes: sizesFromSheet,
           sizeGuide: item.SizeGuide || "",
           image: item.ImageURL ? String(item.ImageURL).trim() : "",
           active: item.Active === true || String(item.Active).toUpperCase() === "TRUE",
-          CustomInput: item.CustomInput || "",   // ✅ THIS IS CRITICAL
+          CustomInput: item.CustomInput || "",
+          VariantPrices: item.VariantPrices || "" // ✅ add from sheet
+        };
 
+        // --- Parse VariantPrices into usable map ---
+        if (product.VariantPrices && typeof product.VariantPrices === "string") {
+          const map = {};
+          product.VariantPrices.split(",").forEach(vp => {
+            const [name, price] = vp.split(":");
+            if (name && price) map[name.trim()] = Number(price.trim());
+          });
+          product.variantPricesMap = map; // ✅ ready-to-use parsed object
+        }
 
-        });
-
+        acc[category].push(product);
         return acc;
       }, {});
 
       console.log("✅ Loaded products from sheet:", PRODUCTS);
 
-      // Build shop menu items (replace current content)
+      // --- Build shop menu ---
       const shopMenu = document.getElementById("shopMenu");
       if (shopMenu) {
-        // create same styled buttons as original — use class "dropdown-item"
         shopMenu.innerHTML = Object.keys(PRODUCTS)
           .map(cat => `<button class="dropdown-item" onclick="showCategory('${cat}')">${cat}</button>`)
           .join("");
       }
 
-      // If currentCategory isn't present in sheet, pick the first available
+      // --- Set default category ---
       if (!PRODUCTS[currentCategory]) {
         const first = Object.keys(PRODUCTS)[0];
         if (first) currentCategory = first;
@@ -466,6 +471,7 @@ async function loadProducts() {
     console.error("❌ Error fetching items:", err);
   }
 }
+
   
 
 /* ===== RENDER PRODUCT CARD ===== */
