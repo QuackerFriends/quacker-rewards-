@@ -1205,16 +1205,20 @@ async function checkout() {
 
    
    // --- shipping rules (with dropdown selection) ---
-const country = document.getElementById("countrySelect")?.value || "USA";
-let shippingUSD = 0;
+const countryElement = document.getElementById("countrySelect");
+const country = countryElement ? countryElement.value.trim() : "USA";
 
+let shippingUSD = 0;
 if (subtotalUSD >= 70) {
   shippingUSD = 0;
-} else if (country === "Canada") {
+} else if (country.toLowerCase() === "canada") {
   shippingUSD = 10;
 } else {
   shippingUSD = 5;
 }
+
+console.log("🧭 Country:", country, "| Shipping USD:", shippingUSD);
+
 
 
    // --- compute grand total and convert to ETH ---
