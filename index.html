@@ -782,9 +782,9 @@ if (p.CustomInput && p.CustomInput.trim() !== "") {
   `;
 }
 
-    // 🪙 Redeem + Add to Cart + Pay with Quacks buttons
+// 🪙 Redeem + Add to Cart + Pay with Quacks buttons
 const points = p.PointsCost || p.pointsCost || 0;
-const quacks = p.QuacksCost || p.quackscost || 0;
+const quacks = p.QuacksCost || p.quacksCost || p.quackscost || 0;
 const usd = p.PriceUSD || p.priceUSD || 0;
 
 const redeemHTML = points > 0
@@ -803,25 +803,24 @@ const buyHTML = usd > 0
   ? `<button class="btn buy-btn" onclick="addToCart('${p.id}')">Add to Cart</button>`
   : "";
 
+el.innerHTML = `
+  ${imageHTML}
+  <h3>${p.title}</h3>
+  <div class="price" id="price_${p.id}">${priceDisplay}</div>
+  ${variantHTML}
+  ${colorHTML}
+  ${sizeHTML}
+  ${customInputHTML}
+  ${p.sizeGuide ? `<button class="btn" onclick="openSizeGuide('${p.sizeGuide}')">Size Guide</button>` : ""}
+  <div style="margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+    ${buyHTML}
+    ${quacksHTML}
+    ${redeemHTML}
+  </div>
+`;
 
+container.appendChild(el);
 
-    el.innerHTML = `
-      ${imageHTML}
-      <h3>${p.title}</h3>
-      <div class="price" id="price_${p.id}">${priceDisplay}</div>
-      ${variantHTML}
-      ${colorHTML}
-      ${sizeHTML}
-     ${customInputHTML}
-      ${p.sizeGuide ? `<button class="btn" onclick="openSizeGuide('${p.sizeGuide}')">Size Guide</button>` : ""}
-      <div style="margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
-        ${buyHTML}
-        ${quacksHTML}
-        ${redeemHTML}
-      </div>
-    `;
-
-    container.appendChild(el);
 
     // update price/image on variant select
     const variantSelect = el.querySelector(`#variant_${p.id}`);
