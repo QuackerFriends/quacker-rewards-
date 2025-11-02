@@ -275,42 +275,69 @@ header, .nav-container, .nav-actions, .nav-actions button {
     <section id="items" class="shop-container"></section>
   </main>
 
-  <!-- Cart Modal -->
-  <div id="cartModal" class="cart-modal" aria-hidden="true">
-    <button class="close-x" title="Close cart" onclick="closeCart()">✕</button>
-    <h3>Your Cart</h3>
-    <div style="font-size:13px;color:#c0392b;margin-bottom:8px;">Shipping only available in the US and Canada</div>
-    <div class="cart-list" id="cartList"></div>
+ <!-- Cart Modal -->
+<div id="cartModal" class="cart-modal" aria-hidden="true">
+  <button class="close-x" title="Close cart" onclick="closeCart()">✕</button>
+  <h3>Your Cart</h3>
+  <div style="font-size:13px;color:#c0392b;margin-bottom:8px;">Shipping only available in the US and Canada</div>
 
-    <div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <strong>Total</strong>
-        <strong id="cartTotal">0 ETH</strong>
-      </div>
-      <div style="margin-top:8px">
-        
-        <div id="addressSection" style="margin-top:20px;">
-  <label for="userAddressInput" style="font-weight:bold;">Shipping Address:</label><br>
-  <textarea id="userAddressInput" placeholder="Enter your full shipping address"
-    style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;min-height:70px;"></textarea>
-</div>
+  <div class="cart-list" id="cartList"></div>
 
-        <div id="referralSection" style="margin-top:16px;">
-  <label for="referrerInput" style="font-weight:bold;">Referral Address (optional):</label><br>
-  <input
-    type="text"
-    id="referrerInput"
-    placeholder="Enter a friend’s wallet address"
-    style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;"
-  />
-</div>
-
-
-        <button id="checkoutBtn" class="btn" style="width:100%">Checkout (Pay in Base)</button>
-      </div>
-      <div style="margin-top:8px;font-size:12px;color:#666;text-align:center">Network: Base Mainnet</div>
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <strong>Subtotal</strong>
+      <strong id="subtotalDisplay">$0.00</strong>
     </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <strong>Shipping</strong>
+      <strong id="shippingDisplay">$0.00</strong>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <strong>Total</strong>
+      <strong id="totalDisplay">$0.00</strong>
+    </div>
+
+    <div id="addressSection" style="margin-top:12px;">
+      <label for="userAddressInput" style="font-weight:bold;">Shipping Address:</label><br>
+      <textarea id="userAddressInput" placeholder="Enter your full shipping address"
+        style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;min-height:70px;"></textarea>
+    </div>
+
+    <div style="margin-top:10px;">
+      <label for="shippingCountry" style="font-weight:bold;">Shipping Country:</label><br>
+      <select id="shippingCountry" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;margin-top:6px;">
+        <option value="USA">United States</option>
+        <option value="Canada">Canada</option>
+      </select>
+    </div>
+
+    <div style="margin-top:10px;">
+      <label for="paymentSelector" style="font-weight:bold;">Pay with:</label><br>
+      <select id="paymentSelector" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;margin-top:6px;">
+        <option value="eth">ETH (wallet)</option>
+        <option value="points">Points / Redeem</option>
+        <option value="quacks">Quacks</option>
+      </select>
+    </div>
+
+    <div id="referralSection" style="margin-top:12px;">
+      <label for="referrerInput" style="font-weight:bold;">Referral Address (optional):</label><br>
+      <input
+        type="text"
+        id="referrerInput"
+        placeholder="Enter a friend’s wallet address"
+        style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;"
+      />
+    </div>
+
+    <button id="checkoutBtn" class="btn" style="width:100%;margin-top:12px">Checkout (Pay / Redeem)</button>
+
+    <div style="margin-top:8px;font-size:12px;color:#666;text-align:center">Network: Base Mainnet</div>
   </div>
+</div>
+
   
  <!-- Size guide modal -->
   <div id="sizeGuideModal" class="sizeguide-modal" aria-hidden="true">
@@ -390,6 +417,49 @@ function getProductUsd(p) {
   if (p.price) return Math.round(p.price * (cachedEthRate || 3000));
   return 0;
 }
+
+  /* ===== SHIPPING & PAYMENT UI HELPERS ===== */
+const SHIPPING_RULES = {
+  USA: { fee: 5, freeOver: 70 },
+  Canada: { fee: 10, freeOver: 70 }
+};
+
+function calcSubtotalUSD() {
+  // sum priceUSD (fallback to 0)
+  return cart.reduce((s, ci) => s + (Number(ci.priceUSD || 0) * (ci.q || 1)), 0);
+}
+
+function getShippingCharge(country, subtotal) {
+  const rule = SHIPPING_RULES[country] || SHIPPING_RULES.USA;
+  return subtotal >= rule.freeOver ? 0 : rule.fee;
+}
+
+function updateCheckoutDisplay() {
+  const country = document.getElementById("shippingCountry")?.value || "USA";
+  const subtotal = calcSubtotalUSD();
+  const shipping = getShippingCharge(country, subtotal);
+  const total = subtotal + shipping;
+
+  const subtotalEl = document.getElementById("subtotalDisplay");
+  const shippingEl = document.getElementById("shippingDisplay");
+  const totalEl = document.getElementById("totalDisplay");
+
+  if (subtotalEl) subtotalEl.innerText = `$${subtotal.toFixed(2)}`;
+  if (shippingEl) shippingEl.innerText = `$${shipping.toFixed(2)}`;
+  if (totalEl) totalEl.innerText = `$${total.toFixed(2)}`;
+}
+
+function initCheckoutUI() {
+  const countrySel = document.getElementById("shippingCountry");
+  const paymentSel = document.getElementById("paymentSelector");
+
+  if (countrySel) countrySel.addEventListener("change", updateCheckoutDisplay);
+  if (paymentSel) paymentSel.addEventListener("change", updateCheckoutDisplay);
+
+  // update now
+  updateCheckoutDisplay();
+}
+
 
 /* ===== LOAD PRODUCTS FROM SHEET ===== */
 async function loadProducts() {
@@ -973,19 +1043,24 @@ function updateCartUI() {
 
   totalEl.innerText = `${totalEth.toFixed(6)} ETH`;
 }
+// refresh checkout numbers (if modal visible)
+try { updateCheckoutDisplay(); } catch(e) { /* ignore if elements missing */ }
 
 function changeQty(index,val){ const v = Number(val)||1; cart[index].q = Math.max(1,v); updateCartUI(); }
 function removeFromCart(index){ cart.splice(index,1); updateCartUI(); }
 
-  function openCart() {
+ function openCart() {
   const modal = document.getElementById("cartModal");
   const overlay = document.getElementById("cartOverlay");
   if (modal) {
     modal.classList.add("open");
     modal.setAttribute("aria-hidden", "false");
     if (overlay) overlay.style.display = "block";
+    // init checkout UI (subtotal, shipping, payment selector)
+    initCheckoutUI();
   }
 }
+
 
 function closeCart() {
   const modal = document.getElementById("cartModal");
