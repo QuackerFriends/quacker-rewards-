@@ -993,28 +993,32 @@ async function addToCart(productId) {
   showToast(`🛒 "${product.title}" added to cart`, "success");
 }
 
-/* ===== CART UI (Improved) ===== */
-function updateCartUI() {
- const countEl = document.getElementById("cartCount");
-const listEl = document.getElementById("cartList");
-const totalEl = document.getElementById("totalDisplay"); // ✅ match modal
-const subtotalEl = document.getElementById("subtotalDisplay");
-const shippingEl = document.getElementById("shippingDisplay");
+/* ===== CART UI (Improved + Shipping + Subtotal) ===== */
+async function updateCartUI() {
+  const countEl = document.getElementById("cartCount");
+  const listEl = document.getElementById("cartList");
+  const subtotalEl = document.getElementById("subtotalDisplay");
+  const shippingEl = document.getElementById("shippingDisplay");
+  const totalEl = document.getElementById("totalDisplay");
 
-if (!listEl || !totalEl) return console.warn("Cart UI elements missing");
+  if (!listEl || !totalEl) return console.warn("Cart UI elements missing");
 
-
+  // 🧮 Update cart count bubble if present
   const cartCount = cart.reduce((s, i) => s + i.q, 0);
-  if (cartCount > 0) {
-    countEl.style.display = "inline-block";
-    countEl.innerText = cartCount;
-  } else {
-    countEl.style.display = "none";
+  if (countEl) {
+    if (cartCount > 0) {
+      countEl.style.display = "inline-block";
+      countEl.innerText = cartCount;
+    } else {
+      countEl.style.display = "none";
+    }
   }
 
   if (cart.length === 0) {
     listEl.innerHTML = "<p style='color:#666'>Cart is empty</p>";
-    totalEl.innerText = "0 ETH";
+    if (subtotalEl) subtotalEl.innerText = "$0.00";
+    if (shippingEl) shippingEl.innerText = "$0.00";
+    if (totalEl) totalEl.innerText = "$0.00";
     return;
   }
 
@@ -1026,16 +1030,13 @@ if (!listEl || !totalEl) return console.warn("Cart UI elements missing");
     row.className = "cart-item";
     const thumb = ci.thumb || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
 
-    // Build variant & details info
     const details = [];
     if (ci.variant && ci.variant !== "N/A") details.push(`Variant: ${ci.variant}`);
     if (ci.color && ci.color !== "N/A") details.push(`Color: ${ci.color}`);
     if (ci.size && ci.size !== "N/A") details.push(`Size: ${ci.size}`);
-    if (ci.custom && ci.custom !== "N/A") details.push(`Custom: ${ci.custom}`);
-
+    if (ci.customInput) details.push(`Custom: ${ci.customInput}`);
     const detailsText = details.length ? details.join(" • ") : "No options selected";
 
-    // price and qty
     const priceEth = (ci.price || 0).toFixed(6);
     totalEth += (ci.price || 0) * ci.q;
 
@@ -1054,15 +1055,23 @@ if (!listEl || !totalEl) return console.warn("Cart UI elements missing");
     listEl.appendChild(row);
   });
 
-const rate = await getEthRate();
-const subtotalUSD = cart.reduce((s, i) => s + i.priceUSD * i.q, 0);
-const shippingUSD = (window.selectedCountry === "USA" ? 5 : 0);
-const totalUSD = subtotalUSD + shippingUSD;
+  // 🧾 Compute USD totals
+  const rate = await getEthRate();
+  const subtotalUSD = cart.reduce((s, i) => s + i.priceUSD * i.q, 0);
 
-if (subtotalEl) subtotalEl.innerText = `$${subtotalUSD.toFixed(2)}`;
-if (shippingEl) shippingEl.innerText = `$${shippingUSD.toFixed(2)}`;
-if (totalEl) totalEl.innerText = `$${totalUSD.toFixed(2)}`;
+  // 🚚 Determine shipping cost
+  const countrySelect = document.getElementById("shippingCountry");
+  const selectedCountry = countrySelect ? countrySelect.value : "USA";
+  const shippingUSD = subtotalUSD >= 70 ? 0 : (selectedCountry === "USA" ? 5 : 10);
+
+  const totalUSD = subtotalUSD + shippingUSD;
+
+  // 🪄 Update UI
+  if (subtotalEl) subtotalEl.innerText = `$${subtotalUSD.toFixed(2)}`;
+  if (shippingEl) shippingEl.innerText = `$${shippingUSD.toFixed(2)}`;
+  if (totalEl) totalEl.innerText = `$${totalUSD.toFixed(2)}`;
 }
+
 // refresh checkout numbers (if modal visible)
 try { updateCheckoutDisplay(); } catch(e) { /* ignore if elements missing */ }
 
