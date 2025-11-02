@@ -366,7 +366,7 @@ const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 /* ===== STATE ===== */
 let userAddress = null;
 let web3 = null;
-let cart = [];
+let cart = []; let selectedCountry = "USA"; // ✅ Default selection for shipping
 let PRODUCTS = {};                 // will be filled by loadProducts()
 let currentCategory = "tees";      // default (sheet categories may vary in case)
 let cachedEthRate = null;
@@ -1419,9 +1419,15 @@ hideOverlay();
 document.addEventListener('DOMContentLoaded', async ()=>{
   // load items from sheet first (will render category when loaded)
   await loadProducts();
+  
 
-  // if sheet failed or returned no products, you can optionally fill PRODUCTS with a local fallback here.
-  // e.g. if (Object.keys(PRODUCTS).length === 0) { PRODUCTS = yourFallbackObject; await showCategory(currentCategory); }
+ document.addEventListener("change", (e) => {
+  if (e.target && e.target.id === "countrySelect") {
+    selectedCountry = e.target.value.trim();
+    console.log("🌎 Country changed to:", selectedCountry);
+  }
+});
+
 });
 
 /* --- zoom follow helpers --- */
