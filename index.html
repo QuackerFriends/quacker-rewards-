@@ -1267,24 +1267,20 @@ async function checkout() {
     let subtotalUSD = 0;
     cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); });
 
-   // --- TEMP: Force shipping to $0 for testing ---
-let shippingUSD = 0;
-console.log("🧭 Shipping forced to $0 for testing purposes");
+    // --- TEMP: Force shipping to $0 for testing ---
+    let shippingUSD = 0;
+    console.log("🧭 Shipping forced to $0 for testing purposes");
 
-
-    // --- Compute grand total and ETH equivalent ---
     const grandTotalUSD = subtotalUSD + shippingUSD;
     const rate = await getEthRate();
     let totalEth = grandTotalUSD / rate;
     let txHash = "";
 
-    // --- Determine redemption / Quacks status ---
     const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
     const isQuacksOnly = cart.length > 0 && cart.every(ci => ci.useQuacks);
-    const hasMixed = cart.some(ci => !ci.redeem) && cart.some(ci => ci.redeem);
 
-    // --- Process ETH payment (if not pure redemption) ---
-    if (!isRedeemOnly) {
+    // --- Process ETH payment ---
+    if (!isRedeemOnly && !isQuacksOnly) {
       const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
       const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
       showToast(`Please confirm your purchase (includes $${shippingUSD} shipping)`, "info", 8000);
@@ -1299,51 +1295,54 @@ console.log("🧭 Shipping forced to $0 for testing purposes");
 
       showToast("Transaction sent — logging purchase...", "success", 4000);
       await new Promise(r => setTimeout(r, 1200));
-    } else {
-      // --- charge shipping for redeem-only orders ---
-      if (shippingUSD > 0) {
-        showToast(`Redeeming items — $${shippingUSD} shipping will be charged`, "info", 4000);
-        const shippingEth = shippingUSD / rate;
-        const valueHex = "0x" + BigInt(Math.floor(shippingEth * 1e18)).toString(16);
-        const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
-        try {
-          txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
-        } catch (txErr) {
-          showToast("Shipping payment cancelled — redemption not logged", "error");
-          return;
-        }
-      } else {
-        showToast("Redeeming item with points — free shipping!", "success", 4000);
-      }
     }
 
-    // --- Log each item to Apps Script ---
+    // --- Log each item and handle Quacks deduction ---
     for (const ci of cart) {
-      const payload = {
+      let payload = {
         wallet: userAddress,
         variant: ci.variant || "",
         color: ci.color || "",
         size: ci.size || "",
         quantity: ci.q || 1,
         address: shippingAddress,
-        txHash,
+        txHash: ci.useQuacks ? "" : txHash,
         referrer,
         customInput: ci.customInput || ""
       };
 
       if (ci.redeem) {
-  payload.redeem = ci.title;
-  payload.cost = ci.cost;
-} else if (ci.useQuacks) {
-  payload.itemName = ci.title;
-  payload.quacksUsed = ci.quacksCost; // Add this field
-} else {
-  payload.itemName = ci.title;
-  payload.price = Number(ci.price || 0);
-}
+        payload.redeem = ci.title;
+        payload.cost = ci.cost;
+      } else if (ci.useQuacks) {
+        payload.itemName = ci.title;
+        payload.quacksCost = ci.quacksCost;
 
+        // 🪙 Deduct Quacks
+        try {
+          const spendRes = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&spend=${ci.quacksCost}`);
+          const spendData = await spendRes.json();
+          if (spendData.error) {
+            showToast(`Quacks deduction failed: ${spendData.error}`, "error");
+            return; // stop checkout if user doesn't have enough Quacks
+          }
+          showToast(`💸 ${ci.quacksCost} Quacks used for "${ci.title}"!`, "success", 4000);
+        } catch (quackErr) {
+          console.warn("Quacks deduction error:", quackErr);
+          showToast("Quacks deduction failed — purchase not logged", "error");
+          return;
+        }
+      } else {
+        payload.itemName = ci.title;
+        payload.price = Number(ci.price || 0);
+      }
 
-      const params = new URLSearchParams(payload).toString();
+      // --- Log purchase to Apps Script ---
+      const params = new URLSearchParams({
+        ...payload,
+        action: ci.useQuacks ? "payWithQuacks" : ""
+      }).toString();
+
       try {
         const res = await fetch(`${PURCHASE_API}?${params}`);
         const data = await res.json();
@@ -1353,27 +1352,7 @@ console.log("🧭 Shipping forced to $0 for testing purposes");
       }
     }
 
-    // --- Deduct Quacks for Quacks-only or mixed orders ---
-    if (isQuacksOnly || cart.some(ci => ci.useQuacks)) {
-      let totalQuacksCost = 0;
-      cart.forEach(ci => { if (ci.useQuacks) totalQuacksCost += ci.quacksCost || 0; });
-
-      if (totalQuacksCost > 0) {
-        try {
-          // Fetch current balance
-          const quackRes = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}`);
-          const quackData = await quackRes.json();
-          const remaining = (quackData.quacks || 0) - totalQuacksCost;
-
-          // Deduct Quacks
-          await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&claim=true&quacks=-${totalQuacksCost}`);
-          showToast(`💸 Used ${totalQuacksCost} Quacks — ${remaining} left!`, "success", 4000);
-        } catch (err) {
-          console.warn("Quack deduction failed:", err);
-        }
-      }
-    }
-
+    // --- Show success toast ---
     if (isRedeemOnly) {
       showToast("✅ Redemption logged successfully!", "success", 4000);
       updatePointsDisplay();
@@ -1381,7 +1360,7 @@ console.log("🧭 Shipping forced to $0 for testing purposes");
       showToast("✅ Purchase logged successfully!", "success", 4000);
     }
 
-    // --- Optional BaseScan link ---
+    // --- Optional BaseScan link for ETH tx ---
     if (txHash) {
       const baseScanUrl = `https://basescan.org/tx/${txHash}`;
       const linkToast = document.createElement("div");
@@ -1396,9 +1375,6 @@ console.log("🧭 Shipping forced to $0 for testing purposes");
     showToast("Checkout failed", "error");
   }
 }
-
-
-
 
 /* ===== ADD TO CART WITH QUACKS ===== */
 async function addToCartWithQuacks(productId, quacksCost) {
