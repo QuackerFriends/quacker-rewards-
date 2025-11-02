@@ -1267,18 +1267,10 @@ async function checkout() {
     let subtotalUSD = 0;
     cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); });
 
-    // --- Shipping rules ---
-    let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
-    let shippingUSD = 0;
-    if (subtotalUSD >= 70) {
-      shippingUSD = 0;
-    } else if (country.toLowerCase() === "canada") {
-      shippingUSD = 10;
-    } else {
-      shippingUSD = 5;
-    }
+   // --- TEMP: Force shipping to $0 for testing ---
+let shippingUSD = 0;
+console.log("🧭 Shipping forced to $0 for testing purposes");
 
-    console.log("🧭 Country detected:", country, "| ShippingUSD =", shippingUSD);
 
     // --- Compute grand total and ETH equivalent ---
     const grandTotalUSD = subtotalUSD + shippingUSD;
