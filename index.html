@@ -1234,6 +1234,7 @@ if(claimQuacksBtn) claimQuacksBtn.addEventListener("click", async ()=>{
   }catch(err){ console.error(err); showToast("Error claiming quacks","error"); }
 });
 
+  
 /* ===== CHECKOUT / PURCHASE LOGGING ===== */
 const checkoutBtn = document.getElementById("checkoutBtn");
 if (checkoutBtn) checkoutBtn.addEventListener("click", checkout);
@@ -1279,7 +1280,7 @@ async function checkout() {
     const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
     const isQuacksOnly = cart.length > 0 && cart.every(ci => ci.useQuacks);
 
-    // --- Process ETH payment ---
+    // --- Process ETH payment if applicable ---
     if (!isRedeemOnly && !isQuacksOnly) {
       const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
       const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
@@ -1297,7 +1298,7 @@ async function checkout() {
       await new Promise(r => setTimeout(r, 1200));
     }
 
-    // --- Log each item and handle Quacks deduction ---
+    // --- Loop through cart items ---
     for (const ci of cart) {
       let payload = {
         wallet: userAddress,
@@ -1318,13 +1319,13 @@ async function checkout() {
         payload.itemName = ci.title;
         payload.quacksCost = ci.quacksCost;
 
-        // 🪙 Deduct Quacks
+        // 🪙 Deduct Quacks from user sheet
         try {
           const spendRes = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&spend=${ci.quacksCost}`);
           const spendData = await spendRes.json();
           if (spendData.error) {
             showToast(`Quacks deduction failed: ${spendData.error}`, "error");
-            return; // stop checkout if user doesn't have enough Quacks
+            return; // stop checkout if not enough Quacks
           }
           showToast(`💸 ${ci.quacksCost} Quacks used for "${ci.title}"!`, "success", 4000);
         } catch (quackErr) {
@@ -1337,7 +1338,7 @@ async function checkout() {
         payload.price = Number(ci.price || 0);
       }
 
-      // --- Log purchase to Apps Script ---
+      // --- Log to Apps Script ---
       const params = new URLSearchParams({
         ...payload,
         action: ci.useQuacks ? "payWithQuacks" : ""
@@ -1352,7 +1353,7 @@ async function checkout() {
       }
     }
 
-    // --- Show success toast ---
+    // --- Success Toasts ---
     if (isRedeemOnly) {
       showToast("✅ Redemption logged successfully!", "success", 4000);
       updatePointsDisplay();
