@@ -610,10 +610,12 @@ function renderProductCard(p, ethRate) {
          Redeem for ${pointsCost} ⭐ Points
        </button>` : "";
 
-  const quacksHTML = quacksCost > 0
-    ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${product.ID || product.id}', ${product.QuacksCost || product.quacksCost})">
-         Pay with ${quacksCost} 🪙 Quacks
-       </button>` : "";
+  const quacksHTML = (p.QuacksCost || p.quacksCost) > 0
+  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${p.ID || p.id}', ${p.QuacksCost || p.quacksCost})">
+       Pay with ${(p.QuacksCost || p.quacksCost)} 🪙 Quacks
+     </button>`
+  : "";
+
 
   const buyHTML = priceUSD > 0
     ? `<button class="btn buy-btn" onclick="addToCart('${p.ID}')">
