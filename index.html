@@ -1392,107 +1392,25 @@ async function checkout() {
 
 
 
-/* ===== REDEEM WITH POINTS ===== */
-async function redeemWithPoints(productId, cost) {
+
+/* ===== ADD TO CART WITH QUACKS ===== */
+async function addToCartWithQuacks(productId, quacksCost) {
   const wallet = (userAddress || "").toLowerCase();
   if (!wallet) {
-    showToast("Please connect your wallet first.", "error");
+    showToast("Connect your wallet first.", "error");
     return;
   }
 
-  try {
-    const allProducts = Object.values(PRODUCTS).flat();
-const product = allProducts.find(p =>
-  (p.ID && p.ID === productId) ||
-  (p.id && p.id === productId)
-);
+  const allProducts = Object.values(PRODUCTS).flat();
+  const product = allProducts.find(p =>
+    ((p.ID || p.id || "").toLowerCase() === productId.toLowerCase())
+  );
 
-if (!product) {
-  console.error("Product not found:", productId, "Available IDs:", allProducts.map(p => p.ID || p.id));
-  showToast("Product not found", "error");
-  return;
-}
-
-
-    const variantSel = document.getElementById(`variant_${productId}`);
-    const colorSel = document.getElementById(`color_${productId}`);
-    const sizeSel = document.getElementById(`size_${productId}`);
-    const customEl = document.getElementById(`custom_${productId}`);
-    const customInput = customEl ? customEl.value.trim() : "";
-
-    // ✅ Require custom input if field exists
-    if ((product.CustomInput || product.customInput) && !customInput) {
-      showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
-      if (customEl) customEl.focus();
-      return;
-    }
-
-    const variant = variantSel ? variantSel.value : "";
-    const color = colorSel ? colorSel.value : "";
-    const size = sizeSel ? sizeSel.value : "";
-
-    // ✅ Live points check
-    const checkRes = await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`);
-    const checkData = await checkRes.json();
-
-    if (!checkData.success) {
-      showToast(checkData.error || "Could not verify points", "error");
-      return;
-    }
-
-    const currentPoints = checkData.points || 0;
-    if (currentPoints < cost) {
-      showToast(`❌ You only have ${currentPoints} points — need ${cost} to redeem this item.`, "error");
-      return;
-    }
-
-    const alreadyInCart = cart.find(i => i.id === productId && i.redeem);
-    if (alreadyInCart) {
-      showToast("Item already added for redemption.", "info");
-      return;
-    }
-
-    cart.push({
-      id: productId,
-      title: product.title,
-      price: 0,
-      priceUSD: 0,
-      q: 1,
-      redeem: true,
-      cost: cost,
-      variant,
-      color,
-      size,
-      thumb: product.image || "",
-      customInput
-    });
-
-    updateCartUI();
-    showToast(`🎉 "${product.title}" added to cart for ${cost} points`, "success");
-    if (typeof openCart === "function") openCart();
-
-  } catch (err) {
-    console.error("Error redeeming item:", err);
-    showToast("Error redeeming item: " + err.message, "error");
+  if (!product) {
+    console.log("Product not found:", productId, "Available IDs:", allProducts.map(p => p.ID || p.id));
+    showToast("Product not found", "error");
+    return;
   }
-}
-
-async function addToCartWithQuacks(productId, quacksCost) {
-  const wallet = (userAddress || "").toLowerCase();
-  if (!wallet) { showToast("Connect your wallet first.", "error"); return; }
-
- const allProducts = Object.values(PRODUCTS).flat();
-const product = allProducts.find(p =>
-  (p.ID && p.ID === productId) ||
-  (p.id && p.id === productId)
-);
-
-if (!product) {
-  console.error("Product not found:", productId, "Available IDs:", allProducts.map(p => p.ID || p.id));
-  showToast("Product not found", "error");
-  return;
-}
-
 
   const variantSel = document.getElementById(`variant_${productId}`);
   const colorSel = document.getElementById(`color_${productId}`);
@@ -1506,10 +1424,10 @@ if (!product) {
     return;
   }
 
-  // check user’s Quacks balance
+  // Check user's Quacks balance
   const res = await fetch(`${CLAIM_SHEET_API}?wallet=${wallet}`);
   const data = await res.json();
-  const userRow = data.find(u => u.address.toLowerCase() === wallet);
+  const userRow = data.find(u => (u.address || "").toLowerCase() === wallet);
   const currentQuacks = userRow ? Number(userRow.quacks_collected || 0) : 0;
 
   if (currentQuacks < quacksCost) {
@@ -1519,7 +1437,7 @@ if (!product) {
 
   cart.push({
     id: productId,
-    title: product.Title,
+    title: product.Title || product.title,
     price: 0,
     priceUSD: 0,
     q: 1,
@@ -1529,15 +1447,81 @@ if (!product) {
     variant: variantSel ? variantSel.value : "",
     color: colorSel ? colorSel.value : "",
     size: sizeSel ? sizeSel.value : "",
-    thumb: product.ImageURL || "",
+    thumb: product.ImageURL || product.image || "",
     customInput
   });
 
   updateCartUI();
-  showToast(`🪙 "${product.Title}" added using ${quacksCost} Quacks`, "success");
+  showToast(`🪙 "${product.Title || product.title}" added using ${quacksCost} Quacks`, "success");
   if (typeof openCart === "function") openCart();
 }
 
+/* ===== REDEEM WITH POINTS ===== */
+async function redeemWithPoints(productId, cost) {
+  const wallet = (userAddress || "").toLowerCase();
+  if (!wallet) {
+    showToast("Please connect your wallet first.", "error");
+    return;
+  }
+
+  const allProducts = Object.values(PRODUCTS).flat();
+  const product = allProducts.find(p =>
+    ((p.ID || p.id || "").toLowerCase() === productId.toLowerCase())
+  );
+
+  if (!product) {
+    console.log("Product not found:", productId, "Available IDs:", allProducts.map(p => p.ID || p.id));
+    showToast("Product not found", "error");
+    return;
+  }
+
+  const variantSel = document.getElementById(`variant_${productId}`);
+  const colorSel = document.getElementById(`color_${productId}`);
+  const sizeSel = document.getElementById(`size_${productId}`);
+  const customEl = document.getElementById(`custom_${productId}`);
+  const customInput = customEl ? customEl.value.trim() : "";
+
+  if ((product.CustomInput || product.customInput) && !customInput) {
+    showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
+    if (customEl) customEl.focus();
+    return;
+  }
+
+  // Check points balance from your API
+  const checkRes = await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`);
+  const checkData = await checkRes.json();
+  const currentPoints = checkData.points || 0;
+
+  if (currentPoints < cost) {
+    showToast(`❌ You only have ${currentPoints} points — need ${cost} to redeem this item.`, "error");
+    return;
+  }
+
+  const alreadyInCart = cart.find(i => (i.id || i.ID).toLowerCase() === productId.toLowerCase() && i.redeem);
+  if (alreadyInCart) {
+    showToast("Item already added for redemption.", "info");
+    return;
+  }
+
+  cart.push({
+    id: productId,
+    title: product.Title || product.title,
+    price: 0,
+    priceUSD: 0,
+    q: 1,
+    redeem: true,
+    cost,
+    variant: variantSel ? variantSel.value : "",
+    color: colorSel ? colorSel.value : "",
+    size: sizeSel ? sizeSel.value : "",
+    thumb: product.ImageURL || product.image || "",
+    customInput
+  });
+
+  updateCartUI();
+  showToast(`🎉 "${product.Title || product.title}" added to cart for ${cost} points`, "success");
+  if (typeof openCart === "function") openCart();
+}
 
 
 /* ===== MENU & overlay safety ===== */
