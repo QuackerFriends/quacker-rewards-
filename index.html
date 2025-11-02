@@ -556,27 +556,28 @@ async function loadProducts() {
 
 /* ===== RENDER PRODUCT CARD (with Quacks + Points + USD) ===== */
 function renderProductCard(p, ethRate) {
-  // Debug: check product object
-  console.log("Rendering product:", p.ID, p.Title);
+  // Normalize product ID
+  const prodId = p.ID || p.id || "";
+  if (!prodId) return ""; // skip if no ID
 
   // Prices
-  const priceUSD = p.PriceUSD || p.priceUSD || 0;
-  const pointsCost = p.PointsCost || p.pointsCost || 0;
-  const quacksCost = p.QuacksCost || p.quacksCost || 0;
+  const priceUSD = Number(p.PriceUSD || p.priceUSD || 0);
+  const pointsCost = Number(p.PointsCost || p.pointsCost || 0);
+  const quacksCost = Number(p.QuacksCost || p.quacksCost || 0);
 
-  const priceDisplay = [];
-  if (priceUSD > 0) priceDisplay.push(`$${priceUSD}`);
-  if (quacksCost > 0) priceDisplay.push(`🪙 ${quacksCost} Quacks`);
-  if (pointsCost > 0) priceDisplay.push(`⭐ ${pointsCost} Points`);
-  
-  const priceHTML = priceDisplay.join(" | ");
+  // Price display
+  const priceParts = [];
+  if (priceUSD > 0) priceParts.push(`$${priceUSD}`);
+  if (quacksCost > 0) priceParts.push(`🪙 ${quacksCost} Quacks`);
+  if (pointsCost > 0) priceParts.push(`⭐ ${pointsCost} Points`);
+  const priceHTML = priceParts.join(" | ");
 
   // Variants
   let variantHTML = "";
   if (p.VariantOptions) {
     const variants = p.VariantOptions.split(",").map(v => v.trim());
     variantHTML = `<label>Variant:</label>
-      <select id="variant_${p.ID}">${variants.map(v => `<option value="${v}">${v}</option>`).join("")}</select>`;
+      <select id="variant_${prodId}">${variants.map(v => `<option value="${v}">${v}</option>`).join("")}</select>`;
   }
 
   // Colors
@@ -584,7 +585,7 @@ function renderProductCard(p, ethRate) {
   if (p.ColorOptions) {
     const colors = p.ColorOptions.split(",").map(c => c.trim());
     colorHTML = `<label>Color:</label>
-      <select id="color_${p.ID}">${colors.map(c => `<option value="${c}">${c}</option>`).join("")}</select>`;
+      <select id="color_${prodId}">${colors.map(c => `<option value="${c}">${c}</option>`).join("")}</select>`;
   }
 
   // Sizes
@@ -592,48 +593,40 @@ function renderProductCard(p, ethRate) {
   if (p.SizeOptions) {
     const sizes = p.SizeOptions.split(",").map(s => s.trim());
     sizeHTML = `<label>Size:</label>
-      <select id="size_${p.ID}">${sizes.map(s => `<option value="${s}">${s}</option>`).join("")}</select>`;
+      <select id="size_${prodId}">${sizes.map(s => `<option value="${s}">${s}</option>`).join("")}</select>`;
   }
 
   // Custom input
   let customHTML = "";
   if (p.CustomInput && p.CustomInput.trim() !== "") {
     customHTML = `<div>
-      <label for="custom_${p.ID}">${p.CustomInput}</label>
-      <input id="custom_${p.ID}" type="text" placeholder="${p.CustomInput}" />
+      <label for="custom_${prodId}">${p.CustomInput}</label>
+      <input id="custom_${prodId}" type="text" placeholder="${p.CustomInput}" />
     </div>`;
   }
 
+  // Buttons
+  const redeemHTML = pointsCost > 0
+    ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${prodId}', ${pointsCost})">
+         Redeem for ${pointsCost} ⭐ Points
+       </button>` : "";
 
- // Buttons
-const prodId = p.ID || p.id; // normalize
+  const quacksHTML = quacksCost > 0
+    ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${prodId}', ${quacksCost})">
+         Pay with ${quacksCost} 🪙 Quacks
+       </button>` : "";
 
-const redeemHTML = pointsCost > 0
-  ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${prodId}', ${pointsCost})">
-       Redeem for ${pointsCost} ⭐ Points
-     </button>`
-  : "";
+  const buyHTML = (priceUSD > 0 || (priceUSD === 0 && pointsCost === 0 && quacksCost === 0))
+    ? `<button class="btn buy-btn" onclick="addToCart('${prodId}')">
+         Add to Cart
+       </button>` : "";
 
-const quacksHTML = quacksCost > 0
-  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${prodId}', ${quacksCost})">
-       Pay with ${quacksCost} 🪙 Quacks
-     </button>`
-  : "";
-
-const buyHTML = (priceUSD > 0 || (priceUSD === 0 && pointsCost === 0 && quacksCost === 0))
-  ? `<button class="btn buy-btn" onclick="addToCart('${prodId}')">
-       Add to Cart
-     </button>`
-  : "";
-
-
-
-  // Card HTML
+  // Compose card HTML
   const html = `
     <div class="item" style="padding:16px;border-radius:12px;box-shadow:var(--shadow);background:var(--card);">
       <img src="${p.ImageURL || ""}" alt="${p.Title}" style="width:100%;border-radius:8px;object-fit:contain;" />
       <h3>${p.Title}</h3>
-      <p id="price_${p.ID}" style="margin:6px 0;">${priceHTML}</p>
+      <p id="price_${prodId}" style="margin:6px 0;">${priceHTML}</p>
       ${variantHTML}
       ${colorHTML}
       ${sizeHTML}
@@ -647,6 +640,7 @@ const buyHTML = (priceUSD > 0 || (priceUSD === 0 && pointsCost === 0 && quacksCo
   `;
   return html;
 }
+
 
  
 
