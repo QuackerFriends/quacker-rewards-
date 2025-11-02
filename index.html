@@ -1217,9 +1217,11 @@ if (subtotalUSD >= 70) {
 }
 
 
-    // --- convert USD to ETH ---
-    const rate = await getEthRate();
-    let totalEth = totalUSD / rate;
+   // --- compute grand total and convert to ETH ---
+const grandTotalUSD = subtotalUSD + shippingUSD;
+const rate = await getEthRate();
+let totalEth = grandTotalUSD / rate;
+
 
     let txHash = "";
 
