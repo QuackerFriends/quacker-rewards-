@@ -1226,20 +1226,40 @@ if (claimQuacksBtn) {
     }
     
     try {
-      const res = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(userAddress)}&claim=true`);
-      const data = await res.json();
+  const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+  const mainNFTBalance = await contract.methods.balanceOf(userAddress).call();
 
-      if (data.error) {
-        showToast(data.error, "warn");
-      } else {
-        showToast(`🦆 Claimed ${data.added_quacks} Quacks!`, "success");
-        const quacksCount = document.getElementById("quacksCount");
-        if (quacksCount) quacksCount.innerText = "Daily Quacks: " + (data.new_quacks_total || 0);
-      }
-    } catch (err) {
-      console.error(err);
-      showToast("Error claiming quacks", "error");
-    }
+  // Collect all eligible NFT contracts here
+  const ownsContracts = [];
+  if (Number(mainNFTBalance) > 0) ownsContracts.push(CONTRACT_ADDRESS);
+
+  // Add other collections if needed:
+  // const otherBalance = await otherContract.methods.balanceOf(userAddress).call();
+  // if (Number(otherBalance) > 0) ownsContracts.push(OTHER_NFT_ADDRESS);
+
+  const query = new URLSearchParams({
+    wallet: userAddress,
+    claim: true,
+    ownsContracts: ownsContracts.join(",")
+  });
+
+  const res = await fetch(`${CLAIM_SHEET_API}?${query.toString()}`);
+  const data = await res.json();
+
+  if (data.error) {
+    showToast(data.error, "warn");
+  } else {
+    const claimed = data.added_quacks || 1;
+    showToast(`🦆 Claimed ${claimed} Quacks!`, "success");
+
+    const quacksCountEl = document.getElementById("quacksCount");
+    if (quacksCountEl) quacksCountEl.innerText = "Daily Quacks: " + (data.new_quacks_total || claimed);
+  }
+} catch (err) {
+  console.error(err);
+  showToast("Error claiming quacks", "error");
+}
+
   });
 }
 
