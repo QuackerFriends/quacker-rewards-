@@ -559,6 +559,12 @@ function renderProductCard(product, ethRate) {
   const priceUSD = Number(product.PriceUSD || product.priceUSD || 0);
   const quacksCost = Number(product.QuacksCost || product.quacksCost || 0);
   const pointsCost = Number(product.PointsCost || product.pointsCost || 0);
+  
+console.log("🦆 Product data:", product.Title, {
+  PriceUSD: product.PriceUSD,
+  QuacksCost: product.QuacksCost,
+  PointsCost: product.PointsCost
+});
 
   // Parse variant prices into a map
   const variantPricesMap = {};
