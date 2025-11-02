@@ -1470,13 +1470,17 @@ async function addToCartWithQuacks(productId, quacksCost) {
   const wallet = (userAddress || "").toLowerCase();
   if (!wallet) { showToast("Connect your wallet first.", "error"); return; }
 
-  const allProducts = Object.values(PRODUCTS).flat();
-  const product = allProducts.find(p => p.ID === productId || p.id === productId);
-  if (!product) { 
-    console.warn("Product not found:", productId, allProducts.map(p => p.ID || p.id));
-    showToast("Product not found", "error"); 
-    return; 
-  }
+ const allProducts = Object.values(PRODUCTS).flat();
+const product = allProducts.find(p =>
+  (p.ID && p.ID === productId) ||
+  (p.id && p.id === productId)
+);
+
+if (!product) {
+  console.error("Product not found:", productId, "Available IDs:", allProducts.map(p => p.ID || p.id));
+  showToast("Product not found", "error");
+  return;
+}
 
 
   const variantSel = document.getElementById(`variant_${productId}`);
