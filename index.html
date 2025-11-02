@@ -995,10 +995,14 @@ async function addToCart(productId) {
 
 /* ===== CART UI (Improved) ===== */
 function updateCartUI() {
-  const countEl = document.getElementById("cartCount");
-  const listEl = document.getElementById("cartList");
-  const totalEl = document.getElementById("cartTotal");
-  if (!countEl || !listEl || !totalEl) return console.warn("Cart UI elements missing");
+ const countEl = document.getElementById("cartCount");
+const listEl = document.getElementById("cartList");
+const totalEl = document.getElementById("totalDisplay"); // ✅ match modal
+const subtotalEl = document.getElementById("subtotalDisplay");
+const shippingEl = document.getElementById("shippingDisplay");
+
+if (!listEl || !totalEl) return console.warn("Cart UI elements missing");
+
 
   const cartCount = cart.reduce((s, i) => s + i.q, 0);
   if (cartCount > 0) {
@@ -1050,7 +1054,14 @@ function updateCartUI() {
     listEl.appendChild(row);
   });
 
-  totalEl.innerText = `${totalEth.toFixed(6)} ETH`;
+const rate = await getEthRate();
+const subtotalUSD = cart.reduce((s, i) => s + i.priceUSD * i.q, 0);
+const shippingUSD = (window.selectedCountry === "USA" ? 5 : 0);
+const totalUSD = subtotalUSD + shippingUSD;
+
+if (subtotalEl) subtotalEl.innerText = `$${subtotalUSD.toFixed(2)}`;
+if (shippingEl) shippingEl.innerText = `$${shippingUSD.toFixed(2)}`;
+if (totalEl) totalEl.innerText = `$${totalUSD.toFixed(2)}`;
 }
 // refresh checkout numbers (if modal visible)
 try { updateCheckoutDisplay(); } catch(e) { /* ignore if elements missing */ }
