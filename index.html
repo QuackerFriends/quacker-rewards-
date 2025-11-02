@@ -1401,7 +1401,7 @@ async function redeemWithPoints(productId, cost) {
   }
 
   try {
-    cconst allProducts = Object.values(PRODUCTS).flat();
+    const allProducts = Object.values(PRODUCTS).flat();
 const product = allProducts.find(p =>
   (p.ID && p.ID === productId) ||
   (p.id && p.id === productId)
