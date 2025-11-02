@@ -572,9 +572,25 @@ function renderProductCard(product, ethRate) {
     currentPrice = variantPricesMap[product.variants[0]];
   }
 
-  const priceHTML = product.pointsCost
-    ? `<p id="price_${product.id}">${product.pointsCost} Points</p>`
-    : `<p id="price_${product.id}">${formatPrice(currentPrice, ethRate)}</p>`;
+// --- Combined price display ---
+let priceText = "";
+
+if (product.priceUSD && Number(product.priceUSD) > 0) {
+  priceText += `$${product.priceUSD}`;
+}
+
+if (product.QuacksCost && Number(product.QuacksCost) > 0) {
+  if (priceText) priceText += " | ";
+  priceText += `🪙 ${product.QuacksCost} Quacks`;
+}
+
+if (product.pointsCost && Number(product.pointsCost) > 0) {
+  if (priceText) priceText += " | ";
+  priceText += `⭐ ${product.pointsCost} Points`;
+}
+
+const priceHTML = `<p id="price_${product.id}" style="font-weight:600;">${priceText}</p>`;
+
 
   // --- Variant Select ---
   let variantHTML = "";
@@ -753,12 +769,21 @@ if (p.CustomInput && p.CustomInput.trim() !== "") {
 }
 
 
-    // 🪙 Redeem + Add to Cart buttons
-    const redeemHTML = p.pointsCost
-      ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${p.id}', ${p.pointsCost})">Redeem for ${p.pointsCost} Points</button>`
-      : "";
+    /// 🪙 Redeem + Add to Cart + Pay with Quacks buttons
+const redeemHTML = p.pointsCost
+  ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${p.id}', ${p.pointsCost})">
+       Redeem for ${p.pointsCost} Points
+     </button>`
+  : "";
 
-    const buyHTML = `<button class="btn buy-btn" onclick="addToCart('${p.id}')">Add to Cart</button>`;
+const quacksHTML = p.quacksCost
+  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${p.id}', ${p.quacksCost})">
+       Pay with ${p.quacksCost} 🪙 Quacks
+     </button>`
+  : "";
+
+const buyHTML = `<button class="btn buy-btn" onclick="addToCart('${p.id}')">Add to Cart</button>`;
+
 
     el.innerHTML = `
       ${imageHTML}
@@ -771,6 +796,7 @@ if (p.CustomInput && p.CustomInput.trim() !== "") {
       ${p.sizeGuide ? `<button class="btn" onclick="openSizeGuide('${p.sizeGuide}')">Size Guide</button>` : ""}
       <div style="margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
         ${buyHTML}
+        ${quacksHTML}
         ${redeemHTML}
       </div>
     `;
@@ -1443,6 +1469,60 @@ async function redeemWithPoints(productId, cost) {
     showToast("Error redeeming item: " + err.message, "error");
   }
 }
+
+  
+async function addToCartWithQuacks(productId, quacksCost) {
+  const wallet = (userAddress || "").toLowerCase();
+  if (!wallet) { showToast("Connect your wallet first.", "error"); return; }
+
+  const allProducts = Object.values(PRODUCTS).flat();
+  const product = allProducts.find(p => p.ID === productId);
+  if (!product) { showToast("Product not found", "error"); return; }
+
+  const variantSel = document.getElementById(`variant_${productId}`);
+  const colorSel = document.getElementById(`color_${productId}`);
+  const sizeSel = document.getElementById(`size_${productId}`);
+  const customEl = document.getElementById(`custom_${productId}`);
+  const customInput = customEl ? customEl.value.trim() : "";
+
+  if ((product.CustomInput || product.customInput) && !customInput) {
+    showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
+    if (customEl) customEl.focus();
+    return;
+  }
+
+  // check user’s Quacks balance
+  const res = await fetch(`${CLAIM_SHEET_API}?wallet=${wallet}`);
+  const data = await res.json();
+  const userRow = data.find(u => u.address.toLowerCase() === wallet);
+  const currentQuacks = userRow ? Number(userRow.quacks_collected || 0) : 0;
+
+  if (currentQuacks < quacksCost) {
+    showToast(`You only have ${currentQuacks} Quacks — need ${quacksCost}.`, "error");
+    return;
+  }
+
+  cart.push({
+    id: productId,
+    title: product.Title,
+    price: 0,
+    priceUSD: 0,
+    q: 1,
+    redeem: false,
+    useQuacks: true,
+    quacksCost,
+    variant: variantSel ? variantSel.value : "",
+    color: colorSel ? colorSel.value : "",
+    size: sizeSel ? sizeSel.value : "",
+    thumb: product.ImageURL || "",
+    customInput
+  });
+
+  updateCartUI();
+  showToast(`🪙 "${product.Title}" added using ${quacksCost} Quacks`, "success");
+  if (typeof openCart === "function") openCart();
+}
+
 
 
 /* ===== MENU & overlay safety ===== */
