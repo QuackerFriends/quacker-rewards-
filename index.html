@@ -1197,7 +1197,7 @@ if(claimQuacksBtn) claimQuacksBtn.addEventListener("click", async ()=>{
 
 /* ===== CHECKOUT / PURCHASE LOGGING ===== */
 const checkoutBtn = document.getElementById("checkoutBtn");
-if(checkoutBtn) checkoutBtn.addEventListener("click", checkout);
+if (checkoutBtn) checkoutBtn.addEventListener("click", checkout);
 
 async function checkout() {
   const shippingAddress = document.getElementById("userAddressInput")?.value || "";
@@ -1213,6 +1213,7 @@ async function checkout() {
     if (!userAddress) { showToast("Connect wallet first", "error"); return; }
     if (cart.length === 0) { showToast("Cart is empty", "info"); return; }
 
+    // --- Ensure correct network ---
     try {
       const chain = await ethereum.request({ method: 'eth_chainId' });
       if (chain !== BASE_CHAIN_ID_HEX) {
@@ -1223,38 +1224,34 @@ async function checkout() {
       console.warn("Chain switch issue:", switchErr);
     }
 
-    // --- calculate subtotal in USD ---
+    // --- Calculate subtotal in USD ---
     let subtotalUSD = 0;
     cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); });
 
-   
-// --- shipping rules (with dropdown selection) ---
-let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
-let shippingUSD = 0;
+    // --- Shipping rules ---
+    let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
+    let shippingUSD = 0;
+    if (subtotalUSD >= 70) {
+      shippingUSD = 0;
+    } else if (country.toLowerCase() === "canada") {
+      shippingUSD = 10;
+    } else {
+      shippingUSD = 5;
+    }
 
-if (subtotalUSD >= 70) {
-  shippingUSD = 0;
-} else if (country.toLowerCase() === "canada") {
-  shippingUSD = 10;
-} else {
-  shippingUSD = 5;
-}
+    console.log("🧭 Country detected:", country, "| ShippingUSD =", shippingUSD);
 
-console.log("🧭 Country detected:", country, "| ShippingUSD =", shippingUSD);
-
-
-
-   // --- compute grand total and convert to ETH ---
-const grandTotalUSD = subtotalUSD + shippingUSD;
-const rate = await getEthRate();
-let totalEth = grandTotalUSD / rate;
-
-
+    // --- Compute grand total and ETH equivalent ---
+    const grandTotalUSD = subtotalUSD + shippingUSD;
+    const rate = await getEthRate();
+    let totalEth = grandTotalUSD / rate;
     let txHash = "";
 
+    // --- Determine redemption status ---
     const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
     const hasMixed = cart.some(ci => !ci.redeem) && cart.some(ci => ci.redeem);
 
+    // --- Process ETH payment (if not pure redemption) ---
     if (!isRedeemOnly) {
       const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
       const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
@@ -1271,7 +1268,7 @@ let totalEth = grandTotalUSD / rate;
       showToast("Transaction sent — logging purchase...", "success", 4000);
       await new Promise(r => setTimeout(r, 1200));
     } else {
-      // --- charge shipping for redeem-only orders if any ---
+      // --- charge shipping for redeem-only orders ---
       if (shippingUSD > 0) {
         showToast(`Redeeming items — $${shippingUSD} shipping will be charged`, "info", 4000);
         const shippingEth = shippingUSD / rate;
@@ -1288,7 +1285,7 @@ let totalEth = grandTotalUSD / rate;
       }
     }
 
-    // --- log each item to Apps Script ---
+    // --- Log each item to Apps Script ---
     for (const ci of cart) {
       const payload = {
         wallet: userAddress,
@@ -1320,7 +1317,25 @@ let totalEth = grandTotalUSD / rate;
       }
     }
 
-    // --- clear cart + UI ---
+    // --- Deduct Quacks if items used Quacks cost ---
+    let totalQuacksCost = 0;
+    cart.forEach(ci => { if (ci.quacksCost) totalQuacksCost += ci.quacksCost; });
+
+    if (totalQuacksCost > 0) {
+      try {
+        const quackRes = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}`);
+        const quackData = await quackRes.json();
+        if (quackData.success) {
+          const remaining = (quackData.quacks || 0) - totalQuacksCost;
+          await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&claim=true&quacks=-${totalQuacksCost}`);
+          showToast(`💸 Used ${totalQuacksCost} Quacks — ${remaining} left!`, "success");
+        }
+      } catch (err) {
+        console.warn("Quack deduction failed:", err);
+      }
+    }
+
+    // --- Clear cart + update UI ---
     cart = [];
     updateCartUI();
     closeCart();
@@ -1332,7 +1347,7 @@ let totalEth = grandTotalUSD / rate;
       showToast("✅ Purchase logged successfully!", "success", 4000);
     }
 
-    // --- optional BaseScan link ---
+    // --- Optional BaseScan link ---
     if (txHash) {
       const baseScanUrl = `https://basescan.org/tx/${txHash}`;
       const linkToast = document.createElement("div");
@@ -1347,6 +1362,7 @@ let totalEth = grandTotalUSD / rate;
     showToast("Checkout failed", "error");
   }
 }
+
 
 
 /* ===== REDEEM WITH POINTS ===== */
