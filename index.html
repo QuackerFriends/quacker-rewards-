@@ -750,33 +750,43 @@ if (p.CustomInput && p.CustomInput.trim() !== "") {
   `;
 }
 
-// 🪙 Redeem + Add to Cart + Pay with Quacks buttons
+// 🛒 Generate product buttons safely
+const productId = p.ID || p.id; // normalize ID
+if (!productId) {
+  console.warn("Product missing ID:", p);
+}
+
+// Costs
 const points = p.PointsCost || p.pointsCost || 0;
 const quacks = p.QuacksCost || p.quacksCost || p.quackscost || 0;
 const usd = p.PriceUSD || p.priceUSD || 0;
 
-const redeemHTML = points > 0
-  ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${p.ID}', ${points})">
+// Redeem button
+const redeemHTML = (points > 0 && productId)
+  ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${productId}', ${points})">
        Redeem for ${points} ⭐ Points
      </button>`
   : "";
-    
-const quacksHTML = quacks > 0
-  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${p.ID}', ${quacks})">
+
+// Quacks button
+const quacksHTML = (quacks > 0 && productId)
+  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${productId}', ${quacks})">
        Pay with ${quacks} 🪙 Quacks
      </button>`
   : "";
 
-
-const buyHTML = usd > 0
-  ? `<button class="btn buy-btn" onclick="addToCart('${p.ID}')">Add to Cart</button>`
+// USD purchase button
+const buyHTML = (usd > 0 && productId)
+  ? `<button class="btn buy-btn" onclick="addToCart('${productId}')">
+       Add to Cart
+     </button>`
   : "";
 
-
+// Combine all HTML
 el.innerHTML = `
   ${imageHTML}
   <h3>${p.title}</h3>
-  <div class="price" id="price_${p.id}">${priceDisplay}</div>
+  <div class="price" id="price_${productId}">${priceDisplay}</div>
   ${variantHTML}
   ${colorHTML}
   ${sizeHTML}
