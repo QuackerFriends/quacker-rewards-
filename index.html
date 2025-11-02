@@ -1217,22 +1217,38 @@ async function updatePointsDisplay() {
 
 /* ===== CLAIM QUACKS ===== */
 const claimQuacksBtn = document.getElementById("claimQuacksBtn");
-if(claimQuacksBtn) claimQuacksBtn.addEventListener("click", async ()=>{
-  if(!userAddress){ showToast("Connect wallet first","warn"); return; }
-  try{
+if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
+  if (!userAddress) {
+    showToast("Connect wallet first", "warn");
+    return;
+  }
+  
+  try {
     const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
     const balance = await contract.methods.balanceOf(userAddress).call();
-    const quacksToAdd = Number(balance) > 0 ? 10 : 2;
+
+    // ✅ Updated logic: 1 per day for non-NFT users
+    let quacksToAdd = 1; // default for users with no eligible NFTs
+    if (Number(balance) > 0) {
+      quacksToAdd = 10; // NFT holders get more
+    }
+
     const res = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(userAddress)}&claim=true&quacks=${quacksToAdd}`);
     const data = await res.json();
-    if(data.error){ showToast(data.error, "warn"); } else {
+
+    if (data.error) {
+      showToast(data.error, "warn");
+    } else {
       showToast(`🦆 Claimed ${quacksToAdd} Quacks!`, "success");
-      const userRow = Array.isArray(data) ? data.find(r => (r.address||"").toLowerCase() === userAddress.toLowerCase()) : null;
       const quacksCount = document.getElementById("quacksCount");
-      if(quacksCount) quacksCount.innerText = "Daily Quacks: " + (data.new_quacks_total || (userRow ? userRow.quacks_collected : 0));
+      if (quacksCount) quacksCount.innerText = "Daily Quacks: " + (data.new_quacks_total || quacksToAdd);
     }
-  }catch(err){ console.error(err); showToast("Error claiming quacks","error"); }
+  } catch (err) {
+    console.error(err);
+    showToast("Error claiming quacks", "error");
+  }
 });
+
 
   
 /* ===== CHECKOUT / PURCHASE LOGGING ===== */
