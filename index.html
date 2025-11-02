@@ -1390,12 +1390,13 @@ async function checkout() {
   }
 }
 
-console.log("🪙 addToCartWithQuacks called with:", productId, quacksCost);
 
 
 
 /* ===== ADD TO CART WITH QUACKS ===== */
 async function addToCartWithQuacks(productId, quacksCost) {
+  console.log("🪙 addToCartWithQuacks called with:", productId, quacksCost);
+
   const wallet = (userAddress || "").toLowerCase();
   if (!wallet) {
     showToast("Connect your wallet first.", "error");
