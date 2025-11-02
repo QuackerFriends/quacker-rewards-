@@ -1332,12 +1332,16 @@ console.log("🧭 Shipping forced to $0 for testing purposes");
       };
 
       if (ci.redeem) {
-        payload.redeem = ci.title;
-        payload.cost = ci.cost;
-      } else {
-        payload.itemName = ci.title;
-        payload.price = Number(ci.price || 0);
-      }
+  payload.redeem = ci.title;
+  payload.cost = ci.cost;
+} else if (ci.useQuacks) {
+  payload.itemName = ci.title;
+  payload.quacksUsed = ci.quacksCost; // Add this field
+} else {
+  payload.itemName = ci.title;
+  payload.price = Number(ci.price || 0);
+}
+
 
       const params = new URLSearchParams(payload).toString();
       try {
