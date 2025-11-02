@@ -1303,9 +1303,18 @@ async function checkout() {
     let subtotalUSD = 0;
     cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); });
 
-    // --- TEMP: Force shipping to $0 for testing ---
+ // --- Shipping rules ---
+    let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
     let shippingUSD = 0;
-    console.log("🧭 Shipping forced to $0 for testing purposes");
+    if (subtotalUSD >= 70) {
+      shippingUSD = 0;
+    } else if (country.toLowerCase() === "canada") {
+      shippingUSD = 10;
+    } else {
+      shippingUSD = 5;
+    }
+
+    console.log("🧭 Country detected:", country, "| ShippingUSD =", shippingUSD);
 
     const grandTotalUSD = subtotalUSD + shippingUSD;
     const rate = await getEthRate();
