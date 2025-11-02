@@ -1276,8 +1276,9 @@ async function checkout() {
     let totalEth = grandTotalUSD / rate;
     let txHash = "";
 
-    // --- Determine redemption status ---
+    // --- Determine redemption / Quacks status ---
     const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
+    const isQuacksOnly = cart.length > 0 && cart.every(ci => ci.useQuacks);
     const hasMixed = cart.some(ci => !ci.redeem) && cart.some(ci => ci.redeem);
 
     // --- Process ETH payment (if not pure redemption) ---
@@ -1346,28 +1347,26 @@ async function checkout() {
       }
     }
 
-    // --- Deduct Quacks if items used Quacks cost ---
-    let totalQuacksCost = 0;
-    cart.forEach(ci => { if (ci.quacksCost) totalQuacksCost += ci.quacksCost; });
+    // --- Deduct Quacks for Quacks-only or mixed orders ---
+    if (isQuacksOnly || cart.some(ci => ci.useQuacks)) {
+      let totalQuacksCost = 0;
+      cart.forEach(ci => { if (ci.useQuacks) totalQuacksCost += ci.quacksCost || 0; });
 
-    if (totalQuacksCost > 0) {
-      try {
-        const quackRes = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}`);
-        const quackData = await quackRes.json();
-        if (quackData.success) {
+      if (totalQuacksCost > 0) {
+        try {
+          // Fetch current balance
+          const quackRes = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}`);
+          const quackData = await quackRes.json();
           const remaining = (quackData.quacks || 0) - totalQuacksCost;
+
+          // Deduct Quacks
           await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&claim=true&quacks=-${totalQuacksCost}`);
-          showToast(`💸 Used ${totalQuacksCost} Quacks — ${remaining} left!`, "success");
+          showToast(`💸 Used ${totalQuacksCost} Quacks — ${remaining} left!`, "success", 4000);
+        } catch (err) {
+          console.warn("Quack deduction failed:", err);
         }
-      } catch (err) {
-        console.warn("Quack deduction failed:", err);
       }
     }
-
-    // --- Clear cart + update UI ---
-    cart = [];
-    updateCartUI();
-    closeCart();
 
     if (isRedeemOnly) {
       showToast("✅ Redemption logged successfully!", "success", 4000);
