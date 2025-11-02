@@ -606,24 +606,26 @@ function renderProductCard(p, ethRate) {
 
 
  // Buttons
+const prodId = p.ID || p.id; // normalize
+
 const redeemHTML = pointsCost > 0
-  ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${p.ID}', ${pointsCost})">
+  ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${prodId}', ${pointsCost})">
        Redeem for ${pointsCost} ⭐ Points
      </button>`
   : "";
 
 const quacksHTML = quacksCost > 0
-  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${p.ID}', ${quacksCost})">
+  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${prodId}', ${quacksCost})">
        Pay with ${quacksCost} 🪙 Quacks
      </button>`
   : "";
 
-// Fix: use priceUSD, pointsCost, quacksCost
 const buyHTML = (priceUSD > 0 || (priceUSD === 0 && pointsCost === 0 && quacksCost === 0))
-  ? `<button class="btn buy-btn" onclick="addToCart('${p.ID}')">
+  ? `<button class="btn buy-btn" onclick="addToCart('${prodId}')">
        Add to Cart
      </button>`
   : "";
+
 
 
   // Card HTML
