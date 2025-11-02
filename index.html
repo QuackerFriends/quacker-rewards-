@@ -589,7 +589,21 @@ if (product.pointsCost && Number(product.pointsCost) > 0) {
   priceText += `⭐ ${product.pointsCost} Points`;
 }
 
-const priceHTML = `<p id="price_${product.id}" style="font-weight:600;">${priceText}</p>`;
+let priceHTML = `<p id="price_${product.id}" style="font-weight:600;">`;
+
+const parts = [];
+if (product.priceUSD && Number(product.priceUSD) > 0) {
+  parts.push(`💵 $${Number(product.priceUSD).toFixed(2)}`);
+}
+if (product.QuacksCost && Number(product.QuacksCost) > 0) {
+  parts.push(`🪙 ${product.QuacksCost} Quacks`);
+}
+if (product.pointsCost && Number(product.pointsCost) > 0) {
+  parts.push(`⭐ ${product.pointsCost} Points`);
+}
+
+priceHTML += parts.join(" | ") || "—";
+priceHTML += `</p>`;
 
 
   // --- Variant Select ---
@@ -629,15 +643,25 @@ const priceHTML = `<p id="price_${product.id}" style="font-weight:600;">${priceT
   }
 
   // --- Buttons ---
-  let btnHTML = "";
-  if (product.pointsCost && Number(product.pointsCost) > 0) {
-    btnHTML += `<button class="btn secondary" onclick="redeemWithPoints('${product.id}', ${product.pointsCost})">
-      🪙 Redeem (${product.pointsCost} pts)
-    </button>`;
-  }
-  if (product.priceUSD || Object.keys(variantPricesMap).length) {
-    btnHTML += `<button class="btn" onclick="addToCart('${product.id}')">🛒 Add to Cart</button>`;
-  }
+let btnHTML = "";
+
+if (product.pointsCost && Number(product.pointsCost) > 0) {
+  btnHTML += `<button class="btn secondary" onclick="redeemWithPoints('${product.id}', ${product.pointsCost})">
+    ⭐ Redeem (${product.pointsCost} pts)
+  </button>`;
+}
+
+if (product.QuacksCost && Number(product.QuacksCost) > 0) {
+  btnHTML += `<button class="btn quack-btn" onclick="addToCartWithQuacks('${product.id}', ${product.QuacksCost})">
+    🪙 Buy with ${product.QuacksCost} Quacks
+  </button>`;
+}
+
+if (product.priceUSD || Object.keys(variantPricesMap).length) {
+  btnHTML += `<button class="btn" onclick="addToCart('${product.id}')">🛒 Add to Cart</button>`;
+}
+
+  
 
   // --- Card HTML ---
   const html = `
