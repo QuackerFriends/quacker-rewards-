@@ -788,19 +788,19 @@ const quacks = p.QuacksCost || p.quacksCost || p.quackscost || 0;
 const usd = p.PriceUSD || p.priceUSD || 0;
 
 const redeemHTML = points > 0
-  ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${p.id}', ${points})">
+  ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${p.ID}', ${points})">
        Redeem for ${points} ⭐ Points
      </button>`
   : "";
 
 const quacksHTML = quacks > 0
-  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${p.id}', ${quacks})">
+  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${p.ID}', ${quacks})">
        Pay with ${quacks} 🪙 Quacks
      </button>`
   : "";
 
 const buyHTML = usd > 0
-  ? `<button class="btn buy-btn" onclick="addToCart('${p.id}')">Add to Cart</button>`
+  ? `<button class="btn buy-btn" onclick="addToCart('${p.ID}')">Add to Cart</button>`
   : "";
 
 el.innerHTML = `
@@ -987,7 +987,9 @@ function addTapestryToCart(prodId){
 /* ===== ADD TO CART ===== */
 async function addToCart(productId) {
   const allProducts = Object.values(PRODUCTS).flat();
-  const product = allProducts.find(p => p.id === productId);
+  const product = allProducts.find(
+  p => p.ID === productId || p.id === productId
+ );
   if (!product) return showToast("Product not found", "error");
 
   const variantSel = document.getElementById(`variant_${productId}`);
