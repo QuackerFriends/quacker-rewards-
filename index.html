@@ -611,7 +611,7 @@ function renderProductCard(p, ethRate) {
        </button>` : "";
 
   const quacksHTML = quacksCost > 0
-    ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${p.ID}', ${quacksCost})">
+    ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${product.ID || product.id}', ${product.QuacksCost || product.quacksCost})">
          Pay with ${quacksCost} 🪙 Quacks
        </button>` : "";
 
