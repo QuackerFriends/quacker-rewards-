@@ -960,12 +960,17 @@ function addTapestryToCart(prodId){
 /* ===== ADD TO CART ===== */
 async function addToCart(productId) {
  const allProducts = Object.values(PRODUCTS).flat();
-const product = allProducts.find(p => p.ID === productId || p.id === productId);
+const product = allProducts.find(p =>
+  (p.ID && p.ID === productId) ||
+  (p.id && p.id === productId)
+);
+
 if (!product) {
-  console.warn("Product not found:", productId, allProducts.map(p => p.ID || p.id));
+  console.error("Product not found:", productId, "Available IDs:", allProducts.map(p => p.ID || p.id));
   showToast("Product not found", "error");
   return;
 }
+
 
   const variantSel = document.getElementById(`variant_${productId}`);
   const colorSel = document.getElementById(`color_${productId}`);
@@ -1396,12 +1401,18 @@ async function redeemWithPoints(productId, cost) {
   }
 
   try {
-    const allProducts = Object.values(PRODUCTS).flat();
-    const product = allProducts.find(p => p.ID === productId || p.id === productId);
-    if (!product) {
-      showToast("Product not found", "error");
-      return;
-    }
+    cconst allProducts = Object.values(PRODUCTS).flat();
+const product = allProducts.find(p =>
+  (p.ID && p.ID === productId) ||
+  (p.id && p.id === productId)
+);
+
+if (!product) {
+  console.error("Product not found:", productId, "Available IDs:", allProducts.map(p => p.ID || p.id));
+  showToast("Product not found", "error");
+  return;
+}
+
 
     const variantSel = document.getElementById(`variant_${productId}`);
     const colorSel = document.getElementById(`color_${productId}`);
