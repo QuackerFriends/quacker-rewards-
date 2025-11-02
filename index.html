@@ -1216,52 +1216,52 @@ async function updatePointsDisplay() {
 }
 
 /* ===== CLAIM QUACKS ===== */
+/* ===== CLAIM QUACKS ===== */
 const claimQuacksBtn = document.getElementById("claimQuacksBtn");
-
-if (claimQuacksBtn) {
-  claimQuacksBtn.addEventListener("click", async () => {
-    if (!userAddress) {
-      showToast("Connect wallet first", "warn");
-      return;
-    }
-    
-    try {
-  const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-  const mainNFTBalance = await contract.methods.balanceOf(userAddress).call();
-
-  // Collect all eligible NFT contracts here
-  const ownsContracts = [];
-  if (Number(mainNFTBalance) > 0) ownsContracts.push(CONTRACT_ADDRESS);
-
-  // Add other collections if needed:
-  // const otherBalance = await otherContract.methods.balanceOf(userAddress).call();
-  // if (Number(otherBalance) > 0) ownsContracts.push(OTHER_NFT_ADDRESS);
-
-  const query = new URLSearchParams({
-    wallet: userAddress,
-    claim: true,
-    ownsContracts: ownsContracts.join(",")
-  });
-
-  const res = await fetch(`${CLAIM_SHEET_API}?${query.toString()}`);
-  const data = await res.json();
-
-  if (data.error) {
-    showToast(data.error, "warn");
-  } else {
-    const claimed = data.added_quacks || 1;
-    showToast(`🦆 Claimed ${claimed} Quacks!`, "success");
-
-    const quacksCountEl = document.getElementById("quacksCount");
-    if (quacksCountEl) quacksCountEl.innerText = "Daily Quacks: " + (data.new_quacks_total || claimed);
+if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
+  if (!userAddress) {
+    showToast("Connect wallet first", "warn");
+    return;
   }
-} catch (err) {
-  console.error(err);
-  showToast("Error claiming quacks", "error");
-}
 
-  });
-}
+  try {
+    const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+    const mainNFTBalance = await contract.methods.balanceOf(userAddress).call();
+
+    // ✅ Collect all eligible NFT contracts (main + others if needed)
+    const ownsContracts = [];
+    if (Number(mainNFTBalance) > 0) ownsContracts.push(CONTRACT_ADDRESS);
+
+    // Example for other collections (uncomment if needed)
+    // const otherContract = new web3.eth.Contract(OTHER_ABI, OTHER_CONTRACT_ADDRESS);
+    // const otherBalance = await otherContract.methods.balanceOf(userAddress).call();
+    // if (Number(otherBalance) > 0) ownsContracts.push(OTHER_CONTRACT_ADDRESS);
+
+    const query = new URLSearchParams({
+      wallet: userAddress,
+      claim: true,
+      ownsContracts: ownsContracts.join(",")
+    });
+
+    const res = await fetch(`${CLAIM_SHEET_API}?${query.toString()}`);
+    const data = await res.json();
+
+    if (data.error) {
+      showToast(data.error, "warn");
+    } else {
+      const claimed = data.added_quacks || 1;
+      showToast(`🦆 Claimed ${claimed} Quacks!`, "success");
+
+      const quacksCountEl = document.getElementById("quacksCount");
+      if (quacksCountEl) quacksCountEl.innerText = "Daily Quacks: " + (data.new_quacks_total || claimed);
+    }
+
+  } catch (err) {
+    console.error(err);
+    showToast("Error claiming quacks", "error");
+  }
+});
+
 
 
 /* ===== CHECKOUT / PURCHASE LOGGING ===== */
