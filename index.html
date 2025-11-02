@@ -781,20 +781,26 @@ if (p.CustomInput && p.CustomInput.trim() !== "") {
   `;
 }
 
-/// 🪙 Redeem + Add to Cart + Pay with Quacks buttons
-const redeemHTML = p.PointsCost || p.pointsCost
-  ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${p.id}', ${p.PointsCost || p.pointsCost})">
-       Redeem for ${p.PointsCost || p.pointsCost} Points
+    // 🪙 Redeem + Add to Cart + Pay with Quacks buttons
+const points = p.PointsCost || p.pointsCost || 0;
+const quacks = p.QuacksCost || p.quackscost || 0;
+const usd = p.PriceUSD || p.priceUSD || 0;
+
+const redeemHTML = points > 0
+  ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${p.id}', ${points})">
+       Redeem for ${points} ⭐ Points
      </button>`
   : "";
 
-const quacksHTML = p.QuacksCost || p.quackscost
-  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${p.id}', ${p.QuacksCost || p.quackscost})">
-       🪙 Buy with ${p.QuacksCost || p.quackscost} Quacks
+const quacksHTML = quacks > 0
+  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${p.id}', ${quacks})">
+       Pay with ${quacks} 🪙 Quacks
      </button>`
   : "";
 
-const buyHTML = `<button class="btn buy-btn" onclick="addToCart('${p.id}')">Add to Cart</button>`;
+const buyHTML = usd > 0
+  ? `<button class="btn buy-btn" onclick="addToCart('${p.id}')">Add to Cart</button>`
+  : "";
 
 
 
