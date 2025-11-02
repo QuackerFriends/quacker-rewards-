@@ -1101,7 +1101,7 @@ async function updateCartUI() {
   // 🚚 Determine shipping cost
   const countrySelect = document.getElementById("shippingCountry");
   const selectedCountry = countrySelect ? countrySelect.value : "USA";
-  const shippingUSD = subtotalUSD >= 70 ? 0 : (selectedCountry === "USA" ? 5 : 10);
+  const shippingUSD = subtotalUSD >= 70 ? 0 : (selectedCountry === "USA" ? 0 : 10);
 
   const totalUSD = subtotalUSD + shippingUSD;
 
