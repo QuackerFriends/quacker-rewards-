@@ -1176,82 +1176,138 @@ const checkoutBtn = document.getElementById("checkoutBtn");
 if(checkoutBtn) checkoutBtn.addEventListener("click", checkout);
 
 async function checkout() {
-  const addressInput = document.getElementById("userAddressInput");
-  const referrerInput = document.getElementById("referrerInput");
-  const paymentSelector = document.getElementById("paymentSelector");
-  const countrySel = document.getElementById("shippingCountry");
+  const shippingAddress = document.getElementById("userAddressInput")?.value || "";
+  const referrer = document.getElementById("referrerInput")?.value?.trim() || "";
 
-  const address = addressInput?.value.trim();
-  const referrer = referrerInput?.value.trim() || "";
-  const paymentType = paymentSelector?.value || "eth";
-  const country = countrySel?.value || "USA";
-
-  if (!address) {
-    alert("Please enter a shipping address.");
+  if (!shippingAddress.trim()) {
+    showToast("Please enter your shipping address before completing your purchase!", "error");
     return;
   }
 
-  // Calculate totals
-  const subtotal = calcSubtotalUSD();
-  const shipping = getShippingCharge(country, subtotal);
-  const totalUSD = subtotal + shipping;
+  try {
+    if (!window.ethereum) { showToast("MetaMask not found", "error"); return; }
+    if (!userAddress) { showToast("Connect wallet first", "error"); return; }
+    if (cart.length === 0) { showToast("Cart is empty", "info"); return; }
 
-  if (cart.length === 0) {
-    alert("Your cart is empty!");
-    return;
-  }
-
-  // --- ETH PAYMENT (onchain)
-  if (paymentType === "eth") {
     try {
-      const ethPrice = await getETHPriceUSD(); // your existing function
-      const totalETH = totalUSD / ethPrice;
-      const totalWei = ethers.parseUnits(totalETH.toFixed(6), "ether");
-
-      const tx = await signer.sendTransaction({
-        to: SHOP_WALLET,
-        value: totalWei
-      });
-
-      alert("✅ Transaction sent! Waiting for confirmation...");
-      await tx.wait();
-
-      await finalizeOrder({
-        txHash: tx.hash,
-        paymentType,
-        address,
-        referrer,
-        subtotal,
-        shipping,
-        totalUSD,
-        country
-      });
-    } catch (err) {
-      console.error(err);
-      alert("❌ Transaction failed or cancelled.");
+      const chain = await ethereum.request({ method: 'eth_chainId' });
+      if (chain !== BASE_CHAIN_ID_HEX) {
+        await ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: BASE_CHAIN_ID_HEX }] });
+        showToast("Switched to Base mainnet", "success");
+      }
+    } catch (switchErr) {
+      console.warn("Chain switch issue:", switchErr);
     }
-  }
 
-  // --- POINTS or QUACKS PAYMENT (offchain)
-  else if (paymentType === "points" || paymentType === "quacks") {
-    // These are handled by your Google Sheets APIs
-    try {
-      await finalizeOrder({
-        txHash: "", // no blockchain tx
-        paymentType,
-        address,
-        referrer,
-        subtotal,
-        shipping,
-        totalUSD,
-        country
-      });
-      alert("✅ Order placed successfully!");
-      closeCart();
-    } catch (err) {
-      console.error(err);
-      alert("❌ Error placing order.");
+    // --- calculate subtotal in USD ---
+    let subtotalUSD = 0;
+    cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); });
+
+    // --- shipping rules ---
+    // (default USA, later we’ll add a dropdown)
+    const country = "USA";
+    const shippingUSD = subtotalUSD >= 70 ? 0 : (country === "Canada" ? 10 : 5);
+    const totalUSD = subtotalUSD + shippingUSD;
+
+    // --- convert USD to ETH ---
+    const rate = await getEthRate();
+    let totalEth = totalUSD / rate;
+
+    let txHash = "";
+
+    const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
+    const hasMixed = cart.some(ci => !ci.redeem) && cart.some(ci => ci.redeem);
+
+    if (!isRedeemOnly) {
+      const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
+      const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
+      showToast(`Please confirm your purchase (includes $${shippingUSD} shipping)`, "info", 8000);
+
+      try {
+        txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
+      } catch (txErr) {
+        console.warn("tx aborted", txErr);
+        showToast("Transaction cancelled or failed — purchase not logged", "error");
+        return;
+      }
+
+      showToast("Transaction sent — logging purchase...", "success", 4000);
+      await new Promise(r => setTimeout(r, 1200));
+    } else {
+      // --- charge shipping for redeem-only orders if any ---
+      if (shippingUSD > 0) {
+        showToast(`Redeeming items — $${shippingUSD} shipping will be charged`, "info", 4000);
+        const shippingEth = shippingUSD / rate;
+        const valueHex = "0x" + BigInt(Math.floor(shippingEth * 1e18)).toString(16);
+        const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
+        try {
+          txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
+        } catch (txErr) {
+          showToast("Shipping payment cancelled — redemption not logged", "error");
+          return;
+        }
+      } else {
+        showToast("Redeeming item with points — free shipping!", "success", 4000);
+      }
     }
+
+    // --- log each item to Apps Script ---
+    for (const ci of cart) {
+      const payload = {
+        wallet: userAddress,
+        variant: ci.variant || "",
+        color: ci.color || "",
+        size: ci.size || "",
+        quantity: ci.q || 1,
+        address: shippingAddress,
+        txHash,
+        referrer,
+        customInput: ci.customInput || ""
+      };
+
+      if (ci.redeem) {
+        payload.redeem = ci.title;
+        payload.cost = ci.cost;
+      } else {
+        payload.itemName = ci.title;
+        payload.price = Number(ci.price || 0);
+      }
+
+      const params = new URLSearchParams(payload).toString();
+      try {
+        const res = await fetch(`${PURCHASE_API}?${params}`);
+        const data = await res.json();
+        console.log("Server response:", data);
+      } catch (logErr) {
+        console.warn("Logging failed for item", payload, logErr);
+      }
+    }
+
+    // --- clear cart + UI ---
+    cart = [];
+    updateCartUI();
+    closeCart();
+
+    if (isRedeemOnly) {
+      showToast("✅ Redemption logged successfully!", "success", 4000);
+      updatePointsDisplay();
+    } else {
+      showToast("✅ Purchase logged successfully!", "success", 4000);
+    }
+
+    // --- optional BaseScan link ---
+    if (txHash) {
+      const baseScanUrl = `https://basescan.org/tx/${txHash}`;
+      const linkToast = document.createElement("div");
+      linkToast.className = "toast success";
+      linkToast.innerHTML = `✅ Purchase sent — <a href="${baseScanUrl}" target="_blank" style="color:#fff;text-decoration:underline">View on BaseScan</a>`;
+      document.getElementById("toast-container").appendChild(linkToast);
+      setTimeout(() => linkToast.remove(), 8000);
+    }
+
+  } catch (err) {
+    console.error("checkout error", err);
+    showToast("Checkout failed", "error");
   }
 }
 
