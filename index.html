@@ -1224,22 +1224,17 @@ if (claimQuacksBtn) {
       showToast("Connect wallet first", "warn");
       return;
     }
-
+    
     try {
-      // Call backend API directly, let backend handle the NFT logic
       const res = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(userAddress)}&claim=true`);
       const data = await res.json();
 
       if (data.error) {
         showToast(data.error, "warn");
       } else {
-        // Use backend's actual added_quacks
         showToast(`🦆 Claimed ${data.added_quacks} Quacks!`, "success");
-
         const quacksCount = document.getElementById("quacksCount");
-        if (quacksCount) {
-          quacksCount.innerText = "Daily Quacks: " + (data.new_quacks_total || 0);
-        }
+        if (quacksCount) quacksCount.innerText = "Daily Quacks: " + (data.new_quacks_total || 0);
       }
     } catch (err) {
       console.error(err);
@@ -1247,6 +1242,7 @@ if (claimQuacksBtn) {
     }
   });
 }
+
 
 /* ===== CHECKOUT / PURCHASE LOGGING ===== */
 const checkoutBtn = document.getElementById("checkoutBtn");
