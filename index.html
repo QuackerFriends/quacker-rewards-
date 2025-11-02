@@ -1203,11 +1203,19 @@ async function checkout() {
     let subtotalUSD = 0;
     cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); });
 
-    // --- shipping rules ---
-    // (default USA, later we’ll add a dropdown)
-    const country = "USA";
-    const shippingUSD = subtotalUSD >= 70 ? 0 : (country === "Canada" ? 10 : 5);
-    const totalUSD = subtotalUSD + shippingUSD;
+   
+   // --- shipping rules (with dropdown selection) ---
+const country = document.getElementById("countrySelect")?.value || "USA";
+let shippingUSD = 0;
+
+if (subtotalUSD >= 70) {
+  shippingUSD = 0;
+} else if (country === "Canada") {
+  shippingUSD = 10;
+} else {
+  shippingUSD = 5;
+}
+
 
     // --- convert USD to ETH ---
     const rate = await getEthRate();
