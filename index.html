@@ -288,6 +288,15 @@ header, .nav-container, .nav-actions, .nav-actions button {
       <strong>Subtotal</strong>
       <strong id="subtotalDisplay">$0.00</strong>
     </div>
+    
+     <div style="margin-top:10px;">
+      <label for="shippingCountry" style="font-weight:bold;">Shipping Country:</label><br>
+      <select id="shippingCountry" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;margin-top:6px;">
+        <option value="USA">United States</option>
+        <option value="Canada">Canada</option>
+      </select>
+    </div>
+
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
       <strong>Shipping</strong>
@@ -305,14 +314,7 @@ header, .nav-container, .nav-actions, .nav-actions button {
         style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;min-height:70px;"></textarea>
     </div>
 
-    <div style="margin-top:10px;">
-      <label for="shippingCountry" style="font-weight:bold;">Shipping Country:</label><br>
-      <select id="shippingCountry" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;margin-top:6px;">
-        <option value="USA">United States</option>
-        <option value="Canada">Canada</option>
-      </select>
-    </div>
-
+   
     <div style="margin-top:10px;">
       <label for="paymentSelector" style="font-weight:bold;">Pay with:</label><br>
       <select id="paymentSelector" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;margin-top:6px;">
@@ -1204,8 +1206,8 @@ async function checkout() {
     cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); });
 
    
-  // --- shipping rules (with dropdown selection) ---
-let country = selectedCountry || "USA";
+// --- shipping rules (with dropdown selection) ---
+let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
 let shippingUSD = 0;
 
 if (subtotalUSD >= 70) {
@@ -1217,7 +1219,6 @@ if (subtotalUSD >= 70) {
 }
 
 console.log("🧭 Country detected:", country, "| ShippingUSD =", shippingUSD);
-
 
 
 
@@ -1421,12 +1422,22 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   await loadProducts();
   
 
- document.addEventListener("change", (e) => {
-  if (e.target && e.target.id === "countrySelect") {
-    selectedCountry = e.target.value.trim();
-    console.log("🌎 Country changed to:", selectedCountry);
+// --- shipping country listener ---
+document.addEventListener("DOMContentLoaded", () => {
+  const countrySelect = document.getElementById("shippingCountry");
+  if (countrySelect) {
+    // set global variable for selected country
+    window.selectedCountry = countrySelect.value;
+
+    countrySelect.addEventListener("change", (e) => {
+      window.selectedCountry = e.target.value.trim();
+      console.log("🌎 Country changed to:", window.selectedCountry);
+    });
+  } else {
+    console.warn("⚠️ shippingCountry select not found in DOM!");
   }
 });
+
 
 });
 
