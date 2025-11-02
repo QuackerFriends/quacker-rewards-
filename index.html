@@ -617,7 +617,7 @@ function renderProductCard(p, ethRate) {
   : "";
 
 
-  const buyHTML = priceUSD > 0
+const buyHTML = (usd > 0 || (points === 0 && quacks === 0))
     ? `<button class="btn buy-btn" onclick="addToCart('${p.ID}')">
          Add to Cart
        </button>` : "";
