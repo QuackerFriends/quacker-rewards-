@@ -553,8 +553,13 @@ async function loadProducts() {
 
   
 
-/* ===== RENDER PRODUCT CARD ===== */
+/* ===== RENDER PRODUCT CARD (with Quacks + Points + USD) ===== */
 function renderProductCard(product, ethRate) {
+  // Normalize field names from Google Sheet
+  const priceUSD = Number(product.PriceUSD || product.priceUSD || 0);
+  const quacksCost = Number(product.QuacksCost || product.quacksCost || 0);
+  const pointsCost = Number(product.PointsCost || product.pointsCost || 0);
+
   // Parse variant prices into a map
   const variantPricesMap = {};
   if (product.VariantPrices) {
@@ -564,70 +569,51 @@ function renderProductCard(product, ethRate) {
     });
   }
 
-  // Determine base price
-  let currentPrice = product.priceUSD || 0;
-
-  // If first variant has a specific price, use it as initial
+  // Determine initial price (USD if available)
+  let currentPrice = priceUSD;
   if (product.variants && product.variants.length && variantPricesMap[product.variants[0]] != null) {
     currentPrice = variantPricesMap[product.variants[0]];
   }
 
-// --- Combined price display ---
-let priceText = "";
-
-if (product.priceUSD && Number(product.priceUSD) > 0) {
-  priceText += `$${product.priceUSD}`;
-}
-
-if (product.QuacksCost && Number(product.QuacksCost) > 0) {
-  if (priceText) priceText += " | ";
-  priceText += `🪙 ${product.QuacksCost} Quacks`;
-}
-
-if (product.pointsCost && Number(product.pointsCost) > 0) {
-  if (priceText) priceText += " | ";
-  priceText += `⭐ ${product.pointsCost} Points`;
-}
-
-let priceHTML = `<p id="price_${product.id}" style="font-weight:600;">`;
-
-const parts = [];
-if (product.priceUSD && Number(product.priceUSD) > 0) {
-  parts.push(`💵 $${Number(product.priceUSD).toFixed(2)}`);
-}
-if (product.QuacksCost && Number(product.QuacksCost) > 0) {
-  parts.push(`🪙 ${product.QuacksCost} Quacks`);
-}
-if (product.pointsCost && Number(product.pointsCost) > 0) {
-  parts.push(`⭐ ${product.pointsCost} Points`);
-}
-
-priceHTML += parts.join(" | ") || "—";
-priceHTML += `</p>`;
-
+  // --- Price display ---
+  let priceHTML = "";
+  if (priceUSD > 0) {
+    priceHTML += `$${priceUSD.toFixed(2)}`;
+  }
+  if (quacksCost > 0) {
+    if (priceHTML) priceHTML += " | ";
+    priceHTML += `🪙 ${quacksCost} Quacks`;
+  }
+  if (pointsCost > 0) {
+    if (priceHTML) priceHTML += " | ";
+    priceHTML += `⭐ ${pointsCost} Points`;
+  }
 
   // --- Variant Select ---
   let variantHTML = "";
-  if (product.variants && product.variants.length) {
-    const opts = product.variants.map(v => `<option value="${v}">${v}</option>`).join("");
+  if (product.VariantOptions) {
+    const variants = product.VariantOptions.split(",").map(v => v.trim());
+    const opts = variants.map(v => `<option value="${v}">${v}</option>`).join("");
     variantHTML = `<label>Variant:</label>
-      <select id="variant_${product.id}" class="variant-select">${opts}</select>`;
+      <select id="variant_${product.ID}" class="variant-select">${opts}</select>`;
   }
 
   // --- Color Select ---
   let colorHTML = "";
-  if (product.colors && product.colors.length) {
-    const opts = product.colors.map(c => `<option value="${c}">${c}</option>`).join("");
+  if (product.ColorOptions) {
+    const colors = product.ColorOptions.split(",").map(c => c.trim());
+    const opts = colors.map(c => `<option value="${c}">${c}</option>`).join("");
     colorHTML = `<label>Color:</label>
-      <select id="color_${product.id}" class="color-select">${opts}</select>`;
+      <select id="color_${product.ID}" class="color-select">${opts}</select>`;
   }
 
   // --- Size Select ---
   let sizeHTML = "";
-  if (product.sizes && product.sizes.length) {
-    const opts = product.sizes.map(s => `<option value="${s}">${s}</option>`).join("");
+  if (product.SizeOptions) {
+    const sizes = product.SizeOptions.split(",").map(s => s.trim());
+    const opts = sizes.map(s => `<option value="${s}">${s}</option>`).join("");
     sizeHTML = `<label>Size:</label>
-      <select id="size_${product.id}" class="size-select">${opts}</select>`;
+      <select id="size_${product.ID}" class="size-select">${opts}</select>`;
   }
 
   // --- Custom input ---
@@ -636,40 +622,35 @@ priceHTML += `</p>`;
   if (customText.trim() !== "") {
     customHTML = `
       <div class="custom-input">
-        <label for="custom_${product.id}" style="font-size:13px;color:#555">${customText}</label>
-        <input id="custom_${product.id}" type="text" placeholder="${customText}"
+        <label for="custom_${product.ID}" style="font-size:13px;color:#555">${customText}</label>
+        <input id="custom_${product.ID}" type="text" placeholder="${customText}"
           style="width:100%;padding:6px 8px;margin-top:4px;border:1px solid #ccc;border-radius:6px" />
       </div>`;
   }
 
   // --- Buttons ---
-let btnHTML = "";
+  let btnHTML = "";
+  if (quacksCost > 0) {
+    btnHTML += `<button class="btn secondary" onclick="addToCartWithQuacks('${product.ID}', ${quacksCost})">
+      🪙 Buy with ${quacksCost} Quacks
+    </button>`;
+  }
+  if (pointsCost > 0) {
+    btnHTML += `<button class="btn secondary" onclick="redeemWithPoints('${product.ID}', ${pointsCost})">
+      ⭐ Redeem (${pointsCost} pts)
+    </button>`;
+  }
+  if (priceUSD > 0 || Object.keys(variantPricesMap).length) {
+    btnHTML += `<button class="btn" onclick="addToCart('${product.ID}')">🛒 Add to Cart</button>`;
+  }
 
-if (product.pointsCost && Number(product.pointsCost) > 0) {
-  btnHTML += `<button class="btn secondary" onclick="redeemWithPoints('${product.id}', ${product.pointsCost})">
-    ⭐ Redeem (${product.pointsCost} pts)
-  </button>`;
-}
-
-if (product.QuacksCost && Number(product.QuacksCost) > 0) {
-  btnHTML += `<button class="btn quack-btn" onclick="addToCartWithQuacks('${product.id}', ${product.QuacksCost})">
-    🪙 Buy with ${product.QuacksCost} Quacks
-  </button>`;
-}
-
-if (product.priceUSD || Object.keys(variantPricesMap).length) {
-  btnHTML += `<button class="btn" onclick="addToCart('${product.id}')">🛒 Add to Cart</button>`;
-}
-
-  
-
-  // --- Card HTML ---
+  // --- Final card HTML ---
   const html = `
     <div class="item" style="background:var(--card);padding:16px;border-radius:12px;box-shadow:var(--shadow);">
-      <img src="${product.image || ""}" alt="${product.title || ""}" 
+      <img src="${product.ImageURL || ""}" alt="${product.Title || ""}" 
            style="width:100%;border-radius:8px;object-fit:contain;">
-      <h3>${product.title}</h3>
-      ${priceHTML}
+      <h3>${product.Title || ""}</h3>
+      <p id="price_${product.ID}" style="margin:6px 0;">${priceHTML}</p>
       ${variantHTML}
       ${colorHTML}
       ${sizeHTML}
@@ -677,13 +658,8 @@ if (product.priceUSD || Object.keys(variantPricesMap).length) {
       <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">${btnHTML}</div>
     </div>
   `;
-
-  // Return card HTML string
   return html;
 }
-
-
-
  
 
 /* ===== RENDER CATEGORY (with image carousel) ===== */
