@@ -500,6 +500,7 @@ async function loadProducts() {
           title: item.Title || "",
           description: item.Description || "",
           priceUSD: item.PriceUSD ? Number(item.PriceUSD) : 0,
+          quacksCost: item.QuacksCost || 0,
           pointsCost: item.PointsCost ? Number(item.PointsCost) : null,
           variants: variantsFromSheet,
           colors: colorsFromSheet,
