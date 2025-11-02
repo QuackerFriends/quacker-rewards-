@@ -1130,6 +1130,7 @@ async function checkout(){
     }
 
     let txHash = "";
+    
    const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
    const hasMixed = cart.some(ci => !ci.redeem) && cart.some(ci => ci.redeem);
 
