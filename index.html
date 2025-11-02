@@ -553,14 +553,11 @@ async function loadProducts() {
 }
 
   
-
 /* ===== RENDER PRODUCT CARD (with Quacks + Points + USD) ===== */
 function renderProductCard(p, ethRate) {
-  // Debug: check product object
-  console.log("Rendering product:", p.ID, p.Title);
-
-  // Prices
-  const priceUSD = p.PriceUSD || p.priceUSD || 0;
+  // Normalize IDs and prices
+  const productId = p.ID || p.id;
+  const priceUSD = p.PriceUSD || p.priceUSD || p.price || 0;
   const pointsCost = p.PointsCost || p.pointsCost || 0;
   const quacksCost = p.QuacksCost || p.quacksCost || 0;
 
@@ -573,61 +570,70 @@ function renderProductCard(p, ethRate) {
 
   // Variants
   let variantHTML = "";
-  if (p.VariantOptions) {
-    const variants = p.VariantOptions.split(",").map(v => v.trim());
-    variantHTML = `<label>Variant:</label>
-      <select id="variant_${p.ID}">${variants.map(v => `<option value="${v}">${v}</option>`).join("")}</select>`;
+  if (p.VariantOptions || p.variants) {
+    const variants = (p.VariantOptions ? p.VariantOptions.split(",") : p.variants).map(v => v.trim());
+    if (variants.length) {
+      variantHTML = `<label>Variant:</label>
+        <select id="variant_${productId}">
+          ${variants.map(v => `<option value="${v}">${v}</option>`).join("")}
+        </select>`;
+    }
   }
 
   // Colors
   let colorHTML = "";
-  if (p.ColorOptions) {
-    const colors = p.ColorOptions.split(",").map(c => c.trim());
-    colorHTML = `<label>Color:</label>
-      <select id="color_${p.ID}">${colors.map(c => `<option value="${c}">${c}</option>`).join("")}</select>`;
+  if (p.ColorOptions || p.colors) {
+    const colors = (p.ColorOptions ? p.ColorOptions.split(",") : p.colors).map(c => c.trim());
+    if (colors.length) {
+      colorHTML = `<label>Color:</label>
+        <select id="color_${productId}">
+          ${colors.map(c => `<option value="${c}">${c}</option>`).join("")}
+        </select>`;
+    }
   }
 
   // Sizes
   let sizeHTML = "";
-  if (p.SizeOptions) {
-    const sizes = p.SizeOptions.split(",").map(s => s.trim());
-    sizeHTML = `<label>Size:</label>
-      <select id="size_${p.ID}">${sizes.map(s => `<option value="${s}">${s}</option>`).join("")}</select>`;
+  if (p.SizeOptions || p.sizes) {
+    const sizes = (p.SizeOptions ? p.SizeOptions.split(",") : p.sizes).map(s => s.trim());
+    if (sizes.length) {
+      sizeHTML = `<label>Size:</label>
+        <select id="size_${productId}">
+          ${sizes.map(s => `<option value="${s}">${s}</option>`).join("")}
+        </select>`;
+    }
   }
 
   // Custom input
   let customHTML = "";
   if (p.CustomInput && p.CustomInput.trim() !== "") {
     customHTML = `<div>
-      <label for="custom_${p.ID}">${p.CustomInput}</label>
-      <input id="custom_${p.ID}" type="text" placeholder="${p.CustomInput}" />
+      <label for="custom_${productId}">${p.CustomInput}</label>
+      <input id="custom_${productId}" type="text" placeholder="${p.CustomInput}" />
     </div>`;
   }
 
   // Buttons
-  const redeemHTML = pointsCost > 0
-    ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${p.ID}', ${pointsCost})">
-         Redeem for ${pointsCost} ⭐ Points
+  const buyHTML = priceUSD > 0
+    ? `<button class="btn buy-btn" onclick="addToCart('${productId}')">Add to Cart</button>`
+    : "";
+
+  const quacksHTML = quacksCost > 0
+    ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${productId}', ${quacksCost})">
+         Pay with ${quacksCost} 🪙 Quacks
        </button>` : "";
 
-  const quacksHTML = (p.QuacksCost || p.quacksCost) > 0
-  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${p.ID || p.id}', ${p.QuacksCost || p.quacksCost})">
-       Pay with ${(p.QuacksCost || p.quacksCost)} 🪙 Quacks
-     </button>`
-  : "";
-
-
-  const buyHTML = priceUSD > 0
-    ? `<button class="btn buy-btn" onclick="addToCart('${p.ID}')">
-         Add to Cart
+  const redeemHTML = pointsCost > 0
+    ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${productId}', ${pointsCost})">
+         Redeem for ${pointsCost} ⭐ Points
        </button>` : "";
 
   // Card HTML
   const html = `
     <div class="item" style="padding:16px;border-radius:12px;box-shadow:var(--shadow);background:var(--card);">
-      <img src="${p.ImageURL || ""}" alt="${p.Title}" style="width:100%;border-radius:8px;object-fit:contain;" />
-      <h3>${p.Title}</h3>
-      <p id="price_${p.ID}" style="margin:6px 0;">${priceHTML}</p>
+      <img src="${p.ImageURL || p.image || ""}" alt="${p.Title || p.title}" style="width:100%;border-radius:8px;object-fit:contain;" />
+      <h3>${p.Title || p.title}</h3>
+      <p id="price_${productId}" style="margin:6px 0;">${priceHTML}</p>
       ${variantHTML}
       ${colorHTML}
       ${sizeHTML}
