@@ -1204,20 +1204,20 @@ async function checkout() {
     cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); });
 
    
-   // --- shipping rules (with dropdown selection) ---
-const countryElement = document.getElementById("countrySelect");
-const country = countryElement ? countryElement.value.trim() : "USA";
-
+  // --- shipping rules (with dropdown selection) ---
+let country = selectedCountry || "USA";
 let shippingUSD = 0;
+
 if (subtotalUSD >= 70) {
   shippingUSD = 0;
-} else if (country.toLowerCase() === "Canada") {
+} else if (country.toLowerCase() === "canada") {
   shippingUSD = 10;
 } else {
   shippingUSD = 5;
 }
 
-console.log("🧭 Country:", country, "| Shipping USD:", shippingUSD);
+console.log("🧭 Country detected:", country, "| ShippingUSD =", shippingUSD);
+
 
 
 
