@@ -976,8 +976,13 @@ function closeSizeGuide(){ const modal = document.getElementById("sizeGuideModal
 
 /* ===== CART helpers ===== */
 function addTapestryToCart(prodId){
-  const product = (PRODUCTS.tapestry||[]).find(p=>p.id===prodId);
-  if(!product){ showToast("Product not found","error"); return; }
+  const product = (PRODUCTS.tapestry || []).find(p => p.ID === prodId || p.id === prodId);
+  if(!product){
+    console.warn("Tapestry not found:", prodId, (PRODUCTS.tapestry || []).map(p => p.ID || p.id));
+    showToast("Product not found","error");
+    return;
+  }
+
   const priceEth = product.price ?? (product.priceUSD ? product.priceUSD / (cachedEthRate||3000) : 0);
   cart.push({ id: product.id, title: product.title, price: priceEth, priceUSD: product.priceUSD||"", color: "N/A", size:"N/A", variant: "", q:1, thumb: product.image || "" });
   updateCartUI();
@@ -986,11 +991,13 @@ function addTapestryToCart(prodId){
 
 /* ===== ADD TO CART ===== */
 async function addToCart(productId) {
-  const allProducts = Object.values(PRODUCTS).flat();
-  const product = allProducts.find(
-  p => p.ID === productId || p.id === productId
- );
-  if (!product) return showToast("Product not found", "error");
+ const allProducts = Object.values(PRODUCTS).flat();
+const product = allProducts.find(p => p.ID === productId || p.id === productId);
+if (!product) {
+  console.warn("Product not found:", productId, allProducts.map(p => p.ID || p.id));
+  showToast("Product not found", "error");
+  return;
+}
 
   const variantSel = document.getElementById(`variant_${productId}`);
   const colorSel = document.getElementById(`color_${productId}`);
@@ -1422,7 +1429,7 @@ async function redeemWithPoints(productId, cost) {
 
   try {
     const allProducts = Object.values(PRODUCTS).flat();
-    const product = allProducts.find(p => p.id === productId);
+    const product = allProducts.find(p => p.ID === productId || p.id === productId);
     if (!product) {
       showToast("Product not found", "error");
       return;
@@ -1491,14 +1498,18 @@ async function redeemWithPoints(productId, cost) {
   }
 }
 
-  
 async function addToCartWithQuacks(productId, quacksCost) {
   const wallet = (userAddress || "").toLowerCase();
   if (!wallet) { showToast("Connect your wallet first.", "error"); return; }
 
   const allProducts = Object.values(PRODUCTS).flat();
-  const product = allProducts.find(p => p.ID === productId);
-  if (!product) { showToast("Product not found", "error"); return; }
+  const product = allProducts.find(p => p.ID === productId || p.id === productId);
+  if (!product) { 
+    console.warn("Product not found:", productId, allProducts.map(p => p.ID || p.id));
+    showToast("Product not found", "error"); 
+    return; 
+  }
+
 
   const variantSel = document.getElementById(`variant_${productId}`);
   const colorSel = document.getElementById(`color_${productId}`);
