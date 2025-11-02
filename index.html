@@ -424,7 +424,7 @@ function getProductUsd(p) {
 
   /* ===== SHIPPING & PAYMENT UI HELPERS ===== */
 const SHIPPING_RULES = {
-  USA: { fee: 0, freeOver: 70 },
+  USA: { fee: 5, freeOver: 70 },
   Canada: { fee: 10, freeOver: 70 }
 };
 
@@ -1101,7 +1101,7 @@ async function updateCartUI() {
   // 🚚 Determine shipping cost
   const countrySelect = document.getElementById("shippingCountry");
   const selectedCountry = countrySelect ? countrySelect.value : "USA";
- // const shippingUSD = subtotalUSD >= 70 ? 0 : (selectedCountry === "USA" ? 0 : 10);
+  const shippingUSD = subtotalUSD >= 70 ? 0 : (selectedCountry === "USA" ? 5 : 10);
 
   const totalUSD = subtotalUSD + shippingUSD;
 
@@ -1268,7 +1268,7 @@ async function checkout() {
     cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); });
 
     // --- Shipping rules ---
-   // let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
+    let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
     let shippingUSD = 0;
     if (subtotalUSD >= 70) {
       shippingUSD = 0;
