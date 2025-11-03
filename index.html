@@ -246,7 +246,7 @@ header, .nav-container, .nav-actions, .nav-actions button {
           <button class="dropdown-item" onclick="showCategory('keychains')">Keychains</button>      
         </div>
       </div>
-      <div id="pointsDisplay" style="margin-top:10px;font-weight:600;color:#FFD700"> Goodness Points:  </div>
+      <div id="pointsDisplay" style="margin-top:10px;font-weight:600;color:#FFD700"> Referral Points:  </div>
       <button id="connectBtn" class="btn">Connect Wallet</button>
       <button id="profileBtn" class="btn secondary" style="display:none">Profile</button>
       <button id="openCartBtn" class="btn" style="position:relative">Cart <span id="cartCount" class="cart-count" style="display:none">0</span></button>
@@ -624,7 +624,7 @@ function renderProductCard(p, ethRate) {
 
   const redeemHTML = pointsCost > 0
     ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${productId}', ${pointsCost})">
-         Redeem for ${pointsCost} ⭐ Points
+         Redeem for ${pointsCost} ⭐ Referral Points
        </button>` : "";
 
   // Card HTML
@@ -769,7 +769,7 @@ const usd = p.PriceUSD || p.priceUSD || 0;
 // Redeem button
 const redeemHTML = (points > 0 && productId)
   ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${productId}', ${points})">
-       Redeem for ${points} ⭐ Points
+       Redeem for ${points} Referral Points
      </button>`
   : "";
 
@@ -1202,7 +1202,7 @@ async function updatePointsDisplay() {
   if (!el) return;
 
   if (!wallet) {
-    el.innerText = "🪙 Points: Connect wallet";
+    el.innerText = "Referral Points: Connect wallet";
     return;
   }
 
@@ -1211,12 +1211,12 @@ async function updatePointsDisplay() {
     const data = await res.json();
 
     if (data.success) {
-      el.innerText = `🪙 Points: ${data.points}`;
+      el.innerText = `Referral Points: ${data.points}`;
     } else {
-      el.innerText = "🪙 Points: Error";
+      el.innerText = "Referral Points: Error";
     }
   } catch (err) {
-    el.innerText = "🪙 Points: Error";
+    el.innerText = "Referral Points: Error";
   }
 }
 
@@ -1522,7 +1522,7 @@ async function redeemWithPoints(productId, cost) {
   const currentPoints = checkData.points || 0;
 
   if (currentPoints < cost) {
-    showToast(`❌ You only have ${currentPoints} points — need ${cost} to redeem this item.`, "error");
+    showToast(`❌ You only have ${currentPoints} Referral Points — need ${cost} to redeem this item.`, "error");
     return;
   }
 
@@ -1548,7 +1548,7 @@ async function redeemWithPoints(productId, cost) {
   });
 
   updateCartUI();
-  showToast(`🎉 "${product.Title || product.title}" added to cart for ${cost} points`, "success");
+  showToast(`🎉 "${product.Title || product.title}" added to cart for ${cost} Referral Points`, "success");
   if (typeof openCart === "function") openCart();
 }
 
