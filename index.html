@@ -63,7 +63,7 @@
   visibility: hidden;
   opacity: 0;
   position: absolute;
-  bottom: 140%; /* above the icon */
+  top: 130%; /* moved below the icon */
   left: 50%;
   transform: translateX(-50%);
   background: rgba(0,0,0,0.85);
@@ -76,7 +76,10 @@
   transition: opacity 0.2s ease;
   pointer-events: none;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  z-index: 5000;
+  white-space: normal;
 }
+
 
 .info-container:hover .tooltip-text {
   visibility: visible;
