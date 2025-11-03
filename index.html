@@ -39,18 +39,18 @@
   margin-right: 6px;
 }
 
-    .info-container {
+.info-container {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   color: #fff;
 }
 
 .info-icon {
   cursor: pointer;
-  font-size: 14px;
-  opacity: 0.8;
+  font-size: 15px;
+  opacity: 0.9;
   transition: opacity 0.2s;
 }
 
@@ -58,33 +58,33 @@
   opacity: 1;
 }
 
-/* Tooltip */
+/* Tooltip box */
 .tooltip-text {
   visibility: hidden;
   opacity: 0;
   position: absolute;
-  top: 130%; /* moved below the icon */
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.85);
+  left: 110%; /* show to the right of the icon */
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.9);
   color: #fff;
-  text-align: center;
+  text-align: left;
   padding: 6px 10px;
   border-radius: 6px;
   font-size: 12px;
   width: 220px;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.25s ease;
   pointer-events: none;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
   z-index: 5000;
-  white-space: normal;
 }
 
-
+/* show tooltip on hover */
 .info-container:hover .tooltip-text {
   visibility: visible;
   opacity: 1;
 }
+
 
     .btn{padding:10px 16px;background:var(--brand-orange-dark);color:white;border:none;border-radius:999px;cursor:pointer;font-weight:600;transition:all .18s;display:inline-flex;gap:8px;align-items:center}
     .btn.secondary{background:transparent;color:white;border:1px solid rgba(255,255,255,.25);padding:8px 12px;border-radius:10px}
@@ -293,9 +293,10 @@ header, .nav-container, .nav-actions, .nav-actions button {
           <button class="dropdown-item" onclick="showCategory('keychains')">Keychains</button>      
         </div>
       </div>
+      
     <div id="pointsDisplay" class="info-container">
-  Referral Points:
   <i class="fa-solid fa-circle-info info-icon"></i>
+  Referral Points:
   <span class="tooltip-text">
     You earn referral points when friends buy using your referral link. Redeem points for discounts or rewards.
   </span>
