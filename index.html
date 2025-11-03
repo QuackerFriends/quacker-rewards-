@@ -294,13 +294,14 @@ header, .nav-container, .nav-actions, .nav-actions button {
         </div>
       </div>
       
-    <div id="pointsDisplay" class="info-container">
+   <div id="pointsDisplay" class="info-container">
   <i class="fa-solid fa-circle-info info-icon"></i>
-  Referral Points:
   <span class="tooltip-text">
-    You earn referral points when friends buy using your referral link. Redeem points for discounts or rewards.
+    You earn referral points when friends buy using your referral link. Redeem them for discounts or rewards.
   </span>
+  <span class="points-label">Referral Points: <span id="pointsValue">Connect wallet</span></span>
 </div>
+
 
       <button id="connectBtn" class="btn">Connect Wallet</button>
       <button id="profileBtn" class="btn secondary" style="display:none">Profile</button>
@@ -1253,11 +1254,11 @@ function disconnectWallet(){ userAddress = null; web3 = null; const cbo = docume
 /* ===== Redeem Points Display ===== */
 async function updatePointsDisplay() {
   const wallet = (userAddress || "").toLowerCase();
-  const el = document.getElementById("pointsDisplay");
-  if (!el) return;
+  const pointsValue = document.getElementById("pointsValue");
+  if (!pointsValue) return;
 
   if (!wallet) {
-    el.innerText = "Referral Points: Connect wallet";
+    pointsValue.textContent = "Connect wallet";
     return;
   }
 
@@ -1266,16 +1267,16 @@ async function updatePointsDisplay() {
     const data = await res.json();
 
     if (data.success) {
-      el.innerText = `Referral Points: ${data.points}`;
+      pointsValue.textContent = data.points;
     } else {
-      el.innerText = "Referral Points: Error";
+      pointsValue.textContent = "Error";
     }
   } catch (err) {
-    el.innerText = "Referral Points: Error";
+    pointsValue.textContent = "Error";
   }
 }
 
-/* ===== CLAIM QUACKS ===== */
+
 /* ===== CLAIM QUACKS ===== */
 const claimQuacksBtn = document.getElementById("claimQuacksBtn");
 if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
