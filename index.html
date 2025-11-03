@@ -32,6 +32,13 @@
 
     header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--brand-orange);color:white;box-shadow:0 6px 18px rgba(0,0,0,0.08);z-index:1500;position:relative}
     header h1{margin:0;font-size:20px;display:flex;align-items:center;gap:10px}
+    header h1 .logo {
+  height: 38px;
+  width: auto;
+  border-radius: 8px;
+  margin-right: 6px;
+}
+
     .btn{padding:10px 16px;background:var(--brand-orange-dark);color:white;border:none;border-radius:999px;cursor:pointer;font-weight:600;transition:all .18s;display:inline-flex;gap:8px;align-items:center}
     .btn.secondary{background:transparent;color:white;border:1px solid rgba(255,255,255,.25);padding:8px 12px;border-radius:10px}
     main{flex:1;padding:30px 20px;max-width:var(--maxWidth);margin:0 auto 80px}
@@ -220,7 +227,14 @@ header, .nav-container, .nav-actions, .nav-actions button {
   </div>
 
   <header>
-    <h1>Quacker Friends Shop</h1>
+  <h1>
+    <img 
+      src="https://quackerfriends.github.io/quackheads-assets/images/brandimages/logo%20transparent%20zoomed.png" 
+      alt="Quacker Friends Logo" 
+      class="logo"
+    />
+    Quacker Friends Shop
+  </h1>
     <div style="display:flex;gap:10px;align-items:center">
       <div class="shop-controls" style="position:relative">
         <button class="btn secondary" id="menuBtn">Shop ▾</button>
