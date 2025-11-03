@@ -58,12 +58,11 @@
   opacity: 1;
 }
 
-/* Tooltip box */
 .tooltip-text {
   visibility: hidden;
   opacity: 0;
   position: absolute;
-  left: 110%; /* show to the right of the icon */
+  left: 24px;               /* 👈 keeps it close to the info icon */
   top: 50%;
   transform: translateY(-50%);
   background: rgba(0,0,0,0.9);
@@ -77,9 +76,9 @@
   pointer-events: none;
   box-shadow: 0 2px 8px rgba(0,0,0,0.25);
   z-index: 5000;
+  white-space: normal;
 }
 
-/* show tooltip on hover */
 .info-container:hover .tooltip-text {
   visibility: visible;
   opacity: 1;
