@@ -299,7 +299,7 @@ header, .nav-container, .nav-actions, .nav-actions button {
   <span class="tooltip-text">
     You earn 1 referral point for every item your friends buy using your address as referral address when checking out. You can redeem them to buy items in our shop :)
   </span>
-  <span class="points-label">Referral Points: <span id="pointsValue">Connect wallet</span></span>
+ <span class="points-label">Referral Points: <span id="pointsValue"></span></span>
 </div>
 
 
@@ -1258,6 +1258,7 @@ async function updatePointsDisplay() {
   if (!pointsValue) return;
 
   if (!wallet) {
+    pointsValue.textContent = ""; // leave empty if wallet not connected
     return;
   }
 
@@ -1274,7 +1275,6 @@ async function updatePointsDisplay() {
     pointsValue.textContent = "Error";
   }
 }
-
 
 /* ===== CLAIM QUACKS ===== */
 const claimQuacksBtn = document.getElementById("claimQuacksBtn");
