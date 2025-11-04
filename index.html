@@ -178,13 +178,14 @@ header, .nav-container, .nav-actions, .nav-actions button {
 #toastContainer {
   pointer-events: auto !important;
 }
-   /* === BLUR OVERLAY === */
+  
+/* === BLUR OVERLAY === */
 #blurOverlay {
   position: fixed;
   inset: 0;
-  backdrop-filter: blur(10px) brightness(0.5);
-  background: rgba(0,0,0,0.25); /* soft dark tint */
-  z-index: 1000;
+  backdrop-filter: blur(10px) brightness(0.6);
+  background: rgba(0,0,0,0.25); /* soft dim tint */
+  z-index: 100; /* 👈 LOWER so header + alerts + modals stay above it */
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
@@ -194,6 +195,20 @@ header, .nav-container, .nav-actions, .nav-actions button {
 body.blur-bg #blurOverlay {
   opacity: 1;
   pointer-events: auto;
+}
+    /* Blur only the main content, not header/footer/modals */
+body.blur-bg main {
+  filter: blur(10px) brightness(0.7);
+  transition: filter 0.3s ease;
+}
+
+body.blur-bg header,
+body.blur-bg footer,
+body.blur-bg #shippingNotice,
+body.blur-bg .cart-modal,
+body.blur-bg .sizeguide-modal,
+body.blur-bg #profileSection {
+  filter: none !important;
 }
 
 
@@ -546,6 +561,15 @@ body:not(.loading) footer {
     <a href="https://www.instagram.com/QuackerFriends" target="_blank"><i class="fab fa-instagram fa-lg"></i></a>
   </footer>
 
+    <div id="blurOverlay"></div>
+
+<!-- 🛍️ Item Modal -->
+<div id="itemModal" class="modal-overlay">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeItemModal()">✖</button>
+    <div id="itemDetails"></div>
+  </div>
+</div>
 
 <script>
 /* ===== CONFIG ===== */
@@ -1918,15 +1942,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </script>
   
-    <div id="blurOverlay"></div>
-
-<!-- 🛍️ Item Modal -->
-<div id="itemModal" class="modal-overlay">
-  <div class="modal-content">
-    <button class="close-btn" onclick="closeItemModal()">✖</button>
-    <div id="itemDetails"></div>
-  </div>
-</div>
+  
 
 
 </body>
