@@ -806,11 +806,7 @@ async function showCategory(cat) {
     // 🧠 If clicking the same category again → close it
   if (currentCategory === cat) {
     const itemsSection = document.getElementById("items");
-    itemsSection.innerHTML = `
-      <div style="background:var(--card);padding:20px;border-radius:12px;
-                  box-shadow:0 8px 20px rgba(12,12,20,0.06);text-align:center;color:#555;">
-
-      </div>`;
+    itemsSection.innerHTML = null;
     currentCategory = null;
     return; // ✅ stop here (don’t load items)
   }
