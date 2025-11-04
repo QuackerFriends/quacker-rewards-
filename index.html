@@ -35,21 +35,7 @@
       pointer-events:none;
     }
     
-#blurOverlay {
-  position: fixed;
-  inset: 0;
-  backdrop-filter: blur(10px) brightness(0.5);
-  z-index: 999;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.4s ease;
-}
 
-/* When active */
-body.blur-bg #blurOverlay {
-  opacity: 1;
-  pointer-events: auto;
-}
 
     header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--brand-teal);color:white;box-shadow:0 6px 18px rgba(0,0,0,0.08);z-index:1500;position:relative}
     header h1{margin:0;font-size:20px;display:flex;align-items:center;gap:10px}
@@ -183,6 +169,7 @@ header, .nav-container, .nav-actions, .nav-actions button {
   background: #ff6600;
   color: #fff;
 }
+    
 
 /* Shop dropdown, modals, and toasts also stay clickable */
 #shopMenu,
@@ -190,6 +177,21 @@ header, .nav-container, .nav-actions, .nav-actions button {
 .sizeguide-modal,
 #toastContainer {
   pointer-events: auto !important;
+}
+    #blurOverlay {
+  position: fixed;
+  inset: 0;
+  backdrop-filter: blur(10px) brightness(0.5);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+/* When active */
+body.blur-bg #blurOverlay {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 
@@ -826,13 +828,19 @@ function renderProductCard(p, ethRate) {
 /* ===== RENDER CATEGORY (with image carousel) ===== */
 async function showCategory(cat) {
   
-    // 🧠 If clicking the same category again → close it
+  // 🧠 If clicking the same category again → close it
   if (currentCategory === cat) {
     const itemsSection = document.getElementById("items");
     itemsSection.innerHTML = null;
     currentCategory = null;
-    return; // ✅ stop here (don’t load items)
+
+    // 🔹 Remove blur
+    document.body.classList.remove("blur-bg");
+    return;
   }
+
+  // 🔹 Apply blur when new category opens
+  document.body.classList.add("blur-bg");
 
   const key = (cat in PRODUCTS)
     ? cat
@@ -843,7 +851,6 @@ async function showCategory(cat) {
   const container = document.getElementById("items");
   const items = PRODUCTS[currentCategory] || [];
   container.innerHTML = "";
-
   if (!items.length) {
     container.innerHTML = `
       <div style="background:var(--card);padding:20px;border-radius:12px;
