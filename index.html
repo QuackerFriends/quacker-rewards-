@@ -30,20 +30,27 @@
       position:fixed;
       inset:0;
       background:url('https://quackerfriends.github.io/quackheads-assets/images/brandimages/Inside.png') no-repeat center center fixed;background-size:cover;
-      z-index: 0;
+      z-index:-1;
       transition:filter .4s;
       pointer-events:none;
     }
     
-body.blur-bg::before {
-  filter: blur(10px) brightness(0.5);
+#blurOverlay {
+  position: fixed;
+  inset: 0;
+  backdrop-filter: blur(10px) brightness(0.5);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
 }
 
-/* Make sure page content stays above background */
-header, main, footer, #imagePopup {
-  position:relative;
-  z-index:1;
+/* When active */
+body.blur-bg #blurOverlay {
+  opacity: 1;
+  pointer-events: auto;
 }
+
     header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--brand-teal);color:white;box-shadow:0 6px 18px rgba(0,0,0,0.08);z-index:1500;position:relative}
     header h1{margin:0;font-size:20px;display:flex;align-items:center;gap:10px}
     header h1 .logo {
@@ -341,6 +348,8 @@ body:not(.loading) footer {
   </style>
 </head>
 <body>
+  <div id="blurOverlay"></div>
+
   
   <!-- Intro Screen -->
 <div id="introScreen">
