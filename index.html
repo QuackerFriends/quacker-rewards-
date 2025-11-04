@@ -178,21 +178,24 @@ header, .nav-container, .nav-actions, .nav-actions button {
 #toastContainer {
   pointer-events: auto !important;
 }
-    #blurOverlay {
+   /* === BLUR OVERLAY === */
+#blurOverlay {
   position: fixed;
   inset: 0;
   backdrop-filter: blur(10px) brightness(0.5);
-  z-index: 999;
+  background: rgba(0,0,0,0.25); /* soft dark tint */
+  z-index: 1000;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.3s ease;
 }
 
-/* When active */
-body.blur-bg #mainContent {
-  filter: blur(10px) brightness(0.5);
-  transition: filter 0.3s ease;
+/* Active blur */
+body.blur-bg #blurOverlay {
+  opacity: 1;
+  pointer-events: auto;
 }
+
 
     .sizeguide-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:3000;background:rgba(0,0,0,0.5)}
     .sizeguide-modal.open{display:flex}
@@ -390,7 +393,6 @@ body:not(.loading) footer {
   </style>
 </head>
 <body>
-  <div id="blurOverlay"></div>
 
   
   <!-- Intro Screen -->
@@ -1916,6 +1918,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </script>
   
+    <div id="blurOverlay"></div>
+
 <!-- 🛍️ Item Modal -->
 <div id="itemModal" class="modal-overlay">
   <div class="modal-content">
