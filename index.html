@@ -201,6 +201,47 @@ body.blur-bg #blurOverlay {
     .sizeguide-modal img{max-width:100%;height:auto;display:block;border-radius:8px}
     .sizeguide-modal .close-btn{position:absolute;right:12px;top:12px;background:transparent;border:none;font-size:20px;cursor:pointer}
 
+    .item-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  background: rgba(0,0,0,0.5);
+}
+
+.item-modal.open {
+  display: flex;
+}
+
+.item-modal .card {
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  max-width: 700px;
+  width: 92%;
+  position: relative;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+  animation: fadeIn 0.25s ease;
+}
+
+.item-modal .close-btn {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+
     .cart-modal {   position: fixed;   right: 0;   top: 0;   height: 100vh;   width: 420px;   background: var(--card);   box-shadow: -12px 0 40px rgba(0,0,0,0.12);   transform: translateX(110%);   transition: transform 0.28s ease;   z-index: 3000 !important;   padding: 18px;   display: flex;   flex-direction: column; }
     .cart-modal.open{transform:translateX(0); z-index: 3000 !important;}
     .cart-modal .close-x{position:absolute;right:12px;top:8px;background:transparent;border:none;font-size:20px;cursor:pointer}
@@ -893,7 +934,7 @@ async function showCategory(cat) {
       `;
     } else {
       const imgSrc = images[0] || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
-      imageHTML = `<img id="img_${p.id}" src="${imgSrc}" alt="${p.title}" />`;
+      imageHTML = `   <img id="img_${p.id}" src="${imgSrc}" alt="${p.title}" style="cursor:pointer"        onclick="openItemModal('<img src=${imgSrc} style=max-width:100%;border-radius:12px>')" /> `;
     }
 
     // 🧩 Variants
@@ -1148,6 +1189,22 @@ function openSizeGuide(url){
   if(modal){ modal.classList.add("open"); modal.setAttribute("aria-hidden","false"); }
 }
 function closeSizeGuide(){ const modal = document.getElementById("sizeGuideModal"); if(modal){ modal.classList.remove("open"); modal.setAttribute("aria-hidden","true"); } }
+
+  /* ===== open images in items  ===== */
+  function openItemModal(contentHTML) {
+  const modal = document.getElementById("itemModal");
+  const content = document.getElementById("itemModalContent");
+
+  content.innerHTML = contentHTML;
+  modal.classList.add("open");
+  document.body.classList.add("blur-bg"); // blur the background
+}
+
+function closeItemModal() {
+  const modal = document.getElementById("itemModal");
+  modal.classList.remove("open");
+  document.body.classList.remove("blur-bg");
+}
 
 /* ===== CART helpers ===== */
 function addTapestryToCart(prodId){
@@ -1860,26 +1917,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </script>
   
-  <!-- 🖼️ Image Popup (Lightbox) -->
-<div id="imagePopup" style="
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.85);
-  justify-content:center;
-  align-items:center;
-  z-index:5000;
-">
-  <img id="popupImage" src="" alt="Preview" style="
-    max-width:90%;
-    max-height:90%;
-    border-radius:12px;
-    box-shadow:0 0 25px rgba(0,0,0,0.3);
-    transition:transform 0.2s ease;
-    cursor:zoom-out;
-  ">
+<!-- 🛍️ Item Modal -->
+<div id="itemModal" class="modal-overlay">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeItemModal()">✖</button>
+    <div id="itemDetails"></div>
+  </div>
 </div>
-
 
 
 </body>
