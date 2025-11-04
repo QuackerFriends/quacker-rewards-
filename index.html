@@ -249,6 +249,61 @@ header, .nav-container, .nav-actions, .nav-actions button {
   background: #ff6600;
   color: #fff;
 }
+/* Intro Screen */
+#introScreen {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(180deg, #fff6f0 0%, #ffe5d1 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+  transition: opacity 0.6s ease;
+}
+
+#introScreen img {
+  max-width: 90%;
+  width: 400px;
+  height: auto;
+  margin-bottom: 24px;
+}
+
+.enter-btn {
+  background: var(--brand-orange-dark);
+  padding: 12px 30px;
+  font-size: 18px;
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  transition: all 0.25s ease;
+}
+
+.enter-btn:hover {
+  transform: scale(1.05);
+  background: var(--brand-orange);
+}
+
+/* Hide main content until Enter is clicked */
+body.loading main,
+body.loading header,
+body.loading footer {
+  filter: blur(6px);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+  #introScreen img {
+    width: 85%;
+    max-width: 280px;
+  }
+
+  .enter-btn {
+    font-size: 16px;
+    padding: 10px 22px;
+  }
+}
 
     #toast-container{position:fixed;top:110px;right:12px;z-index:4000;display:flex;flex-direction:column;gap:8px}
     .toast{padding:8px 12px;border-radius:8px;color:#fff;display:flex;gap:8px;align-items:center}
@@ -266,6 +321,11 @@ header, .nav-container, .nav-actions, .nav-actions button {
   </style>
 </head>
 <body>
+  <div id="introScreen">
+  <img src="https://quackerfriends.github.io/quackheads-assets/images/brandimages/Enter.png" alt="Enter Quacker Friends Shop">
+  <button id="enterBtn" class="btn enter-btn">Enter</button>
+</div>
+
   <!-- overlay sits directly under header/above content; pointer-events controlled by .active -->
   <div id="tees"></div>
 
