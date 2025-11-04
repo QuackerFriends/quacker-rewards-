@@ -657,15 +657,28 @@ async function loadProducts() {
           .map(cat => `<button class="dropdown-item" onclick="showCategory('${cat}')">${cat}</button>`)
           .join("");
       }
+      
+      // --- Close dropdown after selecting a category ---
+document.addEventListener("click", e => {
+  if (e.target.classList.contains("dropdown-item")) {
+    document.getElementById("shopMenu").style.display = "none";
+  }
+});
 
-      // --- Set default category ---
-      if (!PRODUCTS[currentCategory]) {
-        const first = Object.keys(PRODUCTS)[0];
-        if (first) currentCategory = first;
-      }
 
-      await showCategory(currentCategory);
-      attachZoomFollow();
+     // --- Don't auto-load anything at start ---
+if (!currentCategory) {
+  const itemsSection = document.getElementById("items");
+  itemsSection.innerHTML = `
+    <div style="background:var(--card);padding:20px;border-radius:12px;
+                box-shadow:0 8px 20px rgba(12,12,20,0.06);text-align:center;color:#555;">
+      Select a category from the <b>Shop</b> menu to view items 🛍️
+    </div>`;
+} else {
+  await showCategory(currentCategory);
+  attachZoomFollow();
+}
+
     } else {
       console.error("⚠️ Failed to load items or items missing:", data);
     }
@@ -774,6 +787,19 @@ function renderProductCard(p, ethRate) {
 
 /* ===== RENDER CATEGORY (with image carousel) ===== */
 async function showCategory(cat) {
+  
+    // 🧠 If clicking the same category again → close it
+  if (currentCategory === cat) {
+    const itemsSection = document.getElementById("items");
+    itemsSection.innerHTML = `
+      <div style="background:var(--card);padding:20px;border-radius:12px;
+                  box-shadow:0 8px 20px rgba(12,12,20,0.06);text-align:center;color:#555;">
+        Select a category from the <b>Shop</b> menu to view items 🛍️
+      </div>`;
+    currentCategory = null;
+    return; // ✅ stop here (don’t load items)
+  }
+
   const key = (cat in PRODUCTS)
     ? cat
     : Object.keys(PRODUCTS).find(k => k.toLowerCase() === String(cat).toLowerCase());
