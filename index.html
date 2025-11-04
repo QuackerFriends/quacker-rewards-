@@ -1784,6 +1784,36 @@ function attachZoomFollow(){
     document.body.classList.remove('loading');
     setTimeout(() => introScreen.remove(), 700);
   });
+
+  // === Dropdown toggle logic ===
+document.addEventListener("DOMContentLoaded", () => {
+  const menuBtn = document.getElementById("menuBtn");
+  const shopMenu = document.getElementById("shopMenu");
+
+  if (!menuBtn || !shopMenu) return;
+
+  // Toggle open/close on button click
+  menuBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isVisible = shopMenu.style.display === "flex";
+    shopMenu.style.display = isVisible ? "none" : "flex";
+  });
+
+  // Close when clicking outside
+  document.addEventListener("click", (e) => {
+    if (!shopMenu.contains(e.target) && e.target !== menuBtn) {
+      shopMenu.style.display = "none";
+    }
+  });
+
+  // Close after selecting a category
+  shopMenu.addEventListener("click", (e) => {
+    if (e.target.classList.contains("dropdown-item")) {
+      shopMenu.style.display = "none";
+    }
+  });
+});
+
 </script>
   
 
