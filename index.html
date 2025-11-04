@@ -657,13 +657,32 @@ async function loadProducts() {
           .map(cat => `<button class="dropdown-item" onclick="showCategory('${cat}')">${cat}</button>`)
           .join("");
       }
+      // ✅ Add this right after building the shop menu
       
-      // --- Close dropdown after selecting a category ---
-document.addEventListener("click", e => {
-  if (e.target.classList.contains("dropdown-item")) {
-    document.getElementById("shopMenu").style.display = "none";
-  }
-});
+const menuBtn = document.getElementById("menuBtn");
+if (menuBtn && shopMenu) {
+  // --- Toggle dropdown on button click ---
+  menuBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    shopMenu.style.display =
+      shopMenu.style.display === "flex" ? "none" : "flex";
+  });
+
+  // --- Close dropdown when clicking outside ---
+  document.addEventListener("click", (e) => {
+    if (!shopMenu.contains(e.target) && e.target !== menuBtn) {
+      shopMenu.style.display = "none";
+    }
+  });
+
+  // --- Close dropdown after selecting a category ---
+  shopMenu.addEventListener("click", (e) => {
+    if (e.target.classList.contains("dropdown-item")) {
+      shopMenu.style.display = "none";
+    }
+  });
+}
+      
 
 
      // --- Don't auto-load anything at start ---
