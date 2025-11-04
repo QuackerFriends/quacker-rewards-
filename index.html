@@ -249,61 +249,6 @@ header, .nav-container, .nav-actions, .nav-actions button {
   background: #ff6600;
   color: #fff;
 }
-/* Intro Screen */
-#introScreen {
-  position: fixed;
-  inset: 0;
-  background: linear-gradient(180deg, #fff6f0 0%, #ffe5d1 100%);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 3000;
-  transition: opacity 0.6s ease;
-}
-
-#introScreen img {
-  max-width: 90%;
-  width: 400px;
-  height: auto;
-  margin-bottom: 24px;
-}
-
-.enter-btn {
-  background: var(--brand-orange-dark);
-  padding: 12px 30px;
-  font-size: 18px;
-  border-radius: 999px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-  transition: all 0.25s ease;
-}
-
-.enter-btn:hover {
-  transform: scale(1.05);
-  background: var(--brand-orange);
-}
-
-/* Hide main content until Enter is clicked */
-body.loading main,
-body.loading header,
-body.loading footer {
-  filter: blur(6px);
-  pointer-events: none;
-  user-select: none;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 600px) {
-  #introScreen img {
-    width: 85%;
-    max-width: 280px;
-  }
-
-  .enter-btn {
-    font-size: 16px;
-    padding: 10px 22px;
-  }
-}
 
     #toast-container{position:fixed;top:110px;right:12px;z-index:4000;display:flex;flex-direction:column;gap:8px}
     .toast{padding:8px 12px;border-radius:8px;color:#fff;display:flex;gap:8px;align-items:center}
@@ -317,12 +262,74 @@ body.loading footer {
     footer{background:var(--brand-orange-dark);padding:5px 0;text-align:center;color:#fff;margin-top:auto;position:relative;z-index:1000}
     footer a{margin:0 10px;color:#fff}
 
+    /* ---------- Intro Screen ---------- */
+#introScreen {
+  position: fixed;
+  inset: 0;
+  background: url('https://quackerfriends.github.io/quackheads-assets/images/brandimages/Enter.png')
+              no-repeat center center;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+/* Enter button style */
+.enter-btn {
+  font-size: 20px;
+  padding: 14px 32px;
+  border-radius: 999px;
+  background: var(--brand-orange-dark);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.enter-btn:hover {
+  background: var(--brand-orange);
+  transform: scale(1.05);
+}
+
+/* While intro is active, hide main content visually */
+body.loading header,
+body.loading main,
+body.loading footer,
+body.loading #shippingNotice,
+body.loading #cartModal,
+body.loading #profileSection {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* When intro removed, everything fades back */
+body:not(.loading) header,
+body:not(.loading) main,
+body:not(.loading) footer {
+  opacity: 1;
+}
+
+/* Mobile friendly adjustments */
+@media(max-width:520px){
+  #introScreen {
+    background-position: center;
+    background-size: cover;
+  }
+  .enter-btn {
+    font-size: 18px;
+    padding: 12px 26px;
+  }
+}
+
+
     @media(max-width:520px){#profileSection{right:12px;left:12px;width:auto}.cart-modal{width:100%}}
   </style>
 </head>
 <body>
-  <div id="introScreen">
-  <img src="https://quackerfriends.github.io/quackheads-assets/images/brandimages/Enter.png" alt="Enter Quacker Friends Shop">
+  
+  <!-- Intro Screen -->
+<div id="introScreen">
   <button id="enterBtn" class="btn enter-btn">Enter</button>
 </div>
 
@@ -336,6 +343,7 @@ body.loading footer {
   <header>
   <h1>
     <img 
+    
       src="https://quackerfriends.github.io/quackheads-assets/images/brandimages/logo%20transparent%20zoomed.png" 
       alt="Quacker Friends Logo" 
       class="logo"
@@ -1718,8 +1726,21 @@ function attachZoomFollow(){
     });
   });
 }
- 
+
+   // Hide content until Enter is clicked
+  document.body.classList.add('loading');
+
+  const enterBtn = document.getElementById('enterBtn');
+  const introScreen = document.getElementById('introScreen');
+
+  enterBtn.addEventListener('click', () => {
+    introScreen.style.opacity = '0';
+    introScreen.style.visibility = 'hidden';
+    document.body.classList.remove('loading');
+    setTimeout(() => introScreen.remove(), 700);
+  });
 </script>
+  
 
 
 </body>
