@@ -189,11 +189,10 @@ header, .nav-container, .nav-actions, .nav-actions button {
 }
 
 /* When active */
-body.blur-bg #blurOverlay {
-  opacity: 1;
-  pointer-events: auto;
+body.blur-bg #mainContent {
+  filter: blur(10px) brightness(0.5);
+  transition: filter 0.3s ease;
 }
-
 
     .sizeguide-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:3000;background:rgba(0,0,0,0.5)}
     .sizeguide-modal.open{display:flex}
@@ -458,7 +457,7 @@ body:not(.loading) footer {
     <button class="btn secondary" onclick="disconnectWallet()">❌ Disconnect</button>
   </div>
 
-  <main style="max-width:var(--maxWidth);margin:20px auto;padding:0 16px;width:100%">
+  <main id="mainContent" style="max-width:var(--maxWidth);margin:20px auto;padding:0 16px;width:100%">
     <section id="items" class="shop-container"></section>
   </main>
 
