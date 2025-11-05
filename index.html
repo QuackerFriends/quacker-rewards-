@@ -619,6 +619,14 @@ let currentCategory = null;     // default (sheet categories may vary in case)
 let cachedEthRate = null;
 let lastRateFetch = 0;
 
+  /* ===== BLUR MANAGER ===== */
+let blurCount = 0;
+function addBlur() { blurCount++; document.body.classList.add("blur-bg");}
+function removeBlur() {
+  blurCount = Math.max(0, blurCount - 1);
+  if (blurCount === 0) document.body.classList.remove("blur-bg"); }
+
+
 /* ===== UI HELPERS ===== */
 function showToast(message, type="info", duration=3000){
   const container = document.getElementById("toast-container");
@@ -903,12 +911,12 @@ async function showCategory(cat) {
     currentCategory = null;
 
     // 🔹 Remove blur
-    document.body.classList.remove("blur-bg");
+    removeBlur();
     return;
   }
 
   // 🔹 Apply blur when new category opens
-  document.body.classList.add("blur-bg");
+addBlur();
 
   const key = (cat in PRODUCTS)
     ? cat
@@ -1234,7 +1242,7 @@ function closeSizeGuide(){ const modal = document.getElementById("sizeGuideModal
 
   content.innerHTML = contentHTML;
   modal.classList.add("open");
-  document.body.classList.add("blur-bg"); // blur the background
+  addBlur(); // blur the background
 }
 
 function closeItemModal(e) {
@@ -1243,7 +1251,7 @@ function closeItemModal(e) {
 
   const modal = document.getElementById("itemModal");
   modal.classList.remove("open");
-  document.body.classList.remove("blur-bg");
+  removeBlur();
 }
 
 
