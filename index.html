@@ -180,34 +180,38 @@ header, .nav-container, .nav-actions, .nav-actions button {
 }
   
 /* === BLUR BACKGROUND FIX === */
+/* === BACKGROUND BLUR (only background, not content) === */
 #blurOverlay {
   position: fixed;
   inset: 0;
   backdrop-filter: blur(10px) brightness(0.6);
   background: rgba(0, 0, 0, 0.25);
-  z-index: 100; /* stays behind modals & header */
+  z-index: 50; /* LOW → sits behind everything else */
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
 }
 
-/* Active blur */
+/* When blur active */
 body.blur-bg #blurOverlay {
   opacity: 1;
   pointer-events: auto;
 }
 
-/* Do NOT blur actual content elements */
-body.blur-bg header,
-body.blur-bg #shippingNotice,
-body.blur-bg footer,
-body.blur-bg #profileSection,
-body.blur-bg #cartModal,
-body.blur-bg #sizeGuideModal,
-body.blur-bg #itemModal,
-body.blur-bg main {
-  filter: none !important;
+/* Make sure all key UI layers stay above blur */
+header,
+#shippingNotice,
+main,
+footer,
+#profileSection,
+.cart-modal,
+.sizeguide-modal,
+#shopMenu,
+#toastContainer {
+  position: relative;
+  z-index: 200;
 }
+
 
 
 
@@ -408,7 +412,8 @@ body:not(.loading) footer {
 </head>
 <body>
 
-  
+  <div id="blurOverlay"></div>
+
   <!-- Intro Screen -->
 <div id="introScreen">
   <button id="enterBtn" class="btn enter-btn">Enter</button>
@@ -457,7 +462,6 @@ body:not(.loading) footer {
     </div>
   </header>
   
-<div id="blurOverlay"></div>
   <div id="toast-container"></div>
 
   <!-- Profile Panel -->
