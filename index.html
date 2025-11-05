@@ -179,13 +179,13 @@ header, .nav-container, .nav-actions, .nav-actions button {
   pointer-events: auto !important;
 }
   
-/* === BLUR OVERLAY === */
+/* === BLUR BACKGROUND FIX === */
 #blurOverlay {
   position: fixed;
   inset: 0;
   backdrop-filter: blur(10px) brightness(0.6);
-  background: rgba(0,0,0,0.25); /* soft dim tint */
-  z-index: 100; /* 👈 LOWER so header + alerts + modals stay above it */
+  background: rgba(0, 0, 0, 0.25);
+  z-index: 100; /* stays behind modals & header */
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
@@ -196,20 +196,19 @@ body.blur-bg #blurOverlay {
   opacity: 1;
   pointer-events: auto;
 }
-    /* Blur only the main content, not header/footer/modals */
-body.blur-bg main {
-  filter: blur(10px) brightness(0.7);
-  transition: filter 0.3s ease;
-}
 
+/* Do NOT blur actual content elements */
 body.blur-bg header,
-body.blur-bg footer,
 body.blur-bg #shippingNotice,
-body.blur-bg .cart-modal,
-body.blur-bg .sizeguide-modal,
-body.blur-bg #profileSection {
+body.blur-bg footer,
+body.blur-bg #profileSection,
+body.blur-bg #cartModal,
+body.blur-bg #sizeGuideModal,
+body.blur-bg #itemModal,
+body.blur-bg main {
   filter: none !important;
 }
+
 
 
     .sizeguide-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:3000;background:rgba(0,0,0,0.5)}
@@ -457,7 +456,8 @@ body:not(.loading) footer {
       <button id="openCartBtn" class="btn" style="position:relative">Cart <span id="cartCount" class="cart-count" style="display:none">0</span></button>
     </div>
   </header>
-
+  
+<div id="blurOverlay"></div>
   <div id="toast-container"></div>
 
   <!-- Profile Panel -->
@@ -561,7 +561,6 @@ body:not(.loading) footer {
     <a href="https://www.instagram.com/QuackerFriends" target="_blank"><i class="fab fa-instagram fa-lg"></i></a>
   </footer>
 
-    <div id="blurOverlay"></div>
 
 <!-- 🛍️ Item Modal -->
 <div id="itemModal" class="modal-overlay">
