@@ -778,16 +778,7 @@ async function loadProducts() {
           .map(cat => `<button class="dropdown-item" onclick="showCategory('${cat}')">${cat}</button>`)
           .join("");
       }
-      // ✅ Add this right after building the shop menu
-      
-const menuBtn = document.getElementById("menuBtn");
-if (menuBtn && shopMenu) {
-  // --- Toggle dropdown on button click ---
-  menuBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    shopMenu.style.display =
-      shopMenu.style.display === "flex" ? "none" : "flex";
-  });
+     
 
   // --- Close dropdown when clicking outside ---
   document.addEventListener("click", (e) => {
@@ -1869,12 +1860,7 @@ async function redeemWithPoints(productId, cost) {
 
 
 /* ===== MENU & overlay safety ===== */
-const menuBtn = document.getElementById('menuBtn');
-const shopMenu = document.getElementById('shopMenu');
-if(menuBtn && shopMenu) {
-  menuBtn.addEventListener('click', (e)=>{ e.stopPropagation(); shopMenu.style.display = shopMenu.style.display === "flex" ? "none" : "flex"; });
-  document.addEventListener('click', (e)=>{ if(!menuBtn.contains(e.target) && !shopMenu.contains(e.target)){ shopMenu.style.display = "none"; } });
-}
+
 hideOverlay();
 
 /* ===== INIT ===== */
@@ -1933,41 +1919,46 @@ function attachZoomFollow(){
     setTimeout(() => introScreen.remove(), 700);
   });
 
-  // === Dropdown toggle logic ===
+ /* ===== SHOP MENU FIX (ESCAPE STACKING CONTEXT) ===== */
 document.addEventListener("DOMContentLoaded", () => {
   const menuBtn = document.getElementById("menuBtn");
   const shopMenu = document.getElementById("shopMenu");
 
   if (!menuBtn || !shopMenu) return;
 
-  // Toggle open/close on button click
+  // Handle opening menu
   menuBtn.addEventListener("click", (e) => {
     e.stopPropagation();
-    const isVisible = shopMenu.style.display === "flex";
-    shopMenu.style.display = isVisible ? "none" : "flex";
+
+    // Move dropdown to body to avoid blur/stacking issues
+    document.body.appendChild(shopMenu);
+
+    const rect = menuBtn.getBoundingClientRect();
+    shopMenu.style.position = "fixed";
+    shopMenu.style.top = `${rect.bottom + 6}px`;
+    shopMenu.style.left = `${rect.left}px`;
+    shopMenu.style.display =
+      shopMenu.style.display === "flex" ? "none" : "flex";
+    shopMenu.style.zIndex = "999999";
   });
 
   // Close when clicking outside
   document.addEventListener("click", (e) => {
-    if (!shopMenu.contains(e.target) && e.target !== menuBtn) {
+    if (!menuBtn.contains(e.target) && !shopMenu.contains(e.target)) {
       shopMenu.style.display = "none";
     }
   });
 
-  // Close after selecting a category
+  // Close when selecting a category
   shopMenu.addEventListener("click", (e) => {
     if (e.target.classList.contains("dropdown-item")) {
       shopMenu.style.display = "none";
     }
   });
 });
-  
- 
+
 
 </script>
   
-  
-
-
 </body>
 </html>
