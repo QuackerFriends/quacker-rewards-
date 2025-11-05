@@ -350,7 +350,18 @@ footer,
     .toast.info{background:#2563eb}.toast.success{background:#059669}.toast.error{background:#ef4444}
 
     /* dropdown */
-    #shopMenu{display:none;position:absolute;top:100%;left:0;background:var(--card);border-radius:12px;box-shadow:var(--shadow);flex-direction:column;min-width:160px;  z-index: 3200 !important; /* above blur & items, below modals */}
+#shopMenu {
+  display: none;
+  position: fixed; /* instead of absolute */
+  top: 64px; /* just below header */
+  left: 24px; /* adjust to align under Shop button */
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  flex-direction: column;
+  min-width: 180px;
+  z-index: 4000 !important; /* topmost except modals */
+}
     .dropdown-item{padding:10px 16px;border:none;background:transparent;text-align:left;cursor:pointer;font-weight:600;transition:background .15s;color:#222;border-radius:8px}
     .dropdown-item:hover{background:var(--brand-orange);color:#fff}
 
