@@ -953,9 +953,19 @@ async function showCategory(cat) {
       imageHTML = `
         <div class="image-slider" id="slider_${p.id}">
           ${images
-            .map((url, i) =>
-              `<img src="${url}" alt="${p.title}" class="slide ${i === 0 ? "active" : ""}" />`
-            )
+          .map((url, i) =>
+  `<img 
+     src="${url}" 
+     alt="${p.title}" 
+     class="slide ${i === 0 ? "active" : ""}" 
+     style="cursor:pointer"
+     onclick="openItemModal(\`
+       <img src='${url}' alt='${p.title}' style='max-width:100%;border-radius:12px;display:block;margin:0 auto;' />
+       <h3 style='margin-top:12px;text-align:center;'>${p.title}</h3>
+     \`)"
+   />`
+)
+
             .join("")}
           <button class="prev" onclick="prevSlide('${p.id}')">‹</button>
           <button class="next" onclick="nextSlide('${p.id}')">›</button>
@@ -963,7 +973,7 @@ async function showCategory(cat) {
       `;
     } else {
       const imgSrc = images[0] || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
-      imageHTML = `   <img id="img_${p.id}" src="${imgSrc}" alt="${p.title}" style="cursor:pointer"        onclick="openItemModal('<img src=${imgSrc} style=max-width:100%;border-radius:12px>')" /> `;
+      imageHTML = `   <img      id="img_${p.id}"      src="${imgSrc}"      alt="${p.title}"      style="cursor:pointer"     onclick="openItemModal(\`       <img src='${imgSrc}' alt='${p.title}' style='max-width:100%;border-radius:12px;display:block;margin:0 auto;' />       <h3 style='margin-top:12px;text-align:center;'>${p.title}</h3>     \`)"   /> `;
     }
 
     // 🧩 Variants
