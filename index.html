@@ -179,7 +179,7 @@ header, .nav-container, .nav-actions, .nav-actions button {
   pointer-events: auto !important;
 }
   
-/* === BLUR BACKGROUND FIX === */
+
 /* === BACKGROUND BLUR (only background, not content) === */
 #blurOverlay {
   position: fixed;
@@ -219,6 +219,17 @@ footer,
     .sizeguide-modal.open{display:flex}
     .sizeguide-modal .card{background:#fff;padding:12px;border-radius:12px;max-width:720px;width:92%;position:relative}
     .sizeguide-modal img{max-width:100%;height:auto;display:block;border-radius:8px}
+    #itemModalContent img {
+  max-width: 90vw;
+  max-height: 80vh;
+  width: auto;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
     .sizeguide-modal .close-btn{position:absolute;right:12px;top:12px;background:transparent;border:none;font-size:20px;cursor:pointer}
 
     .item-modal {
@@ -339,7 +350,7 @@ footer,
     .toast.info{background:#2563eb}.toast.success{background:#059669}.toast.error{background:#ef4444}
 
     /* dropdown */
-    #shopMenu{display:none;position:absolute;top:100%;left:0;background:var(--card);border-radius:12px;box-shadow:var(--shadow);flex-direction:column;min-width:160px;z-index:2000}
+    #shopMenu{display:none;position:absolute;top:100%;left:0;background:var(--card);border-radius:12px;box-shadow:var(--shadow);flex-direction:column;min-width:160px;  z-index: 3200 !important; /* above blur & items, below modals */}
     .dropdown-item{padding:10px 16px;border:none;background:transparent;text-align:left;cursor:pointer;font-weight:600;transition:background .15s;color:#222;border-radius:8px}
     .dropdown-item:hover{background:var(--brand-orange);color:#fff}
 
@@ -567,12 +578,13 @@ body:not(.loading) footer {
 
 
 <!-- 🛍️ Item Modal -->
-<div id="itemModal" class="sizeguide-modal" aria-hidden="true">
-  <div class="card">
+<div id="itemModal" class="sizeguide-modal" aria-hidden="true" onclick="closeItemModal(event)">
+  <div class="card" onclick="event.stopPropagation();">
     <button class="close-btn" onclick="closeItemModal()">✕</button>
     <div id="itemModalContent"></div>
   </div>
 </div>
+
 
 
 <script>
@@ -1239,11 +1251,15 @@ function closeSizeGuide(){ const modal = document.getElementById("sizeGuideModal
   document.body.classList.add("blur-bg"); // blur the background
 }
 
-function closeItemModal() {
+function closeItemModal(e) {
+  // If called from click event, ensure we clicked background, not content
+  if (e && e.target.closest('.card')) return;
+
   const modal = document.getElementById("itemModal");
   modal.classList.remove("open");
   document.body.classList.remove("blur-bg");
 }
+
 
 /* ===== CART helpers ===== */
 function addTapestryToCart(prodId){
