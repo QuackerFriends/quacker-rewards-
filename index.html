@@ -778,33 +778,15 @@ async function loadProducts() {
           .map(cat => `<button class="dropdown-item" onclick="showCategory('${cat}')">${cat}</button>`)
           .join("");
       }
-     
 
-  // --- Close dropdown when clicking outside ---
-  document.addEventListener("click", (e) => {
-    if (!shopMenu.contains(e.target) && e.target !== menuBtn) {
-      shopMenu.style.display = "none";
-    }
-  });
-
-  // --- Close dropdown after selecting a category ---
-  shopMenu.addEventListener("click", (e) => {
-    if (e.target.classList.contains("dropdown-item")) {
-      shopMenu.style.display = "none";
-    }
-  });
-}
-      
-
-
-     // --- Don't auto-load anything at start ---
-if (!currentCategory) {
-  const itemsSection = document.getElementById("items");
-  itemsSection.innerHTML = null;
-} else {
-  await showCategory(currentCategory);
-  attachZoomFollow();
-}
+      // --- Don't auto-load anything at start ---
+      if (!currentCategory) {
+        const itemsSection = document.getElementById("items");
+        itemsSection.innerHTML = null;
+      } else {
+        await showCategory(currentCategory);
+        attachZoomFollow();
+      }
 
     } else {
       console.error("⚠️ Failed to load items or items missing:", data);
@@ -814,7 +796,6 @@ if (!currentCategory) {
   }
 }
 
-  
 /* ===== RENDER PRODUCT CARD (with Quacks + Points + USD) ===== */
 function renderProductCard(p, ethRate) {
   // Normalize IDs and prices
