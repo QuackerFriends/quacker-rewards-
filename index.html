@@ -349,22 +349,32 @@ footer,
     .toast{padding:8px 12px;border-radius:8px;color:#fff;display:flex;gap:8px;align-items:center}
     .toast.info{background:#2563eb}.toast.success{background:#059669}.toast.error{background:#ef4444}
 
-    /* dropdown */
 #shopMenu {
-  position: fixed; /* fixed so it’s above everything */
-  top: 72px; /* same as header height */
-  left: 20px; /* same as Shop button x-position */
+  position: fixed;       /* fixed above everything */
+  display: none;         /* initially hidden */
+  flex-direction: column;
   background: var(--card);
   border-radius: 12px;
   box-shadow: var(--shadow);
-  display: none;
-  flex-direction: column;
   min-width: 180px;
-  z-index: 6000; /* above all modals and items */
+  z-index: 6000;         /* above items, blur, modals */
+}
+.dropdown-item {
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background .15s;
+  color: #222;
+  border-radius: 8px;
+}
+.dropdown-item:hover {
+  background: var(--brand-orange);
+  color: #fff;
 }
 
-    .dropdown-item{padding:10px 16px;border:none;background:transparent;text-align:left;cursor:pointer;font-weight:600;transition:background .15s;color:#222;border-radius:8px}
-    .dropdown-item:hover{background:var(--brand-orange);color:#fff}
 
     footer{background:var(--brand-orange-dark);padding:5px 0;text-align:center;color:#fff;margin-top:auto;position:relative;z-index:1000}
     footer a{margin:0 10px;color:#fff}
@@ -1870,11 +1880,19 @@ async function redeemWithPoints(productId, cost) {
 /* ===== MENU & overlay safety ===== */
 const menuBtn = document.getElementById('menuBtn');
 const shopMenu = document.getElementById('shopMenu');
+  
   menuBtn.addEventListener('click', () => {
   const rect = menuBtn.getBoundingClientRect();
   shopMenu.style.top = `${rect.bottom + 6}px`;
   shopMenu.style.left = `${rect.left}px`;
   shopMenu.style.display = shopMenu.style.display === 'flex' ? 'none' : 'flex';
+});
+  
+  // Optional: close menu when clicking outside
+document.addEventListener('click', (e) => {
+  if (!shopMenu.contains(e.target) && !menuBtn.contains(e.target)) {
+    shopMenu.style.display = 'none';
+  }
 });
 
 if(menuBtn && shopMenu) {
