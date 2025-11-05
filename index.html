@@ -351,17 +351,16 @@ footer,
 
     /* dropdown */
 #shopMenu {
-  display: none;
-  position: absolute; /* stays relative to header/shop button */
-  top: 100%; /* directly below the Shop button */
-  left: 0; /* aligned to button’s left edge */
+  position: fixed; /* fixed so it’s above everything */
+  top: 72px; /* same as header height */
+  left: 20px; /* same as Shop button x-position */
   background: var(--card);
   border-radius: 12px;
   box-shadow: var(--shadow);
+  display: none;
   flex-direction: column;
   min-width: 180px;
-  margin-top: 6px;
-  z-index: 5100 !important; /* above everything in header and items */
+  z-index: 6000; /* above all modals and items */
 }
 
     .dropdown-item{padding:10px 16px;border:none;background:transparent;text-align:left;cursor:pointer;font-weight:600;transition:background .15s;color:#222;border-radius:8px}
@@ -463,13 +462,7 @@ body:not(.loading) footer {
     <div style="display:flex;gap:10px;align-items:center">
       <div class="shop-controls" style="position:relative">
         <button class="btn secondary" id="menuBtn">Shop ▾</button>
-        <div id="shopMenu">      
-          <button class="dropdown-item" onclick="showCategory('tees')">Tees</button>        
-          <button class="dropdown-item" onclick="showCategory('miniplushies')">Mini Plushies</button>     
-          <button class="dropdown-item" onclick="showCategory('plushies')">Plushies</button>           
-          <button class="dropdown-item" onclick="showCategory('tapestry')">Tapestry</button>       
-          <button class="dropdown-item" onclick="showCategory('keychains')">Keychains</button>      
-        </div>
+       
       </div>
       
    <div id="pointsDisplay" class="info-container">
@@ -486,6 +479,13 @@ body:not(.loading) footer {
     </div>
   </header>
   
+   <div id="shopMenu">      
+          <button class="dropdown-item" onclick="showCategory('tees')">Tees</button>        
+          <button class="dropdown-item" onclick="showCategory('miniplushies')">Mini Plushies</button>     
+          <button class="dropdown-item" onclick="showCategory('plushies')">Plushies</button>           
+          <button class="dropdown-item" onclick="showCategory('tapestry')">Tapestry</button>       
+          <button class="dropdown-item" onclick="showCategory('keychains')">Keychains</button>      
+        </div>
   <div id="toast-container"></div>
 
   <!-- Profile Panel -->
@@ -1870,6 +1870,13 @@ async function redeemWithPoints(productId, cost) {
 /* ===== MENU & overlay safety ===== */
 const menuBtn = document.getElementById('menuBtn');
 const shopMenu = document.getElementById('shopMenu');
+  menuBtn.addEventListener('click', () => {
+  const rect = menuBtn.getBoundingClientRect();
+  shopMenu.style.top = `${rect.bottom + 6}px`;
+  shopMenu.style.left = `${rect.left}px`;
+  shopMenu.style.display = shopMenu.style.display === 'flex' ? 'none' : 'flex';
+});
+
 if(menuBtn && shopMenu) {
   menuBtn.addEventListener('click', (e)=>{ e.stopPropagation(); shopMenu.style.display = shopMenu.style.display === "flex" ? "none" : "flex"; });
   document.addEventListener('click', (e)=>{ if(!menuBtn.contains(e.target) && !shopMenu.contains(e.target)){ shopMenu.style.display = "none"; } });
