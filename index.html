@@ -349,25 +349,20 @@ footer,
     .toast{padding:8px 12px;border-radius:8px;color:#fff;display:flex;gap:8px;align-items:center}
     .toast.info{background:#2563eb}.toast.success{background:#059669}.toast.error{background:#ef4444}
 
- /* --- SHOP MENU DROPDOWN FIX --- */
-.shop-controls {
-  position: relative;
-  z-index: 6000; /* raise its stacking context */
-}
+
 
 #shopMenu {
   display: none;
-  position: absolute;
-  top: 100%; /* directly below Shop button */
-  left: 0;
+  position: fixed; /* fixed so it’s independent of blur or stacking issues */
   background: var(--card);
   border-radius: 12px;
   box-shadow: var(--shadow);
   flex-direction: column;
   min-width: 180px;
-  margin-top: 6px;
-  z-index: 6100; /* must be higher than .item cards */
+  padding: 6px 0;
+  z-index: 99999; /* topmost layer */
 }
+
 
 
     .dropdown-item{padding:10px 16px;border:none;background:transparent;text-align:left;cursor:pointer;font-weight:600;transition:background .15s;color:#222;border-radius:8px}
