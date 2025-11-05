@@ -567,12 +567,13 @@ body:not(.loading) footer {
 
 
 <!-- 🛍️ Item Modal -->
-<div id="itemModal" class="modal-overlay">
-  <div class="modal-content">
-    <button class="close-btn" onclick="closeItemModal()">✖</button>
-    <div id="itemDetails"></div>
+<div id="itemModal" class="sizeguide-modal" aria-hidden="true">
+  <div class="card">
+    <button class="close-btn" onclick="closeItemModal()">✕</button>
+    <div id="itemModalContent"></div>
   </div>
 </div>
+
 
 <script>
 /* ===== CONFIG ===== */
@@ -1921,27 +1922,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
   
-  // === Image popup (lightbox) ===
-document.addEventListener("DOMContentLoaded", () => {
-  const popup = document.getElementById("imagePopup");
-  const popupImg = document.getElementById("popupImage");
-
-  // When clicking an item image, open popup
-  document.body.addEventListener("click", (e) => {
-    if (e.target.tagName === "IMG" && e.target.closest(".item")) {
-      popupImg.src = e.target.src;
-      popup.style.display = "flex";
-      document.body.classList.add("blur-bg");
-    }
-  });
-
-  // Close popup when clicked anywhere
-  popup.addEventListener("click", () => {
-    popup.style.display = "none";
-    document.body.classList.remove("blur-bg");
-  });
-});
-
+ 
 
 </script>
   
