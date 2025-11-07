@@ -1952,57 +1952,51 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-/* ===== PROFILE DROPDOWN FIX (FINAL RELIABLE VERSION) ===== */
+/* ===== PROFILE DROPDOWN FIX (POSITION + ANIMATION) ===== */
 document.addEventListener("DOMContentLoaded", () => {
   const profileBtn = document.getElementById("profileBtn");
   const profileSection = document.getElementById("profileSection");
 
-  if (!profileBtn || !profileSection) {
-    console.warn("Profile elements not found");
-    return;
-  }
+  if (!profileBtn || !profileSection) return;
 
   profileBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     console.log("Profile button clicked");
 
-    // Toggle visibility
-    const isVisible = profileSection.style.display === "block";
+    const isVisible = profileSection.classList.contains("show");
 
     if (isVisible) {
-      profileSection.style.display = "none";
+      profileSection.classList.remove("show");
+      setTimeout(() => (profileSection.style.display = "none"), 200);
       return;
     }
 
-    // Move dropdown to body for correct stacking
+    // Move to body so it layers above blur
     document.body.appendChild(profileSection);
 
-    // Make sure it’s temporarily visible to measure
     profileSection.style.display = "block";
-    profileSection.style.visibility = "hidden";
     profileSection.style.position = "fixed";
     profileSection.style.zIndex = "999999";
 
-    // Get button position
     const rect = profileBtn.getBoundingClientRect();
-    const dropdownWidth = profileSection.offsetWidth || 180; // fallback width
+    const dropdownWidth = profileSection.offsetWidth || 200;
 
-    // Position below and right-aligned with button
     profileSection.style.top = `${rect.bottom + 6}px`;
     profileSection.style.left = `${rect.right - dropdownWidth}px`;
 
-    // Reveal it
-    profileSection.style.visibility = "visible";
-    console.log("Profile section opened");
+    requestAnimationFrame(() => {
+      profileSection.classList.add("show");
+    });
   });
 
-  // Close when clicking outside
   document.addEventListener("click", (e) => {
     if (!profileSection.contains(e.target) && e.target !== profileBtn) {
-      profileSection.style.display = "none";
+      profileSection.classList.remove("show");
+      setTimeout(() => (profileSection.style.display = "none"), 200);
     }
   });
 });
+
 
 </script>
   
