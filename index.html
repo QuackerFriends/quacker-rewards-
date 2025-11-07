@@ -143,23 +143,20 @@ header, .nav-container, .nav-actions, .nav-actions button {
 #profileSection {
   display: none;
   position: fixed;
-  top: 80px; /* nicely below the header */
+  top: 80px;
   right: 20px;
   z-index: 3100;
-  min-width: 220px;
-
-  /* 🔸 glassy + soft card effect */
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 1rem;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+  -webkit-backdrop-filter: blur(14px);
   color: #fff;
-
-  padding: 1.2rem;
-  animation: dropdownFade 0.25s ease;
+  padding: 1rem 1.2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3);
+  min-width: 220px;     /* smaller, tighter box */
+  max-width: 280px;     /* prevent stretching */
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
-
 /* ✨ Entry animation */
 @keyframes dropdownFade {
   from { opacity: 0; transform: translateY(-8px); }
