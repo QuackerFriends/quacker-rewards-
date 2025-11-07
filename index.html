@@ -454,29 +454,17 @@ body:not(.loading) footer {
 
     @media(max-width:520px){#profileSection{right:12px;left:12px;width:auto}.cart-modal{width:100%}}
 
-/* ===============================
-   🌿 MOBILE COMFORT + SCALE FIX
-   =============================== */
+/* =========================================
+   🌈 MOBILE VIEW FIXES (HEADER, PROFILE, FOOTER)
+   ========================================= */
 @media (max-width: 768px) {
 
-  /* Global scaling */
-  html {
-    font-size: 14px;
-    scroll-behavior: smooth;
-  }
-
-  body {
-    padding: 0 10px;
-    overflow-x: hidden;
-    background-size: cover;
-    background-position: center;
-  }
-
+  /* Make header compact */
   header {
-    flex-direction: column;
-    align-items: center;
-    padding: 12px;
-    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 8px;
     text-align: center;
   }
 
@@ -484,102 +472,67 @@ body:not(.loading) footer {
     font-size: 16px;
   }
 
-  header .logo {
-    height: 28px;
-  }
-
-  /* Add subtle breathing space */
-  main {
-    padding: 12px;
-    margin-top: 10px;
-  }
-
-  .shop-container {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .item {
-    padding: 10px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  }
-
-  .item img {
-    height: 160px;
-    object-fit: contain;
-  }
-
-  .item h3 {
-    font-size: 15px;
-    margin: 6px 0;
-  }
-
-  .price {
-    font-size: 14px;
-  }
-
-  .btn {
-    font-size: 13px;
-    padding: 8px 14px;
-  }
-
-  /* Tooltip & referral info */
+  /* Align header buttons in one row, centered */
+  .nav-actions, 
+  header > div, 
   .info-container {
+    display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 4px;
-    background: rgba(0,0,0,0.4);
-    padding: 5px 10px;
-    border-radius: 10px;
+    gap: 6px;
+    width: 100%;
   }
 
-  .tooltip-text {
-    font-size: 12px;
-    width: 90%;
-    left: 50%;
-    transform: translateX(-50%);
+  /* Referral + Profile buttons */
+  .btn, 
+  .info-container {
+    flex: 1 1 auto;
+    justify-content: center;
   }
 
-  /* Profile dropdown */
+  /* Ensure the profile dropdown is visible & scrollable */
   #profileSection {
-    right: 10px !important;
-    left: 10px !important;
-    top: 70px !important;
+    position: fixed !important;
+    top: auto !important;
+    bottom: 12px !important;
+    left: 12px !important;
+    right: 12px !important;
     width: auto !important;
-    max-width: 320px;
-    font-size: 14px;
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 1rem;
+    background: rgba(0,0,0,0.7);
+    border-radius: 12px;
+    backdrop-filter: blur(12px);
   }
 
-  /* Cart modal */
-  .cart-modal {
-    width: 95%;
-    max-width: 400px;
-    height: auto;
-    max-height: 90vh;
-    border-radius: 16px;
-    padding: 12px;
+  /* Allow scrolling through the dropdown */
+  #profileSection::-webkit-scrollbar {
+    width: 6px;
+  }
+  #profileSection::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.4);
+    border-radius: 4px;
+  }
+
+  /* Footer spacing fix */
+  footer {
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    padding: 12px 6px;
+    font-size: 13px;
+    text-align: center;
+  }
+
+  /* Prevent elements from clipping or hiding */
+  body {
+    min-height: auto;
     overflow-y: auto;
   }
 
-  /* Toasts */
-  #toast-container {
-    top: 70px;
-    right: 10px;
-    left: 10px;
-    width: auto;
-  }
-
-  /* Footer */
-  footer {
-    font-size: 13px;
-    padding: 12px 6px;
-  }
-
-  /* Give everything breathing room */
-  * {
-    max-width: 100%;
-    box-sizing: border-box;
+  main {
+    padding-bottom: 80px; /* make space for dropdown/footer */
   }
 }
 
