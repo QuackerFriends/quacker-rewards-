@@ -1952,38 +1952,48 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-/* ===== PROFILE DROPDOWN FIX (POSITION + STACKING) ===== */
+/* ===== PROFILE DROPDOWN FIX (FINAL RELIABLE VERSION) ===== */
 document.addEventListener("DOMContentLoaded", () => {
   const profileBtn = document.getElementById("profileBtn");
   const profileSection = document.getElementById("profileSection");
 
-  if (!profileBtn || !profileSection) return;
+  if (!profileBtn || !profileSection) {
+    console.warn("Profile elements not found");
+    return;
+  }
 
   profileBtn.addEventListener("click", (e) => {
     e.stopPropagation();
+    console.log("Profile button clicked");
 
+    // Toggle visibility
     const isVisible = profileSection.style.display === "block";
+
     if (isVisible) {
       profileSection.style.display = "none";
       return;
     }
 
-    // Temporarily show to measure width
+    // Move dropdown to body for correct stacking
+    document.body.appendChild(profileSection);
+
+    // Make sure it’s temporarily visible to measure
     profileSection.style.display = "block";
     profileSection.style.visibility = "hidden";
     profileSection.style.position = "fixed";
     profileSection.style.zIndex = "999999";
-    document.body.appendChild(profileSection);
 
+    // Get button position
     const rect = profileBtn.getBoundingClientRect();
-    const dropdownWidth = profileSection.offsetWidth;
+    const dropdownWidth = profileSection.offsetWidth || 180; // fallback width
 
-    // Position just below and aligned to right edge of Profile button
+    // Position below and right-aligned with button
     profileSection.style.top = `${rect.bottom + 6}px`;
     profileSection.style.left = `${rect.right - dropdownWidth}px`;
 
-    // Reveal now
+    // Reveal it
     profileSection.style.visibility = "visible";
+    console.log("Profile section opened");
   });
 
   // Close when clicking outside
