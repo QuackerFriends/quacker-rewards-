@@ -2013,6 +2013,33 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".info-container").forEach(container => {
+    const icon = container.querySelector(".info-icon");
+    const tooltip = container.querySelector(".tooltip-text");
+
+    if (!icon || !tooltip) return;
+
+    // Show tooltip
+    icon.addEventListener("mouseenter", () => {
+      const rect = icon.getBoundingClientRect();
+      tooltip.style.position = "fixed";
+      tooltip.style.top = `${rect.bottom + 8}px`;
+      tooltip.style.left = `${rect.left + rect.width / 2}px`;
+      tooltip.style.transform = "translateX(-50%)";
+      tooltip.style.visibility = "visible";
+      tooltip.style.opacity = "1";
+      tooltip.style.pointerEvents = "auto";
+    });
+
+    // Hide tooltip
+    icon.addEventListener("mouseleave", () => {
+      tooltip.style.opacity = "0";
+      tooltip.style.visibility = "hidden";
+      tooltip.style.pointerEvents = "none";
+    });
+  });
+});
 
 </script>
   
