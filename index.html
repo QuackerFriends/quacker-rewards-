@@ -454,16 +454,22 @@ body:not(.loading) footer {
 
     @media(max-width:520px){#profileSection{right:12px;left:12px;width:auto}.cart-modal{width:100%}}
 
-    /* ===========================
-   📱 Responsive layout tweaks
+   /* ===========================
+   📱 Responsive + Zoom Safe Fix
    =========================== */
 @media (max-width: 768px) {
 
+  html, body {
+    width: 100%;
+    overflow-x: hidden; /* ✅ prevent horizontal cutoff */
+  }
+
   header {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+    align-items: center;
     text-align: center;
+    gap: 8px;
+    padding: 12px;
   }
 
   header h1 {
@@ -471,45 +477,71 @@ body:not(.loading) footer {
   }
 
   main {
-    padding: 20px 12px;
+    padding: 16px 12px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
   .shop-container {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 14px;
+    width: 100%;
+  }
+
+  /* Force flexible items */
+  .item {
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .item img {
-    height: 160px;
+    width: 100%;
+    height: auto;
+    max-height: 180px;
+    object-fit: contain;
   }
 
+  /* Buttons scale */
   .btn {
     padding: 8px 14px;
     font-size: 14px;
   }
 
-  footer {
-    font-size: 14px;
-    padding: 10px 0;
-  }
-
-  .cart-modal {
-    width: 100%;
-  }
-
-  #profileSection {
-    right: 12px;
-    left: 12px;
-    width: auto;
-  }
-
-  /* Tooltip sizing fix for small screens */
+  /* Fix tooltip on small screens */
   .tooltip-text {
     width: 180px;
     font-size: 11px;
-    padding: 5px 8px;
+    padding: 6px 8px;
+    word-wrap: break-word;
+    white-space: normal;
+  }
+
+  /* Prevent dropdowns/modals from cutting off */
+  .cart-modal,
+  .sizeguide-modal .card,
+  .item-modal .card {
+    width: 95%;
+    max-width: 420px;
+    height: auto;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  /* Center footer and make readable */
+  footer {
+    font-size: 14px;
+    padding: 10px 0;
+    text-align: center;
+  }
+
+  /* Ensure no element goes off screen */
+  * {
+    max-width: 100%;
   }
 }
+
 
   </style>
 </head>
