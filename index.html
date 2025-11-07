@@ -1923,7 +1923,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!menuBtn || !shopMenu) return;
 
-  // Handle opening menu
   menuBtn.addEventListener("click", (e) => {
     e.stopPropagation();
 
@@ -1939,14 +1938,12 @@ document.addEventListener("DOMContentLoaded", () => {
     shopMenu.style.zIndex = "999999";
   });
 
-  // Close when clicking outside
   document.addEventListener("click", (e) => {
     if (!menuBtn.contains(e.target) && !shopMenu.contains(e.target)) {
       shopMenu.style.display = "none";
     }
   });
 
-  // Close when selecting a category
   shopMenu.addEventListener("click", (e) => {
     if (e.target.classList.contains("dropdown-item")) {
       shopMenu.style.display = "none";
@@ -1964,21 +1961,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
   profileBtn.addEventListener("click", (e) => {
     e.stopPropagation();
+
     const isVisible = profileSection.style.display === "block";
-
-    if (!isVisible) {
-      // Move dropdown to body to escape stacking/blur
-      document.body.appendChild(profileSection);
-
-      const rect = profileBtn.getBoundingClientRect();
-      profileSection.style.position = "fixed";
-      profileSection.style.top = `${rect.bottom + 8}px`; // small gap below button
-      profileSection.style.left = `${rect.right - profileSection.offsetWidth}px`; // align right edge
-      profileSection.style.display = "block";
-      profileSection.style.zIndex = "999999";
-    } else {
+    if (isVisible) {
       profileSection.style.display = "none";
+      return;
     }
+
+    // Temporarily show to measure width
+    profileSection.style.display = "block";
+    profileSection.style.visibility = "hidden";
+    profileSection.style.position = "fixed";
+    profileSection.style.zIndex = "999999";
+    document.body.appendChild(profileSection);
+
+    const rect = profileBtn.getBoundingClientRect();
+    const dropdownWidth = profileSection.offsetWidth;
+
+    // Position just below and aligned to right edge of Profile button
+    profileSection.style.top = `${rect.bottom + 6}px`;
+    profileSection.style.left = `${rect.right - dropdownWidth}px`;
+
+    // Reveal now
+    profileSection.style.visibility = "visible";
   });
 
   // Close when clicking outside
@@ -1988,8 +1993,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
-  
 
 </script>
   
