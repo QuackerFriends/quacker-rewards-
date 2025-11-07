@@ -142,9 +142,9 @@ header, .nav-container, .nav-actions, .nav-actions button {
 /* === USER PROFILE DROPDOWN (Modern Glassy Style) === */
 #profileSection {
   display: none;
-  position: fixed;
-  top: 80px;
-  right: 20px;
+ position: absolute;  /* changed from fixed */
+  top: 60px;           /* slightly below header */
+  right: 0;            /* align to profile button's right edge */
   z-index: 3100;
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(14px);
