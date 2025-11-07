@@ -454,117 +454,129 @@ body:not(.loading) footer {
 
     @media(max-width:520px){#profileSection{right:12px;left:12px;width:auto}.cart-modal{width:100%}}
 
- /* ===============================
-   📱 FULL MOBILE RESPONSIVE FIX
+/* ===============================
+   🌿 MOBILE COMFORT + SCALE FIX
    =============================== */
 @media (max-width: 768px) {
 
-  html, body {
-    width: 100%;
-    overflow-x: hidden;
-    margin: 0;
-    padding: 0;
+  /* Global scaling */
+  html {
+    font-size: 14px;
+    scroll-behavior: smooth;
   }
 
-  /* Header cleanup */
+  body {
+    padding: 0 10px;
+    overflow-x: hidden;
+    background-size: cover;
+    background-position: center;
+  }
+
   header {
     flex-direction: column;
     align-items: center;
+    padding: 12px;
+    gap: 6px;
     text-align: center;
-    gap: 8px;
-    padding: 10px 14px;
   }
 
   header h1 {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   header .logo {
-    height: 30px;
+    height: 28px;
   }
 
-  /* Referral info + tooltip */
-  .info-container {
-    flex-wrap: wrap;
-    justify-content: center;
-    font-size: 13px;
-    text-align: center;
-  }
-
-  .tooltip-text {
-    width: 90vw;
-    max-width: 300px;
-    font-size: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    white-space: normal;
-  }
-
-  /* Profile section reposition */
-  #profileSection {
-    right: 10px !important;
-    left: 10px !important;
-    width: auto !important;
-    top: 70px !important;
-  }
-
-  /* Main layout */
+  /* Add subtle breathing space */
   main {
-    padding: 16px 10px;
-    max-width: 100%;
+    padding: 12px;
+    margin-top: 10px;
   }
 
   .shop-container {
-    display: grid;
     grid-template-columns: 1fr;
-    gap: 18px;
+    gap: 16px;
   }
 
   .item {
-    width: 100%;
-    padding: 12px;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   }
 
   .item img {
-    width: 100%;
-    height: auto;
-    max-height: 180px;
+    height: 160px;
     object-fit: contain;
   }
 
-  /* Buttons */
-  .btn {
-    padding: 8px 14px;
+  .item h3 {
+    font-size: 15px;
+    margin: 6px 0;
+  }
+
+  .price {
     font-size: 14px;
   }
 
-  /* Cart modal & popups */
-  .cart-modal,
-  .item-modal .card,
-  .sizeguide-modal .card {
-    width: 95%;
-    max-width: 400px;
-    max-height: 90vh;
-    overflow-y: auto;
-    border-radius: 14px;
+  .btn {
+    font-size: 13px;
+    padding: 8px 14px;
   }
 
-  /* Toasts / notifications */
+  /* Tooltip & referral info */
+  .info-container {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+    background: rgba(0,0,0,0.4);
+    padding: 5px 10px;
+    border-radius: 10px;
+  }
+
+  .tooltip-text {
+    font-size: 12px;
+    width: 90%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* Profile dropdown */
+  #profileSection {
+    right: 10px !important;
+    left: 10px !important;
+    top: 70px !important;
+    width: auto !important;
+    max-width: 320px;
+    font-size: 14px;
+  }
+
+  /* Cart modal */
+  .cart-modal {
+    width: 95%;
+    max-width: 400px;
+    height: auto;
+    max-height: 90vh;
+    border-radius: 16px;
+    padding: 12px;
+    overflow-y: auto;
+  }
+
+  /* Toasts */
   #toast-container {
-    top: 80px;
-    right: 8px;
-    left: 8px;
+    top: 70px;
+    right: 10px;
+    left: 10px;
     width: auto;
   }
 
   /* Footer */
   footer {
     font-size: 13px;
-    padding: 10px 0;
-    text-align: center;
+    padding: 12px 6px;
   }
 
-  /* Fix scaling issues */
+  /* Give everything breathing room */
   * {
     max-width: 100%;
     box-sizing: border-box;
