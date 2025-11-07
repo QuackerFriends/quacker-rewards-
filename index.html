@@ -139,36 +139,78 @@ header, .nav-container, .nav-actions, .nav-actions button {
   pointer-events: auto !important;
 }
 
-/* Profile dropdown just below header */
+/* === USER PROFILE DROPDOWN (Modern Glassy Style) === */
 #profileSection {
+  display: none;
   position: fixed;
-  top: 72px;               /* sits just below the header */
+  top: 80px; /* nicely below the header */
   right: 20px;
   z-index: 3100;
-  background: --brand-orange;
-  color: #eee;
-  padding: 1rem;
+  min-width: 220px;
+
+  /* 🔸 glassy + soft card effect */
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 1rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  min-width: 180px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+  color: #fff;
+
+  padding: 1.2rem;
+  animation: dropdownFade 0.25s ease;
 }
 
-/* Buttons in profile dropdown visible */
+/* ✨ Entry animation */
+@keyframes dropdownFade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Text layout --- */
+#profileSection h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+#profileSection p {
+  margin: 4px 0;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+/* --- Buttons --- */
 #profileSection button {
   width: 100%;
-  background: #2a2a2a;
-  color: #eee;
+  background: linear-gradient(135deg, #00bfa5, #009688);
+  color: #fff;
   border: none;
-  padding: 0.6rem 0.8rem;
+  padding: 0.7rem 0.8rem;
   border-radius: 0.6rem;
   cursor: pointer;
-  margin-top: 6px;
-  transition: background 0.2s, color 0.2s;
+  margin-top: 8px;
+  font-weight: 600;
+  transition: all 0.25s ease;
 }
+
 #profileSection button:hover {
-  background: #ff6600;
-  color: #fff;
+  background: linear-gradient(135deg, #26c6da, #00acc1);
+  transform: translateY(-2px);
 }
+
+/* 🔻 Disconnect button special color */
+#profileSection button.disconnect {
+  background: linear-gradient(135deg, #ff7043, #ff5252);
+}
+
+#profileSection button.disconnect:hover {
+  background: linear-gradient(135deg, #ff8a65, #ff5252);
+  transform: translateY(-2px);
+}
+
     
 
 /* Shop dropdown, modals, and toasts also stay clickable */
