@@ -453,6 +453,64 @@ body:not(.loading) footer {
 
 
     @media(max-width:520px){#profileSection{right:12px;left:12px;width:auto}.cart-modal{width:100%}}
+
+    /* ===========================
+   📱 Responsive layout tweaks
+   =========================== */
+@media (max-width: 768px) {
+
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    text-align: center;
+  }
+
+  header h1 {
+    font-size: 18px;
+  }
+
+  main {
+    padding: 20px 12px;
+  }
+
+  .shop-container {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+  }
+
+  .item img {
+    height: 160px;
+  }
+
+  .btn {
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+
+  footer {
+    font-size: 14px;
+    padding: 10px 0;
+  }
+
+  .cart-modal {
+    width: 100%;
+  }
+
+  #profileSection {
+    right: 12px;
+    left: 12px;
+    width: auto;
+  }
+
+  /* Tooltip sizing fix for small screens */
+  .tooltip-text {
+    width: 180px;
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+}
+
   </style>
 </head>
 <body>
