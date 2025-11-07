@@ -138,24 +138,32 @@ header, .nav-container, .nav-actions, .nav-actions button {
   z-index: 3000;
   pointer-events: auto !important;
 }
-
+    
+.profile-container {
+  position: relative; /* keep dropdown positioned relative to the Profile button */
+}
+    
 /* === USER PROFILE DROPDOWN (Modern Glassy Style) === */
 #profileSection {
   display: none;
- position: absolute;  /* changed from fixed */
- top: 50px; /* dropdown below the button */
-  right: 0;            /* align to profile button's right edge */
-  z-index: 3100;
-  background: rgba(255, 255, 255, 0.08);
+  position: absolute;
+  top: 45px; /* drop just below the Profile button */
+  right: 0;
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   color: #fff;
   padding: 1rem 1.2rem;
   border-radius: 1rem;
-  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3);
-  min-width: 220px;     /* smaller, tighter box */
-  max-width: 280px;     /* prevent stretching */
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 25px rgba(0,0,0,0.3);
+  min-width: 220px;
+  max-width: 280px;
+  border: 1px solid rgba(255,255,255,0.2);
+  z-index: 3000;
+
+  /* Prevent flexbox parents from stretching */
+  flex-shrink: 0;
+  align-self: flex-start;
 }
 /* ✨ Entry animation */
 @keyframes dropdownFade {
