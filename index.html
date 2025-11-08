@@ -1302,10 +1302,14 @@ async function checkout() {
     // --- Calculate subtotal in USD ---
     let subtotalUSD = 0;
     cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); });
+
 // --- Shipping rules ---
 let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
 let shippingUSD = 0;
 
+const subtotalUSD = cart.reduce((sum, item) => sum + (item.priceUSD || 0), 0);
+
+// Apply shipping for both Quacks and redeem carts (same rules)
 if (subtotalUSD >= 70) {
   shippingUSD = 0;
 } else if (country.toLowerCase() === "canada") {
@@ -1314,24 +1318,20 @@ if (subtotalUSD >= 70) {
   shippingUSD = 5;
 }
 
-console.log("🧭 Country:", country, "| Base shipping:", shippingUSD);
-
-// --- Reward logic (Quacks or Points) ---
-const isQuacksOnly = cart.length > 0 && cart.every(ci => ci.useQuacks);
-const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
+// ✅ Apply shipping to both Quacks + redeem carts (not just Quacks)
 const isRewardOnly = isQuacksOnly || isRedeemOnly;
-
-// ✅ Apply shipping to all, including reward purchases
-const grandTotalUSD = subtotalUSD + shippingUSD;
-
-// If it’s reward-only, skip crypto rate / payment part later
-let totalEth = 0;
-if (!isRewardOnly) {
-  const rate = await getEthRate();
-  totalEth = grandTotalUSD / rate;
+if (isRewardOnly) {
+  console.log("🦆 Reward cart (Quacks or Points) — shipping applied:", shippingUSD);
 }
 
-console.log("💰 Subtotal:", subtotalUSD, "| Shipping:", shippingUSD, "| Grand Total:", grandTotalUSD, "| ETH:", totalEth);
+
+    const grandTotalUSD = subtotalUSD + shippingUSD;
+    const rate = await getEthRate();
+    let totalEth = grandTotalUSD / rate;
+    let txHash = "";
+
+    const isQuacksOnly = cart.length > 0 && cart.every(ci => ci.useQuacks);
+    const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
 
 
     // --- Process ETH payment if applicable ---
