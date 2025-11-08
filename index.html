@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -30,8 +30,62 @@
     }
     body.blur-bg::before{filter:blur(6px) brightness(.7);}
 
-    header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--brand-orange);color:white;box-shadow:0 6px 18px rgba(0,0,0,0.08);z-index:1500;position:relative}
+    header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--brand-teal);color:white;box-shadow:0 6px 18px rgba(0,0,0,0.08);z-index:1500;position:relative}
     header h1{margin:0;font-size:20px;display:flex;align-items:center;gap:10px}
+    header h1 .logo {
+  height: 38px;
+  width: auto;
+  border-radius: 8px;
+  margin-right: 6px;
+}
+
+.info-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+}
+
+.info-icon {
+  cursor: pointer;
+  font-size: 15px;
+  opacity: 0.9;
+  transition: opacity 0.2s;
+}
+
+.info-icon:hover {
+  opacity: 1;
+}
+
+.tooltip-text {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  top: 130%;               /* 👈 appear below the info icon */
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.9);
+  color: #fff;
+  text-align: center;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  width: 220px;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  z-index: 5000;
+  white-space: normal;
+}
+
+.info-container:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+
+
     .btn{padding:10px 16px;background:var(--brand-orange-dark);color:white;border:none;border-radius:999px;cursor:pointer;font-weight:600;transition:all .18s;display:inline-flex;gap:8px;align-items:center}
     .btn.secondary{background:transparent;color:white;border:1px solid rgba(255,255,255,.25);padding:8px 12px;border-radius:10px}
     main{flex:1;padding:30px 20px;max-width:var(--maxWidth);margin:0 auto 80px}
@@ -39,23 +93,7 @@
     .item{background:var(--card);padding:16px;border-radius:14px;box-shadow:var(--shadow);text-align:center;position:relative}
     .item img{width:100%;height:220px;object-fit:contain;border-radius:8px;background:#f6f6f6}
     
-   /* --- Cursor-follow zoom (magnifier style) --- */
-.item {
-  position: relative;
-  overflow: hidden;
-}
 
-.item img {
-  width: 100%;
-  transition: transform 0.3s ease;
-  cursor: crosshair;
-  transform-origin: center center;
-}
-
-/* Optional: smooth reset when leaving */
-.item:hover img {
-  transform: scale(1.5); /* base zoom level */
-}
 
 
     .item h3{margin:10px 0 6px;font-size:16px}
@@ -100,7 +138,7 @@ header, .nav-container, .nav-actions, .nav-actions button {
   top: 72px;               /* sits just below the header */
   right: 20px;
   z-index: 3100;
-  background: #1c1c1c;
+  background: --brand-orange;
   color: #eee;
   padding: 1rem;
   border-radius: 1rem;
@@ -221,7 +259,7 @@ header, .nav-container, .nav-actions, .nav-actions button {
     .dropdown-item{padding:10px 16px;border:none;background:transparent;text-align:left;cursor:pointer;font-weight:600;transition:background .15s;color:#222;border-radius:8px}
     .dropdown-item:hover{background:var(--brand-orange);color:#fff}
 
-    footer{background:var(--brand-teal);padding:10px 0;text-align:center;color:#fff;margin-top:auto;position:relative;z-index:1000}
+    footer{background:var(--brand-orange-dark);padding:5px 0;text-align:center;color:#fff;margin-top:auto;position:relative;z-index:1000}
     footer a{margin:0 10px;color:#fff}
 
     @media(max-width:520px){#profileSection{right:12px;left:12px;width:auto}.cart-modal{width:100%}}
@@ -231,12 +269,19 @@ header, .nav-container, .nav-actions, .nav-actions button {
   <!-- overlay sits directly under header/above content; pointer-events controlled by .active -->
   <div id="tees"></div>
 
-  <div id="shippingNotice" style="background:#ffcc00;color:#222;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">
+  <div id="shippingNotice" style="background:#fff ; color:--brand-orange;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">
     ⚠️ Note: Shipping is only available in the US and Canada.
   </div>
 
   <header>
-    <h1>Quacker Friends Shop</h1>
+  <h1>
+    <img 
+      src="https://quackerfriends.github.io/quackheads-assets/images/brandimages/logo%20transparent%20zoomed.png" 
+      alt="Quacker Friends Logo" 
+      class="logo"
+    />
+    Quacker Friends Shop
+  </h1>
     <div style="display:flex;gap:10px;align-items:center">
       <div class="shop-controls" style="position:relative">
         <button class="btn secondary" id="menuBtn">Shop ▾</button>
@@ -248,7 +293,16 @@ header, .nav-container, .nav-actions, .nav-actions button {
           <button class="dropdown-item" onclick="showCategory('keychains')">Keychains</button>      
         </div>
       </div>
-      <div id="pointsDisplay" style="margin-top:10px;font-weight:600;color:#FFD700"> Goodness Points:  </div>
+      
+   <div id="pointsDisplay" class="info-container">
+  <i class="fa-solid fa-circle-info info-icon"></i>
+  <span class="tooltip-text">
+    You earn referral points when friends buy using your referral link. Redeem them for discounts or rewards.
+  </span>
+  <span class="points-label">Referral Points: <span id="pointsValue">Connect wallet</span></span>
+</div>
+
+
       <button id="connectBtn" class="btn">Connect Wallet</button>
       <button id="profileBtn" class="btn secondary" style="display:none">Profile</button>
       <button id="openCartBtn" class="btn" style="position:relative">Cart <span id="cartCount" class="cart-count" style="display:none">0</span></button>
@@ -317,14 +371,14 @@ header, .nav-container, .nav-actions, .nav-actions button {
     </div>
 
    
-    <div style="margin-top:10px;">
+ <!--  <div style="margin-top:10px;">
       <label for="paymentSelector" style="font-weight:bold;">Pay with:</label><br>
       <select id="paymentSelector" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;margin-top:6px;">
         <option value="eth">ETH (wallet)</option>
         <option value="points">Points / Redeem</option>
         <option value="quacks">Quacks</option>
       </select>
-    </div>
+    </div>  -->
 
     <div id="referralSection" style="margin-top:12px;">
       <label for="referrerInput" style="font-weight:bold;">Referral Address (optional):</label><br>
@@ -357,6 +411,7 @@ header, .nav-container, .nav-actions, .nav-actions button {
     <a href="https://www.tiktok.com/@quackerfriends" target="_blank"><i class="fab fa-tiktok fa-lg"></i></a>
     <a href="https://www.instagram.com/QuackerFriends" target="_blank"><i class="fab fa-instagram fa-lg"></i></a>
   </footer>
+
 
 <script>
 /* ===== CONFIG ===== */
@@ -553,14 +608,11 @@ async function loadProducts() {
 }
 
   
-
 /* ===== RENDER PRODUCT CARD (with Quacks + Points + USD) ===== */
 function renderProductCard(p, ethRate) {
-  // Debug: check product object
-  console.log("Rendering product:", p.ID, p.Title);
-
-  // Prices
-  const priceUSD = p.PriceUSD || p.priceUSD || 0;
+  // Normalize IDs and prices
+  const productId = p.ID || p.id;
+  const priceUSD = p.PriceUSD || p.priceUSD || p.price || 0;
   const pointsCost = p.PointsCost || p.pointsCost || 0;
   const quacksCost = p.QuacksCost || p.quacksCost || 0;
 
@@ -573,61 +625,70 @@ function renderProductCard(p, ethRate) {
 
   // Variants
   let variantHTML = "";
-  if (p.VariantOptions) {
-    const variants = p.VariantOptions.split(",").map(v => v.trim());
-    variantHTML = `<label>Variant:</label>
-      <select id="variant_${p.ID}">${variants.map(v => `<option value="${v}">${v}</option>`).join("")}</select>`;
+  if (p.VariantOptions || p.variants) {
+    const variants = (p.VariantOptions ? p.VariantOptions.split(",") : p.variants).map(v => v.trim());
+    if (variants.length) {
+      variantHTML = `<label>Variant:</label>
+        <select id="variant_${productId}">
+          ${variants.map(v => `<option value="${v}">${v}</option>`).join("")}
+        </select>`;
+    }
   }
 
   // Colors
   let colorHTML = "";
-  if (p.ColorOptions) {
-    const colors = p.ColorOptions.split(",").map(c => c.trim());
-    colorHTML = `<label>Color:</label>
-      <select id="color_${p.ID}">${colors.map(c => `<option value="${c}">${c}</option>`).join("")}</select>`;
+  if (p.ColorOptions || p.colors) {
+    const colors = (p.ColorOptions ? p.ColorOptions.split(",") : p.colors).map(c => c.trim());
+    if (colors.length) {
+      colorHTML = `<label>Color:</label>
+        <select id="color_${productId}">
+          ${colors.map(c => `<option value="${c}">${c}</option>`).join("")}
+        </select>`;
+    }
   }
 
   // Sizes
   let sizeHTML = "";
-  if (p.SizeOptions) {
-    const sizes = p.SizeOptions.split(",").map(s => s.trim());
-    sizeHTML = `<label>Size:</label>
-      <select id="size_${p.ID}">${sizes.map(s => `<option value="${s}">${s}</option>`).join("")}</select>`;
+  if (p.SizeOptions || p.sizes) {
+    const sizes = (p.SizeOptions ? p.SizeOptions.split(",") : p.sizes).map(s => s.trim());
+    if (sizes.length) {
+      sizeHTML = `<label>Size:</label>
+        <select id="size_${productId}">
+          ${sizes.map(s => `<option value="${s}">${s}</option>`).join("")}
+        </select>`;
+    }
   }
 
   // Custom input
   let customHTML = "";
   if (p.CustomInput && p.CustomInput.trim() !== "") {
     customHTML = `<div>
-      <label for="custom_${p.ID}">${p.CustomInput}</label>
-      <input id="custom_${p.ID}" type="text" placeholder="${p.CustomInput}" />
+      <label for="custom_${productId}">${p.CustomInput}</label>
+      <input id="custom_${productId}" type="text" placeholder="${p.CustomInput}" />
     </div>`;
   }
 
   // Buttons
-  const redeemHTML = pointsCost > 0
-    ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${p.ID}', ${pointsCost})">
-         Redeem for ${pointsCost} ⭐ Points
+  const buyHTML = priceUSD > 0
+    ? `<button class="btn buy-btn" onclick="addToCart('${productId}')">Add to Cart</button>`
+    : "";
+
+  const quacksHTML = quacksCost > 0
+    ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${productId}', ${quacksCost})">
+         Pay with ${quacksCost} 🪙 Quacks
        </button>` : "";
 
-  const quacksHTML = (p.QuacksCost || p.quacksCost) > 0
-  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${p.ID || p.id}', ${p.QuacksCost || p.quacksCost})">
-       Pay with ${(p.QuacksCost || p.quacksCost)} 🪙 Quacks
-     </button>`
-  : "";
-
-
-  const buyHTML = priceUSD > 0
-    ? `<button class="btn buy-btn" onclick="addToCart('${p.ID}')">
-         Add to Cart
+  const redeemHTML = pointsCost > 0
+    ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${productId}', ${pointsCost})">
+         Redeem for ${pointsCost} ⭐ Referral Points
        </button>` : "";
 
   // Card HTML
   const html = `
     <div class="item" style="padding:16px;border-radius:12px;box-shadow:var(--shadow);background:var(--card);">
-      <img src="${p.ImageURL || ""}" alt="${p.Title}" style="width:100%;border-radius:8px;object-fit:contain;" />
-      <h3>${p.Title}</h3>
-      <p id="price_${p.ID}" style="margin:6px 0;">${priceHTML}</p>
+      <img src="${p.ImageURL || p.image || ""}" alt="${p.Title || p.title}" style="width:100%;border-radius:8px;object-fit:contain;" />
+      <h3>${p.Title || p.title}</h3>
+      <p id="price_${productId}" style="margin:6px 0;">${priceHTML}</p>
       ${variantHTML}
       ${colorHTML}
       ${sizeHTML}
@@ -764,7 +825,7 @@ const usd = p.PriceUSD || p.priceUSD || 0;
 // Redeem button
 const redeemHTML = (points > 0 && productId)
   ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${productId}', ${points})">
-       Redeem for ${points} ⭐ Points
+       Redeem for ${points} Referral Points
      </button>`
   : "";
 
@@ -1193,11 +1254,11 @@ function disconnectWallet(){ userAddress = null; web3 = null; const cbo = docume
 /* ===== Redeem Points Display ===== */
 async function updatePointsDisplay() {
   const wallet = (userAddress || "").toLowerCase();
-  const el = document.getElementById("pointsDisplay");
-  if (!el) return;
+  const pointsValue = document.getElementById("pointsValue");
+  if (!pointsValue) return;
 
   if (!wallet) {
-    el.innerText = "🪙 Points: Connect wallet";
+    pointsValue.textContent = "Connect wallet";
     return;
   }
 
@@ -1206,42 +1267,62 @@ async function updatePointsDisplay() {
     const data = await res.json();
 
     if (data.success) {
-      el.innerText = `🪙 Points: ${data.points}`;
+      pointsValue.textContent = data.points;
     } else {
-      el.innerText = "🪙 Points: Error";
+      pointsValue.textContent = "Error";
     }
   } catch (err) {
-    el.innerText = "🪙 Points: Error";
+    pointsValue.textContent = "Error";
   }
 }
 
+
 /* ===== CLAIM QUACKS ===== */
 const claimQuacksBtn = document.getElementById("claimQuacksBtn");
+if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
+  if (!userAddress) {
+    showToast("Connect wallet first", "warn");
+    return;
+  }
 
-if (claimQuacksBtn) {
-  claimQuacksBtn.addEventListener("click", async () => {
-    if (!userAddress) {
-      showToast("Connect wallet first", "warn");
-      return;
-    }
-    
-    try {
-      const res = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(userAddress)}&claim=true`);
-      const data = await res.json();
+  try {
+    const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+    const mainNFTBalance = await contract.methods.balanceOf(userAddress).call();
 
-      if (data.error) {
-        showToast(data.error, "warn");
-      } else {
-        showToast(`🦆 Claimed ${data.added_quacks} Quacks!`, "success");
-        const quacksCount = document.getElementById("quacksCount");
-        if (quacksCount) quacksCount.innerText = "Daily Quacks: " + (data.new_quacks_total || 0);
-      }
-    } catch (err) {
-      console.error(err);
-      showToast("Error claiming quacks", "error");
+    // ✅ Collect all eligible NFT contracts (main + others if needed)
+    const ownsContracts = [];
+    if (Number(mainNFTBalance) > 0) ownsContracts.push(CONTRACT_ADDRESS);
+
+    // Example for other collections (uncomment if needed)
+    // const otherContract = new web3.eth.Contract(OTHER_ABI, OTHER_CONTRACT_ADDRESS);
+    // const otherBalance = await otherContract.methods.balanceOf(userAddress).call();
+    // if (Number(otherBalance) > 0) ownsContracts.push(OTHER_CONTRACT_ADDRESS);
+
+    const query = new URLSearchParams({
+      wallet: userAddress,
+      claim: true,
+      ownsContracts: ownsContracts.join(",")
+    });
+
+    const res = await fetch(`${CLAIM_SHEET_API}?${query.toString()}`);
+    const data = await res.json();
+
+    if (data.error) {
+      showToast(data.error, "warn");
+    } else {
+      const claimed = data.added_quacks || 1;
+      showToast(`🦆 Claimed ${claimed} Quacks!`, "success");
+
+      const quacksCountEl = document.getElementById("quacksCount");
+      if (quacksCountEl) quacksCountEl.innerText = "Daily Quacks: " + (data.new_quacks_total || claimed);
     }
-  });
-}
+
+  } catch (err) {
+    console.error(err);
+    showToast("Error claiming quacks", "error");
+  }
+});
+
 
 
 /* ===== CHECKOUT / PURCHASE LOGGING ===== */
@@ -1277,9 +1358,18 @@ async function checkout() {
     let subtotalUSD = 0;
     cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); });
 
-    // --- TEMP: Force shipping to $0 for testing ---
+ // --- Shipping rules ---
+    let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
     let shippingUSD = 0;
-    console.log("🧭 Shipping forced to $0 for testing purposes");
+    if (subtotalUSD >= 70) {
+      shippingUSD = 0;
+    } else if (country.toLowerCase() === "canada") {
+      shippingUSD = 10;
+    } else {
+      shippingUSD = 5;
+    }
+
+    console.log("🧭 Country detected:", country, "| ShippingUSD =", shippingUSD);
 
     const grandTotalUSD = subtotalUSD + shippingUSD;
     const rate = await getEthRate();
@@ -1488,7 +1578,7 @@ async function redeemWithPoints(productId, cost) {
   const currentPoints = checkData.points || 0;
 
   if (currentPoints < cost) {
-    showToast(`❌ You only have ${currentPoints} points — need ${cost} to redeem this item.`, "error");
+    showToast(`❌ You only have ${currentPoints} Referral Points — need ${cost} to redeem this item.`, "error");
     return;
   }
 
@@ -1514,7 +1604,7 @@ async function redeemWithPoints(productId, cost) {
   });
 
   updateCartUI();
-  showToast(`🎉 "${product.Title || product.title}" added to cart for ${cost} points`, "success");
+  showToast(`🎉 "${product.Title || product.title}" added to cart for ${cost} Referral Points`, "success");
   if (typeof openCart === "function") openCart();
 }
 
@@ -1555,22 +1645,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* --- zoom follow helpers --- */
 function attachZoomFollow(){
-  document.querySelectorAll('.item img').forEach(img => {
-    img.style.willChange = 'transform';
-    img.onmousemove = function(e){
-      const rect = img.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      img.style.transformOrigin = `${x}% ${y}%`;
-      img.style.transform = 'scale(1.5)';
-    };
-    img.onmouseleave = function(){
-      img.style.transformOrigin = 'center center';
-      img.style.transform = 'scale(1)';
-    };
-  });
-
-  // ensure non-active carousel images don't block clicks
+  // only adjust carousel pointer events if you need
   document.querySelectorAll('.carousel').forEach(car => {
     car.querySelectorAll('img').forEach(im => {
       if (!im.classList.contains('active')) {
@@ -1585,6 +1660,7 @@ function attachZoomFollow(){
     });
   });
 }
+ 
 </script>
 
 
