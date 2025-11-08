@@ -604,23 +604,29 @@ function renderProductCard(p, ethRate) {
     </div>`;
   }
 
-  // Buttons
-  const redeemHTML = pointsCost > 0
-    ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${p.ID}', ${pointsCost})">
-         Redeem for ${pointsCost} ⭐ Points
-       </button>` : "";
 
-  const quacksHTML = (p.QuacksCost || p.quacksCost) > 0
-  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${p.ID || p.id}', ${p.QuacksCost || p.quacksCost})">
-       Pay with ${(p.QuacksCost || p.quacksCost)} 🪙 Quacks
+ // Buttons
+const prodId = p.ID || p.id; // normalize
+
+const redeemHTML = pointsCost > 0
+  ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${prodId}', ${pointsCost})">
+       Redeem for ${pointsCost} ⭐ Points
+     </button>`
+  : "";
+
+const quacksHTML = quacksCost > 0
+  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${prodId}', ${quacksCost})">
+       Pay with ${quacksCost} 🪙 Quacks
+     </button>`
+  : "";
+
+const buyHTML = (priceUSD > 0 || (priceUSD === 0 && pointsCost === 0 && quacksCost === 0))
+  ? `<button class="btn buy-btn" onclick="addToCart('${prodId}')">
+       Add to Cart
      </button>`
   : "";
 
 
-  const buyHTML = priceUSD > 0
-    ? `<button class="btn buy-btn" onclick="addToCart('${p.ID}')">
-         Add to Cart
-       </button>` : "";
 
   // Card HTML
   const html = `
@@ -761,32 +767,27 @@ const points = p.PointsCost || p.pointsCost || 0;
 const quacks = p.QuacksCost || p.quacksCost || p.quackscost || 0;
 const usd = p.PriceUSD || p.priceUSD || 0;
 
-// Redeem button
-const redeemHTML = (points > 0 && productId)
-  ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${productId}', ${points})">
+const redeemHTML = points > 0
+  ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${p.ID}', ${points})">
        Redeem for ${points} ⭐ Points
      </button>`
   : "";
 
-// Quacks button
-const quacksHTML = (quacks > 0 && productId)
-  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${productId}', ${quacks})">
+const quacksHTML = quacks > 0
+  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${p.ID}', ${quacks})">
        Pay with ${quacks} 🪙 Quacks
      </button>`
   : "";
 
-// USD purchase button
-const buyHTML = (usd > 0 && productId)
-  ? `<button class="btn buy-btn" onclick="addToCart('${productId}')">
-       Add to Cart
-     </button>`
+// ✅ Include free items or USD items in Add to Cart
+const buyHTML = (usd > 0 || (points === 0 && quacks === 0))
+  ? `<button class="btn buy-btn" onclick="addToCart('${p.ID}')">Add to Cart</button>`
   : "";
 
-// Combine all HTML
 el.innerHTML = `
   ${imageHTML}
   <h3>${p.title}</h3>
-  <div class="price" id="price_${productId}">${priceDisplay}</div>
+  <div class="price" id="price_${p.id}">${priceDisplay}</div>
   ${variantHTML}
   ${colorHTML}
   ${sizeHTML}
@@ -1234,6 +1235,7 @@ if(claimQuacksBtn) claimQuacksBtn.addEventListener("click", async ()=>{
   }catch(err){ console.error(err); showToast("Error claiming quacks","error"); }
 });
 
+  
 /* ===== CHECKOUT / PURCHASE LOGGING ===== */
 const checkoutBtn = document.getElementById("checkoutBtn");
 if (checkoutBtn) checkoutBtn.addEventListener("click", checkout);
@@ -1243,15 +1245,14 @@ async function checkout() {
   const referrer = document.getElementById("referrerInput")?.value?.trim() || "";
 
   if (!shippingAddress.trim()) {
-    showToast("Please enter your shipping address before completing your purchase!", "error");
-    return;
+    return showToast("Please enter your shipping address before completing your purchase!", "error");
   }
 
-  try {
-    if (!window.ethereum) { showToast("MetaMask not found", "error"); return; }
-    if (!userAddress) { showToast("Connect wallet first", "error"); return; }
-    if (cart.length === 0) { showToast("Cart is empty", "info"); return; }
+  if (!window.ethereum) return showToast("MetaMask not found", "error");
+  if (!userAddress) return showToast("Connect wallet first", "error");
+  if (cart.length === 0) return showToast("Cart is empty", "info");
 
+  try {
     // --- Ensure correct network ---
     try {
       const chain = await ethereum.request({ method: 'eth_chainId' });
@@ -1263,125 +1264,83 @@ async function checkout() {
       console.warn("Chain switch issue:", switchErr);
     }
 
-    // --- Calculate subtotal in USD ---
+    // --- Calculate totals ---
     let subtotalUSD = 0;
-    cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); });
+    let totalQuacks = 0;
+    let totalPoints = 0;
 
-   // --- TEMP: Force shipping to $0 for testing ---
-let shippingUSD = 0;
-console.log("🧭 Shipping forced to $0 for testing purposes");
+    cart.forEach(ci => {
+      if (!ci.redeem && !ci.useQuacks) subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1);
+      if (ci.useQuacks) totalQuacks += ci.quacksCost || 0;
+      if (ci.redeem) totalPoints += ci.cost || 0;
+    });
 
-
-    // --- Compute grand total and ETH equivalent ---
+    // --- TEMP: Free shipping ---
+    const shippingUSD = 0;
     const grandTotalUSD = subtotalUSD + shippingUSD;
     const rate = await getEthRate();
-    let totalEth = grandTotalUSD / rate;
+    const totalEth = grandTotalUSD / rate;
+
+    const isRedeemOnly = cart.every(ci => ci.redeem);
+    const isQuacksOnly = cart.every(ci => ci.useQuacks);
+
     let txHash = "";
 
-    // --- Determine redemption / Quacks status ---
-    const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
-    const isQuacksOnly = cart.length > 0 && cart.every(ci => ci.useQuacks);
-    const hasMixed = cart.some(ci => !ci.redeem) && cart.some(ci => ci.redeem);
-
-    // --- Process ETH payment (if not pure redemption) ---
-    if (!isRedeemOnly) {
-      const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
-      const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
-      showToast(`Please confirm your purchase (includes $${shippingUSD} shipping)`, "info", 8000);
-
+    // --- ETH payment ---
+    if (subtotalUSD > 0) {
       try {
-        txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
-      } catch (txErr) {
-        console.warn("tx aborted", txErr);
-        showToast("Transaction cancelled or failed — purchase not logged", "error");
-        return;
-      }
-
-      showToast("Transaction sent — logging purchase...", "success", 4000);
-      await new Promise(r => setTimeout(r, 1200));
-    } else {
-      // --- charge shipping for redeem-only orders ---
-      if (shippingUSD > 0) {
-        showToast(`Redeeming items — $${shippingUSD} shipping will be charged`, "info", 4000);
-        const shippingEth = shippingUSD / rate;
-        const valueHex = "0x" + BigInt(Math.floor(shippingEth * 1e18)).toString(16);
-        const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
-        try {
-          txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
-        } catch (txErr) {
-          showToast("Shipping payment cancelled — redemption not logged", "error");
-          return;
-        }
-      } else {
-        showToast("Redeeming item with points — free shipping!", "success", 4000);
+        const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
+        txHash = await ethereum.request({ method: "eth_sendTransaction", params: [{ from: userAddress, to: SHOP_WALLET, value: valueHex }] });
+        showToast("ETH transaction sent", "success");
+      } catch (ethErr) {
+        return showToast("ETH transaction failed — purchase not logged", "error");
       }
     }
 
-    // --- Log each item to Apps Script ---
+    // --- Deduct Quacks ---
+    if (totalQuacks > 0) {
+      try {
+        const spendRes = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&spend=${totalQuacks}`);
+        const spendData = await spendRes.json();
+        if (spendData.error) return showToast(`Quacks deduction failed: ${spendData.error}`, "error");
+        showToast(`💸 Used ${totalQuacks} Quacks!`, "success");
+      } catch (err) { console.warn("Quacks deduction error:", err); }
+    }
+
+    // --- Deduct Points ---
+    if (totalPoints > 0) {
+      // Use your redeem endpoint in PURCHASE_API
+      await fetch(`${PURCHASE_API}?wallet=${userAddress}&redeem=points&cost=${totalPoints}`);
+      showToast(`⭐ Deducted ${totalPoints} Points`, "success");
+    }
+
+    // --- Log purchases ---
     for (const ci of cart) {
       const payload = {
         wallet: userAddress,
+        itemName: ci.title,
+        quantity: ci.q,
         variant: ci.variant || "",
         color: ci.color || "",
         size: ci.size || "",
-        quantity: ci.q || 1,
-        address: shippingAddress,
-        txHash,
+        txHash: ci.useQuacks ? "" : txHash,
         referrer,
-        customInput: ci.customInput || ""
+        address: shippingAddress,
+        customInput: ci.customInput || "",
+        price: ci.priceUSD || 0,
+        quacksCost: ci.quacksCost || 0,
+        redeem: ci.redeem ? ci.title : "",
+        cost: ci.redeem ? ci.cost : 0
       };
-
-      if (ci.redeem) {
-  payload.redeem = ci.title;
-  payload.cost = ci.cost;
-} else if (ci.useQuacks) {
-  payload.itemName = ci.title;
-  payload.quacksUsed = ci.quacksCost; // Add this field
-} else {
-  payload.itemName = ci.title;
-  payload.price = Number(ci.price || 0);
-}
-
-
-      const params = new URLSearchParams(payload).toString();
-      try {
-        const res = await fetch(`${PURCHASE_API}?${params}`);
-        const data = await res.json();
-        console.log("Server response:", data);
-      } catch (logErr) {
-        console.warn("Logging failed for item", payload, logErr);
-      }
+      await fetch(`${PURCHASE_API}?${new URLSearchParams(payload)}`);
     }
 
-    // --- Deduct Quacks for Quacks-only or mixed orders ---
-    if (isQuacksOnly || cart.some(ci => ci.useQuacks)) {
-      let totalQuacksCost = 0;
-      cart.forEach(ci => { if (ci.useQuacks) totalQuacksCost += ci.quacksCost || 0; });
+    // --- Success toast ---
+    showToast("✅ Checkout completed!", "success");
+    cart = [];
+    updateCartUI();
 
-      if (totalQuacksCost > 0) {
-        try {
-          // Fetch current balance
-          const quackRes = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}`);
-          const quackData = await quackRes.json();
-          const remaining = (quackData.quacks || 0) - totalQuacksCost;
-
-          // Deduct Quacks
-          await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&claim=true&quacks=-${totalQuacksCost}`);
-          showToast(`💸 Used ${totalQuacksCost} Quacks — ${remaining} left!`, "success", 4000);
-        } catch (err) {
-          console.warn("Quack deduction failed:", err);
-        }
-      }
-    }
-
-    if (isRedeemOnly) {
-      showToast("✅ Redemption logged successfully!", "success", 4000);
-      updatePointsDisplay();
-    } else {
-      showToast("✅ Purchase logged successfully!", "success", 4000);
-    }
-
-    // --- Optional BaseScan link ---
+    // --- BaseScan link for ETH ---
     if (txHash) {
       const baseScanUrl = `https://basescan.org/tx/${txHash}`;
       const linkToast = document.createElement("div");
@@ -1396,9 +1355,6 @@ console.log("🧭 Shipping forced to $0 for testing purposes");
     showToast("Checkout failed", "error");
   }
 }
-
-
-
 
 /* ===== ADD TO CART WITH QUACKS ===== */
 async function addToCartWithQuacks(productId, quacksCost) {
