@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -30,15 +30,8 @@
     }
     body.blur-bg::before{filter:blur(6px) brightness(.7);}
 
-    header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--brand-teal);color:white;box-shadow:0 6px 18px rgba(0,0,0,0.08);z-index:1500;position:relative}
+    header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--brand-orange);color:white;box-shadow:0 6px 18px rgba(0,0,0,0.08);z-index:1500;position:relative}
     header h1{margin:0;font-size:20px;display:flex;align-items:center;gap:10px}
-    header h1 .logo {
-  height: 38px;
-  width: auto;
-  border-radius: 8px;
-  margin-right: 6px;
-}
-
     .btn{padding:10px 16px;background:var(--brand-orange-dark);color:white;border:none;border-radius:999px;cursor:pointer;font-weight:600;transition:all .18s;display:inline-flex;gap:8px;align-items:center}
     .btn.secondary{background:transparent;color:white;border:1px solid rgba(255,255,255,.25);padding:8px 12px;border-radius:10px}
     main{flex:1;padding:30px 20px;max-width:var(--maxWidth);margin:0 auto 80px}
@@ -46,7 +39,23 @@
     .item{background:var(--card);padding:16px;border-radius:14px;box-shadow:var(--shadow);text-align:center;position:relative}
     .item img{width:100%;height:220px;object-fit:contain;border-radius:8px;background:#f6f6f6}
     
+   /* --- Cursor-follow zoom (magnifier style) --- */
+.item {
+  position: relative;
+  overflow: hidden;
+}
 
+.item img {
+  width: 100%;
+  transition: transform 0.3s ease;
+  cursor: crosshair;
+  transform-origin: center center;
+}
+
+/* Optional: smooth reset when leaving */
+.item:hover img {
+  transform: scale(1.5); /* base zoom level */
+}
 
 
     .item h3{margin:10px 0 6px;font-size:16px}
@@ -91,7 +100,7 @@ header, .nav-container, .nav-actions, .nav-actions button {
   top: 72px;               /* sits just below the header */
   right: 20px;
   z-index: 3100;
-  background: --brand-orange;
+  background: #1c1c1c;
   color: #eee;
   padding: 1rem;
   border-radius: 1rem;
@@ -212,7 +221,7 @@ header, .nav-container, .nav-actions, .nav-actions button {
     .dropdown-item{padding:10px 16px;border:none;background:transparent;text-align:left;cursor:pointer;font-weight:600;transition:background .15s;color:#222;border-radius:8px}
     .dropdown-item:hover{background:var(--brand-orange);color:#fff}
 
-    footer{background:var(--brand-orange-dark);padding:10px 0;text-align:center;color:#fff;margin-top:auto;position:relative;z-index:1000}
+    footer{background:var(--brand-teal);padding:10px 0;text-align:center;color:#fff;margin-top:auto;position:relative;z-index:1000}
     footer a{margin:0 10px;color:#fff}
 
     @media(max-width:520px){#profileSection{right:12px;left:12px;width:auto}.cart-modal{width:100%}}
@@ -222,19 +231,12 @@ header, .nav-container, .nav-actions, .nav-actions button {
   <!-- overlay sits directly under header/above content; pointer-events controlled by .active -->
   <div id="tees"></div>
 
-  <div id="shippingNotice" style="background:#fff ; color:--brand-orange;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">
+  <div id="shippingNotice" style="background:#ffcc00;color:#222;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">
     ⚠️ Note: Shipping is only available in the US and Canada.
   </div>
 
   <header>
-  <h1>
-    <img 
-      src="https://quackerfriends.github.io/quackheads-assets/images/brandimages/logo%20transparent%20zoomed.png" 
-      alt="Quacker Friends Logo" 
-      class="logo"
-    />
-    Quacker Friends Shop
-  </h1>
+    <h1>Quacker Friends Shop</h1>
     <div style="display:flex;gap:10px;align-items:center">
       <div class="shop-controls" style="position:relative">
         <button class="btn secondary" id="menuBtn">Shop ▾</button>
@@ -246,7 +248,7 @@ header, .nav-container, .nav-actions, .nav-actions button {
           <button class="dropdown-item" onclick="showCategory('keychains')">Keychains</button>      
         </div>
       </div>
-      <div id="pointsDisplay" style="margin-top:4px;font-weight:400;color:#FFF"> Referral Points:  </div>
+      <div id="pointsDisplay" style="margin-top:10px;font-weight:600;color:#FFD700"> Goodness Points:  </div>
       <button id="connectBtn" class="btn">Connect Wallet</button>
       <button id="profileBtn" class="btn secondary" style="display:none">Profile</button>
       <button id="openCartBtn" class="btn" style="position:relative">Cart <span id="cartCount" class="cart-count" style="display:none">0</span></button>
@@ -355,7 +357,6 @@ header, .nav-container, .nav-actions, .nav-actions button {
     <a href="https://www.tiktok.com/@quackerfriends" target="_blank"><i class="fab fa-tiktok fa-lg"></i></a>
     <a href="https://www.instagram.com/QuackerFriends" target="_blank"><i class="fab fa-instagram fa-lg"></i></a>
   </footer>
-
 
 <script>
 /* ===== CONFIG ===== */
@@ -499,7 +500,6 @@ async function loadProducts() {
           title: item.Title || "",
           description: item.Description || "",
           priceUSD: item.PriceUSD ? Number(item.PriceUSD) : 0,
-          quacksCost: item.QuacksCost || 0,
           pointsCost: item.PointsCost ? Number(item.PointsCost) : null,
           variants: variantsFromSheet,
           colors: colorsFromSheet,
@@ -552,100 +552,97 @@ async function loadProducts() {
 }
 
   
-/* ===== RENDER PRODUCT CARD (with Quacks + Points + USD) ===== */
-function renderProductCard(p, ethRate) {
-  // Normalize IDs and prices
-  const productId = p.ID || p.id;
-  const priceUSD = p.PriceUSD || p.priceUSD || p.price || 0;
-  const pointsCost = p.PointsCost || p.pointsCost || 0;
-  const quacksCost = p.QuacksCost || p.quacksCost || 0;
 
-  const priceDisplay = [];
-  if (priceUSD > 0) priceDisplay.push(`$${priceUSD}`);
-  if (quacksCost > 0) priceDisplay.push(`🪙 ${quacksCost} Quacks`);
-  if (pointsCost > 0) priceDisplay.push(`⭐ ${pointsCost} Points`);
-  
-  const priceHTML = priceDisplay.join(" | ");
+/* ===== RENDER PRODUCT CARD ===== */
+function renderProductCard(product, ethRate) {
+  // Parse variant prices into a map
+  const variantPricesMap = {};
+  if (product.VariantPrices) {
+    product.VariantPrices.split(",").forEach(vp => {
+      const [name, price] = vp.split(":");
+      if (name && price) variantPricesMap[name.trim()] = Number(price.trim());
+    });
+  }
 
-  // Variants
+  // Determine base price
+  let currentPrice = product.priceUSD || 0;
+
+  // If first variant has a specific price, use it as initial
+  if (product.variants && product.variants.length && variantPricesMap[product.variants[0]] != null) {
+    currentPrice = variantPricesMap[product.variants[0]];
+  }
+
+  const priceHTML = product.pointsCost
+    ? `<p id="price_${product.id}">${product.pointsCost} Points</p>`
+    : `<p id="price_${product.id}">${formatPrice(currentPrice, ethRate)}</p>`;
+
+  // --- Variant Select ---
   let variantHTML = "";
-  if (p.VariantOptions || p.variants) {
-    const variants = (p.VariantOptions ? p.VariantOptions.split(",") : p.variants).map(v => v.trim());
-    if (variants.length) {
-      variantHTML = `<label>Variant:</label>
-        <select id="variant_${productId}">
-          ${variants.map(v => `<option value="${v}">${v}</option>`).join("")}
-        </select>`;
-    }
+  if (product.variants && product.variants.length) {
+    const opts = product.variants.map(v => `<option value="${v}">${v}</option>`).join("");
+    variantHTML = `<label>Variant:</label>
+      <select id="variant_${product.id}" class="variant-select">${opts}</select>`;
   }
 
-  // Colors
+  // --- Color Select ---
   let colorHTML = "";
-  if (p.ColorOptions || p.colors) {
-    const colors = (p.ColorOptions ? p.ColorOptions.split(",") : p.colors).map(c => c.trim());
-    if (colors.length) {
-      colorHTML = `<label>Color:</label>
-        <select id="color_${productId}">
-          ${colors.map(c => `<option value="${c}">${c}</option>`).join("")}
-        </select>`;
-    }
+  if (product.colors && product.colors.length) {
+    const opts = product.colors.map(c => `<option value="${c}">${c}</option>`).join("");
+    colorHTML = `<label>Color:</label>
+      <select id="color_${product.id}" class="color-select">${opts}</select>`;
   }
 
-  // Sizes
+  // --- Size Select ---
   let sizeHTML = "";
-  if (p.SizeOptions || p.sizes) {
-    const sizes = (p.SizeOptions ? p.SizeOptions.split(",") : p.sizes).map(s => s.trim());
-    if (sizes.length) {
-      sizeHTML = `<label>Size:</label>
-        <select id="size_${productId}">
-          ${sizes.map(s => `<option value="${s}">${s}</option>`).join("")}
-        </select>`;
-    }
+  if (product.sizes && product.sizes.length) {
+    const opts = product.sizes.map(s => `<option value="${s}">${s}</option>`).join("");
+    sizeHTML = `<label>Size:</label>
+      <select id="size_${product.id}" class="size-select">${opts}</select>`;
   }
 
-  // Custom input
+  // --- Custom input ---
   let customHTML = "";
-  if (p.CustomInput && p.CustomInput.trim() !== "") {
-    customHTML = `<div>
-      <label for="custom_${productId}">${p.CustomInput}</label>
-      <input id="custom_${productId}" type="text" placeholder="${p.CustomInput}" />
-    </div>`;
+  const customText = product.CustomInput || "";
+  if (customText.trim() !== "") {
+    customHTML = `
+      <div class="custom-input">
+        <label for="custom_${product.id}" style="font-size:13px;color:#555">${customText}</label>
+        <input id="custom_${product.id}" type="text" placeholder="${customText}"
+          style="width:100%;padding:6px 8px;margin-top:4px;border:1px solid #ccc;border-radius:6px" />
+      </div>`;
   }
 
-  // Buttons
-  const buyHTML = priceUSD > 0
-    ? `<button class="btn buy-btn" onclick="addToCart('${productId}')">Add to Cart</button>`
-    : "";
+  // --- Buttons ---
+  let btnHTML = "";
+  if (product.pointsCost && Number(product.pointsCost) > 0) {
+    btnHTML += `<button class="btn secondary" onclick="redeemWithPoints('${product.id}', ${product.pointsCost})">
+      🪙 Redeem (${product.pointsCost} pts)
+    </button>`;
+  }
+  if (product.priceUSD || Object.keys(variantPricesMap).length) {
+    btnHTML += `<button class="btn" onclick="addToCart('${product.id}')">🛒 Add to Cart</button>`;
+  }
 
-  const quacksHTML = quacksCost > 0
-    ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${productId}', ${quacksCost})">
-         Pay with ${quacksCost} 🪙 Quacks
-       </button>` : "";
-
-  const redeemHTML = pointsCost > 0
-    ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${productId}', ${pointsCost})">
-         Redeem for ${pointsCost} ⭐ Referral Points
-       </button>` : "";
-
-  // Card HTML
+  // --- Card HTML ---
   const html = `
-    <div class="item" style="padding:16px;border-radius:12px;box-shadow:var(--shadow);background:var(--card);">
-      <img src="${p.ImageURL || p.image || ""}" alt="${p.Title || p.title}" style="width:100%;border-radius:8px;object-fit:contain;" />
-      <h3>${p.Title || p.title}</h3>
-      <p id="price_${productId}" style="margin:6px 0;">${priceHTML}</p>
+    <div class="item" style="background:var(--card);padding:16px;border-radius:12px;box-shadow:var(--shadow);">
+      <img src="${product.image || ""}" alt="${product.title || ""}" 
+           style="width:100%;border-radius:8px;object-fit:contain;">
+      <h3>${product.title}</h3>
+      ${priceHTML}
       ${variantHTML}
       ${colorHTML}
       ${sizeHTML}
       ${customHTML}
-      <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
-        ${buyHTML}
-        ${quacksHTML}
-        ${redeemHTML}
-      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">${btnHTML}</div>
     </div>
   `;
+
+  // Return card HTML string
   return html;
 }
+
+
 
  
 
@@ -755,57 +752,30 @@ if (p.CustomInput && p.CustomInput.trim() !== "") {
   `;
 }
 
-// 🛒 Generate product buttons safely
-const productId = p.ID || p.id; // normalize ID
-if (!productId) {
-  console.warn("Product missing ID:", p);
-}
 
-// Costs
-const points = p.PointsCost || p.pointsCost || 0;
-const quacks = p.QuacksCost || p.quacksCost || p.quackscost || 0;
-const usd = p.PriceUSD || p.priceUSD || 0;
+    // 🪙 Redeem + Add to Cart buttons
+    const redeemHTML = p.pointsCost
+      ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${p.id}', ${p.pointsCost})">Redeem for ${p.pointsCost} Points</button>`
+      : "";
 
-// Redeem button
-const redeemHTML = (points > 0 && productId)
-  ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${productId}', ${points})">
-       Redeem for ${points} Referral Points
-     </button>`
-  : "";
+    const buyHTML = `<button class="btn buy-btn" onclick="addToCart('${p.id}')">Add to Cart</button>`;
 
-// Quacks button
-const quacksHTML = (quacks > 0 && productId)
-  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${productId}', ${quacks})">
-       Pay with ${quacks} 🪙 Quacks
-     </button>`
-  : "";
+    el.innerHTML = `
+      ${imageHTML}
+      <h3>${p.title}</h3>
+      <div class="price" id="price_${p.id}">${priceDisplay}</div>
+      ${variantHTML}
+      ${colorHTML}
+      ${sizeHTML}
+     ${customInputHTML}
+      ${p.sizeGuide ? `<button class="btn" onclick="openSizeGuide('${p.sizeGuide}')">Size Guide</button>` : ""}
+      <div style="margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+        ${buyHTML}
+        ${redeemHTML}
+      </div>
+    `;
 
-// USD purchase button
-const buyHTML = (usd > 0 && productId)
-  ? `<button class="btn buy-btn" onclick="addToCart('${productId}')">
-       Add to Cart
-     </button>`
-  : "";
-
-// Combine all HTML
-el.innerHTML = `
-  ${imageHTML}
-  <h3>${p.title}</h3>
-  <div class="price" id="price_${productId}">${priceDisplay}</div>
-  ${variantHTML}
-  ${colorHTML}
-  ${sizeHTML}
-  ${customInputHTML}
-  ${p.sizeGuide ? `<button class="btn" onclick="openSizeGuide('${p.sizeGuide}')">Size Guide</button>` : ""}
-  <div style="margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
-    ${buyHTML}
-    ${quacksHTML}
-    ${redeemHTML}
-  </div>
-`;
-
-container.appendChild(el);
-
+    container.appendChild(el);
 
     // update price/image on variant select
     const variantSelect = el.querySelector(`#variant_${p.id}`);
@@ -961,13 +931,8 @@ function closeSizeGuide(){ const modal = document.getElementById("sizeGuideModal
 
 /* ===== CART helpers ===== */
 function addTapestryToCart(prodId){
-  const product = (PRODUCTS.tapestry || []).find(p => p.ID === prodId || p.id === prodId);
-  if(!product){
-    console.warn("Tapestry not found:", prodId, (PRODUCTS.tapestry || []).map(p => p.ID || p.id));
-    showToast("Product not found","error");
-    return;
-  }
-
+  const product = (PRODUCTS.tapestry||[]).find(p=>p.id===prodId);
+  if(!product){ showToast("Product not found","error"); return; }
   const priceEth = product.price ?? (product.priceUSD ? product.priceUSD / (cachedEthRate||3000) : 0);
   cart.push({ id: product.id, title: product.title, price: priceEth, priceUSD: product.priceUSD||"", color: "N/A", size:"N/A", variant: "", q:1, thumb: product.image || "" });
   updateCartUI();
@@ -976,18 +941,9 @@ function addTapestryToCart(prodId){
 
 /* ===== ADD TO CART ===== */
 async function addToCart(productId) {
- const allProducts = Object.values(PRODUCTS).flat();
-const product = allProducts.find(p =>
-  (p.ID && p.ID === productId) ||
-  (p.id && p.id === productId)
-);
-
-if (!product) {
-  console.error("Product not found:", productId, "Available IDs:", allProducts.map(p => p.ID || p.id));
-  showToast("Product not found", "error");
-  return;
-}
-
+  const allProducts = Object.values(PRODUCTS).flat();
+  const product = allProducts.find(p => p.id === productId);
+  if (!product) return showToast("Product not found", "error");
 
   const variantSel = document.getElementById(`variant_${productId}`);
   const colorSel = document.getElementById(`color_${productId}`);
@@ -1037,32 +993,24 @@ if (!product) {
   showToast(`🛒 "${product.title}" added to cart`, "success");
 }
 
-/* ===== CART UI (Improved + Shipping + Subtotal) ===== */
-async function updateCartUI() {
+/* ===== CART UI (Improved) ===== */
+function updateCartUI() {
   const countEl = document.getElementById("cartCount");
   const listEl = document.getElementById("cartList");
-  const subtotalEl = document.getElementById("subtotalDisplay");
-  const shippingEl = document.getElementById("shippingDisplay");
-  const totalEl = document.getElementById("totalDisplay");
+  const totalEl = document.getElementById("cartTotal");
+  if (!countEl || !listEl || !totalEl) return console.warn("Cart UI elements missing");
 
-  if (!listEl || !totalEl) return console.warn("Cart UI elements missing");
-
-  // 🧮 Update cart count bubble if present
   const cartCount = cart.reduce((s, i) => s + i.q, 0);
-  if (countEl) {
-    if (cartCount > 0) {
-      countEl.style.display = "inline-block";
-      countEl.innerText = cartCount;
-    } else {
-      countEl.style.display = "none";
-    }
+  if (cartCount > 0) {
+    countEl.style.display = "inline-block";
+    countEl.innerText = cartCount;
+  } else {
+    countEl.style.display = "none";
   }
 
   if (cart.length === 0) {
     listEl.innerHTML = "<p style='color:#666'>Cart is empty</p>";
-    if (subtotalEl) subtotalEl.innerText = "$0.00";
-    if (shippingEl) shippingEl.innerText = "$0.00";
-    if (totalEl) totalEl.innerText = "$0.00";
+    totalEl.innerText = "0 ETH";
     return;
   }
 
@@ -1074,13 +1022,16 @@ async function updateCartUI() {
     row.className = "cart-item";
     const thumb = ci.thumb || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
 
+    // Build variant & details info
     const details = [];
     if (ci.variant && ci.variant !== "N/A") details.push(`Variant: ${ci.variant}`);
     if (ci.color && ci.color !== "N/A") details.push(`Color: ${ci.color}`);
     if (ci.size && ci.size !== "N/A") details.push(`Size: ${ci.size}`);
-    if (ci.customInput) details.push(`Custom: ${ci.customInput}`);
+    if (ci.custom && ci.custom !== "N/A") details.push(`Custom: ${ci.custom}`);
+
     const detailsText = details.length ? details.join(" • ") : "No options selected";
 
+    // price and qty
     const priceEth = (ci.price || 0).toFixed(6);
     totalEth += (ci.price || 0) * ci.q;
 
@@ -1099,23 +1050,8 @@ async function updateCartUI() {
     listEl.appendChild(row);
   });
 
-  // 🧾 Compute USD totals
-  const rate = await getEthRate();
-  const subtotalUSD = cart.reduce((s, i) => s + i.priceUSD * i.q, 0);
-
-  // 🚚 Determine shipping cost
-  const countrySelect = document.getElementById("shippingCountry");
-  const selectedCountry = countrySelect ? countrySelect.value : "USA";
-  const shippingUSD = subtotalUSD >= 70 ? 0 : (selectedCountry === "USA" ? 5 : 10);
-
-  const totalUSD = subtotalUSD + shippingUSD;
-
-  // 🪄 Update UI
-  if (subtotalEl) subtotalEl.innerText = `$${subtotalUSD.toFixed(2)}`;
-  if (shippingEl) shippingEl.innerText = `$${shippingUSD.toFixed(2)}`;
-  if (totalEl) totalEl.innerText = `$${totalUSD.toFixed(2)}`;
+  totalEl.innerText = `${totalEth.toFixed(6)} ETH`;
 }
-
 // refresh checkout numbers (if modal visible)
 try { updateCheckoutDisplay(); } catch(e) { /* ignore if elements missing */ }
 
@@ -1202,7 +1138,7 @@ async function updatePointsDisplay() {
   if (!el) return;
 
   if (!wallet) {
-    el.innerText = "Referral Points: Connect wallet";
+    el.innerText = "🪙 Points: Connect wallet";
     return;
   }
 
@@ -1211,67 +1147,37 @@ async function updatePointsDisplay() {
     const data = await res.json();
 
     if (data.success) {
-      el.innerText = `Referral Points: ${data.points}`;
+      el.innerText = `🪙 Points: ${data.points}`;
     } else {
-      el.innerText = "Referral Points: Error";
+      el.innerText = "🪙 Points: Error";
     }
   } catch (err) {
-    el.innerText = "Referral Points: Error";
+    el.innerText = "🪙 Points: Error";
   }
 }
 
 /* ===== CLAIM QUACKS ===== */
-/* ===== CLAIM QUACKS ===== */
 const claimQuacksBtn = document.getElementById("claimQuacksBtn");
-if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
-  if (!userAddress) {
-    showToast("Connect wallet first", "warn");
-    return;
-  }
-
-  try {
+if(claimQuacksBtn) claimQuacksBtn.addEventListener("click", async ()=>{
+  if(!userAddress){ showToast("Connect wallet first","warn"); return; }
+  try{
     const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-    const mainNFTBalance = await contract.methods.balanceOf(userAddress).call();
-
-    // ✅ Collect all eligible NFT contracts (main + others if needed)
-    const ownsContracts = [];
-    if (Number(mainNFTBalance) > 0) ownsContracts.push(CONTRACT_ADDRESS);
-
-    // Example for other collections (uncomment if needed)
-    // const otherContract = new web3.eth.Contract(OTHER_ABI, OTHER_CONTRACT_ADDRESS);
-    // const otherBalance = await otherContract.methods.balanceOf(userAddress).call();
-    // if (Number(otherBalance) > 0) ownsContracts.push(OTHER_CONTRACT_ADDRESS);
-
-    const query = new URLSearchParams({
-      wallet: userAddress,
-      claim: true,
-      ownsContracts: ownsContracts.join(",")
-    });
-
-    const res = await fetch(`${CLAIM_SHEET_API}?${query.toString()}`);
+    const balance = await contract.methods.balanceOf(userAddress).call();
+    const quacksToAdd = Number(balance) > 0 ? 10 : 2;
+    const res = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(userAddress)}&claim=true&quacks=${quacksToAdd}`);
     const data = await res.json();
-
-    if (data.error) {
-      showToast(data.error, "warn");
-    } else {
-      const claimed = data.added_quacks || 1;
-      showToast(`🦆 Claimed ${claimed} Quacks!`, "success");
-
-      const quacksCountEl = document.getElementById("quacksCount");
-      if (quacksCountEl) quacksCountEl.innerText = "Daily Quacks: " + (data.new_quacks_total || claimed);
+    if(data.error){ showToast(data.error, "warn"); } else {
+      showToast(`🦆 Claimed ${quacksToAdd} Quacks!`, "success");
+      const userRow = Array.isArray(data) ? data.find(r => (r.address||"").toLowerCase() === userAddress.toLowerCase()) : null;
+      const quacksCount = document.getElementById("quacksCount");
+      if(quacksCount) quacksCount.innerText = "Daily Quacks: " + (data.new_quacks_total || (userRow ? userRow.quacks_collected : 0));
     }
-
-  } catch (err) {
-    console.error(err);
-    showToast("Error claiming quacks", "error");
-  }
+  }catch(err){ console.error(err); showToast("Error claiming quacks","error"); }
 });
-
-
 
 /* ===== CHECKOUT / PURCHASE LOGGING ===== */
 const checkoutBtn = document.getElementById("checkoutBtn");
-if (checkoutBtn) checkoutBtn.addEventListener("click", checkout);
+if(checkoutBtn) checkoutBtn.addEventListener("click", checkout);
 
 async function checkout() {
   const shippingAddress = document.getElementById("userAddressInput")?.value || "";
@@ -1287,7 +1193,6 @@ async function checkout() {
     if (!userAddress) { showToast("Connect wallet first", "error"); return; }
     if (cart.length === 0) { showToast("Cart is empty", "info"); return; }
 
-    // --- Ensure correct network ---
     try {
       const chain = await ethereum.request({ method: 'eth_chainId' });
       if (chain !== BASE_CHAIN_ID_HEX) {
@@ -1298,33 +1203,39 @@ async function checkout() {
       console.warn("Chain switch issue:", switchErr);
     }
 
-    // --- Calculate subtotal in USD ---
+    // --- calculate subtotal in USD ---
     let subtotalUSD = 0;
     cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); });
 
- // --- Shipping rules ---
-    let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
-    let shippingUSD = 0;
-    if (subtotalUSD >= 70) {
-      shippingUSD = 0;
-    } else if (country.toLowerCase() === "canada") {
-      shippingUSD = 10;
-    } else {
-      shippingUSD = 5;
-    }
+   
+// --- shipping rules (with dropdown selection) ---
+let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
+let shippingUSD = 0;
 
-    console.log("🧭 Country detected:", country, "| ShippingUSD =", shippingUSD);
+if (subtotalUSD >= 70) {
+  shippingUSD = 0;
+} else if (country.toLowerCase() === "canada") {
+  shippingUSD = 10;
+} else {
+  shippingUSD = 5;
+}
 
-    const grandTotalUSD = subtotalUSD + shippingUSD;
-    const rate = await getEthRate();
-    let totalEth = grandTotalUSD / rate;
+console.log("🧭 Country detected:", country, "| ShippingUSD =", shippingUSD);
+
+
+
+   // --- compute grand total and convert to ETH ---
+const grandTotalUSD = subtotalUSD + shippingUSD;
+const rate = await getEthRate();
+let totalEth = grandTotalUSD / rate;
+
+
     let txHash = "";
 
     const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
-    const isQuacksOnly = cart.length > 0 && cart.every(ci => ci.useQuacks);
+    const hasMixed = cart.some(ci => !ci.redeem) && cart.some(ci => ci.redeem);
 
-    // --- Process ETH payment if applicable ---
-    if (!isRedeemOnly && !isQuacksOnly) {
+    if (!isRedeemOnly) {
       const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
       const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
       showToast(`Please confirm your purchase (includes $${shippingUSD} shipping)`, "info", 8000);
@@ -1339,18 +1250,34 @@ async function checkout() {
 
       showToast("Transaction sent — logging purchase...", "success", 4000);
       await new Promise(r => setTimeout(r, 1200));
+    } else {
+      // --- charge shipping for redeem-only orders if any ---
+      if (shippingUSD > 0) {
+        showToast(`Redeeming items — $${shippingUSD} shipping will be charged`, "info", 4000);
+        const shippingEth = shippingUSD / rate;
+        const valueHex = "0x" + BigInt(Math.floor(shippingEth * 1e18)).toString(16);
+        const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
+        try {
+          txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
+        } catch (txErr) {
+          showToast("Shipping payment cancelled — redemption not logged", "error");
+          return;
+        }
+      } else {
+        showToast("Redeeming item with points — free shipping!", "success", 4000);
+      }
     }
 
-    // --- Loop through cart items ---
+    // --- log each item to Apps Script ---
     for (const ci of cart) {
-      let payload = {
+      const payload = {
         wallet: userAddress,
         variant: ci.variant || "",
         color: ci.color || "",
         size: ci.size || "",
         quantity: ci.q || 1,
         address: shippingAddress,
-        txHash: ci.useQuacks ? "" : txHash,
+        txHash,
         referrer,
         customInput: ci.customInput || ""
       };
@@ -1358,35 +1285,12 @@ async function checkout() {
       if (ci.redeem) {
         payload.redeem = ci.title;
         payload.cost = ci.cost;
-      } else if (ci.useQuacks) {
-        payload.itemName = ci.title;
-        payload.quacksCost = ci.quacksCost;
-
-        // 🪙 Deduct Quacks from user sheet
-        try {
-          const spendRes = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&spend=${ci.quacksCost}`);
-          const spendData = await spendRes.json();
-          if (spendData.error) {
-            showToast(`Quacks deduction failed: ${spendData.error}`, "error");
-            return; // stop checkout if not enough Quacks
-          }
-          showToast(`💸 ${ci.quacksCost} Quacks used for "${ci.title}"!`, "success", 4000);
-        } catch (quackErr) {
-          console.warn("Quacks deduction error:", quackErr);
-          showToast("Quacks deduction failed — purchase not logged", "error");
-          return;
-        }
       } else {
         payload.itemName = ci.title;
         payload.price = Number(ci.price || 0);
       }
 
-      // --- Log to Apps Script ---
-      const params = new URLSearchParams({
-        ...payload,
-        action: ci.useQuacks ? "payWithQuacks" : ""
-      }).toString();
-
+      const params = new URLSearchParams(payload).toString();
       try {
         const res = await fetch(`${PURCHASE_API}?${params}`);
         const data = await res.json();
@@ -1396,7 +1300,11 @@ async function checkout() {
       }
     }
 
-    // --- Success Toasts ---
+    // --- clear cart + UI ---
+    cart = [];
+    updateCartUI();
+    closeCart();
+
     if (isRedeemOnly) {
       showToast("✅ Redemption logged successfully!", "success", 4000);
       updatePointsDisplay();
@@ -1404,7 +1312,7 @@ async function checkout() {
       showToast("✅ Purchase logged successfully!", "success", 4000);
     }
 
-    // --- Optional BaseScan link for ETH tx ---
+    // --- optional BaseScan link ---
     if (txHash) {
       const baseScanUrl = `https://basescan.org/tx/${txHash}`;
       const linkToast = document.createElement("div");
@@ -1420,70 +1328,6 @@ async function checkout() {
   }
 }
 
-/* ===== ADD TO CART WITH QUACKS ===== */
-async function addToCartWithQuacks(productId, quacksCost) {
-  console.log("🪙 addToCartWithQuacks called with:", productId, quacksCost);
-
-  const wallet = (userAddress || "").toLowerCase();
-  if (!wallet) {
-    showToast("Connect your wallet first.", "error");
-    return;
-  }
-
-  const allProducts = Object.values(PRODUCTS).flat();
-  const product = allProducts.find(p =>
-    ((p.ID || p.id || "").toLowerCase() === productId.toLowerCase())
-  );
-
-  if (!product) {
-    console.log("Product not found:", productId, "Available IDs:", allProducts.map(p => p.ID || p.id));
-    showToast("Product not found", "error");
-    return;
-  }
-
-  const variantSel = document.getElementById(`variant_${productId}`);
-  const colorSel = document.getElementById(`color_${productId}`);
-  const sizeSel = document.getElementById(`size_${productId}`);
-  const customEl = document.getElementById(`custom_${productId}`);
-  const customInput = customEl ? customEl.value.trim() : "";
-
-  if ((product.CustomInput || product.customInput) && !customInput) {
-    showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
-    if (customEl) customEl.focus();
-    return;
-  }
-
-  // Check user's Quacks balance
-  const res = await fetch(`${CLAIM_SHEET_API}?wallet=${wallet}`);
-  const data = await res.json();
-  const userRow = data.find(u => (u.address || "").toLowerCase() === wallet);
-  const currentQuacks = userRow ? Number(userRow.quacks_collected || 0) : 0;
-
-  if (currentQuacks < quacksCost) {
-    showToast(`You only have ${currentQuacks} Quacks — need ${quacksCost}.`, "error");
-    return;
-  }
-
-  cart.push({
-    id: productId,
-    title: product.Title || product.title,
-    price: 0,
-    priceUSD: 0,
-    q: 1,
-    redeem: false,
-    useQuacks: true,
-    quacksCost,
-    variant: variantSel ? variantSel.value : "",
-    color: colorSel ? colorSel.value : "",
-    size: sizeSel ? sizeSel.value : "",
-    thumb: product.ImageURL || product.image || "",
-    customInput
-  });
-
-  updateCartUI();
-  showToast(`🪙 "${product.Title || product.title}" added using ${quacksCost} Quacks`, "success");
-  if (typeof openCart === "function") openCart();
-}
 
 /* ===== REDEEM WITH POINTS ===== */
 async function redeemWithPoints(productId, cost) {
@@ -1493,63 +1337,75 @@ async function redeemWithPoints(productId, cost) {
     return;
   }
 
-  const allProducts = Object.values(PRODUCTS).flat();
-  const product = allProducts.find(p =>
-    ((p.ID || p.id || "").toLowerCase() === productId.toLowerCase())
-  );
+  try {
+    const allProducts = Object.values(PRODUCTS).flat();
+    const product = allProducts.find(p => p.id === productId);
+    if (!product) {
+      showToast("Product not found", "error");
+      return;
+    }
 
-  if (!product) {
-    console.log("Product not found:", productId, "Available IDs:", allProducts.map(p => p.ID || p.id));
-    showToast("Product not found", "error");
-    return;
+    const variantSel = document.getElementById(`variant_${productId}`);
+    const colorSel = document.getElementById(`color_${productId}`);
+    const sizeSel = document.getElementById(`size_${productId}`);
+    const customEl = document.getElementById(`custom_${productId}`);
+    const customInput = customEl ? customEl.value.trim() : "";
+
+    // ✅ Require custom input if field exists
+    if ((product.CustomInput || product.customInput) && !customInput) {
+      showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
+      if (customEl) customEl.focus();
+      return;
+    }
+
+    const variant = variantSel ? variantSel.value : "";
+    const color = colorSel ? colorSel.value : "";
+    const size = sizeSel ? sizeSel.value : "";
+
+    // ✅ Live points check
+    const checkRes = await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`);
+    const checkData = await checkRes.json();
+
+    if (!checkData.success) {
+      showToast(checkData.error || "Could not verify points", "error");
+      return;
+    }
+
+    const currentPoints = checkData.points || 0;
+    if (currentPoints < cost) {
+      showToast(`❌ You only have ${currentPoints} points — need ${cost} to redeem this item.`, "error");
+      return;
+    }
+
+    const alreadyInCart = cart.find(i => i.id === productId && i.redeem);
+    if (alreadyInCart) {
+      showToast("Item already added for redemption.", "info");
+      return;
+    }
+
+    cart.push({
+      id: productId,
+      title: product.title,
+      price: 0,
+      priceUSD: 0,
+      q: 1,
+      redeem: true,
+      cost: cost,
+      variant,
+      color,
+      size,
+      thumb: product.image || "",
+      customInput
+    });
+
+    updateCartUI();
+    showToast(`🎉 "${product.title}" added to cart for ${cost} points`, "success");
+    if (typeof openCart === "function") openCart();
+
+  } catch (err) {
+    console.error("Error redeeming item:", err);
+    showToast("Error redeeming item: " + err.message, "error");
   }
-
-  const variantSel = document.getElementById(`variant_${productId}`);
-  const colorSel = document.getElementById(`color_${productId}`);
-  const sizeSel = document.getElementById(`size_${productId}`);
-  const customEl = document.getElementById(`custom_${productId}`);
-  const customInput = customEl ? customEl.value.trim() : "";
-
-  if ((product.CustomInput || product.customInput) && !customInput) {
-    showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
-    if (customEl) customEl.focus();
-    return;
-  }
-
-  // Check points balance from your API
-  const checkRes = await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`);
-  const checkData = await checkRes.json();
-  const currentPoints = checkData.points || 0;
-
-  if (currentPoints < cost) {
-    showToast(`❌ You only have ${currentPoints} Referral Points — need ${cost} to redeem this item.`, "error");
-    return;
-  }
-
-  const alreadyInCart = cart.find(i => (i.id || i.ID).toLowerCase() === productId.toLowerCase() && i.redeem);
-  if (alreadyInCart) {
-    showToast("Item already added for redemption.", "info");
-    return;
-  }
-
-  cart.push({
-    id: productId,
-    title: product.Title || product.title,
-    price: 0,
-    priceUSD: 0,
-    q: 1,
-    redeem: true,
-    cost,
-    variant: variantSel ? variantSel.value : "",
-    color: colorSel ? colorSel.value : "",
-    size: sizeSel ? sizeSel.value : "",
-    thumb: product.ImageURL || product.image || "",
-    customInput
-  });
-
-  updateCartUI();
-  showToast(`🎉 "${product.Title || product.title}" added to cart for ${cost} Referral Points`, "success");
-  if (typeof openCart === "function") openCart();
 }
 
 
@@ -1589,7 +1445,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* --- zoom follow helpers --- */
 function attachZoomFollow(){
-  // only adjust carousel pointer events if you need
+  document.querySelectorAll('.item img').forEach(img => {
+    img.style.willChange = 'transform';
+    img.onmousemove = function(e){
+      const rect = img.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      img.style.transformOrigin = `${x}% ${y}%`;
+      img.style.transform = 'scale(1.5)';
+    };
+    img.onmouseleave = function(){
+      img.style.transformOrigin = 'center center';
+      img.style.transform = 'scale(1)';
+    };
+  });
+
+  // ensure non-active carousel images don't block clicks
   document.querySelectorAll('.carousel').forEach(car => {
     car.querySelectorAll('img').forEach(im => {
       if (!im.classList.contains('active')) {
@@ -1604,7 +1475,6 @@ function attachZoomFollow(){
     });
   });
 }
- 
 </script>
 
 
