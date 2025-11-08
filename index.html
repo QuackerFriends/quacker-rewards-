@@ -1307,9 +1307,7 @@ async function checkout() {
 let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
 let shippingUSD = 0;
 
-const subtotalUSD = cart.reduce((sum, item) => sum + (item.priceUSD || 0), 0);
-
-// Apply shipping for both Quacks and redeem carts (same rules)
+// Apply shipping for both Quacks and Points carts (same rules)
 if (subtotalUSD >= 70) {
   shippingUSD = 0;
 } else if (country.toLowerCase() === "canada") {
@@ -1318,7 +1316,7 @@ if (subtotalUSD >= 70) {
   shippingUSD = 5;
 }
 
-// ✅ Apply shipping to both Quacks + redeem carts (not just Quacks)
+// ✅ Apply shipping to both Quacks + redeem carts
 const isRewardOnly = isQuacksOnly || isRedeemOnly;
 if (isRewardOnly) {
   console.log("🦆 Reward cart (Quacks or Points) — shipping applied:", shippingUSD);
