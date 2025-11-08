@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -26,87 +26,12 @@
       margin:0;padding:0;color:#222;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;position:relative;
     }
     body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      background:url('https://quackerfriends.github.io/quackheads-assets/images/brandimages/Inside.png') no-repeat center center fixed;background-size:cover;
-      z-index:-1;
-      transition:filter .4s;
-      pointer-events:none;
+      content:"";position:fixed;inset:0;background:url('https://quackerfriends.github.io/quackheads-assets/images/witches%20with%20pumpkins.png') no-repeat center center fixed;background-size:cover;z-index:-1;transition:filter .4s;pointer-events:none;
     }
-    
+    body.blur-bg::before{filter:blur(6px) brightness(.7);}
 
-
-    header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--brand-teal);color:white;box-shadow:0 6px 18px rgba(0,0,0,0.08);z-index:1500;position:relative}
+    header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--brand-orange);color:white;box-shadow:0 6px 18px rgba(0,0,0,0.08);z-index:1500;position:relative}
     header h1{margin:0;font-size:20px;display:flex;align-items:center;gap:10px}
-    header h1 .logo {
-  height: 38px;
-  width: auto;
-  border-radius: 8px;
-  margin-right: 6px;
-}
-
-/* ===== REFERRAL INFO TOOLTIP (Z-FIXED) ===== */
-.info-container {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #fff;
-  background: rgba(30, 30, 30, 0.5);
-  padding: 6px 12px;
-  border-radius: 12px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
-  /* 🚫 No z-index here, keeps it out of stacking traps */
-}
-
-.info-icon {
-  cursor: pointer;
-  font-size: 15px;
-  color: #ffb84d;
-  opacity: 0.95;
-  transition: color 0.25s ease, opacity 0.25s ease;
-}
-
-.info-icon:hover {
-  color: #ffd580;
-  opacity: 1;
-}
-
-.tooltip-text {
-  visibility: hidden;
-  opacity: 0;
-  position: fixed;
-  background: rgba(0,0,0,0.9);
-  color: #fff;
-  text-align: center;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  width: 220px;
-  transition: opacity 0.25s ease;
-  pointer-events: none;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-  z-index: 9999999;
-  white-space: normal;
-}
-
-
-.info-container:hover .tooltip-text {
-  visibility: visible;
-  opacity: 1;
-  transform: translateY(-4px);
-}
-
-/* --- Align tooltip under the info icon --- */
-.info-container:hover .tooltip-text {
-  top: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-
     .btn{padding:10px 16px;background:var(--brand-orange-dark);color:white;border:none;border-radius:999px;cursor:pointer;font-weight:600;transition:all .18s;display:inline-flex;gap:8px;align-items:center}
     .btn.secondary{background:transparent;color:white;border:1px solid rgba(255,255,255,.25);padding:8px 12px;border-radius:10px}
     main{flex:1;padding:30px 20px;max-width:var(--maxWidth);margin:0 auto 80px}
@@ -114,7 +39,23 @@
     .item{background:var(--card);padding:16px;border-radius:14px;box-shadow:var(--shadow);text-align:center;position:relative}
     .item img{width:100%;height:220px;object-fit:contain;border-radius:8px;background:#f6f6f6}
     
+   /* --- Cursor-follow zoom (magnifier style) --- */
+.item {
+  position: relative;
+  overflow: hidden;
+}
 
+.item img {
+  width: 100%;
+  transition: transform 0.3s ease;
+  cursor: crosshair;
+  transform-origin: center center;
+}
+
+/* Optional: smooth reset when leaving */
+.item:hover img {
+  transform: scale(1.5); /* base zoom level */
+}
 
 
     .item h3{margin:10px 0 6px;font-size:16px}
@@ -152,74 +93,37 @@ header, .nav-container, .nav-actions, .nav-actions button {
   z-index: 3000;
   pointer-events: auto !important;
 }
-    
-.profile-container {
-  position: relative; /* keep dropdown positioned relative to the Profile button */
-}
-    
-/* === USER PROFILE DROPDOWN (Modern Glassy Style) === */
+
+/* Profile dropdown just below header */
 #profileSection {
-  display: none;
   position: fixed;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  color: #fff;
-  padding: 1rem 1.2rem;
-  border-radius: 1rem;
-  box-shadow: 0 4px 25px rgba(0,0,0,0.3);
-  min-width: 240px;
-  border: 1px solid rgba(255,255,255,0.2);
+  top: 72px;               /* sits just below the header */
+  right: 20px;
   z-index: 3100;
-  animation: fadeSlideDown 0.25s ease;
+  background: #1c1c1c;
+  color: #eee;
+  padding: 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  min-width: 180px;
 }
 
-@keyframes fadeSlideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-#profileSection h3 {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: #fff;
-}
-
+/* Buttons in profile dropdown visible */
 #profileSection button {
   width: 100%;
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
+  background: #2a2a2a;
+  color: #eee;
   border: none;
   padding: 0.6rem 0.8rem;
   border-radius: 0.6rem;
   cursor: pointer;
   margin-top: 6px;
-  transition: background 0.25s ease, color 0.25s ease;
+  transition: background 0.2s, color 0.2s;
 }
-
 #profileSection button:hover {
-  background: #ff7a00;
+  background: #ff6600;
   color: #fff;
 }
-
-/* 🔻 Disconnect button special color */
-#profileSection button.disconnect {
-  background: linear-gradient(135deg, #ff7043, #ff5252);
-}
-
-#profileSection button.disconnect:hover {
-  background: linear-gradient(135deg, #ff8a65, #ff5252);
-  transform: translateY(-2px);
-}
-
-    
 
 /* Shop dropdown, modals, and toasts also stay clickable */
 #shopMenu,
@@ -228,100 +132,13 @@ header, .nav-container, .nav-actions, .nav-actions button {
 #toastContainer {
   pointer-events: auto !important;
 }
-  
-
-/* === BACKGROUND BLUR (only background, not content) === */
-#blurOverlay {
-  position: fixed;
-  inset: 0;
-  backdrop-filter: blur(10px) brightness(0.6);
-  background: rgba(0, 0, 0, 0.25);
-  z-index: 50; /* LOW → sits behind everything else */
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-/* When blur active */
-body.blur-bg #blurOverlay {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* Make sure all key UI layers stay above blur */
-header,
-#shippingNotice,
-main,
-footer,
-#profileSection,
-.cart-modal,
-.sizeguide-modal,
-#shopMenu,
-#toastContainer {
-  position: relative;
-  z-index: 200;
-}
-
-
 
 
     .sizeguide-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:3000;background:rgba(0,0,0,0.5)}
     .sizeguide-modal.open{display:flex}
     .sizeguide-modal .card{background:#fff;padding:12px;border-radius:12px;max-width:720px;width:92%;position:relative}
     .sizeguide-modal img{max-width:100%;height:auto;display:block;border-radius:8px}
-    #itemModalContent img {
-  max-width: 90vw;
-  max-height: 80vh;
-  width: auto;
-  height: auto;
-  display: block;
-  margin: 0 auto;
-  border-radius: 12px;
-  object-fit: contain;
-}
-
     .sizeguide-modal .close-btn{position:absolute;right:12px;top:12px;background:transparent;border:none;font-size:20px;cursor:pointer}
-
-    .item-modal {
-  position: fixed;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 3000;
-  background: rgba(0,0,0,0.5);
-}
-
-.item-modal.open {
-  display: flex;
-}
-
-.item-modal .card {
-  background: #fff;
-  padding: 16px;
-  border-radius: 12px;
-  max-width: 700px;
-  width: 92%;
-  position: relative;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.2);
-  animation: fadeIn 0.25s ease;
-}
-
-.item-modal .close-btn {
-  position: absolute;
-  right: 12px;
-  top: 12px;
-  background: transparent;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
-}
-
 
     .cart-modal {   position: fixed;   right: 0;   top: 0;   height: 100vh;   width: 420px;   background: var(--card);   box-shadow: -12px 0 40px rgba(0,0,0,0.12);   transform: translateX(110%);   transition: transform 0.28s ease;   z-index: 3000 !important;   padding: 18px;   display: flex;   flex-direction: column; }
     .cart-modal.open{transform:translateX(0); z-index: 3000 !important;}
@@ -363,283 +180,63 @@ footer,
 .image-slider .next { right: 6px; }
 
 
+   /* PROFILE DROPDOWN */
+#profileSection {
+  display: none;
+  position: fixed;
+  top: 100px; /* moved down a bit below header */
+  right: 20px;
+  background: #1c1c1c;
+  color: #ddd; /* readable text */
+  padding: 1rem;
+  border-radius: 1rem;
+  z-index: 2600;
+  min-width: 180px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
 
+#profileSection button {
+  width: 100%;
+  background: #2a2a2a;
+  color: #eee; /* <-- fix text color */
+  border: none;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+
+#profileSection button:hover {
+  background: #ff6600;
+  color: #fff;
+}
 
     #toast-container{position:fixed;top:110px;right:12px;z-index:4000;display:flex;flex-direction:column;gap:8px}
     .toast{padding:8px 12px;border-radius:8px;color:#fff;display:flex;gap:8px;align-items:center}
     .toast.info{background:#2563eb}.toast.success{background:#059669}.toast.error{background:#ef4444}
 
-
-
-#shopMenu {
-  display: none;
-  position: fixed; /* fixed so it’s independent of blur or stacking issues */
-  background: var(--card);
-  border-radius: 12px;
-  box-shadow: var(--shadow);
-  flex-direction: column;
-  min-width: 180px;
-  padding: 6px 0;
-  z-index: 99999; /* topmost layer */
-}
-
-
-
+    /* dropdown */
+    #shopMenu{display:none;position:absolute;top:100%;left:0;background:var(--card);border-radius:12px;box-shadow:var(--shadow);flex-direction:column;min-width:160px;z-index:2000}
     .dropdown-item{padding:10px 16px;border:none;background:transparent;text-align:left;cursor:pointer;font-weight:600;transition:background .15s;color:#222;border-radius:8px}
     .dropdown-item:hover{background:var(--brand-orange);color:#fff}
 
-    footer{background:var(--brand-orange-dark);padding:5px 0;text-align:center;color:#fff;margin-top:auto;position:relative;z-index:1000}
+    footer{background:var(--brand-teal);padding:10px 0;text-align:center;color:#fff;margin-top:auto;position:relative;z-index:1000}
     footer a{margin:0 10px;color:#fff}
 
-    /* ---------- Intro Screen ---------- */
-#introScreen {
-  position: fixed;
-  inset: 0;
-  background: url('https://quackerfriends.github.io/quackheads-assets/images/brandimages/Enter.png')
-              no-repeat center center;
-  background-size: cover;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 5000;
-  transition: opacity 0.8s ease, visibility 0.8s ease;
-}
-
-/* Enter button style */
-.enter-btn {
-  font-size: 20px;
-  padding: 14px 32px;
-  border-radius: 999px;
-  background: var(--brand-orange-dark);
-  color: #fff;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.enter-btn:hover {
-  background: var(--brand-orange);
-  transform: scale(1.05);
-}
-
-/* While intro is active, hide main content visually */
-body.loading header,
-body.loading main,
-body.loading footer,
-body.loading #shippingNotice,
-body.loading #cartModal,
-body.loading #profileSection {
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-
-/* When intro removed, everything fades back */
-body:not(.loading) header,
-body:not(.loading) main,
-body:not(.loading) footer {
-  opacity: 1;
-}
-
-/* Mobile friendly adjustments */
-@media(max-width:520px){
-  #introScreen {
-    background-position: center;
-    background-size: cover;
-  }
-  .enter-btn {
-    font-size: 18px;
-    padding: 12px 26px;
-  }
-}
-
-
     @media(max-width:520px){#profileSection{right:12px;left:12px;width:auto}.cart-modal{width:100%}}
-
-/* ======= RESPONSIVE LAYOUT FIXES ======= */
-
-/* --- Tablet: 769px–1024px --- */
-@media (max-width: 1024px) {
-  header {
-    padding: 12px 18px;
-    gap: 10px;
-  }
-
-  header h1 {
-    font-size: 19px;
-  }
-
-  .shop-container {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-  }
-
-  .item img {
-    height: 210px;
-  }
-
-  #profileSection {
-    right: 16px;
-    left: auto;
-    top: 80px;
-  }
-
-  footer {
-    position: relative;
-    margin-top: auto;
-  }
-}
-
-/* --- Mobile: up to 768px --- */
-@media (max-width: 768px) {
-  html, body {
-    width: 100%;
-    overflow-x: hidden;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-  }
-
-  header {
-    flex-wrap: wrap;
-    padding: 12px 16px;
-    text-align: center;
-    justify-content: center;
-    gap: 10px;
-  }
-
-  header h1 {
-    font-size: 18px;
-    text-align: center;
-  }
-
-  .info-container {
-    margin-top: 6px;
-    font-size: 14px;
-  }
-
-  #pointsDisplay {
-    order: 2;
-  }
-
-  #menuBtn, #connectBtn, #profileBtn, #openCartBtn {
-    font-size: 14px;
-    padding: 8px 12px;
-  }
-
-  main {
-    flex: 1;
-    padding: 16px 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 100%;
-  }
-
-  .shop-container {
-    grid-template-columns: 1fr;
-    gap: 18px;
-    width: 100%;
-  }
-
-  .item {
-    width: 100%;
-    padding: 14px;
-  }
-
-  .item img {
-    height: 200px;
-  }
-
-  #profileSection {
-    position: fixed;
-    right: 12px;
-    left: 12px;
-    top: 80px;
-    width: auto;
-  }
-
-  .cart-modal {
-    width: 100%;
-    right: 0;
-    top: 0;
-    height: 100vh;
-    border-radius: 0;
-  }
-
-  footer {
-    position: relative;
-    width: 100%;
-    margin-top: auto;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 10px 0;
-    text-align: center;
-    font-size: 14px;
-  }
-
-  /* --- Intro Screen Fix --- */
-  #introScreen {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-position: center;
-    background-size: cover;
-    z-index: 9999;
-  }
-
-  .enter-btn {
-    font-size: 18px;
-    padding: 12px 28px;
-    border-radius: 999px;
-    text-align: center;
-  }
-
-  /* Tooltip width fix */
-  .tooltip-text {
-    width: 180px;
-    font-size: 11px;
-  }
-
-  /* Modals fit screen */
-  .item-modal .card,
-  .sizeguide-modal .card {
-    max-width: 95%;
-    padding: 12px;
-  }
-}
-
   </style>
 </head>
 <body>
+  <!-- overlay sits directly under header/above content; pointer-events controlled by .active -->
+  <div id="tees"></div>
 
-  <div id="blurOverlay"></div>
-
-  <!-- Intro Screen -->
-<div id="introScreen">
-  <button id="enterBtn" class="btn enter-btn">Enter</button>
-</div>
-
-  <!-- overlay sits directly under header/above content; pointer-events controlled by .active  <div id="tees"></div> -->
- 
-
-  <div id="shippingNotice" style="background:#fff ; color:--brand-orange;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">
+  <div id="shippingNotice" style="background:#ffcc00;color:#222;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">
     ⚠️ Note: Shipping is only available in the US and Canada.
   </div>
 
   <header>
-  <h1>
-    <img 
-    
-      src="https://quackerfriends.github.io/quackheads-assets/images/brandimages/logo%20transparent%20zoomed.png" 
-      alt="Quacker Friends Logo" 
-      class="logo"
-    />
-    Quacker Friends Shop
-  </h1>
+    <h1>Quacker Friends Shop</h1>
     <div style="display:flex;gap:10px;align-items:center">
       <div class="shop-controls" style="position:relative">
         <button class="btn secondary" id="menuBtn">Shop ▾</button>
@@ -651,19 +248,9 @@ body:not(.loading) footer {
           <button class="dropdown-item" onclick="showCategory('keychains')">Keychains</button>      
         </div>
       </div>
-      
-   <div id="pointsDisplay" class="info-container">
-  <i class="fa-solid fa-circle-info info-icon"></i>
-  <span class="tooltip-text">
-    Earn points for items your friends buy using your address as referral. Redeem points for items in our shop!  </span>
- <span class="points-label">Referral Points: <span id="pointsValue"></span></span>
-</div>
-
-
+      <div id="pointsDisplay" style="margin-top:10px;font-weight:600;color:#FFD700"> Goodness Points:  </div>
       <button id="connectBtn" class="btn">Connect Wallet</button>
-<div class="profile-container" style="position:relative; display:inline-block;">
-  <button id="profileBtn" class="btn secondary" style="display:none">Profile</button>
-</div>
+      <button id="profileBtn" class="btn secondary" style="display:none">Profile</button>
       <button id="openCartBtn" class="btn" style="position:relative">Cart <span id="cartCount" class="cart-count" style="display:none">0</span></button>
     </div>
   </header>
@@ -684,7 +271,7 @@ body:not(.loading) footer {
     <button class="btn secondary" onclick="disconnectWallet()">❌ Disconnect</button>
   </div>
 
-  <main id="mainContent" style="max-width:var(--maxWidth);margin:20px auto;padding:0 16px;width:100%">
+  <main style="max-width:var(--maxWidth);margin:20px auto;padding:0 16px;width:100%">
     <section id="items" class="shop-container"></section>
   </main>
 
@@ -730,14 +317,14 @@ body:not(.loading) footer {
     </div>
 
    
- <!--  <div style="margin-top:10px;">
+    <div style="margin-top:10px;">
       <label for="paymentSelector" style="font-weight:bold;">Pay with:</label><br>
       <select id="paymentSelector" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;margin-top:6px;">
         <option value="eth">ETH (wallet)</option>
         <option value="points">Points / Redeem</option>
         <option value="quacks">Quacks</option>
       </select>
-    </div>  -->
+    </div>
 
     <div id="referralSection" style="margin-top:12px;">
       <label for="referrerInput" style="font-weight:bold;">Referral Address (optional):</label><br>
@@ -771,17 +358,6 @@ body:not(.loading) footer {
     <a href="https://www.instagram.com/QuackerFriends" target="_blank"><i class="fab fa-instagram fa-lg"></i></a>
   </footer>
 
-
-<!-- 🛍️ Item Modal -->
-<div id="itemModal" class="sizeguide-modal" aria-hidden="true" onclick="closeItemModal(event)">
-  <div class="card" onclick="event.stopPropagation();">
-    <button class="close-btn" onclick="closeItemModal()">✕</button>
-    <div id="itemModalContent"></div>
-  </div>
-</div>
-
-
-
 <script>
 /* ===== CONFIG ===== */
 const PURCHASE_API = "https://script.google.com/macros/s/AKfycbwZMlGQ2REZxTP1lIoWBYzc8n7l-h7C79F9u9MjDY4XIR6jKNO7ky1VXtCm3oP5RM_9qA/exec";
@@ -796,17 +372,9 @@ let userAddress = null;
 let web3 = null;
 let cart = []; let selectedCountry = "USA"; // ✅ Default selection for shipping
 let PRODUCTS = {};                 // will be filled by loadProducts()
-let currentCategory = null;     // default (sheet categories may vary in case)
+let currentCategory = "tees";      // default (sheet categories may vary in case)
 let cachedEthRate = null;
 let lastRateFetch = 0;
-
-  /* ===== BLUR MANAGER ===== */
-let blurCount = 0;
-function addBlur() { blurCount++; document.body.classList.add("blur-bg");}
-function removeBlur() {
-  blurCount = Math.max(0, blurCount - 1);
-  if (blurCount === 0) document.body.classList.remove("blur-bg"); }
-
 
 /* ===== UI HELPERS ===== */
 function showToast(message, type="info", duration=3000){
@@ -968,15 +536,14 @@ async function loadProducts() {
           .join("");
       }
 
-      // --- Don't auto-load anything at start ---
-      if (!currentCategory) {
-        const itemsSection = document.getElementById("items");
-        itemsSection.innerHTML = null;
-      } else {
-        await showCategory(currentCategory);
-        attachZoomFollow();
+      // --- Set default category ---
+      if (!PRODUCTS[currentCategory]) {
+        const first = Object.keys(PRODUCTS)[0];
+        if (first) currentCategory = first;
       }
 
+      await showCategory(currentCategory);
+      attachZoomFollow();
     } else {
       console.error("⚠️ Failed to load items or items missing:", data);
     }
@@ -985,11 +552,15 @@ async function loadProducts() {
   }
 }
 
+  
+
 /* ===== RENDER PRODUCT CARD (with Quacks + Points + USD) ===== */
 function renderProductCard(p, ethRate) {
-  // Normalize IDs and prices
-  const productId = p.ID || p.id;
-  const priceUSD = p.PriceUSD || p.priceUSD || p.price || 0;
+  // Debug: check product object
+  console.log("Rendering product:", p.ID, p.Title);
+
+  // Prices
+  const priceUSD = p.PriceUSD || p.priceUSD || 0;
   const pointsCost = p.PointsCost || p.pointsCost || 0;
   const quacksCost = p.QuacksCost || p.quacksCost || 0;
 
@@ -1002,70 +573,61 @@ function renderProductCard(p, ethRate) {
 
   // Variants
   let variantHTML = "";
-  if (p.VariantOptions || p.variants) {
-    const variants = (p.VariantOptions ? p.VariantOptions.split(",") : p.variants).map(v => v.trim());
-    if (variants.length) {
-      variantHTML = `<label>Variant:</label>
-        <select id="variant_${productId}">
-          ${variants.map(v => `<option value="${v}">${v}</option>`).join("")}
-        </select>`;
-    }
+  if (p.VariantOptions) {
+    const variants = p.VariantOptions.split(",").map(v => v.trim());
+    variantHTML = `<label>Variant:</label>
+      <select id="variant_${p.ID}">${variants.map(v => `<option value="${v}">${v}</option>`).join("")}</select>`;
   }
 
   // Colors
   let colorHTML = "";
-  if (p.ColorOptions || p.colors) {
-    const colors = (p.ColorOptions ? p.ColorOptions.split(",") : p.colors).map(c => c.trim());
-    if (colors.length) {
-      colorHTML = `<label>Color:</label>
-        <select id="color_${productId}">
-          ${colors.map(c => `<option value="${c}">${c}</option>`).join("")}
-        </select>`;
-    }
+  if (p.ColorOptions) {
+    const colors = p.ColorOptions.split(",").map(c => c.trim());
+    colorHTML = `<label>Color:</label>
+      <select id="color_${p.ID}">${colors.map(c => `<option value="${c}">${c}</option>`).join("")}</select>`;
   }
 
   // Sizes
   let sizeHTML = "";
-  if (p.SizeOptions || p.sizes) {
-    const sizes = (p.SizeOptions ? p.SizeOptions.split(",") : p.sizes).map(s => s.trim());
-    if (sizes.length) {
-      sizeHTML = `<label>Size:</label>
-        <select id="size_${productId}">
-          ${sizes.map(s => `<option value="${s}">${s}</option>`).join("")}
-        </select>`;
-    }
+  if (p.SizeOptions) {
+    const sizes = p.SizeOptions.split(",").map(s => s.trim());
+    sizeHTML = `<label>Size:</label>
+      <select id="size_${p.ID}">${sizes.map(s => `<option value="${s}">${s}</option>`).join("")}</select>`;
   }
 
   // Custom input
   let customHTML = "";
   if (p.CustomInput && p.CustomInput.trim() !== "") {
     customHTML = `<div>
-      <label for="custom_${productId}">${p.CustomInput}</label>
-      <input id="custom_${productId}" type="text" placeholder="${p.CustomInput}" />
+      <label for="custom_${p.ID}">${p.CustomInput}</label>
+      <input id="custom_${p.ID}" type="text" placeholder="${p.CustomInput}" />
     </div>`;
   }
 
   // Buttons
-  const buyHTML = priceUSD > 0
-    ? `<button class="btn buy-btn" onclick="addToCart('${productId}')">Add to Cart</button>`
-    : "";
-
-  const quacksHTML = quacksCost > 0
-    ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${productId}', ${quacksCost})">
-         Pay with ${quacksCost} 🪙 Quacks
+  const redeemHTML = pointsCost > 0
+    ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${p.ID}', ${pointsCost})">
+         Redeem for ${pointsCost} ⭐ Points
        </button>` : "";
 
-  const redeemHTML = pointsCost > 0
-    ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${productId}', ${pointsCost})">
-         Redeem for ${pointsCost} ⭐ Referral Points
+  const quacksHTML = (p.QuacksCost || p.quacksCost) > 0
+  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${p.ID || p.id}', ${p.QuacksCost || p.quacksCost})">
+       Pay with ${(p.QuacksCost || p.quacksCost)} 🪙 Quacks
+     </button>`
+  : "";
+
+
+  const buyHTML = priceUSD > 0
+    ? `<button class="btn buy-btn" onclick="addToCart('${p.ID}')">
+         Add to Cart
        </button>` : "";
 
   // Card HTML
   const html = `
     <div class="item" style="padding:16px;border-radius:12px;box-shadow:var(--shadow);background:var(--card);">
-      <img src="${p.ImageURL || p.image || ""}" alt="${p.Title || p.title}" style="width:100%;border-radius:8px;object-fit:contain;" />
-      <h3>${p.Title || p.title}</h3>
-      <p id="price_${productId}" style="margin:6px 0;">${priceHTML}</p>
+      <img src="${p.ImageURL || ""}" alt="${p.Title}" style="width:100%;border-radius:8px;object-fit:contain;" />
+      <h3>${p.Title}</h3>
+      <p id="price_${p.ID}" style="margin:6px 0;">${priceHTML}</p>
       ${variantHTML}
       ${colorHTML}
       ${sizeHTML}
@@ -1084,21 +646,6 @@ function renderProductCard(p, ethRate) {
 
 /* ===== RENDER CATEGORY (with image carousel) ===== */
 async function showCategory(cat) {
-  
-  // 🧠 If clicking the same category again → close it
-  if (currentCategory === cat) {
-    const itemsSection = document.getElementById("items");
-    itemsSection.innerHTML = null;
-    currentCategory = null;
-
-    // 🔹 Remove blur
-    removeBlur();
-    return;
-  }
-
-  // 🔹 Apply blur when new category opens
-addBlur();
-
   const key = (cat in PRODUCTS)
     ? cat
     : Object.keys(PRODUCTS).find(k => k.toLowerCase() === String(cat).toLowerCase());
@@ -1108,6 +655,7 @@ addBlur();
   const container = document.getElementById("items");
   const items = PRODUCTS[currentCategory] || [];
   container.innerHTML = "";
+
   if (!items.length) {
     container.innerHTML = `
       <div style="background:var(--card);padding:20px;border-radius:12px;
@@ -1140,19 +688,9 @@ addBlur();
       imageHTML = `
         <div class="image-slider" id="slider_${p.id}">
           ${images
-          .map((url, i) =>
-  `<img 
-     src="${url}" 
-     alt="${p.title}" 
-     class="slide ${i === 0 ? "active" : ""}" 
-     style="cursor:pointer"
-     onclick="openItemModal(\`
-       <img src='${url}' alt='${p.title}' style='max-width:100%;border-radius:12px;display:block;margin:0 auto;' />
-       <h3 style='margin-top:12px;text-align:center;'>${p.title}</h3>
-     \`)"
-   />`
-)
-
+            .map((url, i) =>
+              `<img src="${url}" alt="${p.title}" class="slide ${i === 0 ? "active" : ""}" />`
+            )
             .join("")}
           <button class="prev" onclick="prevSlide('${p.id}')">‹</button>
           <button class="next" onclick="nextSlide('${p.id}')">›</button>
@@ -1160,7 +698,7 @@ addBlur();
       `;
     } else {
       const imgSrc = images[0] || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
-      imageHTML = `   <img      id="img_${p.id}"      src="${imgSrc}"      alt="${p.title}"      style="cursor:pointer"     onclick="openItemModal(\`       <img src='${imgSrc}' alt='${p.title}' style='max-width:100%;border-radius:12px;display:block;margin:0 auto;' />       <h3 style='margin-top:12px;text-align:center;'>${p.title}</h3>     \`)"   /> `;
+      imageHTML = `<img id="img_${p.id}" src="${imgSrc}" alt="${p.title}" />`;
     }
 
     // 🧩 Variants
@@ -1226,7 +764,7 @@ const usd = p.PriceUSD || p.priceUSD || 0;
 // Redeem button
 const redeemHTML = (points > 0 && productId)
   ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${productId}', ${points})">
-       Redeem for ${points} Referral Points
+       Redeem for ${points} ⭐ Points
      </button>`
   : "";
 
@@ -1415,26 +953,6 @@ function openSizeGuide(url){
   if(modal){ modal.classList.add("open"); modal.setAttribute("aria-hidden","false"); }
 }
 function closeSizeGuide(){ const modal = document.getElementById("sizeGuideModal"); if(modal){ modal.classList.remove("open"); modal.setAttribute("aria-hidden","true"); } }
-
-  /* ===== open images in items  ===== */
-  function openItemModal(contentHTML) {
-  const modal = document.getElementById("itemModal");
-  const content = document.getElementById("itemModalContent");
-
-  content.innerHTML = contentHTML;
-  modal.classList.add("open");
-  addBlur(); // blur the background
-}
-
-function closeItemModal(e) {
-  // If called from click event, ensure we clicked background, not content
-  if (e && e.target.closest('.card')) return;
-
-  const modal = document.getElementById("itemModal");
-  modal.classList.remove("open");
-  removeBlur();
-}
-
 
 /* ===== CART helpers ===== */
 function addTapestryToCart(prodId){
@@ -1675,11 +1193,11 @@ function disconnectWallet(){ userAddress = null; web3 = null; const cbo = docume
 /* ===== Redeem Points Display ===== */
 async function updatePointsDisplay() {
   const wallet = (userAddress || "").toLowerCase();
-  const pointsValue = document.getElementById("pointsValue");
-  if (!pointsValue) return;
+  const el = document.getElementById("pointsDisplay");
+  if (!el) return;
 
   if (!wallet) {
-    pointsValue.textContent = ""; // leave empty if wallet not connected
+    el.innerText = "🪙 Points: Connect wallet";
     return;
   }
 
@@ -1688,62 +1206,33 @@ async function updatePointsDisplay() {
     const data = await res.json();
 
     if (data.success) {
-      pointsValue.textContent = data.points;
+      el.innerText = `🪙 Points: ${data.points}`;
     } else {
-      pointsValue.textContent = "Error";
+      el.innerText = "🪙 Points: Error";
     }
   } catch (err) {
-    pointsValue.textContent = "Error";
+    el.innerText = "🪙 Points: Error";
   }
 }
 
 /* ===== CLAIM QUACKS ===== */
 const claimQuacksBtn = document.getElementById("claimQuacksBtn");
-if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
-  if (!userAddress) {
-    showToast("Connect wallet first", "warn");
-    return;
-  }
-
-  try {
+if(claimQuacksBtn) claimQuacksBtn.addEventListener("click", async ()=>{
+  if(!userAddress){ showToast("Connect wallet first","warn"); return; }
+  try{
     const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-    const mainNFTBalance = await contract.methods.balanceOf(userAddress).call();
-
-    // ✅ Collect all eligible NFT contracts (main + others if needed)
-    const ownsContracts = [];
-    if (Number(mainNFTBalance) > 0) ownsContracts.push(CONTRACT_ADDRESS);
-
-    // Example for other collections (uncomment if needed)
-    // const otherContract = new web3.eth.Contract(OTHER_ABI, OTHER_CONTRACT_ADDRESS);
-    // const otherBalance = await otherContract.methods.balanceOf(userAddress).call();
-    // if (Number(otherBalance) > 0) ownsContracts.push(OTHER_CONTRACT_ADDRESS);
-
-    const query = new URLSearchParams({
-      wallet: userAddress,
-      claim: true,
-      ownsContracts: ownsContracts.join(",")
-    });
-
-    const res = await fetch(`${CLAIM_SHEET_API}?${query.toString()}`);
+    const balance = await contract.methods.balanceOf(userAddress).call();
+    const quacksToAdd = Number(balance) > 0 ? 10 : 2;
+    const res = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(userAddress)}&claim=true&quacks=${quacksToAdd}`);
     const data = await res.json();
-
-    if (data.error) {
-      showToast(data.error, "warn");
-    } else {
-      const claimed = data.added_quacks || 1;
-      showToast(`🦆 Claimed ${claimed} Quacks!`, "success");
-
-      const quacksCountEl = document.getElementById("quacksCount");
-      if (quacksCountEl) quacksCountEl.innerText = "Daily Quacks: " + (data.new_quacks_total || claimed);
+    if(data.error){ showToast(data.error, "warn"); } else {
+      showToast(`🦆 Claimed ${quacksToAdd} Quacks!`, "success");
+      const userRow = Array.isArray(data) ? data.find(r => (r.address||"").toLowerCase() === userAddress.toLowerCase()) : null;
+      const quacksCount = document.getElementById("quacksCount");
+      if(quacksCount) quacksCount.innerText = "Daily Quacks: " + (data.new_quacks_total || (userRow ? userRow.quacks_collected : 0));
     }
-
-  } catch (err) {
-    console.error(err);
-    showToast("Error claiming quacks", "error");
-  }
+  }catch(err){ console.error(err); showToast("Error claiming quacks","error"); }
 });
-
-
 
 /* ===== CHECKOUT / PURCHASE LOGGING ===== */
 const checkoutBtn = document.getElementById("checkoutBtn");
@@ -1778,29 +1267,24 @@ async function checkout() {
     let subtotalUSD = 0;
     cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); });
 
- // --- Shipping rules ---
-    let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
-    let shippingUSD = 0;
-    if (subtotalUSD >= 70) {
-      shippingUSD = 0;
-    } else if (country.toLowerCase() === "canada") {
-      shippingUSD = 10;
-    } else {
-      shippingUSD = 5;
-    }
+   // --- TEMP: Force shipping to $0 for testing ---
+let shippingUSD = 0;
+console.log("🧭 Shipping forced to $0 for testing purposes");
 
-    console.log("🧭 Country detected:", country, "| ShippingUSD =", shippingUSD);
 
+    // --- Compute grand total and ETH equivalent ---
     const grandTotalUSD = subtotalUSD + shippingUSD;
     const rate = await getEthRate();
     let totalEth = grandTotalUSD / rate;
     let txHash = "";
 
+    // --- Determine redemption / Quacks status ---
     const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
     const isQuacksOnly = cart.length > 0 && cart.every(ci => ci.useQuacks);
+    const hasMixed = cart.some(ci => !ci.redeem) && cart.some(ci => ci.redeem);
 
-    // --- Process ETH payment if applicable ---
-    if (!isRedeemOnly && !isQuacksOnly) {
+    // --- Process ETH payment (if not pure redemption) ---
+    if (!isRedeemOnly) {
       const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
       const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
       showToast(`Please confirm your purchase (includes $${shippingUSD} shipping)`, "info", 8000);
@@ -1815,54 +1299,51 @@ async function checkout() {
 
       showToast("Transaction sent — logging purchase...", "success", 4000);
       await new Promise(r => setTimeout(r, 1200));
+    } else {
+      // --- charge shipping for redeem-only orders ---
+      if (shippingUSD > 0) {
+        showToast(`Redeeming items — $${shippingUSD} shipping will be charged`, "info", 4000);
+        const shippingEth = shippingUSD / rate;
+        const valueHex = "0x" + BigInt(Math.floor(shippingEth * 1e18)).toString(16);
+        const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
+        try {
+          txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
+        } catch (txErr) {
+          showToast("Shipping payment cancelled — redemption not logged", "error");
+          return;
+        }
+      } else {
+        showToast("Redeeming item with points — free shipping!", "success", 4000);
+      }
     }
 
-    // --- Loop through cart items ---
+    // --- Log each item to Apps Script ---
     for (const ci of cart) {
-      let payload = {
+      const payload = {
         wallet: userAddress,
         variant: ci.variant || "",
         color: ci.color || "",
         size: ci.size || "",
         quantity: ci.q || 1,
         address: shippingAddress,
-        txHash: ci.useQuacks ? "" : txHash,
+        txHash,
         referrer,
         customInput: ci.customInput || ""
       };
 
       if (ci.redeem) {
-        payload.redeem = ci.title;
-        payload.cost = ci.cost;
-      } else if (ci.useQuacks) {
-        payload.itemName = ci.title;
-        payload.quacksCost = ci.quacksCost;
+  payload.redeem = ci.title;
+  payload.cost = ci.cost;
+} else if (ci.useQuacks) {
+  payload.itemName = ci.title;
+  payload.quacksUsed = ci.quacksCost; // Add this field
+} else {
+  payload.itemName = ci.title;
+  payload.price = Number(ci.price || 0);
+}
 
-        // 🪙 Deduct Quacks from user sheet
-        try {
-          const spendRes = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&spend=${ci.quacksCost}`);
-          const spendData = await spendRes.json();
-          if (spendData.error) {
-            showToast(`Quacks deduction failed: ${spendData.error}`, "error");
-            return; // stop checkout if not enough Quacks
-          }
-          showToast(`💸 ${ci.quacksCost} Quacks used for "${ci.title}"!`, "success", 4000);
-        } catch (quackErr) {
-          console.warn("Quacks deduction error:", quackErr);
-          showToast("Quacks deduction failed — purchase not logged", "error");
-          return;
-        }
-      } else {
-        payload.itemName = ci.title;
-        payload.price = Number(ci.price || 0);
-      }
 
-      // --- Log to Apps Script ---
-      const params = new URLSearchParams({
-        ...payload,
-        action: ci.useQuacks ? "payWithQuacks" : ""
-      }).toString();
-
+      const params = new URLSearchParams(payload).toString();
       try {
         const res = await fetch(`${PURCHASE_API}?${params}`);
         const data = await res.json();
@@ -1872,7 +1353,27 @@ async function checkout() {
       }
     }
 
-    // --- Success Toasts ---
+    // --- Deduct Quacks for Quacks-only or mixed orders ---
+    if (isQuacksOnly || cart.some(ci => ci.useQuacks)) {
+      let totalQuacksCost = 0;
+      cart.forEach(ci => { if (ci.useQuacks) totalQuacksCost += ci.quacksCost || 0; });
+
+      if (totalQuacksCost > 0) {
+        try {
+          // Fetch current balance
+          const quackRes = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}`);
+          const quackData = await quackRes.json();
+          const remaining = (quackData.quacks || 0) - totalQuacksCost;
+
+          // Deduct Quacks
+          await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&claim=true&quacks=-${totalQuacksCost}`);
+          showToast(`💸 Used ${totalQuacksCost} Quacks — ${remaining} left!`, "success", 4000);
+        } catch (err) {
+          console.warn("Quack deduction failed:", err);
+        }
+      }
+    }
+
     if (isRedeemOnly) {
       showToast("✅ Redemption logged successfully!", "success", 4000);
       updatePointsDisplay();
@@ -1880,7 +1381,7 @@ async function checkout() {
       showToast("✅ Purchase logged successfully!", "success", 4000);
     }
 
-    // --- Optional BaseScan link for ETH tx ---
+    // --- Optional BaseScan link ---
     if (txHash) {
       const baseScanUrl = `https://basescan.org/tx/${txHash}`;
       const linkToast = document.createElement("div");
@@ -1895,6 +1396,9 @@ async function checkout() {
     showToast("Checkout failed", "error");
   }
 }
+
+
+
 
 /* ===== ADD TO CART WITH QUACKS ===== */
 async function addToCartWithQuacks(productId, quacksCost) {
@@ -1998,7 +1502,7 @@ async function redeemWithPoints(productId, cost) {
   const currentPoints = checkData.points || 0;
 
   if (currentPoints < cost) {
-    showToast(`❌ You only have ${currentPoints} Referral Points — need ${cost} to redeem this item.`, "error");
+    showToast(`❌ You only have ${currentPoints} points — need ${cost} to redeem this item.`, "error");
     return;
   }
 
@@ -2024,13 +1528,18 @@ async function redeemWithPoints(productId, cost) {
   });
 
   updateCartUI();
-  showToast(`🎉 "${product.Title || product.title}" added to cart for ${cost} Referral Points`, "success");
+  showToast(`🎉 "${product.Title || product.title}" added to cart for ${cost} points`, "success");
   if (typeof openCart === "function") openCart();
 }
 
 
 /* ===== MENU & overlay safety ===== */
-
+const menuBtn = document.getElementById('menuBtn');
+const shopMenu = document.getElementById('shopMenu');
+if(menuBtn && shopMenu) {
+  menuBtn.addEventListener('click', (e)=>{ e.stopPropagation(); shopMenu.style.display = shopMenu.style.display === "flex" ? "none" : "flex"; });
+  document.addEventListener('click', (e)=>{ if(!menuBtn.contains(e.target) && !shopMenu.contains(e.target)){ shopMenu.style.display = "none"; } });
+}
 hideOverlay();
 
 /* ===== INIT ===== */
@@ -2060,7 +1569,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* --- zoom follow helpers --- */
 function attachZoomFollow(){
-  // only adjust carousel pointer events if you need
+  document.querySelectorAll('.item img').forEach(img => {
+    img.style.willChange = 'transform';
+    img.onmousemove = function(e){
+      const rect = img.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      img.style.transformOrigin = `${x}% ${y}%`;
+      img.style.transform = 'scale(1.5)';
+    };
+    img.onmouseleave = function(){
+      img.style.transformOrigin = 'center center';
+      img.style.transform = 'scale(1)';
+    };
+  });
+
+  // ensure non-active carousel images don't block clicks
   document.querySelectorAll('.carousel').forEach(car => {
     car.querySelectorAll('img').forEach(im => {
       if (!im.classList.contains('active')) {
@@ -2075,137 +1599,8 @@ function attachZoomFollow(){
     });
   });
 }
-
-   // Hide content until Enter is clicked
-  document.body.classList.add('loading');
-
-  const enterBtn = document.getElementById('enterBtn');
-  const introScreen = document.getElementById('introScreen');
-
-  enterBtn.addEventListener('click', () => {
-    introScreen.style.opacity = '0';
-    introScreen.style.visibility = 'hidden';
-    document.body.classList.remove('loading');
-    setTimeout(() => introScreen.remove(), 700);
-  });
-
-/* ===== SHOP MENU FIX (ESCAPE STACKING CONTEXT) ===== */
-document.addEventListener("DOMContentLoaded", () => {
-  const menuBtn = document.getElementById("menuBtn");
-  const shopMenu = document.getElementById("shopMenu");
-
-  if (!menuBtn || !shopMenu) return;
-
-  menuBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-
-    // Move dropdown to body to avoid blur/stacking issues
-    document.body.appendChild(shopMenu);
-
-    const rect = menuBtn.getBoundingClientRect();
-    shopMenu.style.position = "fixed";
-    shopMenu.style.top = `${rect.bottom + 6}px`;
-    shopMenu.style.left = `${rect.left}px`;
-    shopMenu.style.display =
-      shopMenu.style.display === "flex" ? "none" : "flex";
-    shopMenu.style.zIndex = "999999";
-  });
-
-  document.addEventListener("click", (e) => {
-    if (!menuBtn.contains(e.target) && !shopMenu.contains(e.target)) {
-      shopMenu.style.display = "none";
-    }
-  });
-
-  shopMenu.addEventListener("click", (e) => {
-    if (e.target.classList.contains("dropdown-item")) {
-      shopMenu.style.display = "none";
-    }
-  });
-});
-
-
-/* ===== PROFILE DROPDOWN FIX (POSITION + ANIMATION) ===== */
-document.addEventListener("DOMContentLoaded", () => {
-  const profileBtn = document.getElementById("profileBtn");
-  const profileSection = document.getElementById("profileSection");
-
-  if (!profileBtn || !profileSection) return;
-
-  profileBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    console.log("Profile button clicked");
-
-    const isVisible = profileSection.classList.contains("show");
-
-    if (isVisible) {
-      profileSection.classList.remove("show");
-      setTimeout(() => (profileSection.style.display = "none"), 200);
-      return;
-    }
-
-    // Move to body so it layers above blur
-    document.body.appendChild(profileSection);
-
-    profileSection.style.display = "block";
-    profileSection.style.position = "fixed";
-    profileSection.style.zIndex = "999999";
-
-    const rect = profileBtn.getBoundingClientRect();
-    const dropdownWidth = profileSection.offsetWidth || 200;
-
-    profileSection.style.top = `${rect.bottom + 6}px`;
-    profileSection.style.left = `${rect.right - dropdownWidth}px`;
-
-    requestAnimationFrame(() => {
-      profileSection.classList.add("show");
-    });
-  });
-
-  document.addEventListener("click", (e) => {
-    if (!profileSection.contains(e.target) && e.target !== profileBtn) {
-      profileSection.classList.remove("show");
-      setTimeout(() => (profileSection.style.display = "none"), 200);
-    }
-  });
-});
-
-
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".info-container").forEach(container => {
-    const icon = container.querySelector(".info-icon");
-    const tooltip = container.querySelector(".tooltip-text");
-
-    if (!icon || !tooltip) return;
-
-    icon.addEventListener("mouseenter", () => {
-      // move tooltip to body so it's not clipped by stacking context
-      document.body.appendChild(tooltip);
-
-      const rect = icon.getBoundingClientRect();
-      tooltip.style.position = "fixed";
-      tooltip.style.top = `${rect.bottom + 8}px`;
-      tooltip.style.left = `${rect.left + rect.width / 2}px`;
-      tooltip.style.transform = "translateX(-50%)";
-      tooltip.style.visibility = "visible";
-      tooltip.style.opacity = "1";
-      tooltip.style.pointerEvents = "auto";
-      tooltip.style.zIndex = "9999999";
-    });
-
-    icon.addEventListener("mouseleave", () => {
-      tooltip.style.opacity = "0";
-      tooltip.style.visibility = "hidden";
-      tooltip.style.pointerEvents = "none";
-
-      // return tooltip back inside its container for structure consistency
-      container.appendChild(tooltip);
-    });
-  });
-});
-
-
 </script>
-  
+
+
 </body>
 </html>
