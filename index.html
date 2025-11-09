@@ -1303,67 +1303,84 @@ async function checkout() {
     let subtotalUSD = 0;
     cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); });
 
- // --- Shipping rules ---
-    let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
-    let shippingUSD = 0;
-    if (subtotalUSD >= 70) {
-      shippingUSD = 0;
-    } else if (country.toLowerCase() === "canada") {
-      shippingUSD = 10;
-    } else {
-      shippingUSD = 5;
-    }
+// --- Determine shipping ---
+let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
+country = country.toLowerCase();
+let shippingUSD = 0;
+let subtotalUSD = cart.reduce((sum, item) => sum + (item.priceUSD * (item.q || 1)), 0);
 
-    console.log("🧭 Country detected:", country, "| ShippingUSD =", shippingUSD);
 // --- Identify order types ---
 const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
 const isQuacksOnly = cart.length > 0 && cart.every(ci => ci.useQuacks);
 const hasPaidItems = cart.some(ci => !ci.redeem && !ci.useQuacks);
-const needsShipping = cart.length > 0; // assume all are physical for now
 
-let txHash = "";
+// --- Force shipping for all physical goods ---
+const needsShipping = cart.length > 0; // assume all items physical
+
+// --- Apply shipping rules ---
+if (subtotalUSD >= 70) {
+  shippingUSD = 0;
+} else if (country === "canada") {
+  shippingUSD = 10;
+} else {
+  shippingUSD = 5;
+}
+
+// 👉 Force shipping even if subtotal is 0 (for quacks/redeem)
+if ((isRedeemOnly || isQuacksOnly) && needsShipping && shippingUSD === 0) {
+  if (country === "canada") {
+    shippingUSD = 10;
+  } else {
+    shippingUSD = 5;
+  }
+}
+
+console.log("🧭 Country:", country, "| subtotalUSD =", subtotalUSD, "| Shipping =", shippingUSD);
+
 const rate = await getEthRate();
+let txHash = "";
 
-// --- Handle payments and shipping ---
+// --- ETH Payment Handling ---
 if (hasPaidItems) {
-  // Regular ETH purchase (includes shipping)
+  // Normal checkout
   const grandTotalUSD = subtotalUSD + shippingUSD;
   const totalEth = grandTotalUSD / rate;
   const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
   const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
 
   try {
-    showToast(`Please confirm your payment (includes $${shippingUSD} shipping)`, "info", 8000);
+    showToast(`Please confirm payment (includes $${shippingUSD} shipping)`, "info", 8000);
     txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
-    showToast("Transaction sent — logging purchase...", "success", 4000);
+    showToast("✅ Transaction sent — logging purchase...", "success", 4000);
     await new Promise(r => setTimeout(r, 1200));
-  } catch (txErr) {
-    console.warn("tx aborted", txErr);
-    showToast("Transaction cancelled — purchase not logged", "error");
+  } catch (err) {
+    console.warn("tx aborted", err);
+    showToast("Transaction cancelled — not logged", "error");
     return;
   }
 
 } else if ((isRedeemOnly || isQuacksOnly) && shippingUSD > 0) {
-  // Redeem-only or Quack-only → still pay shipping
+  // Pay only shipping for redeem/quacks
   const shippingEth = shippingUSD / rate;
   const valueHex = "0x" + BigInt(Math.floor(shippingEth * 1e18)).toString(16);
   const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
 
   try {
-    showToast(`Confirm $${shippingUSD} shipping`, "info", 8000);
+    showToast(`Please confirm $${shippingUSD} shipping payment`, "info", 8000);
     txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
-    showToast("Shipping paid — logging redemption...", "success", 4000);
+    showToast("✅ Shipping paid — logging order...", "success", 4000);
     await new Promise(r => setTimeout(r, 1200));
-  } catch (txErr) {
-    console.warn("Shipping tx aborted", txErr);
-    showToast("Shipping payment cancelled — purchase not logged", "error");
+  } catch (err) {
+    console.warn("Shipping tx aborted", err);
+    showToast("Shipping payment cancelled — not logged", "error");
     return;
   }
 
 } else {
   // Free shipping
-  showToast("Free shipping — logging purchase...", "info");
+  showToast("🎁 Free shipping applied!", "info");
 }
+
 
     // --- Loop through cart items ---
     for (const ci of cart) {
