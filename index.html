@@ -367,6 +367,51 @@ const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 
+  
+  async function loadProfile(wallet) {
+  // --- 1️⃣ Fetch NFTs for wallet from Quacker contract ---
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+
+  let quackerBalance = 0;
+  try {
+    quackerBalance = await contract.balanceOf(wallet);
+  } catch (err) {
+    console.warn("Failed to fetch Quacker NFT balance:", err);
+  }
+
+  // --- 2️⃣ Fetch daily quacks / user points from Apps Script ---
+  let claimData = {};
+  try {
+    const claimResp = await fetch(`${CLAIM_SHEET_API}?wallet=${wallet}&check=true`);
+    claimData = await claimResp.json();
+  } catch (err) {
+    console.warn("Failed to fetch claim data:", err);
+  }
+
+  // --- 3️⃣ Fetch shop items / referral points if needed ---
+  let shopData = {};
+  try {
+    const shopResp = await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`);
+    const pointsResp = await shopResp.json();
+    shopData.points = pointsResp.points || 0;
+  } catch (err) {
+    console.warn("Failed to fetch shop/referral data:", err);
+  }
+
+  // --- 4️⃣ Return a consolidated profile object ---
+  return {
+    wallet,
+    quackerBalance: Number(quackerBalance),
+    dailyQuacks: Number(claimData.quacks_collected || 0),
+    lastClaim: claimData.last_claim ? new Date(claimData.last_claim) : null,
+    priority: claimData.priority || "none",
+    triggeredBy: claimData.triggered_by || "none",
+    referralPoints: shopData.points || 0
+  };
+}
+
+
 /* ===== STATE ===== */
 let userAddress = null;
 let web3 = null;
@@ -386,6 +431,7 @@ function showToast(message, type="info", duration=3000){
   container.appendChild(el);
   setTimeout(()=>el.remove(), duration);
 }
+  
 
 /* ===== PRICE HELPERS ===== */
 async function getEthRate(){
@@ -1221,8 +1267,7 @@ async function updatePointsDisplay() {
   }
 }
 
-/* ===== CLAIM QUACKS ===== */
-/* ===== CLAIM QUACKS ===== */
+/* ===== CLAIM QUACKS ===== *//* ===== CLAIM QUACKS ===== */
 const claimQuacksBtn = document.getElementById("claimQuacksBtn");
 if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
   if (!userAddress) {
@@ -1341,13 +1386,18 @@ console.log("🧭 Country:", country, "| subtotalUSD =", subtotalUSD, "| Shippin
 const rate = await getEthRate();
 let txHash = "";
 
+
 // --- ETH Payment Handling ---
 if (hasPaidItems) {
   // Normal checkout
   const grandTotalUSD = subtotalUSD + shippingUSD;
   const totalEth = grandTotalUSD / rate;
-  const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
-  const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
+
+  const txParams = { 
+    from: userAddress, 
+    to: SHOP_WALLET, 
+    value: ethers.utils.parseEther(totalEth.toString()) // replaced valueHex
+  };
 
   try {
     showToast(`Please confirm payment (includes $${shippingUSD} shipping)`, "info", 8000);
@@ -1363,8 +1413,12 @@ if (hasPaidItems) {
 } else if ((isRedeemOnly || isQuacksOnly) && shippingUSD > 0) {
   // Pay only shipping for redeem/quacks
   const shippingEth = shippingUSD / rate;
-  const valueHex = "0x" + BigInt(Math.floor(shippingEth * 1e18)).toString(16);
-  const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
+
+  const txParams = { 
+    from: userAddress, 
+    to: SHOP_WALLET, 
+    value: ethers.utils.parseEther(shippingEth.toString()) // replaced valueHex
+  };
 
   try {
     showToast(`Please confirm $${shippingUSD} shipping payment`, "info", 8000);
