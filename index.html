@@ -843,21 +843,21 @@ async function ensureBaseNetwork() {
   }
 }
 
-// --- Load profile function --- //
+/* ===== LOAD PROFILE (Web3.js version) ===== */
 async function loadProfile(wallet) {
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+  if (!web3 || !wallet) return null;
 
   let quackerBalance = 0;
   try {
-    quackerBalance = await contract.balanceOf(wallet);
+    const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+    quackerBalance = await contract.methods.balanceOf(wallet).call();
   } catch (err) {
     console.warn("Failed to fetch Quacker NFT balance:", err);
   }
 
   let claimData = {};
   try {
-    const claimResp = await fetch(`${CLAIM_SHEET_API}?wallet=${wallet}&check=true`);
+    const claimResp = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(wallet)}&check=true`);
     claimData = await claimResp.json();
   } catch (err) {
     console.warn("Failed to fetch claim data:", err);
@@ -865,7 +865,7 @@ async function loadProfile(wallet) {
 
   let shopData = {};
   try {
-    const shopResp = await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`);
+    const shopResp = await fetch(`${PURCHASE_API}?wallet=${encodeURIComponent(wallet)}&checkPoints=true`);
     const pointsResp = await shopResp.json();
     shopData.points = pointsResp.points || 0;
   } catch (err) {
@@ -882,6 +882,7 @@ async function loadProfile(wallet) {
     referralPoints: shopData.points || 0
   };
 }
+
 /* ===== STATE ===== */
 let userAddress = null;
 let web3 = null;
@@ -1741,7 +1742,6 @@ async function connectWallet() {
         params: [{ chainId: baseParams.chainId }]
       });
     } catch (switchError) {
-      // Add Base if not added yet
       if (switchError.code === 4902) {
         await ethereum.request({
           method: "wallet_addEthereumChain",
@@ -1772,11 +1772,9 @@ async function connectWallet() {
 
     // ✅ Step 4: Load profile + update points
     const profileData = await loadProfile(userAddress);
-    console.log("✅ Profile loaded:", profileData);
 
     await updatePointsDisplay();
 
-    // Update visible profile stats if present
     const nftCountEl = document.getElementById("nftCount");
     if (nftCountEl) nftCountEl.innerText = "NFTs Owned: " + profileData.quackerBalance;
 
@@ -1802,21 +1800,20 @@ if (profileBtn)
     if (!userAddress) return;
 
     try {
-      const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-      const balance = await contract.methods.balanceOf(userAddress).call();
-      const nftCountEl = document.getElementById("nftCount");
-      if (nftCountEl) nftCountEl.innerText = "NFTs Owned: " + balance;
+      const profileData = await loadProfile(userAddress);
 
-      const res = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(userAddress)}`);
-      const data = await res.json();
-      const userRow = Array.isArray(data)
-        ? data.find(r => (r.address || "").toLowerCase() === userAddress.toLowerCase())
-        : null;
+      const nftCountEl = document.getElementById("nftCount");
+      if (nftCountEl)
+        nftCountEl.innerText = "NFTs Owned: " + profileData.quackerBalance;
 
       const quacksCount = document.getElementById("quacksCount");
       if (quacksCount)
-        quacksCount.innerText =
-          "Daily Quacks: " + (userRow ? userRow.quacks_collected : 0);
+        quacksCount.innerText = "Daily Quacks: " + profileData.dailyQuacks;
+
+      const pointsValue = document.getElementById("pointsValue");
+      if (pointsValue)
+        pointsValue.innerText = profileData.referralPoints;
+
     } catch (err) {
       console.error(err);
       showToast("Error loading profile", "warn");
@@ -2005,7 +2002,7 @@ if (hasPaidItems) {
   const txParams = { 
     from: userAddress, 
     to: SHOP_WALLET, 
-    value: ethers.utils.parseEther(totalEth.toString()) // replaced valueHex
+    value: web3.utils.toWei(totalEth.toString(), "ether") // ✅ replaced ethers
   };
 
   try {
@@ -2026,7 +2023,7 @@ if (hasPaidItems) {
   const txParams = { 
     from: userAddress, 
     to: SHOP_WALLET, 
-    value: ethers.utils.parseEther(shippingEth.toString()) // replaced valueHex
+    value: web3.utils.toWei(shippingEth.toString(), "ether") // ✅ replaced ethers
   };
 
   try {
@@ -2044,7 +2041,6 @@ if (hasPaidItems) {
   // Free shipping
   showToast("🎁 Free shipping applied!", "info");
 }
-
     // --- Loop through cart items ---
     for (const ci of cart) {
       let payload = {
