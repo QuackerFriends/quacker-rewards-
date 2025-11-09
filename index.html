@@ -791,55 +791,58 @@ const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 
-  // --- ENSURE BASE NETWORK --- //
+/* ===== FORCE NETWORK TO BASE ===== */
 async function ensureBaseNetwork() {
   if (!window.ethereum) {
-    showToast("Please install MetaMask!", "error");
-    return false;
+    alert("MetaMask not detected. Please install it to continue.");
+    throw new Error("No wallet detected");
   }
 
-  const baseChainId = BASE_CHAIN_ID_HEX;
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const network = await provider.getNetwork();
 
-  try {
-    const currentChainId = await ethereum.request({ method: "eth_chainId" });
-    if (currentChainId !== baseChainId) {
-      showToast("Switching to Base network...", "info", 4000);
-      await ethereum.request({
+  if (network.chainId !== 8453) { // 8453 = Base Mainnet
+    try {
+      await window.ethereum.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: baseChainId }],
+        params: [{ chainId: BASE_CHAIN_ID_HEX }],
       });
-      showToast("✅ Switched to Base!", "success");
-    }
-    return true;
-  } catch (switchError) {
-    if (switchError.code === 4902) {
-      try {
-        await ethereum.request({
-          method: "wallet_addEthereumChain",
-          params: [{
-            chainId: baseChainId,
-            chainName: "Base",
-            nativeCurrency: { name: "Base ETH", symbol: "ETH", decimals: 18 },
-            rpcUrls: ["https://mainnet.base.org"],
-            blockExplorerUrls: ["https://basescan.org"],
-          }],
-        });
-        showToast("✅ Base network added and switched!", "success");
-        return true;
-      } catch (addError) {
-        showToast("Failed to add Base network.", "error");
-        console.error(addError);
+      console.log("✅ Switched to Base network");
+    } catch (switchError) {
+      // Error 4902 = chain not added
+      if (switchError.code === 4902) {
+        try {
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [{
+              chainId: BASE_CHAIN_ID_HEX,
+              chainName: "Base Mainnet",
+              nativeCurrency: {
+                name: "Ethereum",
+                symbol: "ETH",
+                decimals: 18
+              },
+              rpcUrls: ["https://mainnet.base.org"],
+              blockExplorerUrls: ["https://basescan.org"]
+            }]
+          });
+          console.log("✅ Base network added and switched");
+        } catch (addError) {
+          console.error("Failed to add Base network:", addError);
+          alert("Please switch to Base network manually in MetaMask.");
+          throw addError;
+        }
+      } else {
+        console.error("Failed to switch network:", switchError);
+        alert("Please switch to Base network manually in MetaMask.");
+        throw switchError;
       }
-    } else {
-      showToast("Network switch rejected or failed.", "error");
-      console.error(switchError);
     }
+  } else {
+    console.log("🟢 Already on Base network");
   }
-
-  return false;
 }
 
-  
 // --- Load profile function --- //
 async function loadProfile(wallet) {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
