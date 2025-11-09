@@ -1991,6 +1991,13 @@ console.log("🧭 Country:", country, "| subtotalUSD =", subtotalUSD, "| Shippin
 
 const rate = await getEthRate();
 let txHash = "";
+    
+    // Helper to safely convert ETH to Wei
+function ethToWei(amount) {
+  // Limit to 15 decimals to avoid ethjs-unit error
+  const safeAmount = Number(amount).toFixed(15);
+  return web3.utils.toWei(safeAmount, "ether");
+}
 
 
 // --- ETH Payment Handling ---
