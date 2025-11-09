@@ -1533,11 +1533,13 @@ async function redeemWithPoints(productId, cost) {
     return;
   }
 
+  // --- Add item to cart (with dummy USD for shipping) ---
   cart.push({
     id: productId,
     title: product.Title || product.title,
     price: 0,
-    priceUSD: 0,
+    // Give a small placeholder USD so subtotalUSD > 0 for shipping
+    priceUSD: cost > 0 ? 1 : 0,
     q: 1,
     redeem: true,
     cost,
@@ -1551,7 +1553,7 @@ async function redeemWithPoints(productId, cost) {
   updateCartUI();
   showToast(`🎉 "${product.Title || product.title}" added to cart for ${cost} points`, "success");
   if (typeof openCart === "function") openCart();
-}
+
 
 
 /* ===== MENU & overlay safety ===== */
