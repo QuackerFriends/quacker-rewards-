@@ -1719,49 +1719,138 @@ if (openCartBtn) openCartBtn.addEventListener("click", openCart);
 
 
 /* ===== WALLET & PROFILE ===== */
-async function connectWallet(){
-  if(!window.ethereum){ showToast("MetaMask not found","error"); return; }
-  try{
+async function connectWallet() {
+  if (!window.ethereum) {
+    showToast("MetaMask not found", "error");
+    return;
+  }
+
+  try {
+    // ✅ Step 1: Ensure Base network
+    const baseParams = {
+      chainId: "0x2105", // Base mainnet chain ID
+      chainName: "Base Mainnet",
+      nativeCurrency: { name: "Ethereum", symbol: "ETH", decimals: 18 },
+      rpcUrls: ["https://mainnet.base.org"],
+      blockExplorerUrls: ["https://basescan.org"]
+    };
+
+    try {
+      await ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: baseParams.chainId }]
+      });
+    } catch (switchError) {
+      // Add Base if not added yet
+      if (switchError.code === 4902) {
+        await ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: [baseParams]
+        });
+      } else {
+        console.warn("Chain switch failed:", switchError);
+      }
+    }
+
+    // ✅ Step 2: Connect wallet
     web3 = new Web3(window.ethereum);
     const accounts = await ethereum.request({ method: "eth_requestAccounts" });
     userAddress = accounts[0];
+
+    // ✅ Step 3: Update UI
     const connectBtn = document.getElementById("connectBtn");
-    if(connectBtn) connectBtn.innerText = userAddress.slice(0,6) + "..." + userAddress.slice(-4);
+    if (connectBtn)
+      connectBtn.innerText = userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
+
     const profileBtn = document.getElementById("profileBtn");
-    if(profileBtn) profileBtn.style.display = "inline-block";
+    if (profileBtn) profileBtn.style.display = "inline-block";
+
     const walletAddr = document.getElementById("walletAddr");
-    if(walletAddr) walletAddr.innerText = userAddress;
-    showToast("Wallet connected","success");
+    if (walletAddr) walletAddr.innerText = userAddress;
+
+    showToast("Wallet connected on Base Network", "success");
+
+    // ✅ Step 4: Load profile + update points
+    const profileData = await loadProfile(userAddress);
+    console.log("✅ Profile loaded:", profileData);
+
     await updatePointsDisplay();
-  }catch(err){
+
+    // Update visible profile stats if present
+    const nftCountEl = document.getElementById("nftCount");
+    if (nftCountEl) nftCountEl.innerText = "NFTs Owned: " + profileData.quackerBalance;
+
+    const quacksCount = document.getElementById("quacksCount");
+    if (quacksCount) quacksCount.innerText = "Daily Quacks: " + profileData.dailyQuacks;
+
+  } catch (err) {
     console.error(err);
-    showToast("Connect failed","error");
+    showToast("Connect failed", "error");
   }
 }
+
+// Connect button
 const connectBtn = document.getElementById("connectBtn");
-if(connectBtn) connectBtn.addEventListener("click", connectWallet);
+if (connectBtn) connectBtn.addEventListener("click", connectWallet);
 
-/* Profile toggle & NFT count (keeps your previous logic) */
+/* ===== PROFILE TOGGLE ===== */
 const profileBtn = document.getElementById("profileBtn");
-if(profileBtn) profileBtn.addEventListener("click", async ()=>{
-  const panel = document.getElementById("profileSection");
-  if(panel) panel.style.display = panel.style.display === "block" ? "none" : "block";
-  if(!userAddress) return;
-  try{
-    const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-    const balance = await contract.methods.balanceOf(userAddress).call();
-    const nftCountEl = document.getElementById("nftCount");
-    if(nftCountEl) nftCountEl.innerText = "NFTs Owned: " + balance;
-    const res = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(userAddress)}`);
-    const data = await res.json();
-    const userRow = Array.isArray(data) ? data.find(r => (r.address||"").toLowerCase() === userAddress.toLowerCase()) : null;
-    const quacksCount = document.getElementById("quacksCount");
-    if(quacksCount) quacksCount.innerText = "Daily Quacks: " + (userRow ? userRow.quacks_collected : 0);
-  }catch(err){ console.error(err); showToast("Error loading profile","warn"); }
-});
+if (profileBtn)
+  profileBtn.addEventListener("click", async () => {
+    const panel = document.getElementById("profileSection");
+    if (panel) panel.style.display = panel.style.display === "block" ? "none" : "block";
+    if (!userAddress) return;
 
-async function switchWallet(){ try{ await ethereum.request({ method:"wallet_requestPermissions", params:[{eth_accounts:{}}] }); const accounts = await ethereum.request({ method:"eth_requestAccounts" }); userAddress = accounts[0]; const walletAddr = document.getElementById("walletAddr"); if(walletAddr) walletAddr.innerText = userAddress; showToast("Wallet switched","success"); }catch(err){ console.error(err); } }
-function disconnectWallet(){ userAddress = null; web3 = null; const cbo = document.getElementById("connectBtn"); if(cbo) cbo.innerText = "Connect Wallet"; const profileBtn = document.getElementById("profileBtn"); if(profileBtn) profileBtn.style.display = "none"; const profileSection = document.getElementById("profileSection"); if(profileSection) profileSection.style.display = "none"; showToast("Wallet disconnected","info"); }
+    try {
+      const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+      const balance = await contract.methods.balanceOf(userAddress).call();
+      const nftCountEl = document.getElementById("nftCount");
+      if (nftCountEl) nftCountEl.innerText = "NFTs Owned: " + balance;
+
+      const res = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(userAddress)}`);
+      const data = await res.json();
+      const userRow = Array.isArray(data)
+        ? data.find(r => (r.address || "").toLowerCase() === userAddress.toLowerCase())
+        : null;
+
+      const quacksCount = document.getElementById("quacksCount");
+      if (quacksCount)
+        quacksCount.innerText =
+          "Daily Quacks: " + (userRow ? userRow.quacks_collected : 0);
+    } catch (err) {
+      console.error(err);
+      showToast("Error loading profile", "warn");
+    }
+  });
+
+/* ===== SWITCH / DISCONNECT ===== */
+async function switchWallet() {
+  try {
+    await ethereum.request({
+      method: "wallet_requestPermissions",
+      params: [{ eth_accounts: {} }]
+    });
+    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+    userAddress = accounts[0];
+    const walletAddr = document.getElementById("walletAddr");
+    if (walletAddr) walletAddr.innerText = userAddress;
+    showToast("Wallet switched", "success");
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+function disconnectWallet() {
+  userAddress = null;
+  web3 = null;
+  const cbo = document.getElementById("connectBtn");
+  if (cbo) cbo.innerText = "Connect Wallet";
+  const profileBtn = document.getElementById("profileBtn");
+  if (profileBtn) profileBtn.style.display = "none";
+  const profileSection = document.getElementById("profileSection");
+  if (profileSection) profileSection.style.display = "none";
+  showToast("Wallet disconnected", "info");
+}
 
 /* ===== Redeem Points Display ===== */
 async function updatePointsDisplay() {
