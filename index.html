@@ -1315,32 +1315,55 @@ async function checkout() {
     }
 
     console.log("🧭 Country detected:", country, "| ShippingUSD =", shippingUSD);
+// --- Identify order types ---
+const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
+const isQuacksOnly = cart.length > 0 && cart.every(ci => ci.useQuacks);
+const hasPaidItems = cart.some(ci => !ci.redeem && !ci.useQuacks);
+const needsShipping = cart.length > 0; // assume all are physical for now
 
-    const grandTotalUSD = subtotalUSD + shippingUSD;
-    const rate = await getEthRate();
-    let totalEth = grandTotalUSD / rate;
-    let txHash = "";
+let txHash = "";
+const rate = await getEthRate();
 
-    const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
-    const isQuacksOnly = cart.length > 0 && cart.every(ci => ci.useQuacks);
+// --- Handle payments and shipping ---
+if (hasPaidItems) {
+  // Regular ETH purchase (includes shipping)
+  const grandTotalUSD = subtotalUSD + shippingUSD;
+  const totalEth = grandTotalUSD / rate;
+  const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
+  const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
 
-    // --- Process ETH payment if applicable ---
-    if (!isRedeemOnly && !isQuacksOnly) {
-      const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
-      const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
-      showToast(`Please confirm your purchase (includes $${shippingUSD} shipping)`, "info", 8000);
+  try {
+    showToast(`Please confirm your payment (includes $${shippingUSD} shipping)`, "info", 8000);
+    txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
+    showToast("Transaction sent — logging purchase...", "success", 4000);
+    await new Promise(r => setTimeout(r, 1200));
+  } catch (txErr) {
+    console.warn("tx aborted", txErr);
+    showToast("Transaction cancelled — purchase not logged", "error");
+    return;
+  }
 
-      try {
-        txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
-      } catch (txErr) {
-        console.warn("tx aborted", txErr);
-        showToast("Transaction cancelled or failed — purchase not logged", "error");
-        return;
-      }
+} else if ((isRedeemOnly || isQuacksOnly) && shippingUSD > 0) {
+  // Redeem-only or Quack-only → still pay shipping
+  const shippingEth = shippingUSD / rate;
+  const valueHex = "0x" + BigInt(Math.floor(shippingEth * 1e18)).toString(16);
+  const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
 
-      showToast("Transaction sent — logging purchase...", "success", 4000);
-      await new Promise(r => setTimeout(r, 1200));
-    }
+  try {
+    showToast(`Confirm $${shippingUSD} shipping`, "info", 8000);
+    txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
+    showToast("Shipping paid — logging redemption...", "success", 4000);
+    await new Promise(r => setTimeout(r, 1200));
+  } catch (txErr) {
+    console.warn("Shipping tx aborted", txErr);
+    showToast("Shipping payment cancelled — purchase not logged", "error");
+    return;
+  }
+
+} else {
+  // Free shipping
+  showToast("Free shipping — logging purchase...", "info");
+}
 
     // --- Loop through cart items ---
     for (const ci of cart) {
