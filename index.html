@@ -1299,11 +1299,12 @@ async function checkout() {
       console.warn("Chain switch issue:", switchErr);
     }
 
-    // --- Calculate subtotal in USD ---
-    let subtotalUSD = 0;
-    cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); });
+    // --- Calculate subtotal in USD --- //
+  //  let subtotalUSD = 0;
+    // cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); }); 
 
-// --- Determine shipping ---
+ // --- Shipping rules ---
+ // --- Determine shipping ---
 let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
 country = country.toLowerCase();
 let shippingUSD = 0;
