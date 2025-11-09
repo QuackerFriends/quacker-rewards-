@@ -1517,7 +1517,7 @@ async function redeemWithPoints(productId, cost) {
     return;
   }
 
-  // Check points balance
+  // Check points balance from your API
   const checkRes = await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`);
   const checkData = await checkRes.json();
   const currentPoints = checkData.points || 0;
@@ -1533,12 +1533,11 @@ async function redeemWithPoints(productId, cost) {
     return;
   }
 
-  // --- Add item to cart (adds a dummy USD price so shipping applies) ---
   cart.push({
     id: productId,
     title: product.Title || product.title,
     price: 0,
-    priceUSD: 1, // ensures shipping logic triggers
+    priceUSD: 0,
     q: 1,
     redeem: true,
     cost,
@@ -1553,6 +1552,7 @@ async function redeemWithPoints(productId, cost) {
   showToast(`🎉 "${product.Title || product.title}" added to cart for ${cost} points`, "success");
   if (typeof openCart === "function") openCart();
 }
+
 
 /* ===== MENU & overlay safety ===== */
 const menuBtn = document.getElementById('menuBtn');
