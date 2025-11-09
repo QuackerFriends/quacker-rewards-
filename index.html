@@ -791,6 +791,54 @@ const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 
+  // --- ENSURE BASE NETWORK --- //
+async function ensureBaseNetwork() {
+  if (!window.ethereum) {
+    showToast("Please install MetaMask!", "error");
+    return false;
+  }
+
+  const baseChainId = BASE_CHAIN_ID_HEX;
+
+  try {
+    const currentChainId = await ethereum.request({ method: "eth_chainId" });
+    if (currentChainId !== baseChainId) {
+      showToast("Switching to Base network...", "info", 4000);
+      await ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: baseChainId }],
+      });
+      showToast("✅ Switched to Base!", "success");
+    }
+    return true;
+  } catch (switchError) {
+    if (switchError.code === 4902) {
+      try {
+        await ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: [{
+            chainId: baseChainId,
+            chainName: "Base",
+            nativeCurrency: { name: "Base ETH", symbol: "ETH", decimals: 18 },
+            rpcUrls: ["https://mainnet.base.org"],
+            blockExplorerUrls: ["https://basescan.org"],
+          }],
+        });
+        showToast("✅ Base network added and switched!", "success");
+        return true;
+      } catch (addError) {
+        showToast("Failed to add Base network.", "error");
+        console.error(addError);
+      }
+    } else {
+      showToast("Network switch rejected or failed.", "error");
+      console.error(switchError);
+    }
+  }
+
+  return false;
+}
+
   
 // --- Load profile function --- //
 async function loadProfile(wallet) {
@@ -1833,13 +1881,8 @@ const hasPaidItems = cart.some(ci => !ci.redeem && !ci.useQuacks);
 const needsShipping = cart.length > 0; // assume all items physical
 
 // --- Apply shipping rules ---
-if (subtotalUSD >= 70) {
-  shippingUSD = 0;
-} else if (country === "canada") {
-  shippingUSD = 10;
-} else {
-  shippingUSD = 5;
-}
+// --- Apply shipping rules (TEMP: disable shipping for testing) ---
+shippingUSD = 0;
 
 // 👉 Force shipping even if subtotal is 0 (for quacks/redeem)
 if ((isRedeemOnly || isQuacksOnly) && needsShipping && shippingUSD === 0) {
