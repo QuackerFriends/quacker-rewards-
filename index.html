@@ -1999,17 +1999,15 @@ function ethToWei(amount) {
   return web3.utils.toWei(safeAmount, "ether");
 }
 
-
 // --- ETH Payment Handling ---
 if (hasPaidItems) {
-  // Normal checkout
   const grandTotalUSD = subtotalUSD + shippingUSD;
   const totalEth = grandTotalUSD / rate;
 
   const txParams = { 
     from: userAddress, 
     to: SHOP_WALLET, 
-    value: web3.utils.toWei(totalEth.toString(), "ether") // ✅ replaced ethers
+    value: ethToWei(totalEth) // ✅ safely converted
   };
 
   try {
@@ -2024,13 +2022,12 @@ if (hasPaidItems) {
   }
 
 } else if ((isRedeemOnly || isQuacksOnly) && shippingUSD > 0) {
-  // Pay only shipping for redeem/quacks
   const shippingEth = shippingUSD / rate;
 
   const txParams = { 
     from: userAddress, 
     to: SHOP_WALLET, 
-    value: web3.utils.toWei(shippingEth.toString(), "ether") // ✅ replaced ethers
+    value: ethToWei(shippingEth) // ✅ safely converted
   };
 
   try {
@@ -2045,9 +2042,9 @@ if (hasPaidItems) {
   }
 
 } else {
-  // Free shipping
   showToast("🎁 Free shipping applied!", "info");
 }
+
     // --- Loop through cart items ---
     for (const ci of cart) {
       let payload = {
