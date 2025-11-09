@@ -781,8 +781,8 @@ body:not(.loading) footer {
 </div>
 
 
-
 <script>
+
 /* ===== CONFIG ===== */
 const PURCHASE_API = "https://script.google.com/macros/s/AKfycbwZMlGQ2REZxTP1lIoWBYzc8n7l-h7C79F9u9MjDY4XIR6jKNO7ky1VXtCm3oP5RM_9qA/exec";
 const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbzu2RjvJf8-SyRIekMh53JODYZxoPXQpjJ2aGTqIHd93HgEZpnXcVC_zxoJbJt51zqSuQ/exec";
@@ -791,62 +791,14 @@ const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 
-  
-// --- Load profile function --- //
-async function loadProfile(wallet) {
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-
-  let quackerBalance = 0;
-  try {
-    quackerBalance = await contract.balanceOf(wallet);
-  } catch (err) {
-    console.warn("Failed to fetch Quacker NFT balance:", err);
-  }
-
-  let claimData = {};
-  try {
-    const claimResp = await fetch(`${CLAIM_SHEET_API}?wallet=${wallet}&check=true`);
-    claimData = await claimResp.json();
-  } catch (err) {
-    console.warn("Failed to fetch claim data:", err);
-  }
-
-  let shopData = {};
-  try {
-    const shopResp = await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`);
-    const pointsResp = await shopResp.json();
-    shopData.points = pointsResp.points || 0;
-  } catch (err) {
-    console.warn("Failed to fetch shop/referral data:", err);
-  }
-
-  return {
-    wallet,
-    quackerBalance: Number(quackerBalance),
-    dailyQuacks: Number(claimData.quacks_collected || 0),
-    lastClaim: claimData.last_claim ? new Date(claimData.last_claim) : null,
-    priority: claimData.priority || "none",
-    triggeredBy: claimData.triggered_by || "none",
-    referralPoints: shopData.points || 0
-  };
-}
 /* ===== STATE ===== */
 let userAddress = null;
 let web3 = null;
 let cart = []; let selectedCountry = "USA"; // ✅ Default selection for shipping
 let PRODUCTS = {};                 // will be filled by loadProducts()
-let currentCategory = null;     // default (sheet categories may vary in case)
+let currentCategory = "tees";      // default (sheet categories may vary in case)
 let cachedEthRate = null;
 let lastRateFetch = 0;
-
-  /* ===== BLUR MANAGER ===== */
-let blurCount = 0;
-function addBlur() { blurCount++; document.body.classList.add("blur-bg");}
-function removeBlur() {
-  blurCount = Math.max(0, blurCount - 1);
-  if (blurCount === 0) document.body.classList.remove("blur-bg"); }
-
 
 /* ===== UI HELPERS ===== */
 function showToast(message, type="info", duration=3000){
@@ -1008,15 +960,14 @@ async function loadProducts() {
           .join("");
       }
 
-      // --- Don't auto-load anything at start ---
-      if (!currentCategory) {
-        const itemsSection = document.getElementById("items");
-        itemsSection.innerHTML = null;
-      } else {
-        await showCategory(currentCategory);
-        attachZoomFollow();
+      // --- Set default category ---
+      if (!PRODUCTS[currentCategory]) {
+        const first = Object.keys(PRODUCTS)[0];
+        if (first) currentCategory = first;
       }
 
+      await showCategory(currentCategory);
+      attachZoomFollow();
     } else {
       console.error("⚠️ Failed to load items or items missing:", data);
     }
@@ -1025,6 +976,7 @@ async function loadProducts() {
   }
 }
 
+  
 /* ===== RENDER PRODUCT CARD (with Quacks + Points + USD) ===== */
 function renderProductCard(p, ethRate) {
   // Normalize IDs and prices
@@ -1097,7 +1049,7 @@ function renderProductCard(p, ethRate) {
 
   const redeemHTML = pointsCost > 0
     ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${productId}', ${pointsCost})">
-         Redeem for ${pointsCost} ⭐ Referral Points
+         Redeem for ${pointsCost} ⭐ Points
        </button>` : "";
 
   // Card HTML
@@ -1124,21 +1076,6 @@ function renderProductCard(p, ethRate) {
 
 /* ===== RENDER CATEGORY (with image carousel) ===== */
 async function showCategory(cat) {
-  
-  // 🧠 If clicking the same category again → close it
-  if (currentCategory === cat) {
-    const itemsSection = document.getElementById("items");
-    itemsSection.innerHTML = null;
-    currentCategory = null;
-
-    // 🔹 Remove blur
-    removeBlur();
-    return;
-  }
-
-  // 🔹 Apply blur when new category opens
-addBlur();
-
   const key = (cat in PRODUCTS)
     ? cat
     : Object.keys(PRODUCTS).find(k => k.toLowerCase() === String(cat).toLowerCase());
@@ -1148,6 +1085,7 @@ addBlur();
   const container = document.getElementById("items");
   const items = PRODUCTS[currentCategory] || [];
   container.innerHTML = "";
+
   if (!items.length) {
     container.innerHTML = `
       <div style="background:var(--card);padding:20px;border-radius:12px;
@@ -1180,19 +1118,9 @@ addBlur();
       imageHTML = `
         <div class="image-slider" id="slider_${p.id}">
           ${images
-          .map((url, i) =>
-  `<img 
-     src="${url}" 
-     alt="${p.title}" 
-     class="slide ${i === 0 ? "active" : ""}" 
-     style="cursor:pointer"
-     onclick="openItemModal(\`
-       <img src='${url}' alt='${p.title}' style='max-width:100%;border-radius:12px;display:block;margin:0 auto;' />
-       <h3 style='margin-top:12px;text-align:center;'>${p.title}</h3>
-     \`)"
-   />`
-)
-
+            .map((url, i) =>
+              `<img src="${url}" alt="${p.title}" class="slide ${i === 0 ? "active" : ""}" />`
+            )
             .join("")}
           <button class="prev" onclick="prevSlide('${p.id}')">‹</button>
           <button class="next" onclick="nextSlide('${p.id}')">›</button>
@@ -1200,7 +1128,7 @@ addBlur();
       `;
     } else {
       const imgSrc = images[0] || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
-      imageHTML = `   <img      id="img_${p.id}"      src="${imgSrc}"      alt="${p.title}"      style="cursor:pointer"     onclick="openItemModal(\`       <img src='${imgSrc}' alt='${p.title}' style='max-width:100%;border-radius:12px;display:block;margin:0 auto;' />       <h3 style='margin-top:12px;text-align:center;'>${p.title}</h3>     \`)"   /> `;
+      imageHTML = `<img id="img_${p.id}" src="${imgSrc}" alt="${p.title}" />`;
     }
 
     // 🧩 Variants
@@ -1266,7 +1194,7 @@ const usd = p.PriceUSD || p.priceUSD || 0;
 // Redeem button
 const redeemHTML = (points > 0 && productId)
   ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${productId}', ${points})">
-       Redeem for ${points} Referral Points
+       Redeem for ${points} ⭐ Points
      </button>`
   : "";
 
@@ -1474,7 +1402,6 @@ function closeItemModal(e) {
   modal.classList.remove("open");
   removeBlur();
 }
-
 
 /* ===== CART helpers ===== */
 function addTapestryToCart(prodId){
@@ -1715,11 +1642,11 @@ function disconnectWallet(){ userAddress = null; web3 = null; const cbo = docume
 /* ===== Redeem Points Display ===== */
 async function updatePointsDisplay() {
   const wallet = (userAddress || "").toLowerCase();
-  const pointsValue = document.getElementById("pointsValue");
-  if (!pointsValue) return;
+  const el = document.getElementById("pointsDisplay");
+  if (!el) return;
 
   if (!wallet) {
-    pointsValue.textContent = ""; // leave empty if wallet not connected
+    el.innerText = "🪙 Points: Connect wallet";
     return;
   }
 
@@ -1728,15 +1655,16 @@ async function updatePointsDisplay() {
     const data = await res.json();
 
     if (data.success) {
-      pointsValue.textContent = data.points;
+      el.innerText = `🪙 Points: ${data.points}`;
     } else {
-      pointsValue.textContent = "Error";
+      el.innerText = "🪙 Points: Error";
     }
   } catch (err) {
-    pointsValue.textContent = "Error";
+    el.innerText = "🪙 Points: Error";
   }
 }
 
+/* ===== CLAIM QUACKS ===== */
 /* ===== CLAIM QUACKS ===== */
 const claimQuacksBtn = document.getElementById("claimQuacksBtn");
 if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
@@ -1814,10 +1742,11 @@ async function checkout() {
       console.warn("Chain switch issue:", switchErr);
     }
 
-    // --- Calculate subtotal in USD ---
+    // --- Calculate subtotal in USD --- //
   //  let subtotalUSD = 0;
-  //  cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); });
+    // cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); }); 
 
+ // --- Shipping rules ---
  // --- Determine shipping ---
 let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
 country = country.toLowerCase();
@@ -1855,18 +1784,13 @@ console.log("🧭 Country:", country, "| subtotalUSD =", subtotalUSD, "| Shippin
 const rate = await getEthRate();
 let txHash = "";
 
-
 // --- ETH Payment Handling ---
 if (hasPaidItems) {
   // Normal checkout
   const grandTotalUSD = subtotalUSD + shippingUSD;
   const totalEth = grandTotalUSD / rate;
-
-  const txParams = { 
-    from: userAddress, 
-    to: SHOP_WALLET, 
-    value: ethers.utils.parseEther(totalEth.toString()) // replaced valueHex
-  };
+  const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
+  const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
 
   try {
     showToast(`Please confirm payment (includes $${shippingUSD} shipping)`, "info", 8000);
@@ -1882,12 +1806,8 @@ if (hasPaidItems) {
 } else if ((isRedeemOnly || isQuacksOnly) && shippingUSD > 0) {
   // Pay only shipping for redeem/quacks
   const shippingEth = shippingUSD / rate;
-
-  const txParams = { 
-    from: userAddress, 
-    to: SHOP_WALLET, 
-    value: ethers.utils.parseEther(shippingEth.toString()) // replaced valueHex
-  };
+  const valueHex = "0x" + BigInt(Math.floor(shippingEth * 1e18)).toString(16);
+  const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
 
   try {
     showToast(`Please confirm $${shippingUSD} shipping payment`, "info", 8000);
@@ -1904,6 +1824,7 @@ if (hasPaidItems) {
   // Free shipping
   showToast("🎁 Free shipping applied!", "info");
 }
+
 
     // --- Loop through cart items ---
     for (const ci of cart) {
@@ -2086,7 +2007,7 @@ async function redeemWithPoints(productId, cost) {
   const currentPoints = checkData.points || 0;
 
   if (currentPoints < cost) {
-    showToast(`❌ You only have ${currentPoints} Referral Points — need ${cost} to redeem this item.`, "error");
+    showToast(`❌ You only have ${currentPoints} points — need ${cost} to redeem this item.`, "error");
     return;
   }
 
@@ -2112,13 +2033,18 @@ async function redeemWithPoints(productId, cost) {
   });
 
   updateCartUI();
-  showToast(`🎉 "${product.Title || product.title}" added to cart for ${cost} Referral Points`, "success");
+  showToast(`🎉 "${product.Title || product.title}" added to cart for ${cost} points`, "success");
   if (typeof openCart === "function") openCart();
 }
 
 
 /* ===== MENU & overlay safety ===== */
-
+const menuBtn = document.getElementById('menuBtn');
+const shopMenu = document.getElementById('shopMenu');
+if(menuBtn && shopMenu) {
+  menuBtn.addEventListener('click', (e)=>{ e.stopPropagation(); shopMenu.style.display = shopMenu.style.display === "flex" ? "none" : "flex"; });
+  document.addEventListener('click', (e)=>{ if(!menuBtn.contains(e.target) && !shopMenu.contains(e.target)){ shopMenu.style.display = "none"; } });
+}
 hideOverlay();
 
 /* ===== INIT ===== */
@@ -2148,7 +2074,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* --- zoom follow helpers --- */
 function attachZoomFollow(){
-  // only adjust carousel pointer events if you need
+  document.querySelectorAll('.item img').forEach(img => {
+    img.style.willChange = 'transform';
+    img.onmousemove = function(e){
+      const rect = img.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      img.style.transformOrigin = `${x}% ${y}%`;
+      img.style.transform = 'scale(1.5)';
+    };
+    img.onmouseleave = function(){
+      img.style.transformOrigin = 'center center';
+      img.style.transform = 'scale(1)';
+    };
+  });
+
+  // ensure non-active carousel images don't block clicks
   document.querySelectorAll('.carousel').forEach(car => {
     car.querySelectorAll('img').forEach(im => {
       if (!im.classList.contains('active')) {
@@ -2292,8 +2233,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-
 </script>
-  
+
+
 </body>
 </html>
