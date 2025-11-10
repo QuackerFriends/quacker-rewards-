@@ -1768,7 +1768,7 @@ async function connectWallet() {
     const walletAddr = document.getElementById("walletAddr");
     if (walletAddr) walletAddr.innerText = userAddress;
 
-    showToast("Wallet connected on Base Network", "success");
+    showToast("Wallet connected", "success");
 
     // ✅ Step 4: Load profile + update points
     const profileData = await loadProfile(userAddress);
@@ -1969,8 +1969,14 @@ const hasPaidItems = cart.some(ci => !ci.redeem && !ci.useQuacks);
 // --- Force shipping for all physical goods ---
 const needsShipping = cart.length > 0; // assume all items physical
 
-// --- Apply shipping rules (TEMP: disable shipping for testing) ---
-shippingUSD = 0;
+// --- Apply shipping rules ---
+if (subtotalUSD >= 70) {
+  shippingUSD = 0;
+} else if (country === "canada") {
+  shippingUSD = 10;
+} else {
+  shippingUSD = 5;
+}
 
 // 👉 Force shipping even if subtotal is 0 (for quacks/redeem)
 if ((isRedeemOnly || isQuacksOnly) && needsShipping && shippingUSD === 0) {
