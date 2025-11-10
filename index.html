@@ -250,7 +250,17 @@ body.blur-bg #blurOverlay {
 
 /* Make sure all key UI layers stay above blur */
 header,
-#shippingNotice {   transition: opacity 0.5s ease-in-out; },
+#shippingNotice {
+  background: #fff;
+  color: var(--brand-orange);
+  text-align: center;
+  padding: 8px 0;
+  font-weight: 600;
+  font-size: 14px;
+  min-height: 20px; /* keep height stable */
+  transition: opacity 0.5s;
+}
+,
 main,
 footer,
 #profileSection,
@@ -2449,7 +2459,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
-  const shippingMessages = [
+
+  
+ const shippingMessages = [
   "⚠️ Note: Shipping is only available in the US and Canada.",
   "🚚 Free delivery on orders above $70!",
   "⏰ Orders may take 5-7 business days to arrive."
@@ -2458,27 +2470,28 @@ document.addEventListener("DOMContentLoaded", () => {
 let currentMsgIndex = 0;
 const noticeEl = document.getElementById("shippingNotice");
 
-function rotateShippingNotice() {
-  if (!noticeEl) return;
+if (noticeEl) {
+  // Fix the height based on the first message
+  noticeEl.style.minHeight = noticeEl.offsetHeight + "px";
+  noticeEl.style.transition = "opacity 0.5s"; // smooth fade
 
-  // Fade out
-  noticeEl.style.opacity = 0;
+  function rotateShippingNotice() {
+    // Fade out
+    noticeEl.style.opacity = 0;
 
-  setTimeout(() => {
-    // Change message
-    currentMsgIndex = (currentMsgIndex + 1) % shippingMessages.length;
-    noticeEl.textContent = shippingMessages[currentMsgIndex];
+    setTimeout(() => {
+      // Change message
+      currentMsgIndex = (currentMsgIndex + 1) % shippingMessages.length;
+      noticeEl.textContent = shippingMessages[currentMsgIndex];
 
-    // Fade in
-    noticeEl.style.opacity = 1;
-  }, 500); // fade duration
+      // Fade in
+      noticeEl.style.opacity = 1;
+    }, 500); // fade duration matches CSS transition
+  }
+
+  // Rotate every 5 seconds
+  setInterval(rotateShippingNotice, 5000);
 }
-
-// Change every 5 seconds
-setInterval(rotateShippingNotice, 5000);
-
-
-
 </script>
   
 </body>
