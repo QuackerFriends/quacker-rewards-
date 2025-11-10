@@ -1528,20 +1528,6 @@ function closeItemModal(e) {
 }
 
 
-/* ===== CART helpers ===== */
-function addTapestryToCart(prodId){
-  const product = (PRODUCTS.tapestry || []).find(p => p.ID === prodId || p.id === prodId);
-  if(!product){
-    console.warn("Tapestry not found:", prodId, (PRODUCTS.tapestry || []).map(p => p.ID || p.id));
-    showToast("Product not found","error");
-    return;
-  }
-
-  const priceEth = product.price ?? (product.priceUSD ? product.priceUSD / (cachedEthRate||3000) : 0);
-  cart.push({ id: product.id, title: product.title, price: priceEth, priceUSD: product.priceUSD||"", color: "N/A", size:"N/A", variant: "", q:1, thumb: product.image || "" });
-  updateCartUI();
-  showToast(`${product.title} added to cart`,"success");
-}
 
 /* ===== ADD TO CART ===== */
 async function addToCart(productId) {
@@ -1641,7 +1627,10 @@ async function updateCartUI() {
   cart.forEach((ci, idx) => {
     const row = document.createElement("div");
     row.className = "cart-item";
-    const thumb = ci.thumb || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
+    
+  const thumb = ci.thumb
+  ? `https://quackerfriends.github.io/quackheads-assets/${encodeURIComponent(ci.thumb).replace(/%2F/g, "/")}`
+  : "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
 
     const details = [];
     if (ci.variant && ci.variant !== "N/A") details.push(`Variant: ${ci.variant}`);
