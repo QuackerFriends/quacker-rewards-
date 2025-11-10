@@ -1628,9 +1628,19 @@ async function updateCartUI() {
     const row = document.createElement("div");
     row.className = "cart-item";
     
-  const thumb = ci.thumb
-  ? `https://quackerfriends.github.io/quackheads-assets/${encodeURIComponent(ci.thumb).replace(/%2F/g, "/")}`
-  : "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
+ let thumb = ci.thumb || "";
+
+// ✅ Fix double-encoded or missing image paths
+if (thumb && thumb.includes("https%3A")) {
+  thumb = decodeURIComponent(thumb);
+}
+if (!thumb.startsWith("http")) {
+  thumb = "https://quackerfriends.github.io/quackheads-assets/images/" + thumb;
+}
+if (!thumb) {
+  thumb = "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
+}
+
 
     const details = [];
     if (ci.variant && ci.variant !== "N/A") details.push(`Variant: ${ci.variant}`);
