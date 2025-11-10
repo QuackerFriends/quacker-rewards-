@@ -1587,7 +1587,9 @@ if (!product) {
     price: priceETH,
     redeem: false,
     cost: 0,
-    thumb: imgURLs[0] || "placeholder.png" ,
+    thumb: (product.images && product.images.length) 
+         ? product.images[0] 
+         : (product.image ? product.image : "placeholder.png"),
     customInput
   };
 
