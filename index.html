@@ -2452,38 +2452,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
   
- const shippingMessages = [
-  "🚚 Free delivery on orders above $70!",
-  "💳 Buy with Base ETH & save gas.",
-  "🦆 Collect Daily Quacks to redeem items.",
-  "⚠️ Note: Shipping is only available in the US and Canada."
-];
 
-let currentMsgIndex = 0;
-const noticeEl = document.getElementById("shippingNotice");
-
-if (noticeEl) {
-  // Fix the height based on the first message
-  noticeEl.style.minHeight = noticeEl.offsetHeight + "px";
-  noticeEl.style.transition = "opacity 0.5s"; // smooth fade
-
-  function rotateShippingNotice() {
-    // Fade out
-    noticeEl.style.opacity = 0;
-
-    setTimeout(() => {
-      // Change message
-      currentMsgIndex = (currentMsgIndex + 1) % shippingMessages.length;
-      noticeEl.textContent = shippingMessages[currentMsgIndex];
-
-      // Fade in
-      noticeEl.style.opacity = 1;
-    }, 500); // fade duration matches CSS transition
-  }
-
-  // Rotate every 5 seconds
-  setInterval(rotateShippingNotice, 5000);
-}
 </script>
   
 </body>
