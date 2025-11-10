@@ -1227,36 +1227,51 @@ addBlur();
 
     const priceDisplay = formatPrice(getProductUsd(p), ethRate);
 
-  // 🖼️ Use normalized images array (from Step 3)
-const images = Array.isArray(p.images) && p.images.length ? p.images : ["https://quackerfriends.github.io/quackheads-assets/images/placeholder.png"];
+   // 🖼️ Normalize images array
+  let images = [];
+  if (Array.isArray(p.images) && p.images.length) {
+    images = p.images;
+  } else if (typeof p.image === "string" && p.image.includes(",")) {
+    images = p.image.split(",").map(u => u.trim()).filter(Boolean);
+  } else if (p.image) {
+    images = [p.image];
+  }
 
-   // 🖼️ Build carousel HTML
-let imageHTML = "";
-if (images.length > 1) {
-  imageHTML = `
-    <div class="image-slider" id="slider_${p.id}">
-      ${images.map((url, i) =>
-        `<img 
-           src="${url}" 
-           alt="${p.title}" 
-           class="slide ${i === 0 ? "active" : ""}" 
-           style="cursor:pointer"
-           onclick='openItemModalGallery(${JSON.stringify(images)}, "${p.title}")'
-         />`
-      ).join("")}
-      <button class="prev" onclick="prevSlide('${p.id}')">‹</button>
-      <button class="next" onclick="nextSlide('${p.id}')">›</button>
-    </div>
-  `;
-} else {
-  const imgSrc = images[0] || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
-  imageHTML = `<img 
-      src="${imgSrc}" 
-      alt="${p.title}" 
-      style="cursor:pointer"
-      onclick='openItemModalGallery(${JSON.stringify(images)}, "${p.title}")'
-    />`;
-}
+    // --- Build slider / single image HTML ---
+  let imageHTML = "";
+  if (images.length > 1) {
+    imageHTML = `
+      <div class="image-slider" id="slider_${p.id}">
+        ${images.map((url, i) => `
+          <img 
+            src="${url}" 
+            alt="${p.title}" 
+            class="slide ${i === 0 ? "active" : ""}" 
+            style="cursor:pointer"
+            onclick="openItemModal(\`
+              <img src='${url}' alt='${p.title}' style='max-width:100%;border-radius:12px;display:block;margin:0 auto;' />
+              <h3 style='margin-top:12px;text-align:center;'>${p.title}</h3>
+            \`)"
+          />
+        `).join("")}
+        <button class="prev" onclick="prevSlide('${p.id}')">‹</button>
+        <button class="next" onclick="nextSlide('${p.id}')">›</button>
+      </div>
+    `;
+  } else {
+    const imgSrc = images[0] || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
+    imageHTML = `
+      <img 
+        src="${imgSrc}" 
+        alt="${p.title}" 
+        style="cursor:pointer"
+        onclick="openItemModal(\`
+          <img src='${imgSrc}' alt='${p.title}' style='max-width:100%;border-radius:12px;display:block;margin:0 auto;' />
+          <h3 style='margin-top:12px;text-align:center;'>${p.title}</h3>
+        \`)"
+      />
+    `;
+  }
 
 
     // 🧩 Variants
@@ -1530,8 +1545,6 @@ function closeItemModal(e) {
   modal.classList.remove("open");
   removeBlur();
 }
-
-
 
 /* ===== ADD TO CART ===== */
 async function addToCart(productId) {
