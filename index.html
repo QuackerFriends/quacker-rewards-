@@ -250,7 +250,7 @@ body.blur-bg #blurOverlay {
 
 /* Make sure all key UI layers stay above blur */
 header,
-#shippingNotice,
+#shippingNotice {   transition: opacity 0.5s ease-in-out; },
 main,
 footer,
 #profileSection,
@@ -260,19 +260,6 @@ footer,
 #toastContainer {
   position: relative;
   z-index: 200;
-}
-
-/* Specific styles for header & shippingNotice */
-header,
-#shippingNotice {
-  background: #fff;
-  color: var(--brand-orange);
-  text-align: center;
-  padding: 8px 0;
-  font-weight: 600;
-  font-size: 14px;
-  min-height: 20px; /* keep height stable */
-  transition: opacity 0.5s;
 }
 
 
