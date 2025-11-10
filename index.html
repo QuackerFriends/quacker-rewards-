@@ -250,7 +250,7 @@ body.blur-bg #blurOverlay {
 
 /* Make sure all key UI layers stay above blur */
 header,
-#shippingNotice,
+#shippingNotice {   transition: opacity 0.5s ease-in-out; },
 main,
 footer,
 #profileSection,
@@ -2449,6 +2449,34 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+  const shippingMessages = [
+  "⚠️ Note: Shipping is only available in the US and Canada.",
+  "🚚 Free delivery on orders above $70!",
+  "⏰ Orders may take 5-7 business days to arrive."
+];
+
+let currentMsgIndex = 0;
+const noticeEl = document.getElementById("shippingNotice");
+
+function rotateShippingNotice() {
+  if (!noticeEl) return;
+
+  // Fade out
+  noticeEl.style.opacity = 0;
+
+  setTimeout(() => {
+    // Change message
+    currentMsgIndex = (currentMsgIndex + 1) % shippingMessages.length;
+    noticeEl.textContent = shippingMessages[currentMsgIndex];
+
+    // Fade in
+    noticeEl.style.opacity = 1;
+  }, 500); // fade duration
+}
+
+// Change every 5 seconds
+setInterval(rotateShippingNotice, 5000);
+
 
 
 </script>
