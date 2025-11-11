@@ -2503,39 +2503,41 @@ async function loadOrderHistory() {
       return;
     }
 
-    // Helper to parse date strings safely
     function parseSheetDate(val) {
       if (!val) return "-";
+
+      // Try to parse as Date object
       let d = new Date(val);
       if (!isNaN(d.getTime())) return d.toLocaleDateString();
-      return val.toString(); // fallback: show raw string
+
+      // If it fails, fallback to raw string
+      return val.toString();
     }
 
     let html = `
-      <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:13px;background:rgba(255,255,255,0.05);backdrop-filter:blur(8px);border-radius:8px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-        <thead style="background:rgba(255,255,255,0.1);text-align:left;">
-          <tr>
-            <th style="padding:10px 8px;">Item</th>
-            <th style="padding:10px 8px;">Type</th>
-            <th style="padding:10px 8px;">Spent</th>
-            <th style="padding:10px 8px;">Date</th>
-            <th style="padding:10px 8px;">Progress</th>
-          </tr>
-        </thead>
-        <tbody>
+      <div style="overflow-x:auto;padding:10px;background:rgba(255,255,255,0.95);border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.15);">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead style="background:#f0f0f0;color:#333;font-weight:600;">
+            <tr>
+              <th style="padding:10px 8px;text-align:left;">Item</th>
+              <th style="padding:10px 8px;text-align:left;">Type</th>
+              <th style="padding:10px 8px;text-align:right;">Spent</th>
+              <th style="padding:10px 8px;text-align:left;">Date</th>
+              <th style="padding:10px 8px;text-align:center;">Progress</th>
+            </tr>
+          </thead>
+          <tbody>
     `;
 
     orders.reverse().forEach(order => {
       const item = order["Item Name"] || "Unknown";
       const date = parseSheetDate(order["Timestamp"]);
-      const progress = order["Progress"] || "Not Shipped";
 
-      // Ensure numeric values
+      // Convert all numeric fields safely
       const points = Number(order["PointsCost"] || 0);
       const quacks = Number(order["QuacksCost"] || 0);
       const price = Number(order["Price"] || 0);
 
-      // Determine type and spent
       let type = "Purchase";
       let spent = "—";
 
@@ -2547,11 +2549,13 @@ async function loadOrderHistory() {
         spent = `${quacks} 🦆`;
       } else if (price > 0) {
         type = "ETH Purchase";
-        spent = `$${price.toFixed(2)}$`;
+        spent = `$${price.toFixed(2)}`;
       }
 
+      const progress = order["Progress"] || "Not Shipped";
+
       html += `
-        <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+        <tr style="border-bottom:1px solid #e0e0e0;">
           <td style="padding:10px 8px;">${item}</td>
           <td style="padding:10px 8px;">${type}</td>
           <td style="padding:10px 8px;text-align:right;">${spent}</td>
@@ -2561,7 +2565,12 @@ async function loadOrderHistory() {
       `;
     });
 
-    html += "</tbody></table>";
+    html += `
+          </tbody>
+        </table>
+      </div>
+    `;
+
     orderList.innerHTML = html;
 
   } catch (err) {
@@ -2569,6 +2578,7 @@ async function loadOrderHistory() {
     orderList.innerHTML = `<p style="color:red;">Error loading orders.</p>`;
   }
 }
+
 
 </script>
   
