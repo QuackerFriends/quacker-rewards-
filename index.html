@@ -2476,7 +2476,7 @@ if (noticeEl) {
   setInterval(rotateShippingNotice, 5000);
 }
 
-  // 📦 ORDER HISTORY LOGIC
+// 📦 ORDER HISTORY LOGIC (Fixed for Dates and Spent)
 async function loadOrderHistory() {
   const wallet = (userAddress || "").toLowerCase();
   const orderList = document.getElementById("orderList");
@@ -2504,6 +2504,25 @@ async function loadOrderHistory() {
       return;
     }
 
+    // Helper to safely parse sheet dates
+    function parseSheetDate(dateStr) {
+      if (!dateStr) return "-";
+
+      // Try standard Date parsing first
+      let d = new Date(dateStr);
+      if (!isNaN(d.getTime())) return d.toLocaleDateString();
+
+      // If invalid, try splitting manually (MM/DD/YYYY)
+      const parts = dateStr.split("/");
+      if (parts.length === 3) {
+        const [month, day, year] = parts.map(Number);
+        d = new Date(year, month - 1, day);
+        if (!isNaN(d.getTime())) return d.toLocaleDateString();
+      }
+
+      return "-";
+    }
+
     let html = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
       <tr style="background:#eee;">
         <th style="border:1px solid #ccc;padding:4px;">Item</th>
@@ -2515,11 +2534,11 @@ async function loadOrderHistory() {
 
     orders.reverse().forEach(order => {
       const item = order["Item Name"] || "Unknown";
-      const date = new Date(order["Timestamp"] || "").toLocaleDateString() || "-";
+      const date = parseSheetDate(order["Timestamp"]);
       const progress = order["Progress"] || "Not Shipped";
 
       // Determine type and spent
-      let type = order["Price"] > 0 ? "ETH Purchase" : "Purchase";
+      let type = "Purchase";
       let spent = "—";
 
       if (order["PointsCost"] && Number(order["PointsCost"]) > 0) {
@@ -2529,6 +2548,7 @@ async function loadOrderHistory() {
         type = "Paid (Quacks)";
         spent = `${order["QuacksCost"]} 🦆`;
       } else if (order["Price"] && Number(order["Price"]) > 0) {
+        type = "ETH Purchase";
         spent = `$${Number(order["Price"]).toFixed(2)}`;
       }
 
@@ -2550,6 +2570,7 @@ async function loadOrderHistory() {
     orderList.innerHTML = `<p style="color:red;">Error loading orders.</p>`;
   }
 }
+
 
 
 </script>
