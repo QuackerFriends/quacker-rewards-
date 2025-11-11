@@ -2503,49 +2503,41 @@ async function loadOrderHistory() {
       return;
     }
 
-    // Helper to safely parse sheet dates
+    // Helper to parse date strings safely
     function parseSheetDate(val) {
       if (!val) return "-";
-
-      // If it's already a Date object
-      if (val instanceof Date && !isNaN(val)) return val.toLocaleDateString();
-
-      // Try parsing as string
       let d = new Date(val);
       if (!isNaN(d.getTime())) return d.toLocaleDateString();
-
-      // Try manual parsing MM/DD/YYYY
-      const parts = val.toString().split("/");
-      if (parts.length === 3) {
-        const [month, day, year] = parts.map(Number);
-        d = new Date(year, month - 1, day);
-        if (!isNaN(d.getTime())) return d.toLocaleDateString();
-      }
-
-      return "-";
+      return val.toString(); // fallback: show raw string
     }
 
-    let html = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
-      <tr style="background:#eee;">
-        <th style="border:1px solid #ccc;padding:4px;">Item</th>
-        <th style="border:1px solid #ccc;padding:4px;">Type</th>
-        <th style="border:1px solid #ccc;padding:4px;">Spent</th>
-        <th style="border:1px solid #ccc;padding:4px;">Date</th>
-        <th style="border:1px solid #ccc;padding:4px;">Progress</th>
-      </tr>`;
+    let html = `
+      <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:13px;background:rgba(255,255,255,0.05);backdrop-filter:blur(8px);border-radius:8px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+        <thead style="background:rgba(255,255,255,0.1);text-align:left;">
+          <tr>
+            <th style="padding:10px 8px;">Item</th>
+            <th style="padding:10px 8px;">Type</th>
+            <th style="padding:10px 8px;">Spent</th>
+            <th style="padding:10px 8px;">Date</th>
+            <th style="padding:10px 8px;">Progress</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
 
     orders.reverse().forEach(order => {
       const item = order["Item Name"] || "Unknown";
       const date = parseSheetDate(order["Timestamp"]);
       const progress = order["Progress"] || "Not Shipped";
 
-      // Determine type and spent
-      let type = "Purchase";
-      let spent = "—";
-
+      // Ensure numeric values
       const points = Number(order["PointsCost"] || 0);
       const quacks = Number(order["QuacksCost"] || 0);
       const price = Number(order["Price"] || 0);
+
+      // Determine type and spent
+      let type = "Purchase";
+      let spent = "—";
 
       if (points > 0) {
         type = "Redeem (Points)";
@@ -2555,20 +2547,21 @@ async function loadOrderHistory() {
         spent = `${quacks} 🦆`;
       } else if (price > 0) {
         type = "ETH Purchase";
-        spent = `$${price.toFixed(2)}`;
+        spent = `$${price.toFixed(2)}$`;
       }
 
       html += `
-        <tr>
-          <td style="border:1px solid #ccc;padding:4px;">${item}</td>
-          <td style="border:1px solid #ccc;padding:4px;">${type}</td>
-          <td style="border:1px solid #ccc;padding:4px;">${spent}</td>
-          <td style="border:1px solid #ccc;padding:4px;">${date}</td>
-          <td style="border:1px solid #ccc;padding:4px;">${progress}</td>
-        </tr>`;
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+          <td style="padding:10px 8px;">${item}</td>
+          <td style="padding:10px 8px;">${type}</td>
+          <td style="padding:10px 8px;text-align:right;">${spent}</td>
+          <td style="padding:10px 8px;">${date}</td>
+          <td style="padding:10px 8px;text-align:center;">${progress}</td>
+        </tr>
+      `;
     });
 
-    html += "</table>";
+    html += "</tbody></table>";
     orderList.innerHTML = html;
 
   } catch (err) {
@@ -2576,8 +2569,6 @@ async function loadOrderHistory() {
     orderList.innerHTML = `<p style="color:red;">Error loading orders.</p>`;
   }
 }
-
-
 
 </script>
   
