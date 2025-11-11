@@ -1750,16 +1750,18 @@ async function connectWallet() {
     const accounts = await ethereum.request({ method: "eth_requestAccounts" });
     userAddress = accounts[0];
 
-    // ✅ Step 3: Update UI
-    const connectBtn = document.getElementById("connectBtn");
-    if (connectBtn)
-      connectBtn.innerText = userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
+   // ✅ Step 3: Update UI
+const connectBtn = document.getElementById("connectBtn");
+if (connectBtn)
+  connectBtn.style.display = "none"; // hide Connect Wallet button
 
-    const profileBtn = document.getElementById("profileBtn");
-    if (profileBtn) profileBtn.style.display = "inline-block";
+const profileBtn = document.getElementById("profileBtn");
+if (profileBtn) profileBtn.style.display = "inline-block";
 
-    const walletAddr = document.getElementById("walletAddr");
-    if (walletAddr) walletAddr.innerText = userAddress;
+// Remove the walletAddr display entirely
+// const walletAddr = document.getElementById("walletAddr");
+// if (walletAddr) walletAddr.innerText = userAddress;
+
 
     showToast("Wallet connected", "success");
 
