@@ -2476,7 +2476,6 @@ if (noticeEl) {
   setInterval(rotateShippingNotice, 5000);
 }
 
-// 📦 ORDER HISTORY LOGIC (Fixed for Dates and Spent)
 async function loadOrderHistory() {
   const wallet = (userAddress || "").toLowerCase();
   const orderList = document.getElementById("orderList");
@@ -2505,15 +2504,18 @@ async function loadOrderHistory() {
     }
 
     // Helper to safely parse sheet dates
-    function parseSheetDate(dateStr) {
-      if (!dateStr) return "-";
+    function parseSheetDate(val) {
+      if (!val) return "-";
 
-      // Try standard Date parsing first
-      let d = new Date(dateStr);
+      // If it's already a Date object
+      if (val instanceof Date && !isNaN(val)) return val.toLocaleDateString();
+
+      // Try parsing as string
+      let d = new Date(val);
       if (!isNaN(d.getTime())) return d.toLocaleDateString();
 
-      // If invalid, try splitting manually (MM/DD/YYYY)
-      const parts = dateStr.split("/");
+      // Try manual parsing MM/DD/YYYY
+      const parts = val.toString().split("/");
       if (parts.length === 3) {
         const [month, day, year] = parts.map(Number);
         d = new Date(year, month - 1, day);
@@ -2541,15 +2543,19 @@ async function loadOrderHistory() {
       let type = "Purchase";
       let spent = "—";
 
-      if (order["PointsCost"] && Number(order["PointsCost"]) > 0) {
+      const points = Number(order["PointsCost"] || 0);
+      const quacks = Number(order["QuacksCost"] || 0);
+      const price = Number(order["Price"] || 0);
+
+      if (points > 0) {
         type = "Redeem (Points)";
-        spent = `${order["PointsCost"]} pts`;
-      } else if (order["QuacksCost"] && Number(order["QuacksCost"]) > 0) {
+        spent = `${points} pts`;
+      } else if (quacks > 0) {
         type = "Paid (Quacks)";
-        spent = `${order["QuacksCost"]} 🦆`;
-      } else if (order["Price"] && Number(order["Price"]) > 0) {
+        spent = `${quacks} 🦆`;
+      } else if (price > 0) {
         type = "ETH Purchase";
-        spent = `$${Number(order["Price"]).toFixed(2)}`;
+        spent = `$${price.toFixed(2)}`;
       }
 
       html += `
