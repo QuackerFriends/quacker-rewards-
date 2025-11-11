@@ -10,6 +10,60 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 
   <style>
+
+      /* 🧾 Order History Styling */
+  .orders-container {
+    margin-top: 15px;
+  }
+
+  .orders-container table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    background: #fff;
+  }
+
+  .orders-container th {
+    background: #f9f9f9;
+    text-align: left;
+    padding: 10px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .orders-container td {
+    padding: 10px;
+    border-top: 1px solid #eee;
+    color: #444;
+  }
+
+  .orders-container tr:hover {
+    background: #fefefe;
+  }
+
+  .orders-container td:last-child {
+    text-align: center;
+    font-weight: 500;
+  }
+
+  .status-tag {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: white;
+  }
+
+  .status-shipped {
+    background-color: #28a745;
+  }
+
+  .status-notshipped {
+    background-color: #ff914d;
+  }
     :root{
       --brand-orange:#ff914d;
       --brand-orange-dark:#ff7b2c;
@@ -2477,65 +2531,81 @@ if (noticeEl) {
 }
 
   // 📦 ORDER HISTORY LOGIC
+
 async function loadOrderHistory() {
   const wallet = (userAddress || "").toLowerCase();
   const orderList = document.getElementById("orderList");
   if (!wallet) {
-    showToast("Please connect your wallet first!", "error");
+    showToast("Please connect your wallet first.", "error");
     return;
   }
 
   orderList.innerHTML = "<p>Loading your orders...</p>";
 
   try {
-    const res = await fetch(`${PURCHASE_API}?action=getOrders&wallet=${wallet}`);
+    const res = await fetch(`${PURCHASE_API}?wallet=${wallet}&getOrders=true`);
     const data = await res.json();
 
     if (!data.success) {
-      orderList.innerHTML = `<p style="color:red;">Error fetching orders: ${data.error || "Unknown error"}</p>`;
+      orderList.innerHTML = `<p style="color:red;">Error: ${data.error || "Unable to fetch orders"}</p>`;
       return;
     }
 
-    const orders = data.orders || [];
-    if (orders.length === 0) {
-      orderList.innerHTML = "<p>No orders found.</p>";
+    if (!data.orders || data.orders.length === 0) {
+      orderList.innerHTML = "<p>No orders found for this wallet.</p>";
       return;
     }
 
-    let html = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
-      <tr style="background:#eee;">
-        <th style="border:1px solid #ccc;padding:4px;">Item</th>
-        <th style="border:1px solid #ccc;padding:4px;">Type</th>
-        <th style="border:1px solid #ccc;padding:4px;">Points/Quacks</th>
-        <th style="border:1px solid #ccc;padding:4px;">Date</th>
-        <th style="border:1px solid #ccc;padding:4px;">Progress</th>
-      </tr>`;
+    // Build the styled table
+    let html = `
+      <div class="orders-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Item</th>
+              <th>Paid With</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
 
-    orders.reverse().forEach(order => {
-      const item = order["ItemName"] || order["Item"] || order["itemName"] || "Unknown";
-      const type = order["Status"] || order["PaymentType"] || order["Payment"] || "Purchase";
-      const points = order["PointsCost"] || order["QuacksCost"] || "—";
-      const date = new Date(order["Timestamp"] || order["Date"] || "").toLocaleDateString();
-      const progress = order["Progress"] || "Not Shipped";
+    data.orders.forEach(order => {
+      const date = order.Timestamp ? new Date(order.Timestamp).toLocaleDateString() : "—";
+      let paymentType = "—";
+
+      if (order.Price && Number(order.Price) > 0) paymentType = "ETH";
+      else if (order.PointsCost && Number(order.PointsCost) > 0) paymentType = `${order.PointsCost} Points`;
+      else if (order.QuacksCost && Number(order.QuacksCost) > 0) paymentType = `${order.QuacksCost} Quacks`;
+
+      const status = (order.Progress || "Not Shipped").trim();
+      const statusClass = status.toLowerCase() === "shipped" ? "status-shipped" : "status-notshipped";
 
       html += `
         <tr>
-          <td style="border:1px solid #ccc;padding:4px;">${item}</td>
-          <td style="border:1px solid #ccc;padding:4px;">${type}</td>
-          <td style="border:1px solid #ccc;padding:4px;">${points}</td>
-          <td style="border:1px solid #ccc;padding:4px;">${date}</td>
-          <td style="border:1px solid #ccc;padding:4px;">${progress}</td>
-        </tr>`;
+          <td>${date}</td>
+          <td>${order.ItemName || order.Item || "Unknown"}</td>
+          <td>${paymentType}</td>
+          <td><span class="status-tag ${statusClass}">${status}</span></td>
+        </tr>
+      `;
     });
 
-    html += "</table>";
+    html += `
+          </tbody>
+        </table>
+      </div>
+    `;
+
     orderList.innerHTML = html;
 
   } catch (err) {
-    console.error("Order history error:", err);
+    console.error("Error fetching orders:", err);
     orderList.innerHTML = `<p style="color:red;">Error loading orders.</p>`;
   }
 }
+
 
 </script>
   
