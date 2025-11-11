@@ -153,14 +153,18 @@ header, .nav-container, .nav-actions, .nav-actions button {
   pointer-events: auto !important;
 }
     
+/* ===== PROFILE DROPDOWN FIX ===== */
 .profile-container {
-  position: relative; /* keep dropdown positioned relative to the Profile button */
+  position: relative; /* keep dropdown anchored */
 }
-    
-/* === USER PROFILE DROPDOWN (Modern Glassy Style) === */
+
 #profileSection {
   display: none;
-  position: fixed;
+  position: absolute;  /* changed from fixed */
+  top: 100%;           /* below the button */
+  right: 0;            /* align to right of button */
+  min-width: 240px;
+  max-width: 95vw;     /* prevents overflow on mobile */
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -168,12 +172,19 @@ header, .nav-container, .nav-actions, .nav-actions button {
   padding: 1rem 1.2rem;
   border-radius: 1rem;
   box-shadow: 0 4px 25px rgba(0,0,0,0.3);
-  min-width: 240px;
   border: 1px solid rgba(255,255,255,0.2);
   z-index: 3100;
   animation: fadeSlideDown 0.25s ease;
 }
 
+/* Mobile override */
+@media(max-width: 520px) {
+  #profileSection {
+    right: 12px;
+    left: 12px;
+    width: auto;
+  }
+}
 @keyframes fadeSlideDown {
   from {
     opacity: 0;
