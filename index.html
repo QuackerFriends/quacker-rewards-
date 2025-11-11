@@ -2049,7 +2049,7 @@ shippingUSD = 0;
         price: item.priceUSD || 0,
         txHash,
         address: shippingAddress,
-        referrer,               // ✅ always correct now
+       referrer: referrer || "", // 🧭 ensure string type
         customInput: item.customInput || "",
         redeem: item.redeem ? item.title : "",
         cost: item.redeem ? item.cost : 0,
