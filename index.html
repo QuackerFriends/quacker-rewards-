@@ -1318,14 +1318,8 @@ const hasPaidItems = cart.some(ci => !ci.redeem && !ci.useQuacks);
 // --- Force shipping for all physical goods ---
 const needsShipping = cart.length > 0; // assume all items physical
 
-// --- Apply shipping rules ---
-if (subtotalUSD >= 70) {
-  shippingUSD = 0;
-} else if (country === "canada") {
-  shippingUSD = 10;
-} else {
-  shippingUSD = 5;
-}
+// --- Apply shipping rules (TEMP: disable shipping for testing) ---
+shippingUSD = 0;
 
 // 👉 Force shipping even if subtotal is 0 (for quacks/redeem)
 if ((isRedeemOnly || isQuacksOnly) && needsShipping && shippingUSD === 0) {
