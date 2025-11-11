@@ -181,10 +181,12 @@ header, .nav-container, .nav-actions, .nav-actions button {
 /* Mobile adjustments */
 @media(max-width:520px){
   #profileSection {
-    top: 50px; /* below header */
-    right: 12px;
-    left: auto; /* remove left stretch */
-    width: 240px; /* fixed width */
+    position: absolute;      /* relative to profile-container */
+    top: 50px;               /* below header */
+    left: 50%;               /* center horizontally */
+    transform: translateX(-50%); /* shift to center */
+    width: 90%;              /* nearly full width */
+    max-width: 280px;        /* cap width */
   }
 }
 
@@ -638,7 +640,7 @@ body:not(.loading) footer {
    <div id="pointsDisplay" class="info-container">
   <i class="fa-solid fa-circle-info info-icon"></i>
   <span class="tooltip-text">
-    Earn Point for every item your friend buy using your address as referral when checking out!  </span>
+    Earn points every time a friend checks out with your address as referral!  </span>
  <span class="points-label">Referral Points: <span id="pointsValue"></span></span>
 </div>
 
