@@ -2511,12 +2511,10 @@ async function loadOrderHistory() {
         <th style="border:1px solid #ccc;padding:4px;">Progress</th>
       </tr>`;
 
-    orders.reverse().forEach(order => {
-      const item = order["ItemName"] || order["Item"] || order["itemName"] || "Unknown";
-      const type = order["Status"] || order["PaymentType"] || order["Payment"] || "Purchase";
-      const points = order["PointsCost"] || order["QuacksCost"] || "—";
-      const date = new Date(order["Timestamp"] || order["Date"] || "").toLocaleDateString();
-      const progress = order["Progress"] || "Not Shipped";
+      data.orders.reverse().forEach(o => {
+      const date = new Date(o.Timestamp || o.Date || "").toLocaleDateString() || "-";
+      const item = o.ItemName || o.Item || "Unknown";
+      const progress = o.Progress || "Not Shipped";
       
   // Determine type + spent
       let type = "Purchase";
