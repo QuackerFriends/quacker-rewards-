@@ -1993,14 +1993,14 @@ const needsShipping = cart.length > 0; // assume all items physical
 // --- Apply shipping rules (TEMP: disable shipping for testing) ---
 shippingUSD = 0;
 
-// 👉 Force shipping even if subtotal is 0 (for quacks/redeem)
-//if ((isRedeemOnly || isQuacksOnly) && needsShipping && shippingUSD === 0) {
-//  if (country === "canada") {
-//    shippingUSD = 10;
-//  } else {
-//    shippingUSD = 5;
-//  }
-//}
+ 👉 Force shipping even if subtotal is 0 (for quacks/redeem)
+if ((isRedeemOnly || isQuacksOnly) && needsShipping && shippingUSD === 0) {
+  if (country === "canada") {
+    shippingUSD = 0;
+ } else {
+    shippingUSD = 0;
+  }
+}
 
 console.log("🧭 Country:", country, "| subtotalUSD =", subtotalUSD, "| Shipping =", shippingUSD);
 
