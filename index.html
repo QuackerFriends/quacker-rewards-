@@ -1987,7 +1987,7 @@ async function checkout() {
     const hasPaidItems = cart.some(ci => !ci.redeem && !ci.useQuacks);
     const needsShipping = cart.length > 0;
 
-  to test:// --- Apply shipping rules (TEMP: disable shipping for testing) ---
+// --- Apply shipping rules (TEMP: disable shipping for testing) ---
 shippingUSD = 0;
 
     if ((isRedeemOnly || isQuacksOnly) && needsShipping && shippingUSD === 0) {
