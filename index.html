@@ -1993,13 +1993,15 @@ const needsShipping = cart.length > 0; // assume all items physical
 // --- Apply shipping rules (TEMP: disable shipping for testing) ---
 shippingUSD = 0;
 
-// 👉 Force shipping even if subtotal is 0 (for quacks/redeem) //
+
+// 👉 Force shipping even if subtotal is 0 (for quacks/redeem)
 if ((isRedeemOnly || isQuacksOnly) && needsShipping && shippingUSD === 0) {
-  
-    shippingUSD = 0;
-
+  if (country === "canada") {
+    shippingUSD = 10;
+  } else {
+    shippingUSD = 5;
+  }
 }
-
 console.log("🧭 Country:", country, "| subtotalUSD =", subtotalUSD, "| Shipping =", shippingUSD);
 
 const rate = await getEthRate();
