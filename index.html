@@ -180,13 +180,13 @@ header, .nav-container, .nav-actions, .nav-actions button {
 /* Mobile adjustments */
 @media(max-width:520px){
   #profileSection {
-    top: 100%;               /* below button, always */
-    left: 50%;               /* center horizontally */
+    position: fixed;       /* relative to viewport, not container */
+    top: 60px;             /* just below header */
+    left: 50%;             /* center horizontally */
     transform: translateX(-50%);
-    width: 90%;              /* small margin on sides */
-    max-width: 280px;        /* cap width */
-    right: auto;             /* override desktop right */
-    position: absolute;      /* still relative to .profile-container */
+    width: 90%;            /* small margin on sides */
+    max-width: 280px;      /* cap width */
+    right: auto;           /* override desktop right */
   }
 }
 
