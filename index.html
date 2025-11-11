@@ -152,18 +152,17 @@ header, .nav-container, .nav-actions, .nav-actions button {
   z-index: 3000;
   pointer-events: auto !important;
 }
-    
-/* ===== PROFILE DROPDOWN FIX ===== */
+/* ===== PROFILE DROPDOWN ===== */
 .profile-container {
-  position: relative; /* dropdown relative to button */
+  position: relative; /* dropdown is relative to the button */
 }
 
 /* Desktop & general */
 #profileSection {
   display: none;
-  position: absolute; /* relative to .profile-container */
-  top: 100%; /* directly below the button */
-  right: 0;  /* align right edge with button */
+  position: absolute;      /* relative to .profile-container */
+  top: 100%;               /* directly below button */
+  right: 0;                /* align right edge with button */
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -181,16 +180,17 @@ header, .nav-container, .nav-actions, .nav-actions button {
 /* Mobile adjustments */
 @media(max-width:520px){
   #profileSection {
-    position: absolute;        /* relative to .profile-container */
-    top: 48px;                 /* adjust below header/button */
-    left: 50%;                 /* center horizontally */
+    top: 100%;               /* below button, always */
+    left: 50%;               /* center horizontally */
     transform: translateX(-50%);
-    width: 90%;                /* small margin on sides */
-    max-width: 280px;          /* cap width */
-    right: auto;               /* override desktop fixed right */
+    width: 90%;              /* small margin on sides */
+    max-width: 280px;        /* cap width */
+    right: auto;             /* override desktop right */
+    position: absolute;      /* still relative to .profile-container */
   }
 }
 
+/* ===== ANIMATION ===== */
 @keyframes fadeSlideDown {
   from {
     opacity: 0;
@@ -201,6 +201,7 @@ header, .nav-container, .nav-actions, .nav-actions button {
     transform: translateY(0);
   }
 }
+
 
 #profileSection h3 {
   margin-top: 0;
