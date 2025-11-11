@@ -181,12 +181,13 @@ header, .nav-container, .nav-actions, .nav-actions button {
 /* Mobile adjustments */
 @media(max-width:520px){
   #profileSection {
-    position: absolute;      /* relative to profile-container */
-    top: 50px;               /* below header */
-    left: 50%;               /* center horizontally */
+    position: absolute;       /* relative to profile-container */
+    top: 48px;                /* just below header/profile button */
+    left: 50%;                /* center horizontally */
     transform: translateX(-50%); /* shift to center */
-    width: 90%;              /* nearly full width */
-    max-width: 280px;        /* cap width */
+    width: 90%;               /* leave small margin */
+    max-width: 280px;         /* cap width */
+    right: auto;              /* override any previous right */
   }
 }
 
