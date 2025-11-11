@@ -681,6 +681,12 @@ body:not(.loading) footer {
       <button id="claimQuacksBtn" class="btn">🦆 Collect Daily Quacks</button>
     </div>
     <hr>
+    <!-- My Orders Section -->
+<div id="myOrdersSection" style="margin-top:15px;">
+  <h4>📦 My Orders</h4>
+  <button id="loadOrdersBtn" class="btn secondary" onclick="loadOrderHistory()">View My Orders</button>
+  <div id="orderList" style="margin-top:10px;font-size:13px;"></div>
+</div>
     <button class="btn secondary" onclick="switchWallet()">🔄 Switch Wallet</button>
     <button class="btn secondary" onclick="disconnectWallet()">❌ Disconnect</button>
   </div>
@@ -2127,6 +2133,8 @@ if (hasPaidItems) {
     showToast("Checkout failed", "error");
   }
 }
+
+  
 /* ===== ADD TO CART WITH QUACKS ===== */
 async function addToCartWithQuacks(productId, quacksCost) {
   console.log("🪙 addToCartWithQuacks called with:", productId, quacksCost);
@@ -2466,6 +2474,67 @@ if (noticeEl) {
 
   // Rotate every 5 seconds
   setInterval(rotateShippingNotice, 5000);
+}
+
+  // 📦 ORDER HISTORY LOGIC
+async function loadOrderHistory() {
+  const wallet = (userAddress || "").toLowerCase();
+  const orderList = document.getElementById("orderList");
+  if (!wallet) {
+    showToast("Please connect your wallet first!", "error");
+    return;
+  }
+
+  orderList.innerHTML = "<p>Loading your orders...</p>";
+
+  try {
+    const res = await fetch(`${PURCHASE_API}?action=getOrders&wallet=${wallet}`);
+    const data = await res.json();
+
+    if (!data.success) {
+      orderList.innerHTML = `<p style="color:red;">Error fetching orders: ${data.error || "Unknown error"}</p>`;
+      return;
+    }
+
+    const orders = data.orders || [];
+    if (orders.length === 0) {
+      orderList.innerHTML = "<p>No orders found.</p>";
+      return;
+    }
+
+    let html = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <tr style="background:#eee;">
+        <th style="border:1px solid #ccc;padding:4px;">Item</th>
+        <th style="border:1px solid #ccc;padding:4px;">Type</th>
+        <th style="border:1px solid #ccc;padding:4px;">Points/Quacks</th>
+        <th style="border:1px solid #ccc;padding:4px;">Date</th>
+        <th style="border:1px solid #ccc;padding:4px;">Progress</th>
+      </tr>`;
+
+    orders.reverse().forEach(order => {
+      const item = order["ItemName"] || order["Item"] || order["itemName"] || "Unknown";
+      const type = order["Status"] || order["PaymentType"] || order["Payment"] || "Purchase";
+      const points = order["PointsCost"] || order["QuacksCost"] || "—";
+      const date = new Date(order["Timestamp"] || order["Date"] || "").toLocaleDateString();
+      const progress = order["Progress"] || "Not Shipped";
+
+      html += `
+        <tr>
+          <td style="border:1px solid #ccc;padding:4px;">${item}</td>
+          <td style="border:1px solid #ccc;padding:4px;">${type}</td>
+          <td style="border:1px solid #ccc;padding:4px;">${points}</td>
+          <td style="border:1px solid #ccc;padding:4px;">${date}</td>
+          <td style="border:1px solid #ccc;padding:4px;">${progress}</td>
+        </tr>`;
+    });
+
+    html += "</table>";
+    orderList.innerHTML = html;
+
+  } catch (err) {
+    console.error("Order history error:", err);
+    orderList.innerHTML = `<p style="color:red;">Error loading orders.</p>`;
+  }
 }
 
 </script>
