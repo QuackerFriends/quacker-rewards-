@@ -2476,6 +2476,8 @@ if (noticeEl) {
   setInterval(rotateShippingNotice, 5000);
 }
 
+  
+
 async function loadOrderHistory() {
   const wallet = (userAddress || "").toLowerCase();
   const orderList = document.getElementById("orderList");
@@ -2503,21 +2505,29 @@ async function loadOrderHistory() {
       return;
     }
 
+    // Helper functions
+    function toNumber(val) {
+      const n = Number(val);
+      return isNaN(n) ? 0 : n;
+    }
+
     function parseSheetDate(val) {
       if (!val) return "-";
-
-      // Try to parse as Date object
-      let d = new Date(val);
+      const d = new Date(val);
       if (!isNaN(d.getTime())) return d.toLocaleDateString();
-
-      // If it fails, fallback to raw string
-      return val.toString();
+      return val; // fallback
     }
 
     let html = `
-      <div style="overflow-x:auto;padding:10px;background:rgba(255,255,255,0.95);border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.15);">
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
-          <thead style="background:#f0f0f0;color:#333;font-weight:600;">
+      <div style="
+        overflow-x:auto;
+        padding:10px;
+        background:rgba(0,0,0,0.7);
+        border-radius:12px;
+        box-shadow:0 8px 24px rgba(0,0,0,0.3);
+      ">
+        <table style="width:100%;border-collapse:collapse;font-size:14px;color:#fff;">
+          <thead style="background:rgba(255,255,255,0.1);">
             <tr>
               <th style="padding:10px 8px;text-align:left;">Item</th>
               <th style="padding:10px 8px;text-align:left;">Type</th>
@@ -2532,11 +2542,11 @@ async function loadOrderHistory() {
     orders.reverse().forEach(order => {
       const item = order["Item Name"] || "Unknown";
       const date = parseSheetDate(order["Timestamp"]);
+      const progress = order["Progress"] || "Not Shipped";
 
-      // Convert all numeric fields safely
-      const points = Number(order["PointsCost"] || 0);
-      const quacks = Number(order["QuacksCost"] || 0);
-      const price = Number(order["Price"] || 0);
+      const points = toNumber(order["PointsCost"]);
+      const quacks = toNumber(order["QuacksCost"]);
+      const price = toNumber(order["Price"]);
 
       let type = "Purchase";
       let spent = "—";
@@ -2552,10 +2562,8 @@ async function loadOrderHistory() {
         spent = `$${price.toFixed(2)}`;
       }
 
-      const progress = order["Progress"] || "Not Shipped";
-
       html += `
-        <tr style="border-bottom:1px solid #e0e0e0;">
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.2);">
           <td style="padding:10px 8px;">${item}</td>
           <td style="padding:10px 8px;">${type}</td>
           <td style="padding:10px 8px;text-align:right;">${spent}</td>
