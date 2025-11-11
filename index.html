@@ -2094,6 +2094,7 @@ async function redeemWithPoints(productId, cost) {
   const sizeSel = document.getElementById(`size_${productId}`);
   const customEl = document.getElementById(`custom_${productId}`);
   const customInput = customEl ? customEl.value.trim() : "";
+  const referrer = document.getElementById("referrerInput")?.value?.trim() || ""; // 👈 add this line
 
   if ((product.CustomInput || product.customInput) && !customInput) {
     showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
@@ -2135,8 +2136,15 @@ async function redeemWithPoints(productId, cost) {
   updateCartUI();
   showToast(`🎉 "${product.Title || product.title}" added to cart for ${cost} Referral Points`, "success");
   if (typeof openCart === "function") openCart();
-}
 
+  // ✅ LOG THE REDEMPTION to Apps Script (including referrer)
+  try {
+    await fetch(`${PURCHASE_API}?wallet=${wallet}&redeem=${encodeURIComponent(product.title)}&cost=${cost}&referrer=${encodeURIComponent(referrer)}&variant=${encodeURIComponent(variantSel?.value || "")}&color=${encodeURIComponent(colorSel?.value || "")}&size=${encodeURIComponent(sizeSel?.value || "")}&customInput=${encodeURIComponent(customInput)}`);
+    console.log("✅ Redeem logged successfully");
+  } catch (err) {
+    console.error("❌ Failed to log redeem:", err);
+  }
+}
 
 /* ===== MENU & overlay safety ===== */
 
