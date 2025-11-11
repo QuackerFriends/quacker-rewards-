@@ -2517,6 +2517,23 @@ async function loadOrderHistory() {
       const points = order["PointsCost"] || order["QuacksCost"] || "—";
       const date = new Date(order["Timestamp"] || order["Date"] || "").toLocaleDateString();
       const progress = order["Progress"] || "Not Shipped";
+      
+  // Determine type + spent
+      let type = "Purchase";
+      let spent = "";
+
+      if (o["PointsCost"] && Number(o["PointsCost"]) > 0) {
+        type = "Redeem (Points)";
+        spent = `${o["PointsCost"]} pts`;
+      } else if (o["QuacksCost"] && Number(o["QuacksCost"]) > 0) {
+        type = "Paid (Quacks)";
+        spent = `${o["QuacksCost"]} 🦆`;
+      } else if (o["Price"] && Number(o["Price"]) > 0) {
+        type = "ETH Purchase";
+        spent = `$${Number(o["Price"]).toFixed(2)}`;
+      } else {
+        spent = "—";
+      }
 
       html += `
         <tr>
