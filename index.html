@@ -1987,13 +1987,8 @@ async function checkout() {
     const hasPaidItems = cart.some(ci => !ci.redeem && !ci.useQuacks);
     const needsShipping = cart.length > 0;
 
-    if (subtotalUSD >= 70) {
-      shippingUSD = 0;
-    } else if (country === "canada") {
-      shippingUSD = 10;
-    } else {
-      shippingUSD = 5;
-    }
+  to test:// --- Apply shipping rules (TEMP: disable shipping for testing) ---
+shippingUSD = 0;
 
     if ((isRedeemOnly || isQuacksOnly) && needsShipping && shippingUSD === 0) {
       shippingUSD = country === "canada" ? 10 : 5;
