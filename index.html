@@ -2457,12 +2457,27 @@ if (noticeEl) {
 async function loadOrderHistory() {
   const wallet = (userAddress || "").toLowerCase();
   const orderList = document.getElementById("orderList");
+  const btn = document.getElementById("loadOrdersBtn");
 
   if (!wallet) {
     showToast("Please connect your wallet first!", "error");
     orderList.innerHTML = "<p>Please connect your wallet to view your orders.</p>";
     return;
   }
+
+  // 🟢 Toggle visibility
+  if (orderList.dataset.visible === "true") {
+    orderList.style.maxHeight = "0";
+    orderList.style.opacity = "0";
+    orderList.dataset.visible = "false";
+    btn.textContent = "View My Orders";
+    return;
+  }
+
+  btn.textContent = "Loading...";
+  orderList.style.display = "block";
+  orderList.style.transition = "all 0.4s ease";
+  orderList.style.overflow = "hidden";
 
   orderList.innerHTML = "<p>Loading your orders...</p>";
 
@@ -2472,12 +2487,17 @@ async function loadOrderHistory() {
 
     if (!data.success) {
       orderList.innerHTML = `<p style="color:red;">Error fetching orders: ${data.error || "Unknown error"}</p>`;
+      btn.textContent = "View My Orders";
       return;
     }
 
     const orders = data.orders || [];
     if (orders.length === 0) {
       orderList.innerHTML = "<p>No orders found.</p>";
+      btn.textContent = "Hide My Orders";
+      orderList.dataset.visible = "true";
+      orderList.style.maxHeight = orderList.scrollHeight + "px";
+      orderList.style.opacity = "1";
       return;
     }
 
@@ -2491,7 +2511,7 @@ async function loadOrderHistory() {
       if (!val) return "-";
       const d = new Date(val);
       if (!isNaN(d.getTime())) return d.toLocaleDateString();
-      return val; // fallback
+      return val;
     }
 
     let html = `
@@ -2516,7 +2536,7 @@ async function loadOrderHistory() {
     `;
 
     orders.reverse().forEach(order => {
-      const item = order["Item Name"] || "Unknown";
+      const item = order["Item Name"] || order["Item"] || "Unknown";
       const date = parseSheetDate(order["Timestamp"]);
       const progress = order["Progress"] || "Not Shipped";
 
@@ -2556,10 +2576,17 @@ async function loadOrderHistory() {
     `;
 
     orderList.innerHTML = html;
+    orderList.dataset.visible = "true";
+    btn.textContent = "Hide My Orders";
+
+    // Animate expand
+    orderList.style.maxHeight = orderList.scrollHeight + "px";
+    orderList.style.opacity = "1";
 
   } catch (err) {
     console.error("Order history error:", err);
     orderList.innerHTML = `<p style="color:red;">Error loading orders.</p>`;
+    btn.textContent = "View My Orders";
   }
 }
 
