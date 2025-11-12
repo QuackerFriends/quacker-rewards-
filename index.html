@@ -178,18 +178,19 @@ header, .nav-container, .nav-actions, .nav-actions button {
 }
 
 /* Mobile adjustments */
-@media(max-width:520px){
+@media (max-width: 520px) {
   #profileSection {
     position: fixed !important;
-    top: 60px !important;
+    top: 64px !important; /* 👈 pushes it below the header */
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: 90% !important;
     max-width: 280px !important;
     right: auto !important;
+    border-radius: 1rem !important;
+    transform-origin: top center !important;
   }
 }
-
 
 
 /* ===== ANIMATION ===== */
