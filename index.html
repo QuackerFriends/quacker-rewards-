@@ -2482,7 +2482,7 @@ async function loadOrderHistory() {
   btn.textContent = "Loading...";
   orderList.style.display = "block";
   orderList.style.transition = "all 0.4s ease";
-  orderList.style.overflow = "hidden";
+  orderList.style.overflow = "auto";
   orderList.innerHTML = "<p>Loading your orders...</p>";
 
   try {
