@@ -1897,7 +1897,7 @@ async function updatePointsDisplay() {
   }
 }
 
-/* ===== CLAIM QUACKS ===== */
+/* ===== CLAIM QUACKS (improved: checks multiple collections) ===== */
 const claimQuacksBtn = document.getElementById("claimQuacksBtn");
 if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
   if (!userAddress) {
@@ -1905,18 +1905,61 @@ if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
     return;
   }
 
+  if (!window.ethereum && !window.web3) {
+    showToast("No web3 provider found", "error");
+    return;
+  }
+
   try {
-    const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-    const mainNFTBalance = await contract.methods.balanceOf(userAddress).call();
+    // Minimal ERC-721 ABI for balanceOf
+    const ERC721_MIN_ABI = [
+      {
+        constant: true,
+        inputs: [{ name: "owner", type: "address" }],
+        name: "balanceOf",
+        outputs: [{ name: "", type: "uint256" }],
+        type: "function"
+      }
+    ];
 
-    // ✅ Collect all eligible NFT contracts (main + others if needed)
+    // MAIN contract (your quacker collection)
+    const MAIN_CONTRACT_ADDRESS = CONTRACT_ADDRESS; // keep your existing constant
+    // Add any other eligible collection addresses here (lowercase or not — we'll normalize)
+    const OTHER_CONTRACTS = [
+      "0x50372c1153170840ecce9129c6cc70b912f34273",
+      "0xOtherCollection2" // add as needed
+    ];
+
     const ownsContracts = [];
-    if (Number(mainNFTBalance) > 0) ownsContracts.push(CONTRACT_ADDRESS);
 
-    // Example for other collections (uncomment if needed)
-    // const otherContract = new web3.eth.Contract(OTHER_ABI, OTHER_CONTRACT_ADDRESS);
-    // const otherBalance = await otherContract.methods.balanceOf(userAddress).call();
-    // if (Number(otherBalance) > 0) ownsContracts.push(OTHER_CONTRACT_ADDRESS);
+    // check main contract
+    try {
+      const mainContract = new web3.eth.Contract(ERC721_MIN_ABI, MAIN_CONTRACT_ADDRESS);
+      const mainBal = await mainContract.methods.balanceOf(userAddress).call();
+      if (Number(mainBal) > 0) ownsContracts.push(MAIN_CONTRACT_ADDRESS.toLowerCase());
+      console.log("mainBal:", mainBal);
+    } catch (err) {
+      console.warn("Error checking main contract balance:", err);
+    }
+
+    // check other contracts (parallel)
+    const checks = OTHER_CONTRACTS.map(async addr => {
+      try {
+        const c = new web3.eth.Contract(ERC721_MIN_ABI, addr);
+        const b = await c.methods.balanceOf(userAddress).call();
+        if (Number(b) > 0) {
+          ownsContracts.push(addr.toLowerCase());
+        }
+        console.log("checked", addr, "balance:", b);
+      } catch (err) {
+        console.warn("Error checking contract", addr, err);
+      }
+    });
+
+    await Promise.all(checks);
+
+    // Debug: show what we'll send
+    console.log("ownsContracts to send:", ownsContracts);
 
     const query = new URLSearchParams({
       wallet: userAddress,
@@ -1928,9 +1971,10 @@ if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
     const data = await res.json();
 
     if (data.error) {
+      console.warn("claim response error:", data);
       showToast(data.error, "warn");
     } else {
-      const claimed = data.added_quacks || 1;
+      const claimed = Number(data.added_quacks || 0);
       showToast(`🦆 Claimed ${claimed} Quacks!`, "success");
 
       const quacksCountEl = document.getElementById("quacksCount");
@@ -1938,13 +1982,10 @@ if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
     }
 
   } catch (err) {
-    console.error(err);
+    console.error("Error claiming quacks:", err);
     showToast("Error claiming quacks", "error");
   }
 });
-
-
-
 
 /* ===== CHECKOUT / PURCHASE LOGGING ===== */
 const checkoutBtn = document.getElementById("checkoutBtn");
