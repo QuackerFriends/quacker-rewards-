@@ -593,6 +593,21 @@ body:not(.loading) footer {
     font-size: 14px;
   }
 }
+    
+/* --- Mobile: Fix cart cutting off --- */
+@media (max-width: 520px) {
+  .cart-modal {
+    width: 100% !important;
+    right: 0 !important;
+    left: 0 !important;
+    transform: translateX(100%) !important;
+    border-radius: 0 !important;
+  }
+
+  .cart-modal.open {
+    transform: translateX(0) !important;
+  }
+}
 
 
   </style>
@@ -1998,7 +2013,6 @@ if ((isRedeemOnly || isQuacksOnly) && needsShipping && shippingUSD === 0) {
     shippingUSD = 5;
   }
 }
-
 console.log("🧭 Country:", country, "| subtotalUSD =", subtotalUSD, "| Shipping =", shippingUSD);
 
 const rate = await getEthRate();
