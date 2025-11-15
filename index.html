@@ -1680,7 +1680,7 @@ if (!thumb) {
   const rate = await getEthRate();
   const subtotalUSD = cart.reduce((s, i) => s + i.priceUSD * i.q, 0);
 
-  // 🚚 Determine shipping cost
+// 🚚 Determine shipping cost
   const countrySelect = document.getElementById("shippingCountry");
   const selectedCountry = countrySelect ? countrySelect.value : "USA";
   const shippingUSD = subtotalUSD >= 70 ? 0 : (selectedCountry === "USA" ? 5 : 10);
@@ -1710,7 +1710,6 @@ function removeFromCart(index){ cart.splice(index,1); updateCartUI(); }
     initCheckoutUI();
   }
 }
-
 
 function closeCart() {
   const modal = document.getElementById("cartModal");
@@ -1966,6 +1965,7 @@ async function checkout() {
   //  let subtotalUSD = 0;
     // cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); }); 
 
+
  // --- Shipping rules ---
  // --- Determine shipping ---
 let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
@@ -1981,7 +1981,7 @@ const hasPaidItems = cart.some(ci => !ci.redeem && !ci.useQuacks);
 // --- Force shipping for all physical goods ---
 const needsShipping = cart.length > 0; // assume all items physical
 
-// --- Apply shipping rules --- //
+// --- Apply shipping rules ---
 if (subtotalUSD >= 70) {
   shippingUSD = 0;
 } else if (country === "canada") {
@@ -1990,17 +1990,15 @@ if (subtotalUSD >= 70) {
   shippingUSD = 5;
 }
 
-
-
-// ---  👉 Force shipping even if subtotal is 0 (for quacks/redeem) --- //
-    
+// 👉 Force shipping even if subtotal is 0 (for quacks/redeem)
 if ((isRedeemOnly || isQuacksOnly) && needsShipping && shippingUSD === 0) {
   if (country === "canada") {
     shippingUSD = 10;
- } else {
+  } else {
     shippingUSD = 5;
   }
 }
+
 console.log("🧭 Country:", country, "| subtotalUSD =", subtotalUSD, "| Shipping =", shippingUSD);
 
 const rate = await getEthRate();
