@@ -799,13 +799,42 @@ const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 
-/* ===== FORCE NETWORK (Optional fallback) ===== */
+/* ===== FORCE NETWORK TO BASE ===== */
 async function ensureBaseNetwork() {
-  if (!provider) return;
-  try {
-    await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: BASE_CHAIN_ID_HEX }] });
-  } catch (err) {
-    console.warn("Failed to force Base network:", err);
+  if (!signer) throw new Error("No wallet connected");
+  const network = await signer.provider.getNetwork();
+  if (network.chainId !== 8453) {
+    try {
+      await provider.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: "0x2105" }] // Base Mainnet
+      });
+      showToast("Switched to Base network", "success");
+    } catch (switchErr) {
+      if (switchErr.code === 4902) {
+        try {
+          await provider.request({
+            method: "wallet_addEthereumChain",
+            params: [{
+              chainId: "0x2105",
+              chainName: "Base Mainnet",
+              nativeCurrency: { name: "Ethereum", symbol: "ETH", decimals: 18 },
+              rpcUrls: ["https://mainnet.base.org"],
+              blockExplorerUrls: ["https://basescan.org"]
+            }]
+          });
+          showToast("Base network added & switched", "success");
+        } catch (err) {
+          console.error(err);
+          alert("Please switch to Base manually");
+          throw err;
+        }
+      } else {
+        console.error("Network switch failed", switchErr);
+        alert("Please switch to Base manually");
+        throw switchErr;
+      }
+    }
   }
 }
 
