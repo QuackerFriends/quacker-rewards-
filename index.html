@@ -665,6 +665,8 @@ body:not(.loading) footer {
       <button id="connectBtn" class="btn">Connect Wallet</button>
 <div class="profile-container" style="position:relative; display:inline-block;">
   <button id="profileBtn" class="btn secondary" style="display:none">Profile</button>
+  <span id="walletAddr"></span>
+
 </div>
       <button id="openCartBtn" class="btn" style="position:relative">Cart <span id="cartCount" class="cart-count" style="display:none">0</span></button>
     </div>
@@ -1771,7 +1773,7 @@ async function connectWallet() {
     web3 = new Web3(provider);
     const accounts = await web3.eth.getAccounts();
     userAddress = accounts[0];
-    document.getElementById("walletAddr").innerText = userAddress;
+    const walletEl = document.getElementById("walletAddr"); if (walletEl) walletEl.innerText = userAddress;
     document.getElementById("connectBtn").style.display = "none";
     document.getElementById("profileBtn").style.display = "inline-block";
 
@@ -1785,7 +1787,7 @@ async function connectWallet() {
     // Listen for account/network changes
     provider.on("accountsChanged", (accounts) => {
       userAddress = accounts[0];
-      document.getElementById("walletAddr").innerText = userAddress;
+      const walletEl = document.getElementById("walletAddr"); if (walletEl) walletEl.innerText = userAddress;
       showToast("Wallet switched", "success");
     });
     provider.on("chainChanged", (chainId) => {
