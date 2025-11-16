@@ -20,6 +20,13 @@
 <script src="https://unpkg.com/web3modal@1.9.8/dist/index.js"></script>
   <style>
     
+    /* temporary debug CSS */
+.web3modal-modal {
+  z-index: 999999 !important;
+  pointer-events: auto !important;
+}
+
+    
     :root{
       --brand-orange:#ff914d;
       --brand-orange-dark:#ff7b2c;
@@ -836,24 +843,26 @@ const web3Modal = new window.Web3Modal.default({
 });
 
 
-/* ===== CONNECT WALLET ===== */
 async function connectWallet() {
   try {
-    // Clear cached provider first (fresh start)
     web3Modal.clearCachedProvider();
-
-    // Open modal
     provider = await web3Modal.connect();
-
-    // Wrap in ethers.js provider
     const web3Provider = new ethers.providers.Web3Provider(provider);
     signer = web3Provider.getSigner();
     userAddress = await signer.getAddress();
 
     console.log("Wallet connected:", userAddress);
-    alert("Wallet connected: " + userAddress);
 
-    // Auto-switch to Base network
+    // Show profile button
+    const profileBtn = document.getElementById("profileBtn");
+    if (profileBtn) profileBtn.style.display = 'inline-block';
+
+    // Load profile data
+    const profileData = await loadProfile(userAddress);
+    console.log("Profile data:", profileData);
+    updateProfileUI(profileData); // a function to populate your profile panel
+
+    // Auto-switch network
     const network = await web3Provider.getNetwork();
     if (network.chainId !== 8453) {
       try {
@@ -861,28 +870,21 @@ async function connectWallet() {
           method: "wallet_switchEthereumChain",
           params: [{ chainId: BASE_CHAIN_ID_HEX }]
         });
-        console.log("✅ Switched to Base network");
-      } catch (err) {
-        console.warn("Network switch failed:", err);
-      }
+      } catch (err) { console.warn("Network switch failed:", err); }
     }
 
-    // Listen for account changes
-    provider.on("accountsChanged", accounts => {
+    // Listeners
+    provider.on("accountsChanged", async accounts => {
       userAddress = accounts[0];
       console.log("Accounts changed:", userAddress);
-      // Optionally reload profile here
+      const profileData = await loadProfile(userAddress);
+      updateProfileUI(profileData);
     });
-
-    // Listen for network changes
-    provider.on("chainChanged", chainId => {
-      console.log("Network changed:", chainId);
-      // Optionally handle UI/network updates
-    });
+    provider.on("chainChanged", chainId => console.log("Network changed:", chainId));
 
   } catch (err) {
     console.error("Wallet connection failed:", err);
-    alert("Wallet connection failed. See console for details.");
+    alert("Wallet connection failed. See console.");
   }
 }
 
