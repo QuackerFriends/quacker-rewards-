@@ -909,7 +909,7 @@ async function connectWallet() {
     signer = web3Provider.getSigner();
     userAddress = await signer.getAddress();
 
-    document.getElementById("walletAddress").innerText = "Connected: " + userAddress;
+    //document.getElementById("walletAddress").innerText = "Connected: " + userAddress;
 
     // Auto-switch network to Base
     const { chainId } = await web3Provider.getNetwork();
