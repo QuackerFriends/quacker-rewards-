@@ -1,6 +1,7 @@
 <!DOCTYPE html> 
 <html lang="en">
 <head>
+  
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Quacker Friends Shop</title>
@@ -8,6 +9,14 @@
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  
+  <!-- Web3Modal / WalletConnect -->
+<script src="https://unpkg.com/@walletconnect/web3modal@2.7.2/dist/web3modal.umd.js"></script>
+
+<!-- Wagmi + Viem (required by Web3Modal) -->
+<script src="https://unpkg.com/viem@1.16.5/dist/viem.min.js"></script>
+<script src="https://unpkg.com/wagmi@1.4.7/dist/wagmi.umd.js"></script>
+
 
   <style>
     
@@ -712,10 +721,7 @@ body:not(.loading) footer {
       <strong>Subtotal</strong>
       <strong id="subtotalDisplay">$0.00</strong>
     </div>
-    
-    
-
-
+   
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
       <strong>Shipping</strong>
       <strong id="shippingDisplay">$0.00</strong>
@@ -732,16 +738,7 @@ body:not(.loading) footer {
         style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;min-height:70px;"></textarea>
     </div>
 
-   
- <!--  <div style="margin-top:10px;">
-      <label for="paymentSelector" style="font-weight:bold;">Pay with:</label><br>
-      <select id="paymentSelector" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;margin-top:6px;">
-        <option value="eth">ETH (wallet)</option>
-        <option value="points">Points / Redeem</option>
-        <option value="quacks">Quacks</option>
-      </select>
-    </div>  -->
-
+ 
     <div id="referralSection" style="margin-top:12px;">
       <label for="referrerInput" style="font-weight:bold;">Referral Address (optional):</label><br>
       <input
@@ -1740,79 +1737,11 @@ const openCartBtn = document.getElementById("openCartBtn");
 if (openCartBtn) openCartBtn.addEventListener("click", openCart);
 
 
-/* ===== WALLET & PROFILE ===== */
-async function connectWallet() {
-  if (!window.ethereum) {
-    showToast("MetaMask not found", "error");
-    return;
-  }
-
-  try {
-    // ✅ Step 1: Ensure Base network
-    const baseParams = {
-      chainId: "0x2105", // Base mainnet chain ID
-      chainName: "Base Mainnet",
-      nativeCurrency: { name: "Ethereum", symbol: "ETH", decimals: 18 },
-      rpcUrls: ["https://mainnet.base.org"],
-      blockExplorerUrls: ["https://basescan.org"]
-    };
-
-    try {
-      await ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: baseParams.chainId }]
-      });
-    } catch (switchError) {
-      if (switchError.code === 4902) {
-        await ethereum.request({
-          method: "wallet_addEthereumChain",
-          params: [baseParams]
-        });
-      } else {
-        console.warn("Chain switch failed:", switchError);
-      }
-    }
-
-    // ✅ Step 2: Connect wallet
-    web3 = new Web3(window.ethereum);
-    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-    userAddress = accounts[0];
-
-   // ✅ Step 3: Update UI
-const connectBtn = document.getElementById("connectBtn");
-if (connectBtn)
-  connectBtn.style.display = "none"; // hide Connect Wallet button
-
-const profileBtn = document.getElementById("profileBtn");
-if (profileBtn) profileBtn.style.display = "inline-block";
-
-// Remove the walletAddr display entirely
-// const walletAddr = document.getElementById("walletAddr");
-// if (walletAddr) walletAddr.innerText = userAddress;
-
-
-    showToast("Wallet connected", "success");
-
-    // ✅ Step 4: Load profile + update points
-    const profileData = await loadProfile(userAddress);
-
-    await updatePointsDisplay();
-
-    const nftCountEl = document.getElementById("nftCount");
-    if (nftCountEl) nftCountEl.innerText = "Quackers Held: " + profileData.quackerBalance;
-
-    const quacksCount = document.getElementById("quacksCount");
-    if (quacksCount) quacksCount.innerText = "Daily Quacks: " + profileData.dailyQuacks;
-
-  } catch (err) {
-    console.error(err);
-    showToast("Connect failed", "error");
-  }
-}
 
 // Connect button
-const connectBtn = document.getElementById("connectBtn");
-if (connectBtn) connectBtn.addEventListener("click", connectWallet);
+document.getElementById("connectBtn").addEventListener("click", () => {
+  window.openWeb3Modal();
+});
 
 /* ===== PROFILE TOGGLE ===== */
 const profileBtn = document.getElementById("profileBtn");
@@ -1843,34 +1772,6 @@ if (profileBtn)
     }
   });
 
-/* ===== SWITCH / DISCONNECT ===== */
-async function switchWallet() {
-  try {
-    await ethereum.request({
-      method: "wallet_requestPermissions",
-      params: [{ eth_accounts: {} }]
-    });
-    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-    userAddress = accounts[0];
-    const walletAddr = document.getElementById("walletAddr");
-    if (walletAddr) walletAddr.innerText = userAddress;
-    showToast("Wallet switched", "success");
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-function disconnectWallet() {
-  userAddress = null;
-  web3 = null;
-  const cbo = document.getElementById("connectBtn");
-  if (cbo) cbo.innerText = "Connect Wallet";
-  const profileBtn = document.getElementById("profileBtn");
-  if (profileBtn) profileBtn.style.display = "none";
-  const profileSection = document.getElementById("profileSection");
-  if (profileSection) profileSection.style.display = "none";
-  showToast("Wallet disconnected", "info");
-}
 
 /* ===== Redeem Points Display ===== */
 async function updatePointsDisplay() {
@@ -2525,7 +2426,34 @@ if (noticeEl) {
   setInterval(rotateShippingNotice, 5000);
 }
 
-  
+  /* ========= WALLET MODAL SETUP ========= */
+const { EthereumClient, w3mConnectors, w3mProvider } = window.Web3Modal;
+const { configureChains, createClient } = window.wagmi;
+const { base } = window.wagmi.chains;
+
+const projectId = "b6902a65225c260ffee1f335380b9ade"; 
+
+const chains = [base];
+
+const { publicClient } = configureChains(chains, [
+  w3mProvider({ projectId })
+]);
+
+const wagmiClient = createClient({
+  autoConnect: true,
+  connectors: w3mConnectors({ chains, projectId }),
+  publicClient,
+});
+
+const ethereumClient = new EthereumClient(wagmiClient, chains);
+
+const web3modal = new window.Web3Modal.Web3Modal({
+  projectId,
+  themeMode: "dark",
+  themeVariables: {
+    "--w3m-accent-color": "#ffd600",
+  }
+});
 
 async function loadOrderHistory() {
   const wallet = (userAddress || "").toLowerCase();
