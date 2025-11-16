@@ -4,12 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Quacker Friends Shop</title>
+  
+  <!-- Web3Modal / WalletConnect -->
+<script src="https://unpkg.com/@walletconnect/web3modal@2.7.2/dist/web3modal.umd.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-  <script src="https://unpkg.com/@walletconnect/web3modal@2.7.2/dist/web3modal.umd.js"></script>
+<!-- Wagmi + Viem (required by Web3Modal) -->
 <script src="https://unpkg.com/viem@1.16.5/dist/viem.min.js"></script>
 <script src="https://unpkg.com/wagmi@1.4.7/dist/wagmi.umd.js"></script>
 
+
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 
@@ -798,33 +802,6 @@ const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 
-  const { EthereumClient, w3mConnectors, w3mProvider } = window.Web3Modal;
-const { WagmiConfig, configureChains, createClient } = window.wagmi;
-const { mainnet } = window.wagmi.chains;
-
-// Your WalletConnect Cloud ID
-const projectId = "b6902a65225c260ffee1f335380b9ade"; 
-
-// Chains you want to support
-const chains = [mainnet];
-
-const { publicClient } = configureChains(chains, [w3mProvider({ projectId })]);
-
-const wagmiClient = createClient({
-  autoConnect: true,
-  connectors: w3mConnectors({ projectId, chains }),
-  publicClient,
-});
-
-const ethereumClient = new EthereumClient(wagmiClient, chains);
-
-const web3modal = new window.Web3Modal.Web3Modal({
-  projectId,
-  theme: "dark",
-  walletImages: {},
-  chainImages: {},
-});
-
 /* ===== FORCE NETWORK TO BASE ===== */
 async function ensureBaseNetwork() {
   if (!window.ethereum) {
@@ -926,6 +903,36 @@ let currentCategory = null;     // default (sheet categories may vary in case)
 let cachedEthRate = null;
 let lastRateFetch = 0;
 
+  
+  const { EthereumClient, w3mConnectors, w3mProvider } = window.Web3Modal;
+const { configureChains, createClient } = window.wagmi;
+const { base } = window.wagmi.chains;
+
+// Use your WalletConnect / Web3Modal project ID
+const projectId = "b6902a65225c260ffee1f335380b9ade";
+
+const chains = [base];
+
+const { publicClient } = configureChains(chains, [
+  w3mProvider({ projectId })
+]);
+
+const wagmiClient = createClient({
+  autoConnect: true,
+  connectors: w3mConnectors({ chains, projectId }),
+  publicClient,
+});
+
+const ethereumClient = new EthereumClient(wagmiClient, chains);
+
+const web3modal = new window.Web3Modal.Web3Modal({
+  projectId,
+  themeMode: "dark",
+  themeVariables: {
+    "--w3m-accent-color": "#ffd600",
+  }
+});
+  
   /* ===== BLUR MANAGER ===== */
 let blurCount = 0;
 function addBlur() { blurCount++; document.body.classList.add("blur-bg");}
@@ -1772,9 +1779,73 @@ if (openCartBtn) openCartBtn.addEventListener("click", openCart);
 
 
 
-document.getElementById("connectBtn").addEventListener("click", () => {
+/* ===== WALLET & PROFILE ===== */
+async function connectWallet() {
+  // Open Web3Modal wallet picker
   web3modal.openModal();
-});
+
+  // Listen for connection event
+  wagmiClient.subscribe(({ status, data }) => {
+    if (status !== "connected") return;
+    userAddress = data?.account;
+
+    // Initialize Web3.js with provider
+    window.web3 = new Web3(window.ethereum);
+
+    // Ensure Base network
+    enforceBaseNetwork();
+
+    // Update UI
+    const connectBtn = document.getElementById("connectBtn");
+    if (connectBtn) connectBtn.style.display = "none";
+
+    const profileBtn = document.getElementById("profileBtn");
+    if (profileBtn) profileBtn.style.display = "inline-block";
+
+    showToast("Wallet connected", "success");
+
+    loadProfile(userAddress).then(profileData => {
+      updatePointsDisplay();
+
+      const nftCount = document.getElementById("nftCount");
+      if (nftCount) nftCount.innerText = "Quackers Held: " + profileData.quackerBalance;
+
+      const quacksCount = document.getElementById("quacksCount");
+      if (quacksCount) quacksCount.innerText = "Daily Quacks: " + profileData.dailyQuacks;
+    });
+  });
+}
+
+/* ===== Ensure BASE Network ===== */
+async function enforceBaseNetwork() {
+  const baseParams = {
+    chainId: "0x2105",
+    chainName: "Base Mainnet",
+    nativeCurrency: { name: "Ethereum", symbol: "ETH", decimals: 18 },
+    rpcUrls: ["https://mainnet.base.org"],
+    blockExplorerUrls: ["https://basescan.org"]
+  };
+
+  try {
+    await ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: baseParams.chainId }]
+    });
+  } catch (err) {
+    if (err.code === 4902) {
+      await ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [baseParams]
+      });
+    }
+  }
+}
+
+
+// Connect button
+const connectBtn = document.getElementById("connectBtn");
+if(connectBtn) connectBtn.addEventListener("click", connectWallet);
+
 
 
 /* ===== PROFILE TOGGLE ===== */
@@ -1805,6 +1876,18 @@ if (profileBtn)
       showToast("Error loading profile", "warn");
     }
   });
+  
+  async function disconnectWallet() {
+  if(web3modal) await web3modal.closeModal();
+  await web3modal.clearCachedProvider();
+  window.web3 = null;
+  userAddress = null;
+  const connectBtn = document.getElementById("connectBtn");
+  if(connectBtn) connectBtn.style.display = "inline-block";
+  const profileBtn = document.getElementById("profileBtn");
+  if(profileBtn) profileBtn.style.display = "none";
+  showToast("Wallet disconnected", "info");
+}
 
 
 
