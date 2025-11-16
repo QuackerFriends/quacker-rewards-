@@ -892,8 +892,8 @@ async function loadProfile(wallet) {
 
 /* ===== STATE ===== */
   
-let web3Modal;
-let provider;
+let web3Modal = null;
+let provider= null;
 let userAddress = null;
 let web3 = null;
 let cart = []; 
@@ -905,14 +905,14 @@ let lastRateFetch = 0;
 
 /* ===== Web3Modal Init ===== */
 window.addEventListener('load', () => {
-  web3Modal = new Web3Modal({
+  web3Modal = new window.Web3Modal.default({
     cacheProvider: false,
     network: "mainnet", // optional
     providerOptions: {
       walletconnect: {
-        package: window.WalletConnectProvider, // UMD does not use .default
+        package: window.WalletConnectProvider, // no .default here
         options: {
-          infuraId: "YOUR_INFURA_ID" // optional, replace if you want WalletConnect via Infura
+          infuraId: "YOUR_INFURA_ID" // optional
         }
       }
     }
