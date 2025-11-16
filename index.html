@@ -4,18 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Quacker Friends Shop</title>
-  
-  <!-- Web3Modal / WalletConnect -->
-<script src="https://unpkg.com/@walletconnect/web3modal@2.7.2/dist/web3modal.umd.js"></script>
-
-<!-- Wagmi + Viem (required by Web3Modal) -->
-<script src="https://unpkg.com/viem@1.16.5/dist/viem.min.js"></script>
-<script src="https://unpkg.com/wagmi@1.4.7/dist/wagmi.umd.js"></script>
-
-
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+ 
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  
+  <!-- Web3Modal / WalletConnect (UMD) -->
+  
+<script src="https://unpkg.com/@walletconnect/web3modal@2.7.2/dist/web3modal.umd.js"></script>
+<script src="https://unpkg.com/viem@1.16.5/dist/viem.min.js"></script>
+<script src="https://unpkg.com/wagmi@1.4.7/dist/wagmi.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
 
   <style>
     
@@ -904,13 +902,12 @@ let cachedEthRate = null;
 let lastRateFetch = 0;
 
   
-  const { EthereumClient, w3mConnectors, w3mProvider } = window.Web3Modal;
+  /* ===== WEB3MODAL + WAGMI SETUP (UMD-compatible) ===== */
+const { EthereumClient, w3mConnectors, w3mProvider } = window.Web3Modal.default;
 const { configureChains, createClient } = window.wagmi;
 const { base } = window.wagmi.chains;
 
-// Use your WalletConnect / Web3Modal project ID
-const projectId = "b6902a65225c260ffee1f335380b9ade";
-
+const projectId = "b6902a65225c260ffee1f335380b9ade"; // Your Reown / WalletConnect Project ID
 const chains = [base];
 
 const { publicClient } = configureChains(chains, [
@@ -928,9 +925,7 @@ const ethereumClient = new EthereumClient(wagmiClient, chains);
 const web3modal = new window.Web3Modal.Web3Modal({
   projectId,
   themeMode: "dark",
-  themeVariables: {
-    "--w3m-accent-color": "#ffd600",
-  }
+  themeVariables: { "--w3m-accent-color": "#ffd600" }
 });
   
   /* ===== BLUR MANAGER ===== */
@@ -1889,7 +1884,8 @@ if (profileBtn)
   showToast("Wallet disconnected", "info");
 }
 
-
+const profileBtn = document.getElementById("profileBtn");
+if(profileBtn) profileBtn.addEventListener("click", disconnectWallet);
 
 /* ===== Redeem Points Display ===== */
 async function updatePointsDisplay() {
