@@ -902,12 +902,15 @@ let cachedEthRate = null;
 let lastRateFetch = 0;
 
   
-  /* ===== WEB3MODAL + WAGMI SETUP (UMD-compatible) ===== */
-const { EthereumClient, w3mConnectors, w3mProvider } = window.Web3Modal.default;
+ // ===== WEB3MODAL + WAGMI SETUP (UMD-compatible) =====
+const EthereumClient = window.Web3Modal.EthereumClient;
+const w3mConnectors = window.Web3Modal.w3mConnectors;
+const w3mProvider = window.Web3Modal.w3mProvider;
+
 const { configureChains, createClient } = window.wagmi;
 const { base } = window.wagmi.chains;
 
-const projectId = "b6902a65225c260ffee1f335380b9ade"; // Your Reown / WalletConnect Project ID
+const projectId = "b6902a65225c260ffee1f335380b9ade"; // Your project ID
 const chains = [base];
 
 const { publicClient } = configureChains(chains, [
@@ -927,6 +930,7 @@ const web3modal = new window.Web3Modal.Web3Modal({
   themeMode: "dark",
   themeVariables: { "--w3m-accent-color": "#ffd600" }
 });
+
   
   /* ===== BLUR MANAGER ===== */
 let blurCount = 0;
