@@ -1733,86 +1733,10 @@ function closeCart() {
     modal.setAttribute("aria-hidden", "true");
     if (overlay) overlay.style.display = "none";
   }
-}
-  
+}  
   // 🛒 Cart open button
 const openCartBtn = document.getElementById("openCartBtn");
 if (openCartBtn) openCartBtn.addEventListener("click", openCart);
-
-
-/* ===== WALLET & PROFILE ===== */
-async function connectWallet() {
-  if (!window.ethereum) {
-    showToast("MetaMask not found", "error");
-    return;
-  }
-
-  try {
-    // ✅ Step 1: Ensure Base network
-    const baseParams = {
-      chainId: "0x2105", // Base mainnet chain ID
-      chainName: "Base Mainnet",
-      nativeCurrency: { name: "Ethereum", symbol: "ETH", decimals: 18 },
-      rpcUrls: ["https://mainnet.base.org"],
-      blockExplorerUrls: ["https://basescan.org"]
-    };
-
-    try {
-      await ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: baseParams.chainId }]
-      });
-    } catch (switchError) {
-      if (switchError.code === 4902) {
-        await ethereum.request({
-          method: "wallet_addEthereumChain",
-          params: [baseParams]
-        });
-      } else {
-        console.warn("Chain switch failed:", switchError);
-      }
-    }
-
-    // ✅ Step 2: Connect wallet
-    web3 = new Web3(window.ethereum);
-    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-    userAddress = accounts[0];
-
-   // ✅ Step 3: Update UI
-const connectBtn = document.getElementById("connectBtn");
-if (connectBtn)
-  connectBtn.style.display = "none"; // hide Connect Wallet button
-
-const profileBtn = document.getElementById("profileBtn");
-if (profileBtn) profileBtn.style.display = "inline-block";
-
-// Remove the walletAddr display entirely
-// const walletAddr = document.getElementById("walletAddr");
-// if (walletAddr) walletAddr.innerText = userAddress;
-
-
-    showToast("Wallet connected", "success");
-
-    // ✅ Step 4: Load profile + update points
-    const profileData = await loadProfile(userAddress);
-
-    await updatePointsDisplay();
-
-    const nftCountEl = document.getElementById("nftCount");
-    if (nftCountEl) nftCountEl.innerText = "Quackers Held: " + profileData.quackerBalance;
-
-    const quacksCount = document.getElementById("quacksCount");
-    if (quacksCount) quacksCount.innerText = "Daily Quacks: " + profileData.dailyQuacks;
-
-  } catch (err) {
-    console.error(err);
-    showToast("Connect failed", "error");
-  }
-}
-
-// Connect button
-const connectBtn = document.getElementById("connectBtn");
-if (connectBtn) connectBtn.addEventListener("click", connectWallet);
 
 /* ===== PROFILE TOGGLE ===== */
 const profileBtn = document.getElementById("profileBtn");
@@ -1842,35 +1766,6 @@ if (profileBtn)
       showToast("Error loading profile", "warn");
     }
   });
-
-/* ===== SWITCH / DISCONNECT ===== */
-async function switchWallet() {
-  try {
-    await ethereum.request({
-      method: "wallet_requestPermissions",
-      params: [{ eth_accounts: {} }]
-    });
-    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-    userAddress = accounts[0];
-    const walletAddr = document.getElementById("walletAddr");
-    if (walletAddr) walletAddr.innerText = userAddress;
-    showToast("Wallet switched", "success");
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-function disconnectWallet() {
-  userAddress = null;
-  web3 = null;
-  const cbo = document.getElementById("connectBtn");
-  if (cbo) cbo.innerText = "Connect Wallet";
-  const profileBtn = document.getElementById("profileBtn");
-  if (profileBtn) profileBtn.style.display = "none";
-  const profileSection = document.getElementById("profileSection");
-  if (profileSection) profileSection.style.display = "none";
-  showToast("Wallet disconnected", "info");
-}
 
 /* ===== Redeem Points Display ===== */
 async function updatePointsDisplay() {
@@ -2685,8 +2580,98 @@ async function loadOrderHistory() {
   }
 }
 
+<script type="module">
+
+import { 
+  createWeb3Modal, 
+  defaultConfig,
+  watchAccount 
+} from "https://unpkg.com/@reown/appkit/dist/index.js";
+
+/* -------------------------------------
+   1. WalletConnect Project ID
+-------------------------------------- */
+const projectId = "YOUR_PROJECT_ID_HERE";
+
+/* -------------------------------------
+   2. App Metadata
+-------------------------------------- */
+const metadata = {
+  name: "Quacker Friends Shop",
+  description: "Quacker Friends Web3 Shop",
+  url: window.location.origin,
+  icons: [
+    "https://quackerfriends.github.io/quackheads-assets/images/brandimages/logo%20transparent%20zoomed.png"
+  ]
+};
+
+/* -------------------------------------
+   3. AppKit / Wagmi Setup
+-------------------------------------- */
+const wagmiConfig = defaultConfig({
+  projectId,
+  metadata,
+  enableInjected: true,
+  enableEIP6963: true,
+  enableCoinbase: true
+});
+
+/* -------------------------------------
+   4. Create Web3Modal UI
+-------------------------------------- */
+createWeb3Modal({
+  projectId,
+  wagmiConfig,
+  themeMode: "light"
+});
+
+/* -------------------------------------
+   5. Connect Wallet Button
+-------------------------------------- */
+document.getElementById("connectBtn").addEventListener("click", () => {
+  window.openWeb3Modal();
+});
+
+/* -------------------------------------
+   6. Listen for wallet connection
+-------------------------------------- */
+watchAccount(async ({ address, isConnected }) => {
+  if (!isConnected) return;
+
+  window.userAddress = address;
+  window.web3 = new Web3(window.ethereum);
+
+  document.getElementById("connectBtn").style.display = "none";
+  document.getElementById("profileBtn").style.display = "inline-block";
+
+  showToast("Wallet connected!", "success");
+
+  const profileData = await loadProfile(address);
+  await updatePointsDisplay();
+
+  document.getElementById("nftCount").innerText =
+    "Quackers Held: " + profileData.quackerBalance;
+
+  document.getElementById("quacksCount").innerText =
+    "Daily Quacks: " + profileData.dailyQuacks;
+});
+
+/* -------------------------------------
+   7. Switch Wallet
+-------------------------------------- */
+function switchWallet() {
+  window.openWeb3Modal();
+}
+
+/* -------------------------------------
+   8. Disconnect Wallet
+-------------------------------------- */
+function disconnectWallet() {
+  if (window.appkit) window.appkit.disconnect();
+  location.reload();
+}
 
 </script>
-  
+
 </body>
 </html>
