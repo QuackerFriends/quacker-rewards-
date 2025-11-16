@@ -845,7 +845,6 @@ const web3Modal = new window.Web3Modal.default({
 
 async function connectWallet() {
   try {
-    web3Modal.clearCachedProvider();
     provider = await web3Modal.connect();
     const web3Provider = new ethers.providers.Web3Provider(provider);
     signer = web3Provider.getSigner();
@@ -853,16 +852,14 @@ async function connectWallet() {
 
     console.log("Wallet connected:", userAddress);
 
-    // Show profile button
-    const profileBtn = document.getElementById("profileBtn");
-    if (profileBtn) profileBtn.style.display = 'inline-block';
+    // ✅ Show the profile button now that wallet is connected
+    document.getElementById("profileBtn").style.display = 'inline-block';
 
-    // Load profile data
+    // Optionally load and display profile info
     const profileData = await loadProfile(userAddress);
-    console.log("Profile data:", profileData);
-    updateProfileUI(profileData); // a function to populate your profile panel
+    updateProfileUI(profileData);
 
-    // Auto-switch network
+    // Auto-switch to Base
     const network = await web3Provider.getNetwork();
     if (network.chainId !== 8453) {
       try {
@@ -870,22 +867,34 @@ async function connectWallet() {
           method: "wallet_switchEthereumChain",
           params: [{ chainId: BASE_CHAIN_ID_HEX }]
         });
-      } catch (err) { console.warn("Network switch failed:", err); }
+        console.log("✅ Switched to Base network");
+      } catch (err) {
+        console.warn("Network switch failed:", err);
+      }
     }
 
-    // Listeners
-    provider.on("accountsChanged", async accounts => {
+    // Listen for changes
+    provider.on("accountsChanged", accounts => {
       userAddress = accounts[0];
       console.log("Accounts changed:", userAddress);
-      const profileData = await loadProfile(userAddress);
-      updateProfileUI(profileData);
+      updateProfileUI(loadProfile(userAddress));
     });
-    provider.on("chainChanged", chainId => console.log("Network changed:", chainId));
+
+    provider.on("chainChanged", chainId => {
+      console.log("Network changed:", chainId);
+    });
 
   } catch (err) {
     console.error("Wallet connection failed:", err);
-    alert("Wallet connection failed. See console.");
+    alert("Wallet connection failed. See console for details.");
   }
+}
+
+  function updateProfileUI(data) {
+  if (!data) return;
+  document.getElementById("nftCount").innerText = `Quackers Held: ${data.quackerBalance}`;
+  document.getElementById("quacksCount").innerText = `Daily Quacks: ${data.dailyQuacks}`;
+  document.getElementById("pointsValue").innerText = data.referralPoints;
 }
 
 /* ===== ATTACH BUTTON ===== */
