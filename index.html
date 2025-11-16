@@ -5,7 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Quacker Friends Shop</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+<!-- ===== Wallet & ETH Libraries ===== -->
+<script src="https://unpkg.com/web3modal@1.9.8/dist/index.js"></script>
+<script src="https://unpkg.com/@walletconnect/web3-provider@1.6.6/dist/umd/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<script src="https://unpkg.com/@coinbase/wallet-sdk@3.7.0/dist/CoinbaseWalletSDK.umd.min.js"></script>
+
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 
@@ -794,86 +799,38 @@ const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 
-/* ===== FORCE NETWORK TO BASE ===== */
+/* ===== FORCE NETWORK (Optional fallback) ===== */
 async function ensureBaseNetwork() {
-  if (!window.ethereum) {
-    alert("MetaMask not detected. Please install it to continue.");
-    throw new Error("No wallet detected");
-  }
-
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const network = await provider.getNetwork();
-
-  if (network.chainId !== 8453) { // 8453 = Base Mainnet
-    try {
-      await window.ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: BASE_CHAIN_ID_HEX }],
-      });
-      console.log("✅ Switched to Base network");
-    } catch (switchError) {
-      // Error 4902 = chain not added
-      if (switchError.code === 4902) {
-        try {
-          await window.ethereum.request({
-            method: "wallet_addEthereumChain",
-            params: [{
-              chainId: BASE_CHAIN_ID_HEX,
-              chainName: "Base Mainnet",
-              nativeCurrency: {
-                name: "Ethereum",
-                symbol: "ETH",
-                decimals: 18
-              },
-              rpcUrls: ["https://mainnet.base.org"],
-              blockExplorerUrls: ["https://basescan.org"]
-            }]
-          });
-          console.log("✅ Base network added and switched");
-        } catch (addError) {
-          console.error("Failed to add Base network:", addError);
-          alert("Please switch to Base network manually in MetaMask.");
-          throw addError;
-        }
-      } else {
-        console.error("Failed to switch network:", switchError);
-        alert("Please switch to Base network manually in MetaMask.");
-        throw switchError;
-      }
-    }
-  } else {
-    console.log("🟢 Already on Base network");
+  if (!provider) return;
+  try {
+    await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: BASE_CHAIN_ID_HEX }] });
+  } catch (err) {
+    console.warn("Failed to force Base network:", err);
   }
 }
 
-/* ===== LOAD PROFILE (Web3.js version) ===== */
+/* ===== LOAD PROFILE ===== */
 async function loadProfile(wallet) {
-  if (!web3 || !wallet) return null;
+  if (!wallet) return null;
 
   let quackerBalance = 0;
   try {
-    const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+    const web3Instance = new Web3(provider);
+    const contract = new web3Instance.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
     quackerBalance = await contract.methods.balanceOf(wallet).call();
-  } catch (err) {
-    console.warn("Failed to fetch Quacker NFT balance:", err);
-  }
+  } catch (err) { console.warn("Failed to fetch NFT balance:", err); }
 
   let claimData = {};
   try {
     const claimResp = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(wallet)}&check=true`);
     claimData = await claimResp.json();
-  } catch (err) {
-    console.warn("Failed to fetch claim data:", err);
-  }
+  } catch (err) { console.warn("Failed to fetch claim data:", err); }
 
   let shopData = {};
   try {
     const shopResp = await fetch(`${PURCHASE_API}?wallet=${encodeURIComponent(wallet)}&checkPoints=true`);
-    const pointsResp = await shopResp.json();
-    shopData.points = pointsResp.points || 0;
-  } catch (err) {
-    console.warn("Failed to fetch shop/referral data:", err);
-  }
+    shopData = await shopResp.json();
+  } catch (err) { console.warn("Failed to fetch shop data:", err); }
 
   return {
     wallet,
@@ -887,13 +844,66 @@ async function loadProfile(wallet) {
 }
 
 /* ===== STATE ===== */
+  
 let userAddress = null;
+let provider = null;
+let signer = null;
 let web3 = null;
 let cart = []; let selectedCountry = "USA"; // ✅ Default selection for shipping
 let PRODUCTS = {};                 // will be filled by loadProducts()
 let currentCategory = null;     // default (sheet categories may vary in case)
 let cachedEthRate = null;
 let lastRateFetch = 0;
+  
+  /* ===== Web3Modal Setup ===== */
+const providerOptions = {
+  walletconnect: {
+    package: window.WalletConnectProvider.default,
+    options: { rpc: { 8453: "https://mainnet.base.org" } }
+  },
+  coinbasewallet: {
+    package: window.CoinbaseWalletSDK,
+    options: { appName: "My HTML Shop", chainId: 8453 }
+  }
+};
+
+const web3Modal = new window.Web3Modal.default({
+  cacheProvider: false,
+  providerOptions
+});
+  
+  /* ===== Connect Wallet ===== */
+async function connectWallet() {
+  try {
+    provider = await web3Modal.connect();
+    const web3Provider = new ethers.providers.Web3Provider(provider);
+    signer = web3Provider.getSigner();
+    userAddress = await signer.getAddress();
+
+    document.getElementById("walletAddress").innerText = "Connected: " + userAddress;
+
+    // Auto-switch network to Base
+    const { chainId } = await web3Provider.getNetwork();
+    if (chainId !== 8453) {
+      try {
+        await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: BASE_CHAIN_ID_HEX }] });
+        console.log("✅ Switched to Base network");
+      } catch (err) {
+        console.warn("Network switch failed:", err);
+      }
+    }
+
+    // Listen for account/network changes
+    provider.on("accountsChanged", accounts => { userAddress = accounts[0]; });
+    provider.on("chainChanged", chainId => console.log("Network changed:", chainId));
+
+  } catch (err) {
+    console.error("Wallet connection failed:", err);
+    showToast("Wallet connection failed", "error");
+  }
+}
+
+document.getElementById("connectWalletBtn")?.addEventListener("click", connectWallet);
 
   /* ===== BLUR MANAGER ===== */
 let blurCount = 0;
@@ -1886,113 +1896,62 @@ if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
 const checkoutBtn = document.getElementById("checkoutBtn");
 if (checkoutBtn) checkoutBtn.addEventListener("click", checkout);
 
+/* ===== CHECKOUT ===== */
 async function checkout() {
-  const shippingAddress = document.getElementById("userAddressInput")?.value || "";
-  const referrer = document.getElementById("referrerInput")?.value?.trim() || "";
+  if (!provider || !userAddress) { showToast("Connect wallet first", "error"); return; }
+  if (!cart || cart.length === 0) { showToast("Cart is empty", "info"); return; }
 
-  if (!shippingAddress.trim()) {
-    showToast("Please enter your shipping address before completing your purchase!", "error");
-    return;
-  }
+  const shippingAddress = document.getElementById("userAddressInput")?.value?.trim() || "";
+  if (!shippingAddress) { showToast("Enter shipping address", "error"); return; }
 
-  try {
-    if (!window.ethereum) { showToast("MetaMask not found", "error"); return; }
-    if (!userAddress) { showToast("Connect wallet first", "error"); return; }
-    if (cart.length === 0) { showToast("Cart is empty", "info"); return; }
+  // Ensure network
+  await ensureBaseNetwork();
 
-    // --- Ensure correct network ---
+  const subtotalUSD = cart.reduce((sum, item) => sum + (item.priceUSD * (item.q || 1)), 0);
+  const country = (window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA").toLowerCase();
+  let shippingUSD = subtotalUSD >= 70 ? 0 : (country === "canada" ? 10 : 5);
+
+  const rate = await getEthRate();
+  let txHash = "";
+
+  // Determine if paid items exist
+  const hasPaidItems = cart.some(ci => !ci.redeem && !ci.useQuacks);
+
+  if (hasPaidItems) {
+    const totalEth = (subtotalUSD + shippingUSD) / rate;
+    const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
+    const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
+
     try {
-      const chain = await ethereum.request({ method: 'eth_chainId' });
-      if (chain !== BASE_CHAIN_ID_HEX) {
-        await ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: BASE_CHAIN_ID_HEX }] });
-        showToast("Switched to Base mainnet", "success");
-      }
-    } catch (switchErr) {
-      console.warn("Chain switch issue:", switchErr);
+      showToast(`Please confirm payment ($${shippingUSD} shipping included)`, "info", 8000);
+      txHash = await provider.request({ method: "eth_sendTransaction", params: [txParams] });
+      showToast("✅ Transaction sent — logging purchase...", "success", 4000);
+    } catch (err) {
+      console.warn("Transaction aborted:", err);
+      showToast("Payment cancelled", "error");
+      return;
     }
+  } else if (shippingUSD > 0) {
+    const shippingEth = shippingUSD / rate;
+    const valueHex = "0x" + BigInt(Math.floor(shippingEth * 1e18)).toString(16);
+    const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
 
-    // --- Calculate subtotal in USD --- //
-  //  let subtotalUSD = 0;
-    // cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); }); 
-
-
- // --- Shipping rules ---
- // --- Determine shipping ---
-let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
-country = country.toLowerCase();
-let shippingUSD = 0;
-let subtotalUSD = cart.reduce((sum, item) => sum + (item.priceUSD * (item.q || 1)), 0);
-
-// --- Identify order types ---
-const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
-const isQuacksOnly = cart.length > 0 && cart.every(ci => ci.useQuacks);
-const hasPaidItems = cart.some(ci => !ci.redeem && !ci.useQuacks);
-
-// --- Force shipping for all physical goods ---
-const needsShipping = cart.length > 0; // assume all items physical
-
-// --- Apply shipping rules ---
-if (subtotalUSD >= 70) {
-  shippingUSD = 0;
-} else if (country === "canada") {
-  shippingUSD = 10;
-} else {
-  shippingUSD = 5;
-}
-
-// 👉 Force shipping even if subtotal is 0 (for quacks/redeem)
-if ((isRedeemOnly || isQuacksOnly) && needsShipping && shippingUSD === 0) {
-  if (country === "canada") {
-    shippingUSD = 10;
+    try {
+      showToast(`Please pay $${shippingUSD} shipping`, "info", 8000);
+      txHash = await provider.request({ method: "eth_sendTransaction", params: [txParams] });
+      showToast("✅ Shipping paid — logging order...", "success", 4000);
+    } catch (err) {
+      console.warn("Shipping transaction aborted:", err);
+      showToast("Shipping payment cancelled", "error");
+      return;
+    }
   } else {
-    shippingUSD = 5;
+    showToast("🎁 Free shipping applied!", "info");
   }
 }
-console.log("🧭 Country:", country, "| subtotalUSD =", subtotalUSD, "| Shipping =", shippingUSD);
 
-const rate = await getEthRate();
-let txHash = "";
-
-// --- ETH Payment Handling ---
-if (hasPaidItems) {
-  // Normal checkout
-  const grandTotalUSD = subtotalUSD + shippingUSD;
-  const totalEth = grandTotalUSD / rate;
-  const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
-  const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
-
-  try {
-    showToast(`Please confirm payment (includes $${shippingUSD} shipping)`, "info", 8000);
-    txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
-    showToast("✅ Transaction sent — logging purchase...", "success", 4000);
-    await new Promise(r => setTimeout(r, 1200));
-  } catch (err) {
-    console.warn("tx aborted", err);
-    showToast("Transaction cancelled — not logged", "error");
-    return;
-  }
-
-} else if ((isRedeemOnly || isQuacksOnly) && shippingUSD > 0) {
-  // Pay only shipping for redeem/quacks
-  const shippingEth = shippingUSD / rate;
-  const valueHex = "0x" + BigInt(Math.floor(shippingEth * 1e18)).toString(16);
-  const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
-
-  try {
-    showToast(`Please confirm $${shippingUSD} shipping payment`, "info", 8000);
-    txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
-    showToast("✅ Shipping paid — logging order...", "success", 4000);
-    await new Promise(r => setTimeout(r, 1200));
-  } catch (err) {
-    console.warn("Shipping tx aborted", err);
-    showToast("Shipping payment cancelled — not logged", "error");
-    return;
-  }
-
-} else {
-  // Free shipping
-  showToast("🎁 Free shipping applied!", "info");
-}
+/* ===== BUTTON ===== */
+document.getElementById("checkoutBtn")?.addEventListener("click", checkout);
 
 
     // --- Loop through cart items ---
@@ -2579,98 +2538,6 @@ async function loadOrderHistory() {
     btn.textContent = "View My Orders";
   }
 }
-</script>
-<script type="module">
-
-import { 
-  createWeb3Modal, 
-  defaultConfig,
-  watchAccount 
-} from "https://unpkg.com/@reown/appkit/dist/index.js";
-
-/* -------------------------------------
-   1. WalletConnect Project ID
--------------------------------------- */
-const projectId = "b6902a65225c260ffee1f335380b9ade";
-
-/* -------------------------------------
-   2. App Metadata
--------------------------------------- */
-const metadata = {
-  name: "Quacker Friends Shop",
-  description: "Quacker Friends Web3 Shop",
-  url: window.location.origin,
-  icons: [
-    "https://quackerfriends.github.io/quackheads-assets/images/brandimages/logo%20transparent%20zoomed.png"
-  ]
-};
-
-/* -------------------------------------
-   3. AppKit / Wagmi Setup
--------------------------------------- */
-const wagmiConfig = defaultConfig({
-  projectId,
-  metadata,
-  enableInjected: true,
-  enableEIP6963: true,
-  enableCoinbase: true
-});
-
-/* -------------------------------------
-   4. Create Web3Modal UI
--------------------------------------- */
-createWeb3Modal({
-  projectId,
-  wagmiConfig,
-  themeMode: "light"
-});
-
-/* -------------------------------------
-   5. Connect Wallet Button
--------------------------------------- */
-document.getElementById("connectBtn").addEventListener("click", () => {
-  window.openWeb3Modal();
-});
-
-/* -------------------------------------
-   6. Listen for wallet connection
--------------------------------------- */
-watchAccount(async ({ address, isConnected }) => {
-  if (!isConnected) return;
-
-  window.userAddress = address;
-  window.web3 = new Web3(window.ethereum);
-
-  document.getElementById("connectBtn").style.display = "none";
-  document.getElementById("profileBtn").style.display = "inline-block";
-
-  showToast("Wallet connected!", "success");
-
-  const profileData = await loadProfile(address);
-  await updatePointsDisplay();
-
-  document.getElementById("nftCount").innerText =
-    "Quackers Held: " + profileData.quackerBalance;
-
-  document.getElementById("quacksCount").innerText =
-    "Daily Quacks: " + profileData.dailyQuacks;
-});
-
-/* -------------------------------------
-   7. Switch Wallet
--------------------------------------- */
-function switchWallet() {
-  window.openWeb3Modal();
-}
-
-/* -------------------------------------
-   8. Disconnect Wallet
--------------------------------------- */
-function disconnectWallet() {
-  if (window.appkit) window.appkit.disconnect();
-  location.reload();
-}
-
 </script>
 
 </body>
