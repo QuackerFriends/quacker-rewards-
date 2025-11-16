@@ -1896,63 +1896,51 @@ if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
 const checkoutBtn = document.getElementById("checkoutBtn");
 if (checkoutBtn) checkoutBtn.addEventListener("click", checkout);
 
-/* ===== CHECKOUT ===== */
 async function checkout() {
-  if (!provider || !userAddress) { showToast("Connect wallet first", "error"); return; }
+  const shippingAddress = document.getElementById("userAddressInput")?.value?.trim() || "";
+  const referrer = document.getElementById("referrerInput")?.value?.trim() || "";
+
+  if (!shippingAddress) { showToast("Enter shipping address", "error"); return; }
+  if (!provider || !signer || !userAddress) { showToast("Connect wallet first", "error"); return; }
   if (!cart || cart.length === 0) { showToast("Cart is empty", "info"); return; }
 
-  const shippingAddress = document.getElementById("userAddressInput")?.value?.trim() || "";
-  if (!shippingAddress) { showToast("Enter shipping address", "error"); return; }
+  try {
+    await ensureBaseNetwork();
 
-  // Ensure network
-  await ensureBaseNetwork();
+    const subtotalUSD = cart.reduce((sum, item) => sum + (item.priceUSD * (item.q || 1)), 0);
+    const country = (window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA").toLowerCase();
+    let shippingUSD = subtotalUSD >= 70 ? 0 : (country === "canada" ? 10 : 5);
 
-  const subtotalUSD = cart.reduce((sum, item) => sum + (item.priceUSD * (item.q || 1)), 0);
-  const country = (window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA").toLowerCase();
-  let shippingUSD = subtotalUSD >= 70 ? 0 : (country === "canada" ? 10 : 5);
+    const rate = await getEthRate();
+    let txHash = "";
 
-  const rate = await getEthRate();
-  let txHash = "";
+    const hasPaidItems = cart.some(ci => !ci.redeem && !ci.useQuacks);
+    const isRedeemOnly = cart.every(ci => ci.redeem);
+    const isQuacksOnly = cart.every(ci => ci.useQuacks);
 
-  // Determine if paid items exist
-  const hasPaidItems = cart.some(ci => !ci.redeem && !ci.useQuacks);
+    // --- ETH Payment Handling via signer ---
+    if (hasPaidItems || (shippingUSD > 0 && (isRedeemOnly || isQuacksOnly))) {
+      const ethAmount = hasPaidItems
+        ? (subtotalUSD + shippingUSD) / rate
+        : shippingUSD / rate;
 
-  if (hasPaidItems) {
-    const totalEth = (subtotalUSD + shippingUSD) / rate;
-    const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
-    const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
-
-    try {
-      showToast(`Please confirm payment ($${shippingUSD} shipping included)`, "info", 8000);
-      txHash = await provider.request({ method: "eth_sendTransaction", params: [txParams] });
-      showToast("✅ Transaction sent — logging purchase...", "success", 4000);
-    } catch (err) {
-      console.warn("Transaction aborted:", err);
-      showToast("Payment cancelled", "error");
-      return;
+      try {
+        showToast(`Please confirm payment ($${shippingUSD} shipping included)`, "info", 8000);
+        const txResp = await signer.sendTransaction({
+          to: SHOP_WALLET,
+          value: ethers.utils.parseEther(ethAmount.toFixed(18))
+        });
+        await txResp.wait();
+        txHash = txResp.hash;
+        showToast("✅ Transaction sent — logging purchase...", "success", 4000);
+      } catch (err) {
+        console.warn("Transaction aborted", err);
+        showToast("Payment cancelled", "error");
+        return;
+      }
+    } else {
+      showToast("🎁 Free shipping applied!", "info");
     }
-  } else if (shippingUSD > 0) {
-    const shippingEth = shippingUSD / rate;
-    const valueHex = "0x" + BigInt(Math.floor(shippingEth * 1e18)).toString(16);
-    const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
-
-    try {
-      showToast(`Please pay $${shippingUSD} shipping`, "info", 8000);
-      txHash = await provider.request({ method: "eth_sendTransaction", params: [txParams] });
-      showToast("✅ Shipping paid — logging order...", "success", 4000);
-    } catch (err) {
-      console.warn("Shipping transaction aborted:", err);
-      showToast("Shipping payment cancelled", "error");
-      return;
-    }
-  } else {
-    showToast("🎁 Free shipping applied!", "info");
-  }
-}
-
-/* ===== BUTTON ===== */
-document.getElementById("checkoutBtn")?.addEventListener("click", checkout);
-
 
     // --- Loop through cart items ---
     for (const ci of cart) {
@@ -1975,17 +1963,17 @@ document.getElementById("checkoutBtn")?.addEventListener("click", checkout);
         payload.itemName = ci.title;
         payload.quacksCost = ci.quacksCost;
 
-        // 🪙 Deduct Quacks from user sheet
+        // 🪙 Deduct Quacks from sheet
         try {
           const spendRes = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&spend=${ci.quacksCost}`);
           const spendData = await spendRes.json();
           if (spendData.error) {
             showToast(`Quacks deduction failed: ${spendData.error}`, "error");
-            return; // stop checkout if not enough Quacks
+            return;
           }
           showToast(`💸 ${ci.quacksCost} Quacks used for "${ci.title}"!`, "success", 4000);
-        } catch (quackErr) {
-          console.warn("Quacks deduction error:", quackErr);
+        } catch (err) {
+          console.warn(err);
           showToast("Quacks deduction failed — purchase not logged", "error");
           return;
         }
@@ -1995,11 +1983,7 @@ document.getElementById("checkoutBtn")?.addEventListener("click", checkout);
       }
 
       // --- Log to Apps Script ---
-      const params = new URLSearchParams({
-        ...payload,
-        action: ci.useQuacks ? "payWithQuacks" : ""
-      }).toString();
-
+      const params = new URLSearchParams({ ...payload, action: ci.useQuacks ? "payWithQuacks" : "" }).toString();
       try {
         const res = await fetch(`${PURCHASE_API}?${params}`);
         const data = await res.json();
@@ -2009,15 +1993,9 @@ document.getElementById("checkoutBtn")?.addEventListener("click", checkout);
       }
     }
 
-    // --- Success Toasts ---
-    if (isRedeemOnly) {
-      showToast("✅ Redemption logged successfully!", "success", 4000);
-      updatePointsDisplay();
-    } else {
-      showToast("✅ Purchase logged successfully!", "success", 4000);
-    }
+    showToast("✅ Purchase logged successfully!", "success", 4000);
 
-    // --- Optional BaseScan link for ETH tx ---
+    // Optional BaseScan link
     if (txHash) {
       const baseScanUrl = `https://basescan.org/tx/${txHash}`;
       const linkToast = document.createElement("div");
@@ -2032,7 +2010,6 @@ document.getElementById("checkoutBtn")?.addEventListener("click", checkout);
     showToast("Checkout failed", "error");
   }
 }
-
   
 /* ===== ADD TO CART WITH QUACKS ===== */
 async function addToCartWithQuacks(productId, quacksCost) {
