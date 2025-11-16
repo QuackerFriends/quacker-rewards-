@@ -5,19 +5,18 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Quacker Friends Shop</title>
 
-<!-- Ethers.js (UMD) -->
-  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+<!-- ===== LIBRARIES ===== -->
+<!-- Ethers.js UMD -->
+<script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
 
-  <!-- WalletConnect provider (UMD) -->
-  <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+<!-- WalletConnect UMD -->
+<script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 
-  <!-- Coinbase Wallet SDK (UMD v3.0.6) -->
-  <script src="https://unpkg.com/coinbase-wallet-sdk@3.0.6/dist/CoinbaseWalletSDK.min.js"></script>
+<!-- Coinbase Wallet SDK UMD -->
+<script src="https://unpkg.com/coinbase-wallet-sdk@3.0.6/dist/CoinbaseWalletSDK.min.js"></script>
 
-  <!-- Web3Modal v1 (UMD) -->
-
-  <script src="https://unpkg.com/web3modal@1.9.8/dist/index.js"></script>
-  
+<!-- Web3Modal v1 UMD -->
+<script src="https://unpkg.com/web3modal@1.9.8/dist/index.js"></script>
   <style>
     
     :root{
@@ -807,63 +806,79 @@ const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 let userAddress = null;
 let provider = null;
 let signer = null;
-let web3 = null;
 let cart = []; let selectedCountry = "USA"; // ✅ Default selection for shipping
 let PRODUCTS = {};                 // will be filled by loadProducts()
 let currentCategory = null;     // default (sheet categories may vary in case)
 let cachedEthRate = null;
 let lastRateFetch = 0;
   
-    // ===== Web3Modal Setup =====
-    const providerOptions = {
-      walletconnect: {
-        package: window.WalletConnectProvider.default,
-        options: { rpc: { 8453: "https://mainnet.base.org" } }
-      },
-      coinbasewallet: {
-        package: window.CoinbaseWalletSDK,
-        options: { appName: "My HTML Shop", chainId: 8453 }
-      }
-    };
+    /* ===== Web3Modal Setup ===== */
+const providerOptions = {
+  walletconnect: {
+    package: window.WalletConnectProvider.default,
+    options: {
+      rpc: { 8453: "https://mainnet.base.org" }
+    }
+  },
+  coinbasewallet: {
+    package: window.CoinbaseWalletSDK,
+    options: {
+      appName: "Quacker Shop",
+      chainId: 8453
+    }
+  }
+};
 
-    const web3Modal = new window.Web3Modal.default({
-      cacheProvider: false,
-      providerOptions
-    });
-   // ===== Connect Wallet =====
-    async function connectWallet() {
-      console.log("Connect wallet clicked");
+const web3Modal = new window.Web3Modal.default({
+  cacheProvider: false,
+  providerOptions
+});
+
+/* ===== CONNECT WALLET ===== */
+async function connectWallet() {
+  try {
+    provider = await web3Modal.connect();
+    const web3Provider = new ethers.providers.Web3Provider(provider);
+    signer = web3Provider.getSigner();
+    userAddress = await signer.getAddress();
+
+    console.log("Wallet connected:", userAddress);
+    alert("Wallet connected: " + userAddress);
+
+    // Auto-switch to Base
+    const network = await web3Provider.getNetwork();
+    if (network.chainId !== 8453) {
       try {
-        provider = await web3Modal.connect();
-        const web3Provider = new ethers.providers.Web3Provider(provider);
-        signer = web3Provider.getSigner();
-        userAddress = await signer.getAddress();
-
-        document.getElementById("walletStatus").innerText = "Connected!";
-        console.log("Connected address:", userAddress);
-
-        // Optional: auto-switch to Base network
-        const { chainId } = await web3Provider.getNetwork();
-        if (chainId !== 8453) {
-          try {
-            await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x2105" }] });
-            console.log("✅ Switched to Base network");
-          } catch (err) {
-            console.warn("Network switch failed:", err);
-          }
-        }
-
-        // Listen for account/network changes
-        provider.on("accountsChanged", accounts => { userAddress = accounts[0]; console.log("Account changed:", userAddress); });
-        provider.on("chainChanged", chainId => console.log("Network changed:", chainId));
-
+        await provider.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: BASE_CHAIN_ID_HEX }]
+        });
+        console.log("✅ Switched to Base network");
       } catch (err) {
-        console.error("Wallet connection failed:", err);
-        alert("Wallet connection failed — check console");
+        console.warn("Network switch failed:", err);
       }
     }
 
-    document.getElementById("connectWalletBtn").addEventListener("click", connectWallet);
+    // Listen for changes
+    provider.on("accountsChanged", accounts => {
+      userAddress = accounts[0];
+      console.log("Accounts changed:", userAddress);
+    });
+
+    provider.on("chainChanged", chainId => {
+      console.log("Network changed:", chainId);
+    });
+
+  } catch (err) {
+    console.error("Wallet connection failed:", err);
+    alert("Wallet connection failed. See console for details.");
+  }
+}
+
+/* ===== BUTTON ===== */
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("connectBtn")?.addEventListener("click", connectWallet);
+});
 
 /* ===== FORCE NETWORK TO BASE ===== */
 async function ensureBaseNetwork() {
@@ -906,13 +921,12 @@ async function ensureBaseNetwork() {
 
 /* ===== LOAD PROFILE ===== */
 async function loadProfile(wallet) {
-  if (!wallet) return null;
+  if (!wallet || !signer) return null;
 
   let quackerBalance = 0;
   try {
-    const web3Instance = new Web3(provider);
-    const contract = new web3Instance.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-    quackerBalance = await contract.methods.balanceOf(wallet).call();
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+    quackerBalance = await contract.balanceOf(wallet);
   } catch (err) { console.warn("Failed to fetch NFT balance:", err); }
 
   let claimData = {};
