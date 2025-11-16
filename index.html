@@ -835,10 +835,17 @@ const web3Modal = new window.Web3Modal.default({
   providerOptions
 });
 
+
 /* ===== CONNECT WALLET ===== */
 async function connectWallet() {
   try {
+    // Clear cached provider first (fresh start)
+    web3Modal.clearCachedProvider();
+
+    // Open modal
     provider = await web3Modal.connect();
+
+    // Wrap in ethers.js provider
     const web3Provider = new ethers.providers.Web3Provider(provider);
     signer = web3Provider.getSigner();
     userAddress = await signer.getAddress();
@@ -846,7 +853,7 @@ async function connectWallet() {
     console.log("Wallet connected:", userAddress);
     alert("Wallet connected: " + userAddress);
 
-    // Auto-switch to Base
+    // Auto-switch to Base network
     const network = await web3Provider.getNetwork();
     if (network.chainId !== 8453) {
       try {
@@ -860,14 +867,17 @@ async function connectWallet() {
       }
     }
 
-    // Listen for changes
+    // Listen for account changes
     provider.on("accountsChanged", accounts => {
       userAddress = accounts[0];
       console.log("Accounts changed:", userAddress);
+      // Optionally reload profile here
     });
 
+    // Listen for network changes
     provider.on("chainChanged", chainId => {
       console.log("Network changed:", chainId);
+      // Optionally handle UI/network updates
     });
 
   } catch (err) {
@@ -876,10 +886,12 @@ async function connectWallet() {
   }
 }
 
-/* ===== BUTTON ===== */
+/* ===== ATTACH BUTTON ===== */
 document.addEventListener("DOMContentLoaded", () => {
+  web3Modal.clearCachedProvider(); // ensure fresh connect
   document.getElementById("connectBtn")?.addEventListener("click", connectWallet);
 });
+
 
 /* ===== FORCE NETWORK TO BASE ===== */
 async function ensureBaseNetwork() {
