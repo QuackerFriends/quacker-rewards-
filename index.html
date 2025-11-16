@@ -8,15 +8,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
   
-  <!-- Web3Modal / WalletConnect (UMD) -->
-  
-<script src="https://unpkg.com/@walletconnect/web3modal@2.7.2/dist/web3modal.umd.js"></script>
-<script src="https://unpkg.com/viem@1.16.5/dist/viem.min.js"></script>
-<script src="https://unpkg.com/wagmi@1.4.7/dist/wagmi.umd.js"></script>
+ <!-- Web3Modal v1 (UMD) + Web3.js -->
+<script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
+<script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
- <script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
-
-
 
   <style>
     
@@ -896,45 +891,33 @@ async function loadProfile(wallet) {
 }
 
 /* ===== STATE ===== */
+  
+let web3Modal;
+let provider;
 let userAddress = null;
 let web3 = null;
-let cart = []; let selectedCountry = "USA"; // ✅ Default selection for shipping
+let cart = []; 
+let selectedCountry = "USA"; // ✅ Default selection for shipping
 let PRODUCTS = {};                 // will be filled by loadProducts()
 let currentCategory = null;     // default (sheet categories may vary in case)
 let cachedEthRate = null;
 let lastRateFetch = 0;
 
-  
- // ===== WEB3MODAL + WAGMI SETUP (UMD-compatible) =====
-const EthereumClient = window.Web3Modal.EthereumClient;
-const w3mConnectors = window.Web3Modal.w3mConnectors;
-const w3mProvider = window.Web3Modal.w3mProvider;
-
-const { configureChains, createClient } = window.wagmi;
-const { base } = window.wagmi.chains;
-
-const projectId = "b6902a65225c260ffee1f335380b9ade"; // Your project ID
-const chains = [base];
-
-const { publicClient } = configureChains(chains, [
-  w3mProvider({ projectId })
-]);
-
-const wagmiClient = createClient({
-  autoConnect: true,
-  connectors: w3mConnectors({ chains, projectId }),
-  publicClient,
+  /* ===== Web3Modal Init ===== */
+window.addEventListener('load', () => {
+  web3Modal = new window.Web3Modal.default({
+    cacheProvider: false,
+    network: "mainnet", // optional
+    providerOptions: {
+      walletconnect: {
+        package: window.WalletConnectProvider.default,
+        options: {
+          infuraId: "YOUR_INFURA_ID" // optional if using Infura
+        }
+      }
+    }
+  });
 });
-
-const ethereumClient = new EthereumClient(wagmiClient, chains);
-
-const web3modal = new window.Web3Modal.Web3Modal({
-  projectId,
-  themeMode: "dark",
-  themeVariables: { "--w3m-accent-color": "#ffd600" }
-});
-
-  
   /* ===== BLUR MANAGER ===== */
 let blurCount = 0;
 function addBlur() { blurCount++; document.body.classList.add("blur-bg");}
