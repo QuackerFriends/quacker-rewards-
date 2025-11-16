@@ -6,27 +6,13 @@
   <title>Quacker Friends Shop</title>
 
 <!-- ===== LIBRARIES ===== -->
-<!-- Ethers.js UMD -->
-<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-
-
-<!-- WalletConnect UMD -->
+<script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
 <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
-
-<!-- Coinbase Wallet SDK UMD -->
 <script src="https://unpkg.com/coinbase-wallet-sdk@3.0.6/dist/CoinbaseWalletSDK.min.js"></script>
-
-<!-- Web3Modal v1 UMD -->
 <script src="https://unpkg.com/web3modal@1.9.8/dist/index.js"></script>
+  
   <style>
-    
-    /* temporary debug CSS */
-.web3modal-modal {
-  z-index: 999999 !important;
-  pointer-events: auto !important;
-}
-
-    
+  
     :root{
       --brand-orange:#ff914d;
       --brand-orange-dark:#ff7b2c;
@@ -824,16 +810,11 @@ let lastRateFetch = 0;
 const providerOptions = {
   walletconnect: {
     package: window.WalletConnectProvider.default,
-    options: {
-      rpc: { 8453: "https://mainnet.base.org" }
-    }
+    options: { rpc: { 8453: "https://mainnet.base.org" } }
   },
   coinbasewallet: {
     package: window.CoinbaseWalletSDK,
-    options: {
-      appName: "Quacker Shop",
-      chainId: 8453
-    }
+    options: { appName: "Quacker Shop", chainId: 8453 }
   }
 };
 
@@ -846,29 +827,26 @@ const web3Modal = new window.Web3Modal.default({
 async function connectWallet() {
   try {
     provider = await web3Modal.connect();
+
+    // MetaMask & other injected wallets
     const web3Provider = new ethers.providers.Web3Provider(provider);
     signer = web3Provider.getSigner();
     userAddress = await signer.getAddress();
-
     console.log("Wallet connected:", userAddress);
 
-    // ✅ Show the profile button now that wallet is connected
-    document.getElementById("profileBtn").style.display = 'inline-block';
+    // Show profile button
+    document.getElementById("profileBtn").style.display = "inline-block";
 
-    // Optionally load and display profile info
-    const profileData = await loadProfile(userAddress);
-    updateProfileUI(profileData);
-
-    // Auto-switch to Base
+    // Auto-switch network
     const network = await web3Provider.getNetwork();
-    if (network.chainId !== 8453) {
+    if(network.chainId !== 8453){
       try {
         await provider.request({
           method: "wallet_switchEthereumChain",
-          params: [{ chainId: BASE_CHAIN_ID_HEX }]
+          params:[{ chainId: BASE_CHAIN_ID_HEX }]
         });
         console.log("✅ Switched to Base network");
-      } catch (err) {
+      } catch(err){
         console.warn("Network switch failed:", err);
       }
     }
@@ -877,30 +855,21 @@ async function connectWallet() {
     provider.on("accountsChanged", accounts => {
       userAddress = accounts[0];
       console.log("Accounts changed:", userAddress);
-      updateProfileUI(loadProfile(userAddress));
     });
 
     provider.on("chainChanged", chainId => {
       console.log("Network changed:", chainId);
     });
 
-  } catch (err) {
+  } catch(err){
     console.error("Wallet connection failed:", err);
-    alert("Wallet connection failed. See console for details.");
+    alert("Wallet connection failed. See console.");
   }
 }
 
-  function updateProfileUI(data) {
-  if (!data) return;
-  document.getElementById("nftCount").innerText = `Quackers Held: ${data.quackerBalance}`;
-  document.getElementById("quacksCount").innerText = `Daily Quacks: ${data.dailyQuacks}`;
-  document.getElementById("pointsValue").innerText = data.referralPoints;
-}
-
-/* ===== ATTACH BUTTON ===== */
-document.addEventListener("DOMContentLoaded", () => {
-  web3Modal.clearCachedProvider(); // ensure fresh connect
-  document.getElementById("connectBtn")?.addEventListener("click", connectWallet);
+/* ===== BUTTON EVENT ===== */
+document.addEventListener("DOMContentLoaded", ()=>{
+  document.getElementById("connectBtn").addEventListener("click", connectWallet);
 });
 
 
