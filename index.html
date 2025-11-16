@@ -5,18 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Quacker Friends Shop</title>
 
-<!-- Ethers.js UMD -->
-<script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+ <!-- ===== LIBRARIES (UMD versions, safe for this setup) ===== -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+  <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+  <script src="https://unpkg.com/coinbase-wallet-sdk@3.0.6/dist/CoinbaseWalletSDK.min.js"></script>
+  <script src="https://unpkg.com/web3modal@1.9.8/dist/index.js"></script>
 
-<!-- WalletConnect UMD -->
-<script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
-
-<!-- Coinbase Wallet SDK UMD -->
-<script src="https://unpkg.com/coinbase-wallet-sdk@3.0.6/dist/CoinbaseWalletSDK.min.js"></script>
-
-<!-- Web3Modal v1 UMD -->
-<script src="https://unpkg.com/web3modal@1.9.8/dist/index.js"></script>
-  
   <style>
   
     :root{
@@ -809,106 +803,85 @@ let currentCategory = null;     // default (sheet categories may vary in case)
 let cachedEthRate = null;
 let lastRateFetch = 0;
   
- /* ===== STATE & CONFIG ===== */
-let provider = null;
-let signer = null;
-let userAddress = null;
+ /* ===== STATE ===== */
+    let provider = null;
+    let signer = null;
+    let userAddress = null;
+    const web3Modal = new window.Web3Modal.default({
+      cacheProvider: false,
+      providerOptions: {
+        walletconnect: {
+          package: window.WalletConnectProvider.default,
+          options: { rpc: { 8453: "https://mainnet.base.org" } }
+        },
+        coinbasewallet: {
+          package: window.CoinbaseWalletSDK,
+          options: { appName: "Quacker Shop", chainId: 8453 }
+        }
+      }
+    });
 
-
-/* ===== Web3Modal Setup ===== */
-const providerOptions = {
-  walletconnect: {
-    package: window.WalletConnectProvider.default,
-    options: {
-      rpc: { 8453: "https://mainnet.base.org" }
-    }
-  },
-  coinbasewallet: {
-    package: window.CoinbaseWalletSDK,
-    options: {
-      appName: "Quacker Shop",
-      chainId: 8453
-    }
-  }
-};
-
-const web3Modal = new window.Web3Modal.default({
-  cacheProvider: false,
-  providerOptions,
-  disableInjectedProvider: false
-});
-
-/* ===== CONNECT WALLET ===== */
-async function connectWallet() {
-  try {
-    // Clear cached provider to ensure fresh connect
-    await web3Modal.clearCachedProvider();
-
-    provider = await web3Modal.connect();
-    const web3Provider = new ethers.providers.Web3Provider(provider);
-    signer = web3Provider.getSigner();
-    userAddress = await signer.getAddress();
-
-    console.log("Wallet connected:", userAddress);
-    alert("Wallet connected: " + userAddress);
-
-    // Show profile button
-    const profileBtn = document.getElementById("profileBtn");
-    if (profileBtn) profileBtn.style.display = 'inline-block';
-
-    // Auto-switch to Base network
-    const network = await web3Provider.getNetwork();
-    if (network.chainId !== 8453) {
+ /* ===== CONNECT WALLET ===== */
+    async function connectWallet() {
       try {
-        await provider.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: BASE_CHAIN_ID_HEX }]
+        provider = await web3Modal.connect();
+        const web3Provider = new ethers.providers.Web3Provider(provider);
+        signer = web3Provider.getSigner();
+        userAddress = await signer.getAddress();
+
+        console.log("Wallet connected:", userAddress);
+        alert("Wallet connected: " + userAddress);
+
+        // show profile button
+        document.getElementById("profileBtn").style.display = 'inline-block';
+
+        // auto-switch to Base network
+        const network = await web3Provider.getNetwork();
+        if(network.chainId !== 8453){
+          try {
+            await provider.request({
+              method: "wallet_switchEthereumChain",
+              params: [{ chainId: BASE_CHAIN_ID_HEX }]
+            });
+            console.log("✅ Switched to Base network");
+          } catch(err) {
+            console.warn("Network switch failed:", err);
+          }
+        }
+
+        // listen for account/network changes
+        provider.on("accountsChanged", accounts => {
+          userAddress = accounts[0];
+          console.log("Accounts changed:", userAddress);
         });
-        console.log("✅ Switched to Base network");
-      } catch (err) {
-        console.warn("Network switch failed:", err);
+        provider.on("chainChanged", chainId => {
+          console.log("Network changed:", chainId);
+        });
+
+      } catch(err) {
+        console.error("Wallet connection failed:", err);
+        alert("Wallet connection failed. See console for details.");
       }
     }
 
-    // Listen for account & network changes
-    provider.on("accountsChanged", accounts => {
-      userAddress = accounts[0];
-      console.log("Accounts changed:", userAddress);
+    /* ===== LOAD PROFILE (example) ===== */
+    async function loadProfile() {
+      if (!signer || !userAddress) return;
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+      const balance = await contract.balanceOf(userAddress);
+      console.log("NFT balance:", balance.toString());
+      alert("NFT balance: " + balance.toString());
+    }
+
+    /* ===== BUTTON EVENTS ===== */
+    document.getElementById("connectBtn").addEventListener("click", async () => {
+      await connectWallet();
+      await loadProfile();
     });
 
-    provider.on("chainChanged", chainId => {
-      console.log("Network changed:", chainId);
+    document.getElementById("profileBtn").addEventListener("click", () => {
+      alert("Profile clicked! Wallet: " + userAddress);
     });
-
-    // Load profile info
-    await loadProfile(userAddress);
-
-  } catch (err) {
-    console.error("Wallet connection failed:", err);
-    alert("Wallet connection failed. See console for details.");
-  }
-}
-
-/* ===== LOAD PROFILE ===== */
-async function loadProfile(wallet) {
-  if (!wallet || !signer) return;
-
-  // Example: load NFT balance
-  try {
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-    const balance = await contract.balanceOf(wallet);
-    document.getElementById("nftCount").textContent = "Quackers Held: " + balance;
-  } catch (err) {
-    console.warn("Failed to fetch NFT balance:", err);
-  }
-
-  // TODO: fetch claim data / shop points if needed
-}
-
-/* ===== BUTTON EVENT ===== */
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("connectBtn")?.addEventListener("click", connectWallet);
-});
 
 
 /* ===== FORCE NETWORK TO BASE ===== */
