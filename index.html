@@ -5,22 +5,17 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Quacker Friends Shop</title>
 
-<!-- Ethers.js -->
+<!-- Ethers.js (UMD) -->
 <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
 
-<!-- WalletConnect provider -->
+<!-- WalletConnect provider (UMD) -->
 <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 
-<!-- Coinbase Wallet SDK -->
+<!-- Coinbase Wallet SDK (UMD v3.0.6) -->
 <script src="https://unpkg.com/coinbase-wallet-sdk@3.0.6/dist/CoinbaseWalletSDK.min.js"></script>
 
-<!-- Web3Modal v1 (UMD build) -->
+<!-- Web3Modal v1 (UMD) -->
 <script src="https://unpkg.com/web3modal@1.9.8/dist/index.js"></script>
-
-
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
-
   <style>
     
     :root{
@@ -891,7 +886,7 @@ let currentCategory = null;     // default (sheet categories may vary in case)
 let cachedEthRate = null;
 let lastRateFetch = 0;
   
-  /* ===== Web3Modal Setup ===== */
+/* ===== Web3Modal setup ===== */
 const providerOptions = {
   walletconnect: {
     package: window.WalletConnectProvider.default,
@@ -908,41 +903,42 @@ const web3Modal = new window.Web3Modal.default({
   providerOptions
 });
   
-  /* ===== Connect Wallet ===== */
+/* ===== Connect Wallet ===== */
 async function connectWallet() {
-  console.log("Connect wallet clicked"); // <- must appear in console
-  showToast("Connecting wallet...", "info", 2000);
+  console.log("Connect wallet clicked");
 
   try {
     provider = await web3Modal.connect();
-    console.log("Provider:", provider);
-
     const web3Provider = new ethers.providers.Web3Provider(provider);
     signer = web3Provider.getSigner();
     userAddress = await signer.getAddress();
-    console.log("User address:", userAddress);
 
-    showToast("Wallet connected!", "success", 3000);
+    console.log("Wallet connected:", userAddress);
 
+    // Auto-switch network to Base
     const { chainId } = await web3Provider.getNetwork();
     if (chainId !== 8453) {
       try {
-        await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x2105" }] });
+        await provider.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: BASE_CHAIN_ID_HEX }]
+        });
         console.log("✅ Switched to Base network");
       } catch (err) {
         console.warn("Network switch failed:", err);
       }
     }
 
-    provider.on("accountsChanged", accounts => { userAddress = accounts[0]; });
+    // Listen for account/network changes
+    provider.on("accountsChanged", accounts => { userAddress = accounts[0]; console.log("Accounts changed:", accounts); });
     provider.on("chainChanged", chainId => console.log("Network changed:", chainId));
 
   } catch (err) {
     console.error("Wallet connection failed:", err);
-    showToast("Wallet connection failed", "error", 4000);
   }
 }
 
+/* ===== Button ===== */
 document.getElementById("connectBtn")?.addEventListener("click", connectWallet);
 
   /* ===== BLUR MANAGER ===== */
