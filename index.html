@@ -8,9 +8,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
   
- <!-- Web3Modal v1 (UMD) + Web3.js -->
+<!-- Web3Modal v1 (UMD) + WalletConnect + Web3.js -->
 <script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
-<script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
 
   <style>
@@ -903,16 +903,16 @@ let currentCategory = null;     // default (sheet categories may vary in case)
 let cachedEthRate = null;
 let lastRateFetch = 0;
 
-  /* ===== Web3Modal Init ===== */
+/* ===== Web3Modal Init ===== */
 window.addEventListener('load', () => {
-  web3Modal = new window.Web3Modal.default({
+  web3Modal = new Web3Modal({
     cacheProvider: false,
     network: "mainnet", // optional
     providerOptions: {
       walletconnect: {
-        package: window.WalletConnectProvider.default,
+        package: window.WalletConnectProvider, // UMD does not use .default
         options: {
-          infuraId: "YOUR_INFURA_ID" // optional if using Infura
+          infuraId: "YOUR_INFURA_ID" // optional, replace if you want WalletConnect via Infura
         }
       }
     }
@@ -1764,42 +1764,40 @@ if (openCartBtn) openCartBtn.addEventListener("click", openCart);
 
 
 
-/* ===== WALLET & PROFILE ===== */
+/* ===== Connect Wallet ===== */
 async function connectWallet() {
-  // Open Web3Modal wallet picker
-  web3modal.openModal();
+  try {
+    provider = await web3Modal.connect();
+    web3 = new Web3(provider);
+    const accounts = await web3.eth.getAccounts();
+    userAddress = accounts[0];
+    document.getElementById("walletAddr").innerText = userAddress;
+    document.getElementById("connectBtn").style.display = "none";
+    document.getElementById("profileBtn").style.display = "inline-block";
 
-  // Listen for connection event
-  wagmiClient.subscribe(({ status, data }) => {
-    if (status !== "connected") return;
-    userAddress = data?.account;
-
-    // Initialize Web3.js with provider
-    window.web3 = new Web3(window.ethereum);
-
-    // Ensure Base network
-    enforceBaseNetwork();
-
-    // Update UI
-    const connectBtn = document.getElementById("connectBtn");
-    if (connectBtn) connectBtn.style.display = "none";
-
-    const profileBtn = document.getElementById("profileBtn");
-    if (profileBtn) profileBtn.style.display = "inline-block";
-
+    await ensureBaseNetwork();
     showToast("Wallet connected", "success");
 
-    loadProfile(userAddress).then(profileData => {
-      updatePointsDisplay();
-
-      const nftCount = document.getElementById("nftCount");
-      if (nftCount) nftCount.innerText = "Quackers Held: " + profileData.quackerBalance;
-
-      const quacksCount = document.getElementById("quacksCount");
-      if (quacksCount) quacksCount.innerText = "Daily Quacks: " + profileData.dailyQuacks;
+    loadProfile(userAddress).then(profile => {
+      console.log("Profile loaded", profile);
     });
-  });
+
+    // Listen for account/network changes
+    provider.on("accountsChanged", (accounts) => {
+      userAddress = accounts[0];
+      document.getElementById("walletAddr").innerText = userAddress;
+      showToast("Wallet switched", "success");
+    });
+    provider.on("chainChanged", (chainId) => {
+      ensureBaseNetwork();
+    });
+
+  } catch (err) {
+    console.error(err);
+    showToast("Failed to connect", "error");
+  }
 }
+
 
 /* ===== Ensure BASE Network ===== */
 async function enforceBaseNetwork() {
@@ -1828,9 +1826,7 @@ async function enforceBaseNetwork() {
 
 
 // Connect button
-const connectBtn = document.getElementById("connectBtn");
-if(connectBtn) connectBtn.addEventListener("click", connectWallet);
-
+document.getElementById("connectBtn").addEventListener("click", connectWallet);
 
 
 /* ===== PROFILE TOGGLE ===== */
@@ -1862,20 +1858,20 @@ if (profileBtn)
     }
   });
   
-  async function disconnectWallet() {
-  if(web3modal) await web3modal.closeModal();
-  await web3modal.clearCachedProvider();
-  window.web3 = null;
+ /* ===== Disconnect Wallet ===== */
+async function disconnectWallet() {
+  if(provider && provider.close) await provider.close();
   userAddress = null;
-  const connectBtn = document.getElementById("connectBtn");
-  if(connectBtn) connectBtn.style.display = "inline-block";
-  const profileBtn = document.getElementById("profileBtn");
-  if(profileBtn) profileBtn.style.display = "none";
+  provider = null;
+  web3 = null;
+  document.getElementById("walletAddr").innerText = "";
+  document.getElementById("connectBtn").style.display = "inline-block";
+  document.getElementById("profileBtn").style.display = "none";
   showToast("Wallet disconnected", "info");
 }
-
-
-
+  // Disconnect button
+document.getElementById("profileBtn").addEventListener("click", disconnectWallet);
+  
 /* ===== Redeem Points Display ===== */
 async function updatePointsDisplay() {
   const wallet = (userAddress || "").toLowerCase();
