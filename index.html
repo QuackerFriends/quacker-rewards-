@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Quacker Friends Shop</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+<!-- Web3Modal v1 -->
+<script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.8.2/web3.min.js"></script>
+  
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 
@@ -2684,6 +2687,62 @@ async function loadOrderHistory() {
     btn.textContent = "View My Orders";
   }
 }
+/* ===============================
+    WEB3MODAL V1 WALLET CONNECT
+   =============================== */
+
+let web3Modal;
+let provider;
+
+// 1. Web3Modal Setup
+function initWeb3Modal() {
+  const providerOptions = {
+    walletconnect: {
+      package: window.WalletConnectProvider, 
+      options: {
+        infuraId: "b15297b06df348e8acac2ee44e0de3c0" // public Infura
+      }
+    }
+  };
+
+  web3Modal = new window.Web3Modal.default({
+    cacheProvider: false,
+    providerOptions,
+    disableInjectedProvider: false
+  });
+}
+
+// 2. Connect Wallet
+async function connectWallet() {
+  try {
+    provider = await web3Modal.connect();
+    window.web3 = new Web3(provider);
+
+    const accounts = await web3.eth.getAccounts();
+    window.userAddress = accounts[0];
+
+    console.log("Connected:", window.userAddress);
+
+    // UI updates
+    document.getElementById("connectBtn").style.display = "none";
+    document.getElementById("profileBtn").style.display = "inline-block";
+
+    // TEMP success message — replace later
+    showToast("Wallet connected!", "success");
+
+    // later: loadProfile(window.userAddress);
+    // later: updatePointsDisplay();
+
+  } catch (err) {
+    console.error("Connection error:", err);
+  }
+}
+
+// 3. Attach to your button
+document.getElementById("connectBtn").addEventListener("click", connectWallet);
+
+// 4. Initialize Web3Modal on page load
+window.addEventListener("load", initWeb3Modal);
 
 
 </script>
