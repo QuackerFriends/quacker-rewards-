@@ -6,7 +6,7 @@
   <title>Quacker Friends Shop</title>
 
 
-  <!-- WalletConnect Provider UMD -->
+  <!-- WalletConnect Provider -->
   <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 
   <!-- Web3 -->
@@ -14,11 +14,18 @@
 
   <!-- Web3Modal v1 -->
   <script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
-  
+
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 
   <style>
+    
+    /* Fix for Web3Modal unclickable overlay */
+    .web3modal-modal-lightbox, 
+    .web3modal-modal-container {
+      z-index: 99999 !important;
+      pointer-events: auto !important;
+    }
     
     :root{
       --brand-orange:#ff914d;
@@ -802,6 +809,7 @@ const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
 const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"}];
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 
+  
 /* ===== LOAD PROFILE (Web3.js version) ===== */
 async function loadProfile(wallet) {
   if (!web3 || !wallet) return null;
@@ -2556,7 +2564,6 @@ async function loadOrderHistory() {
   }
 }
 
-/* ===== WALLET & WEB3MODAL (single clean implementation) ===== */
 const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 let web3, provider, web3Modal, userAddress = null;
 
@@ -2565,27 +2572,9 @@ const PROVIDER_OPTIONS = {
   injected: { package: null }, // MetaMask, Rabby, etc.
   walletconnect: {
     package: window.WalletConnectProvider,
-    options: {
-      rpc: { 8453: "https://mainnet.base.org" },
-      qrcode: true
-    }
+    options: { rpc: { 8453: "https://mainnet.base.org" }, qrcode: true }
   }
 };
-  console.log("WalletConnectProvider:", window.WalletConnectProvider);
-
-// Init Web3Modal
-function initWeb3Modal() {
-  try {
-    web3Modal = new window.Web3Modal.default({
-      cacheProvider: false,
-      providerOptions: PROVIDER_OPTIONS,
-      disableInjectedProvider: false
-    });
-    console.log("✅ Web3Modal initialized");
-  } catch(err) {
-    console.error("❌ initWeb3Modal error:", err);
-  }
-}
 
 // Initialize Web3Modal
 function initWeb3Modal() {
