@@ -2649,6 +2649,18 @@ function disconnectWallet(){
 
   console.log("Wallet disconnected");
 }
+  
+  // Switch wallet (disconnect current + open Web3Modal again)
+async function switchWallet() {
+  try {
+    disconnectWallet();      // Clear current session
+    await connectWallet();    // Open modal for new selection
+    console.log("Wallet switched!");
+  } catch (err) {
+    console.error("Switch wallet error:", err);
+  }
+}
+
 
 // Ensure Base network
 async function ensureBaseNetwork(){
@@ -2677,12 +2689,17 @@ async function ensureBaseNetwork(){
 // DOM ready
 window.addEventListener("load", () => {
   initWeb3Modal();
+
   const btn = document.getElementById("connectBtn");
   if(btn) btn.addEventListener("click", connectWallet);
 
   const disconnectBtn = document.querySelector("#profileSection button.disconnect");
   if(disconnectBtn) disconnectBtn.addEventListener("click", disconnectWallet);
+
+  const switchBtn = document.getElementById("switchWalletBtn");
+  if(switchBtn) switchBtn.addEventListener("click", switchWallet);
 });
+
 </script>
   
 </body>
