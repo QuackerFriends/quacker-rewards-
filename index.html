@@ -20,13 +20,11 @@
 
   <style>
     
-    /* Fix for Web3Modal unclickable overlay */
-    .web3modal-modal-lightbox, 
-    .web3modal-modal-container {
-      z-index: 99999 !important;
-      pointer-events: auto !important;
-    }
-    
+   .web3modal-modal-lightbox, .web3modal-modal-container {
+    z-index: 99999 !important;
+    pointer-events: auto !important;
+}
+
     :root{
       --brand-orange:#ff914d;
       --brand-orange-dark:#ff7b2c;
@@ -2575,15 +2573,18 @@ const PROVIDER_OPTIONS = {
     options: { rpc: { 8453: "https://mainnet.base.org" }, qrcode: true }
   }
 };
+console.log("WalletConnectProvider", window.WalletConnectProvider);
 
 // Initialize Web3Modal
 function initWeb3Modal() {
   try {
     web3Modal = new window.Web3Modal.default({
-      cacheProvider: false,
-      providerOptions: PROVIDER_OPTIONS,
-      disableInjectedProvider: false
-    });
+    cacheProvider: false,
+    providerOptions: PROVIDER_OPTIONS,
+    disableInjectedProvider: false,
+    theme: "light",
+    network: "mainnet"
+});
     console.log("✅ Web3Modal initialized");
   } catch(err) {
     console.error("❌ initWeb3Modal error:", err);
