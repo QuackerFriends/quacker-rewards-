@@ -2567,17 +2567,24 @@ let userAddress = null;
 
 // Provider options for Web3Modal (WalletConnect only here; add more if needed)
 const PROVIDER_OPTIONS = {
+  injected: { package: null },
   walletconnect: {
     package: window.WalletConnectProvider,
     options: {
-      // prefer using Base RPC directly for WalletConnect
-      rpc: {
-        8453: "https://mainnet.base.org"
-      },
+      rpc: { 8453: "https://mainnet.base.org" },
       qrcode: true
+    }
+  },
+  coinbasewallet: {
+    package: window.CoinbaseWalletSDK,
+    options: {
+      appName: "Quacker Shop",
+      chainId: 8453,
+      rpc: "https://mainnet.base.org"
     }
   }
 };
+
 
 // Initialize Web3Modal (call once on load)
 function initWeb3Modal() {
