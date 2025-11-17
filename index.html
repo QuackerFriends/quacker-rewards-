@@ -2582,16 +2582,18 @@ const PROVIDER_OPTIONS = {
 // Initialize Web3Modal (call once on load)
 function initWeb3Modal() {
   try {
-    web3Modal = new window.Web3Modal({
+    web3Modal = new window.Web3Modal.default({
       cacheProvider: false,
       providerOptions: PROVIDER_OPTIONS,
       disableInjectedProvider: false
     });
-    console.log("Web3Modal initialized");
+
+    console.log("✅ Web3Modal initialized");
   } catch (err) {
-    console.error("initWeb3Modal error:", err);
+    console.error("❌ initWeb3Modal error:", err);
   }
 }
+
 
 // Connect wallet (single canonical function)
 async function connectWallet() {
@@ -2745,6 +2747,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initWeb3Modal();
   const btn = document.getElementById("connectBtn");
   if (btn) btn.addEventListener("click", connectWallet);
+});
+
   // ensure a visible disconnect function in profile uses our disconnectWallet
   const disconnectBtn = document.querySelector("#profileSection button.disconnect");
   if (disconnectBtn) disconnectBtn.addEventListener("click", disconnectWallet);
