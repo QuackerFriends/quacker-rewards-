@@ -2650,14 +2650,16 @@ function disconnectWallet(){
   console.log("Wallet disconnected");
 }
   
-  // Switch wallet (disconnect current + open Web3Modal again)
 async function switchWallet() {
+  if (!window.ethereum) return alert("No injected wallet detected");
   try {
-    disconnectWallet();      // Clear current session
-    await connectWallet();    // Open modal for new selection
-    console.log("Wallet switched!");
+    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+    userAddress = accounts[0].toLowerCase();
+    console.log("Switched account to:", userAddress);
+    showToast("Wallet account switched", "success");
   } catch (err) {
-    console.error("Switch wallet error:", err);
+    console.error(err);
+    showToast("Failed to switch account", "error");
   }
 }
 
