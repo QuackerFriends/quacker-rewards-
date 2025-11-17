@@ -917,7 +917,6 @@ async function loadProfile(wallet) {
 
 /* ===== STATE ===== */
 let userAddress = null;
-let web3 = null;
 let cart = []; let selectedCountry = "USA"; // ✅ Default selection for shipping
 let PRODUCTS = {};                 // will be filled by loadProducts()
 let currentCategory = null;     // default (sheet categories may vary in case)
@@ -2687,8 +2686,6 @@ async function loadOrderHistory() {
     WEB3MODAL V1 WALLET CONNECT
    =============================== */
 
-let web3Modal;
-let provider;
 
 // 1. Web3Modal Setup
 function initWeb3Modal() {
