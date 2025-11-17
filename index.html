@@ -2569,9 +2569,12 @@ let web3, provider, web3Modal, userAddress = null;
 const PROVIDER_OPTIONS = {
   injected: { package: null }, // MetaMask, Rabby, etc.
   walletconnect: {
-    package: window.WalletConnectProvider,
-    options: { rpc: { 8453: "https://mainnet.base.org" }, qrcode: true }
+  package: window.WalletConnectProvider.default, // <-- note .default
+  options: {
+    rpc: { 8453: "https://mainnet.base.org" },
+    qrcode: true
   }
+}
 };
 console.log("WalletConnectProvider", window.WalletConnectProvider);
 
