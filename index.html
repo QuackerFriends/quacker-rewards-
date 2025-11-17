@@ -5,14 +5,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Quacker Friends Shop</title>
 
-<!-- Web3Modal v1 (correct version) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/web3modal/1.9.12/index.min.js"></script>
+<!-- WalletConnect Provider UMD (exposes window.WalletConnectProvider) -->
+<script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 
-<!-- Web3.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.8.2/web3.min.js"></script>
+<!-- Web3 (v1) -->
+<script src="https://unpkg.com/web3@1.8.2/dist/web3.min.js"></script>
 
-<!-- WalletConnect Provider -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/@walletconnect/web3-provider/1.8.0/index.min.js"></script>
+<!-- Web3Modal v1 (UMD build) -->
+<script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
+
 
 
   
@@ -803,78 +804,7 @@ const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
 const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"}];
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
-  let web3;
-let provider;
-let web3Modal;
 
-const providerOptions = {
-  walletconnect: {
-    package: window.WalletConnectProvider,
-    options: {
-      infuraId: "1d8b27e9da6f4171b4fcd2bac5e5bf67" // public Infura
-    }
-  }
-};
-
-window.addEventListener("DOMContentLoaded", () => {
-  web3Modal = new window.Web3Modal({
-    cacheProvider: false,
-    providerOptions
-  });
-});
-
-
-/* ===== FORCE NETWORK TO BASE ===== */
-async function ensureBaseNetwork() {
-  if (!window.ethereum) {
-    alert("MetaMask not detected. Please install it to continue.");
-    throw new Error("No wallet detected");
-  }
-
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const network = await provider.getNetwork();
-
-  if (network.chainId !== 8453) { // 8453 = Base Mainnet
-    try {
-      await window.ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: BASE_CHAIN_ID_HEX }],
-      });
-      console.log("✅ Switched to Base network");
-    } catch (switchError) {
-      // Error 4902 = chain not added
-      if (switchError.code === 4902) {
-        try {
-          await window.ethereum.request({
-            method: "wallet_addEthereumChain",
-            params: [{
-              chainId: BASE_CHAIN_ID_HEX,
-              chainName: "Base Mainnet",
-              nativeCurrency: {
-                name: "Ethereum",
-                symbol: "ETH",
-                decimals: 18
-              },
-              rpcUrls: ["https://mainnet.base.org"],
-              blockExplorerUrls: ["https://basescan.org"]
-            }]
-          });
-          console.log("✅ Base network added and switched");
-        } catch (addError) {
-          console.error("Failed to add Base network:", addError);
-          alert("Please switch to Base network manually in MetaMask.");
-          throw addError;
-        }
-      } else {
-        console.error("Failed to switch network:", switchError);
-        alert("Please switch to Base network manually in MetaMask.");
-        throw switchError;
-      }
-    }
-  } else {
-    console.log("🟢 Already on Base network");
-  }
-}
 
 /* ===== LOAD PROFILE (Web3.js version) ===== */
 async function loadProfile(wallet) {
@@ -917,7 +847,6 @@ async function loadProfile(wallet) {
 }
 
 /* ===== STATE ===== */
-let userAddress = null;
 let cart = []; let selectedCountry = "USA"; // ✅ Default selection for shipping
 let PRODUCTS = {};                 // will be filled by loadProducts()
 let currentCategory = null;     // default (sheet categories may vary in case)
@@ -1769,49 +1698,6 @@ const openCartBtn = document.getElementById("openCartBtn");
 if (openCartBtn) openCartBtn.addEventListener("click", openCart);
 
 
-/* ===== WALLET & PROFILE ===== */
-// 2. Connect Wallet
-async function connectWallet() {
-  try {
-    provider = await web3Modal.connect();
-
-    if (!provider) {
-      console.error("No provider returned from Web3Modal");
-      return;
-    }
-
-    window.web3 = new Web3(provider);
-
-    if (!window.web3 || !window.web3.eth) {
-      console.error("Web3 failed to initialize");
-      return;
-    }
-
-    const accounts = await window.web3.eth.getAccounts();
-    if (!accounts || accounts.length === 0) {
-      console.error("No accounts returned");
-      return;
-    }
-
-    window.userAddress = accounts[0];
-
-    console.log("Connected:", window.userAddress);
-
-    // UI updates
-    document.getElementById("connectBtn").style.display = "none";
-    document.getElementById("profileBtn").style.display = "inline-block";
-
-    showToast("Wallet connected!", "success");
-
-  } catch (err) {
-    console.error("Connection error:", err);
-  }
-}
-
-
-// Connect button
-const connectBtn = document.getElementById("connectBtn");
-if (connectBtn) connectBtn.addEventListener("click", connectWallet);
 
 /* ===== PROFILE TOGGLE ===== */
 const profileBtn = document.getElementById("profileBtn");
@@ -1842,7 +1728,7 @@ if (profileBtn)
     }
   });
 
-/* ===== SWITCH / DISCONNECT ===== */
+/* ===== SWITCH / DISCONNECT 
 async function switchWallet() {
   try {
     await ethereum.request({
@@ -1857,19 +1743,9 @@ async function switchWallet() {
   } catch (err) {
     console.error(err);
   }
-}
+} ===== */
 
-function disconnectWallet() {
-  userAddress = null;
-  web3 = null;
-  const cbo = document.getElementById("connectBtn");
-  if (cbo) cbo.innerText = "Connect Wallet";
-  const profileBtn = document.getElementById("profileBtn");
-  if (profileBtn) profileBtn.style.display = "none";
-  const profileSection = document.getElementById("profileSection");
-  if (profileSection) profileSection.style.display = "none";
-  showToast("Wallet disconnected", "info");
-}
+
 
 /* ===== Redeem Points Display ===== */
 async function updatePointsDisplay() {
@@ -2683,76 +2559,198 @@ async function loadOrderHistory() {
     btn.textContent = "View My Orders";
   }
 }
-/* ===============================
-    WEB3MODAL V1 WALLET CONNECT
-   =============================== */
 
+/* ===== WALLET & WEB3MODAL (single clean implementation) ===== */
+const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
+let web3;
+let provider;
+let web3Modal;
+let userAddress = null;
 
-// 1. Web3Modal Setup
+// Provider options for Web3Modal (WalletConnect only here; add more if needed)
+const PROVIDER_OPTIONS = {
+  walletconnect: {
+    package: window.WalletConnectProvider,
+    options: {
+      // prefer using Base RPC directly for WalletConnect
+      rpc: {
+        8453: "https://mainnet.base.org"
+      },
+      qrcode: true
+    }
+  }
+};
+
+// Initialize Web3Modal (call once on load)
 function initWeb3Modal() {
-  const providerOptions = {
-    walletconnect: {
-      package: window.WalletConnectProvider, 
-      options: {
-        infuraId: "b15297b06df348e8acac2ee44e0de3c0" // public Infura
-      }
-    }
-  };
-
-  web3Modal = new window.Web3Modal.default({
-    cacheProvider: false,
-    providerOptions,
-    disableInjectedProvider: false
-  });
-}
-
-// 2. Connect Wallet
-async function connectWallet() {
   try {
-    provider = await web3Modal.connect();
-
-    if (!provider) {
-      console.error("❌ Web3Modal returned no provider");
-      showToast("Wallet connection failed", "error");
-      return;
-    }
-
-    web3 = new Web3(provider);
-
-    // Check web3 actually initialized
-    if (!web3 || !web3.eth) {
-      console.error("❌ web3.eth did not initialize");
-      showToast("Web3 failed to initialize", "error");
-      return;
-    }
-
-    const accounts = await web3.eth.getAccounts();
-
-    if (!accounts || accounts.length === 0) {
-      console.error("❌ No accounts received");
-      showToast("Wallet returned no accounts", "error");
-      return;
-    }
-
-    userAddress = accounts[0];
-    console.log("Connected:", userAddress);
-
-    document.getElementById("connectBtn").style.display = "none";
-    document.getElementById("profileBtn").style.display = "inline-block";
-
-    showToast("Wallet connected!", "success");
-
+    web3Modal = new window.Web3Modal({
+      cacheProvider: false,
+      providerOptions: PROVIDER_OPTIONS,
+      disableInjectedProvider: false
+    });
+    console.log("Web3Modal initialized");
   } catch (err) {
-    console.error("Connection error:", err);
-    showToast("Wallet connection cancelled", "error");
+    console.error("initWeb3Modal error:", err);
   }
 }
 
-// 3. Attach to your button
-document.getElementById("connectBtn").addEventListener("click", connectWallet);
+// Connect wallet (single canonical function)
+async function connectWallet() {
+  try {
+    if (!web3Modal) initWeb3Modal();
 
-// 4. Initialize Web3Modal on page load
-window.addEventListener("load", initWeb3Modal);
+    // open modal / provider chooser
+    provider = await web3Modal.connect();
+
+    if (!provider) {
+      showToast("No wallet provider selected", "error");
+      return;
+    }
+
+    // create Web3 instance
+    web3 = new Web3(provider);
+
+    // read accounts
+    const accounts = await web3.eth.getAccounts();
+    if (!accounts || accounts.length === 0) {
+      showToast("Wallet connected but no accounts found", "error");
+      return;
+    }
+    userAddress = accounts[0].toLowerCase();
+
+    // UI updates
+    const connectBtn = document.getElementById("connectBtn");
+    if (connectBtn) connectBtn.style.display = "none";
+    const profileBtn = document.getElementById("profileBtn");
+    if (profileBtn) profileBtn.style.display = "inline-block";
+
+    showToast("Wallet connected!", "success");
+    console.log("Connected address:", userAddress);
+
+    // Ensure Base network (prompt user to switch if needed)
+    try { await ensureBaseNetwork(); } catch (e) { console.warn("Network check failed", e); }
+
+    // handle provider events (so UI updates on chain/account changes)
+    if (provider.on) {
+      provider.on("accountsChanged", (accounts) => {
+        if (accounts && accounts.length) {
+          userAddress = accounts[0].toLowerCase();
+          console.log("accountsChanged ->", userAddress);
+          // optionally refresh profile
+          loadProfile(userAddress).then(()=> updatePointsDisplay()).catch(()=>{});
+        } else {
+          // no accounts => disconnected
+          disconnectWallet();
+        }
+      });
+
+      provider.on("chainChanged", (chainId) => {
+        console.log("chainChanged", chainId);
+        // If not Base, prompt (or auto-switch)
+        if (chainId.toLowerCase() !== BASE_CHAIN_ID_HEX.toLowerCase()) {
+          showToast("Please switch your wallet to Base network", "warn", 5000);
+        }
+      });
+
+      provider.on("disconnect", (code, reason) => {
+        console.log("provider disconnect", code, reason);
+        disconnectWallet();
+      });
+    }
+
+    // load profile data after connect (non-blocking)
+    loadProfile(userAddress).then(profile => {
+      if (profile) {
+        const nftCountEl = document.getElementById("nftCount");
+        if (nftCountEl) nftCountEl.innerText = "Quackers Held: " + (profile.quackerBalance || 0);
+        const quacksCount = document.getElementById("quacksCount");
+        if (quacksCount) quacksCount.innerText = "Daily Quacks: " + (profile.dailyQuacks || 0);
+      }
+    }).catch(err => console.warn("loadProfile after connect failed", err));
+
+  } catch (err) {
+    console.error("connectWallet error:", err);
+    showToast("Wallet connection failed", "error");
+  }
+}
+
+// Disconnect wallet & cleanup
+function disconnectWallet() {
+  try {
+    if (web3Modal && web3Modal.clearCachedProvider) web3Modal.clearCachedProvider();
+    if (provider && provider.disconnect && typeof provider.disconnect === "function") {
+      try { provider.disconnect(); } catch (e) { /* some providers throw */ }
+    }
+  } catch (e) {
+    console.warn("disconnect cleanup error", e);
+  }
+
+  userAddress = null;
+  web3 = null;
+  provider = null;
+
+  const connectBtn = document.getElementById("connectBtn");
+  if (connectBtn) connectBtn.style.display = "inline-block";
+  const profileBtn = document.getElementById("profileBtn");
+  if (profileBtn) profileBtn.style.display = "none";
+
+  const profileSection = document.getElementById("profileSection");
+  if (profileSection) profileSection.style.display = "none";
+
+  showToast("Wallet disconnected", "info");
+  console.log("Disconnected");
+}
+
+// Ensure Base network using window.ethereum (no ethers needed)
+async function ensureBaseNetwork() {
+  if (!window.ethereum) {
+    console.warn("No injected ethereum provider for network switch");
+    return;
+  }
+  try {
+    const currentChain = await window.ethereum.request({ method: "eth_chainId" });
+    if (currentChain && currentChain.toLowerCase() === BASE_CHAIN_ID_HEX.toLowerCase()) {
+      return;
+    }
+    // Try to switch
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: BASE_CHAIN_ID_HEX }]
+    });
+  } catch (err) {
+    // 4902 -> chain not added
+    if (err && err.code === 4902) {
+      try {
+        await window.ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: [{
+            chainId: BASE_CHAIN_ID_HEX,
+            chainName: "Base Mainnet",
+            nativeCurrency: { name: "Ethereum", symbol: "ETH", decimals: 18 },
+            rpcUrls: ["https://mainnet.base.org"],
+            blockExplorerUrls: ["https://basescan.org"]
+          }]
+        });
+      } catch (addErr) {
+        console.warn("Add chain failed", addErr);
+        throw addErr;
+      }
+    } else {
+      throw err;
+    }
+  }
+}
+
+// Wire connect button (safe guard if DOM not ready)
+document.addEventListener("DOMContentLoaded", () => {
+  initWeb3Modal();
+  const btn = document.getElementById("connectBtn");
+  if (btn) btn.addEventListener("click", connectWallet);
+  // ensure a visible disconnect function in profile uses our disconnectWallet
+  const disconnectBtn = document.querySelector("#profileSection button.disconnect");
+  if (disconnectBtn) disconnectBtn.addEventListener("click", disconnectWallet);
+});
 
 
 </script>
