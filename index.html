@@ -802,6 +802,26 @@ const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
 const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"}];
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
+  let web3;
+let provider;
+let web3Modal;
+
+const providerOptions = {
+  walletconnect: {
+    package: window.WalletConnectProvider,
+    options: {
+      infuraId: "1d8b27e9da6f4171b4fcd2bac5e5bf67" // public Infura
+    }
+  }
+};
+
+window.addEventListener("DOMContentLoaded", () => {
+  web3Modal = new window.Web3Modal({
+    cacheProvider: false,
+    providerOptions
+  });
+});
+
 
 /* ===== FORCE NETWORK TO BASE ===== */
 async function ensureBaseNetwork() {
@@ -2692,25 +2712,41 @@ function initWeb3Modal() {
 async function connectWallet() {
   try {
     provider = await web3Modal.connect();
-    window.web3 = new Web3(provider);
+
+    if (!provider) {
+      console.error("❌ Web3Modal returned no provider");
+      showToast("Wallet connection failed", "error");
+      return;
+    }
+
+    web3 = new Web3(provider);
+
+    // Check web3 actually initialized
+    if (!web3 || !web3.eth) {
+      console.error("❌ web3.eth did not initialize");
+      showToast("Web3 failed to initialize", "error");
+      return;
+    }
 
     const accounts = await web3.eth.getAccounts();
-    window.userAddress = accounts[0];
 
-    console.log("Connected:", window.userAddress);
+    if (!accounts || accounts.length === 0) {
+      console.error("❌ No accounts received");
+      showToast("Wallet returned no accounts", "error");
+      return;
+    }
 
-    // UI updates
+    userAddress = accounts[0];
+    console.log("Connected:", userAddress);
+
     document.getElementById("connectBtn").style.display = "none";
     document.getElementById("profileBtn").style.display = "inline-block";
 
-    // TEMP success message — replace later
     showToast("Wallet connected!", "success");
-
-    // later: loadProfile(window.userAddress);
-    // later: updatePointsDisplay();
 
   } catch (err) {
     console.error("Connection error:", err);
+    showToast("Wallet connection cancelled", "error");
   }
 }
 
