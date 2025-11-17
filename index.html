@@ -5,13 +5,17 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Quacker Friends Shop</title>
 
-<script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
-<script src="https://unpkg.com/web3@1.8.2/dist/web3.min.js"></script>
-<script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@coinbase/wallet-sdk@3.5.0/dist/CoinbaseWalletSDK.min.js"></script>
+  <!-- WalletConnect Provider UMD -->
+  <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 
+  <!-- Web3 -->
+  <script src="https://unpkg.com/web3@1.8.2/dist/web3.min.js"></script>
 
+  <!-- Web3Modal v1 -->
+  <script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
 
+  <!-- Coinbase Wallet SDK UMD -->
+  <script src="https://unpkg.com/@coinbase/wallet-sdk@3.5.0/dist/CoinbaseWalletSDK.umd.min.js"></script>
   
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
@@ -2556,33 +2560,22 @@ async function loadOrderHistory() {
 
 /* ===== WALLET & WEB3MODAL (single clean implementation) ===== */
 const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
-let web3;
-let provider;
-let web3Modal;
-let userAddress = null;
+let web3, provider, web3Modal, userAddress = null;
 
-// Provider options for Web3Modal (WalletConnect only here; add more if needed)
+// Provider options
 const PROVIDER_OPTIONS = {
-  injected: { package: null },
+  injected: { package: null }, // MetaMask, Rabby, etc.
   walletconnect: {
     package: window.WalletConnectProvider,
-    options: {
-      rpc: { 8453: "https://mainnet.base.org" },
-      qrcode: true
-    }
+    options: { rpc: { 8453: "https://mainnet.base.org" }, qrcode: true }
   },
   coinbasewallet: {
     package: window.CoinbaseWalletSDK,
-    options: {
-      appName: "Quacker Shop",
-      chainId: 8453,
-      rpc: "https://mainnet.base.org"
-    }
+    options: { appName: "Quacker Shop", chainId: 8453, rpc: "https://mainnet.base.org" }
   }
 };
 
-
-// Initialize Web3Modal (call once on load)
+// Init Web3Modal
 function initWeb3Modal() {
   try {
     web3Modal = new window.Web3Modal.default({
@@ -2590,174 +2583,97 @@ function initWeb3Modal() {
       providerOptions: PROVIDER_OPTIONS,
       disableInjectedProvider: false
     });
-
     console.log("✅ Web3Modal initialized");
-  } catch (err) {
+  } catch(err) {
     console.error("❌ initWeb3Modal error:", err);
   }
 }
 
-
-// Connect wallet (single canonical function)
+// Connect wallet
 async function connectWallet() {
   try {
     if (!web3Modal) initWeb3Modal();
 
-    // open modal / provider chooser
     provider = await web3Modal.connect();
+    if (!provider) return alert("No wallet selected");
 
-    if (!provider) {
-      showToast("No wallet provider selected", "error");
-      return;
-    }
-
-    // create Web3 instance
     web3 = new Web3(provider);
-
-    // read accounts
     const accounts = await web3.eth.getAccounts();
-    if (!accounts || accounts.length === 0) {
-      showToast("Wallet connected but no accounts found", "error");
-      return;
-    }
+    if (!accounts || !accounts.length) return alert("No accounts found");
+
     userAddress = accounts[0].toLowerCase();
+    console.log("Connected:", userAddress);
 
-    // UI updates
-    const connectBtn = document.getElementById("connectBtn");
-    if (connectBtn) connectBtn.style.display = "none";
-    const profileBtn = document.getElementById("profileBtn");
-    if (profileBtn) profileBtn.style.display = "inline-block";
+    document.getElementById("connectBtn").style.display = "none";
+    document.getElementById("profileBtn").style.display = "inline-block";
 
-    showToast("Wallet connected!", "success");
-    console.log("Connected address:", userAddress);
+    // Ensure Base network
+    try { await ensureBaseNetwork(); } catch(e){ console.warn(e); }
 
-    // Ensure Base network (prompt user to switch if needed)
-    try { await ensureBaseNetwork(); } catch (e) { console.warn("Network check failed", e); }
-
-    // handle provider events (so UI updates on chain/account changes)
-    if (provider.on) {
-      provider.on("accountsChanged", (accounts) => {
-        if (accounts && accounts.length) {
-          userAddress = accounts[0].toLowerCase();
-          console.log("accountsChanged ->", userAddress);
-          // optionally refresh profile
-          loadProfile(userAddress).then(()=> updatePointsDisplay()).catch(()=>{});
-        } else {
-          // no accounts => disconnected
-          disconnectWallet();
+    // Listen for changes
+    if(provider.on){
+      provider.on("accountsChanged", accounts => {
+        if(accounts && accounts.length) userAddress = accounts[0].toLowerCase();
+        else disconnectWallet();
+      });
+      provider.on("chainChanged", chainId => {
+        if(chainId.toLowerCase() !== BASE_CHAIN_ID_HEX.toLowerCase()){
+          alert("Switch to Base network");
         }
       });
-
-      provider.on("chainChanged", (chainId) => {
-        console.log("chainChanged", chainId);
-        // If not Base, prompt (or auto-switch)
-        if (chainId.toLowerCase() !== BASE_CHAIN_ID_HEX.toLowerCase()) {
-          showToast("Please switch your wallet to Base network", "warn", 5000);
-        }
-      });
-
-      provider.on("disconnect", (code, reason) => {
-        console.log("provider disconnect", code, reason);
-        disconnectWallet();
-      });
+      provider.on("disconnect", () => disconnectWallet());
     }
 
-    // load profile data after connect (non-blocking)
-    loadProfile(userAddress).then(profile => {
-      if (profile) {
-        const nftCountEl = document.getElementById("nftCount");
-        if (nftCountEl) nftCountEl.innerText = "Quackers Held: " + (profile.quackerBalance || 0);
-        const quacksCount = document.getElementById("quacksCount");
-        if (quacksCount) quacksCount.innerText = "Daily Quacks: " + (profile.dailyQuacks || 0);
-      }
-    }).catch(err => console.warn("loadProfile after connect failed", err));
-
-  } catch (err) {
-    console.error("connectWallet error:", err);
-    showToast("Wallet connection failed", "error");
+  } catch(err){
+    console.error(err);
+    alert("Wallet connection failed");
   }
 }
 
-// Disconnect wallet & cleanup
-function disconnectWallet() {
+// Disconnect wallet
+function disconnectWallet(){
+  if(web3Modal && web3Modal.clearCachedProvider) web3Modal.clearCachedProvider();
+  if(provider && provider.disconnect) provider.disconnect();
+
+  web3 = provider = userAddress = null;
+
+  document.getElementById("connectBtn").style.display = "inline-block";
+  document.getElementById("profileBtn").style.display = "none";
+  document.getElementById("profileSection").style.display = "none";
+
+  console.log("Wallet disconnected");
+}
+
+// Ensure Base network
+async function ensureBaseNetwork(){
+  if(!window.ethereum) return;
+  const currentChain = await window.ethereum.request({ method: "eth_chainId" });
+  if(currentChain.toLowerCase() === BASE_CHAIN_ID_HEX.toLowerCase()) return;
+
   try {
-    if (web3Modal && web3Modal.clearCachedProvider) web3Modal.clearCachedProvider();
-    if (provider && provider.disconnect && typeof provider.disconnect === "function") {
-      try { provider.disconnect(); } catch (e) { /* some providers throw */ }
-    }
-  } catch (e) {
-    console.warn("disconnect cleanup error", e);
-  }
-
-  userAddress = null;
-  web3 = null;
-  provider = null;
-
-  const connectBtn = document.getElementById("connectBtn");
-  if (connectBtn) connectBtn.style.display = "inline-block";
-  const profileBtn = document.getElementById("profileBtn");
-  if (profileBtn) profileBtn.style.display = "none";
-
-  const profileSection = document.getElementById("profileSection");
-  if (profileSection) profileSection.style.display = "none";
-
-  showToast("Wallet disconnected", "info");
-  console.log("Disconnected");
-}
-
-// Ensure Base network using window.ethereum (no ethers needed)
-async function ensureBaseNetwork() {
-  if (!window.ethereum) {
-    console.warn("No injected ethereum provider for network switch");
-    return;
-  }
-  try {
-    const currentChain = await window.ethereum.request({ method: "eth_chainId" });
-    if (currentChain && currentChain.toLowerCase() === BASE_CHAIN_ID_HEX.toLowerCase()) {
-      return;
-    }
-    // Try to switch
-    await window.ethereum.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: BASE_CHAIN_ID_HEX }]
-    });
-  } catch (err) {
-    // 4902 -> chain not added
-    if (err && err.code === 4902) {
-      try {
-        await window.ethereum.request({
-          method: "wallet_addEthereumChain",
-          params: [{
-            chainId: BASE_CHAIN_ID_HEX,
-            chainName: "Base Mainnet",
-            nativeCurrency: { name: "Ethereum", symbol: "ETH", decimals: 18 },
-            rpcUrls: ["https://mainnet.base.org"],
-            blockExplorerUrls: ["https://basescan.org"]
-          }]
-        });
-      } catch (addErr) {
-        console.warn("Add chain failed", addErr);
-        throw addErr;
-      }
-    } else {
-      throw err;
-    }
+    await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: BASE_CHAIN_ID_HEX }] });
+  } catch(err){
+    if(err.code === 4902){
+      await window.ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [{
+          chainId: BASE_CHAIN_ID_HEX,
+          chainName: "Base Mainnet",
+          nativeCurrency: { name: "Ethereum", symbol: "ETH", decimals: 18 },
+          rpcUrls: ["https://mainnet.base.org"],
+          blockExplorerUrls: ["https://basescan.org"]
+        }]
+      });
+    } else throw err;
   }
 }
 
-// Wire connect button (safe guard if DOM not ready)
+// DOM events
 document.addEventListener("DOMContentLoaded", () => {
   initWeb3Modal();
-  const btn = document.getElementById("connectBtn");
-  if (btn) btn.addEventListener("click", connectWallet);
+  document.getElementById("connectBtn").addEventListener("click", connectWallet);
+  document.querySelector("#profileSection button.disconnect").addEventListener("click", disconnectWallet);
 });
-
-  // ensure a visible disconnect function in profile uses our disconnectWallet
-  const disconnectBtn = document.querySelector("#profileSection button.disconnect");
-  if (disconnectBtn) disconnectBtn.addEventListener("click", disconnectWallet);
-
-
-
 </script>
   
 </body>
