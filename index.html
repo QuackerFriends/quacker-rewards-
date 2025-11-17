@@ -1750,74 +1750,44 @@ if (openCartBtn) openCartBtn.addEventListener("click", openCart);
 
 
 /* ===== WALLET & PROFILE ===== */
+// 2. Connect Wallet
 async function connectWallet() {
-  if (!window.ethereum) {
-    showToast("MetaMask not found", "error");
-    return;
-  }
-
   try {
-    // ✅ Step 1: Ensure Base network
-    const baseParams = {
-      chainId: "0x2105", // Base mainnet chain ID
-      chainName: "Base Mainnet",
-      nativeCurrency: { name: "Ethereum", symbol: "ETH", decimals: 18 },
-      rpcUrls: ["https://mainnet.base.org"],
-      blockExplorerUrls: ["https://basescan.org"]
-    };
+    provider = await web3Modal.connect();
 
-    try {
-      await ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: baseParams.chainId }]
-      });
-    } catch (switchError) {
-      if (switchError.code === 4902) {
-        await ethereum.request({
-          method: "wallet_addEthereumChain",
-          params: [baseParams]
-        });
-      } else {
-        console.warn("Chain switch failed:", switchError);
-      }
+    if (!provider) {
+      console.error("No provider returned from Web3Modal");
+      return;
     }
 
-    // ✅ Step 2: Connect wallet
-    web3 = new Web3(window.ethereum);
-    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-    userAddress = accounts[0];
+    window.web3 = new Web3(provider);
 
-   // ✅ Step 3: Update UI
-const connectBtn = document.getElementById("connectBtn");
-if (connectBtn)
-  connectBtn.style.display = "none"; // hide Connect Wallet button
+    if (!window.web3 || !window.web3.eth) {
+      console.error("Web3 failed to initialize");
+      return;
+    }
 
-const profileBtn = document.getElementById("profileBtn");
-if (profileBtn) profileBtn.style.display = "inline-block";
+    const accounts = await window.web3.eth.getAccounts();
+    if (!accounts || accounts.length === 0) {
+      console.error("No accounts returned");
+      return;
+    }
 
-// Remove the walletAddr display entirely
-// const walletAddr = document.getElementById("walletAddr");
-// if (walletAddr) walletAddr.innerText = userAddress;
+    window.userAddress = accounts[0];
 
+    console.log("Connected:", window.userAddress);
 
-    showToast("Wallet connected", "success");
+    // UI updates
+    document.getElementById("connectBtn").style.display = "none";
+    document.getElementById("profileBtn").style.display = "inline-block";
 
-    // ✅ Step 4: Load profile + update points
-    const profileData = await loadProfile(userAddress);
-
-    await updatePointsDisplay();
-
-    const nftCountEl = document.getElementById("nftCount");
-    if (nftCountEl) nftCountEl.innerText = "Quackers Held: " + profileData.quackerBalance;
-
-    const quacksCount = document.getElementById("quacksCount");
-    if (quacksCount) quacksCount.innerText = "Daily Quacks: " + profileData.dailyQuacks;
+    showToast("Wallet connected!", "success");
 
   } catch (err) {
-    console.error(err);
-    showToast("Connect failed", "error");
+    console.error("Connection error:", err);
   }
 }
+
 
 // Connect button
 const connectBtn = document.getElementById("connectBtn");
