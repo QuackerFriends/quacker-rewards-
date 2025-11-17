@@ -698,7 +698,6 @@ body:not(.loading) footer {
   <button id="loadOrdersBtn" class="btn secondary" onclick="loadOrderHistory()">View My Orders</button>
   <div id="orderList" style="margin-top:10px;font-size:13px;"></div>
 </div>
-    <button class="btn secondary" onclick="switchWallet()">🔄 Switch Wallet</button>
     <button class="btn secondary" onclick="disconnectWallet()">❌ Disconnect</button>
   </div>
 
@@ -1730,25 +1729,6 @@ if (profileBtn)
     }
   });
 
-/* ===== SWITCH / DISCONNECT 
-async function switchWallet() {
-  try {
-    await ethereum.request({
-      method: "wallet_requestPermissions",
-      params: [{ eth_accounts: {} }]
-    });
-    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-    userAddress = accounts[0];
-    const walletAddr = document.getElementById("walletAddr");
-    if (walletAddr) walletAddr.innerText = userAddress;
-    showToast("Wallet switched", "success");
-  } catch (err) {
-    console.error(err);
-  }
-} ===== */
-
-
-
 /* ===== Redeem Points Display ===== */
 async function updatePointsDisplay() {
   const wallet = (userAddress || "").toLowerCase();
@@ -2650,18 +2630,6 @@ function disconnectWallet(){
   console.log("Wallet disconnected");
 }
   
-async function switchWallet() {
-  if (!window.ethereum) return alert("No injected wallet detected");
-  try {
-    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-    userAddress = accounts[0].toLowerCase();
-    console.log("Switched account to:", userAddress);
-    showToast("Wallet account switched", "success");
-  } catch (err) {
-    console.error(err);
-    showToast("Failed to switch account", "error");
-  }
-}
 
 
 // Ensure Base network
@@ -2697,9 +2665,7 @@ window.addEventListener("load", () => {
 
   const disconnectBtn = document.querySelector("#profileSection button.disconnect");
   if(disconnectBtn) disconnectBtn.addEventListener("click", disconnectWallet);
-
-  const switchBtn = document.getElementById("switchWalletBtn");
-  if(switchBtn) switchBtn.addEventListener("click", switchWallet);
+ 
 });
 
 </script>
