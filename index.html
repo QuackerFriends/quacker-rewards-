@@ -5,17 +5,18 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Quacker Friends Shop</title>
 
-  <!-- WalletConnect Provider UMD -->
-  <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+<!-- WalletConnect UMD -->
+<script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 
-  <!-- Web3 -->
-  <script src="https://unpkg.com/web3@1.8.2/dist/web3.min.js"></script>
+<!-- CoinbaseWalletSDK UMD -->
+<script src="https://unpkg.com/@coinbase/wallet-sdk@3.5.0/dist/CoinbaseWalletSDK.umd.min.js"></script>
 
-  <!-- Web3Modal v1 -->
-  <script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
+<!-- Web3 -->
+<script src="https://unpkg.com/web3@1.8.2/dist/web3.min.js"></script>
 
-  <!-- Coinbase Wallet SDK UMD -->
-  <script src="https://unpkg.com/@coinbase/wallet-sdk@3.5.0/dist/CoinbaseWalletSDK.umd.min.js"></script>
+<!-- Web3Modal -->
+<script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
+
   
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
@@ -2574,6 +2575,8 @@ const PROVIDER_OPTIONS = {
     options: { appName: "Quacker Shop", chainId: 8453, rpc: "https://mainnet.base.org" }
   }
 };
+  console.log("WalletConnectProvider:", window.WalletConnectProvider);
+console.log("CoinbaseWalletSDK:", window.CoinbaseWalletSDK);
 
 // Init Web3Modal
 function initWeb3Modal() {
@@ -2668,12 +2671,16 @@ async function ensureBaseNetwork(){
   }
 }
 
-// DOM events
-document.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("load", () => {
   initWeb3Modal();
-  document.getElementById("connectBtn").addEventListener("click", connectWallet);
-  document.querySelector("#profileSection button.disconnect").addEventListener("click", disconnectWallet);
+
+  const btn = document.getElementById("connectBtn");
+  if(btn) btn.addEventListener("click", connectWallet);
+
+  const disconnectBtn = document.querySelector("#profileSection button.disconnect");
+  if(disconnectBtn) disconnectBtn.addEventListener("click", disconnectWallet);
 });
+
 </script>
   
 </body>
