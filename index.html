@@ -1793,7 +1793,7 @@ if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
     try {
       const mainContract = new web3.eth.Contract(ERC721_MIN_ABI, MAIN_CONTRACT_ADDRESS);
       const mainBal = await mainContract.methods.balanceOf(userAddress).call();
-      if (Number(mainBal) > 0) ownsContracts.push(MAIN_CONTRACT_ADDRESS.toLowerCase());
+      const quackerCount = Number(mainBal); console.log("quackerCount:", quackerCount);
       console.log("mainBal:", mainBal);
     } catch (err) {
       console.warn("Error checking main contract balance:", err);
@@ -1818,12 +1818,11 @@ if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
     // Debug: show what we'll send
     console.log("ownsContracts to send:", ownsContracts);
 
-    const query = new URLSearchParams({
-      wallet: userAddress,
-      claim: true,
-      ownsContracts: ownsContracts.join(",")
-    });
-
+   const query = new URLSearchParams({
+  wallet: userAddress,
+  claim: true,
+  nftCount: quackerCount
+});
     const res = await fetch(`${CLAIM_SHEET_API}?${query.toString()}`);
     const data = await res.json();
 
