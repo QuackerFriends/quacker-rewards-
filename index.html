@@ -622,7 +622,13 @@ body:not(.loading) footer {
     transform: translateX(0) !important;
   }
 }
-
+.leaderboard-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid #222;
+  font-family: monospace;
+}
 
   </style>
 </head>
@@ -670,7 +676,11 @@ body:not(.loading) footer {
     Earn points every time a friend checks out with your address as referral!  </span>
  <span class="points-label">Referral Points: <span id="pointsValue"></span></span>
 </div>
-
+      
+<div class="leaderboard-container">
+  <h2>🏆 Quacks Leaderboard</h2>
+  <div id="leaderboard"></div>
+</div>
 
       <button id="connectBtn" class="btn">Connect Wallet</button>
 <div class="profile-container" style="position:relative; display:inline-block;">
@@ -1744,7 +1754,43 @@ async function updatePointsDisplay() {
     pointsValue.textContent = "Error";
   }
 }
+  
+  /* ===== Leaderboard Display ===== */
 
+async function loadLeaderboard() {
+  try {
+
+    const res = await fetch(`${CLAIM_SHEET_API}?leaderboard=true`);
+    const data = await res.json();
+
+    const container = document.getElementById("leaderboard");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    data.forEach((user, index) => {
+
+      const row = document.createElement("div");
+      row.className = "leaderboard-row";
+
+      const shortAddr =
+        user.address.slice(0, 6) +
+        "..." +
+        user.address.slice(-4);
+
+      row.innerHTML = `
+        <span>#${index + 1}</span>
+        <span>${shortAddr}</span>
+        <span>${user.quacks} 🦆</span>
+      `;
+
+      container.appendChild(row);
+    });
+
+  } catch (err) {
+    console.error("Leaderboard error:", err);
+  }
+}
 /* ===== CLAIM QUACKS (improved: checks multiple collections) ===== */
 const claimQuacksBtn = document.getElementById("claimQuacksBtn");
 
@@ -2672,6 +2718,10 @@ window.addEventListener("load", () => {
   const disconnectBtn = document.querySelector("#profileSection button.disconnect");
   if(disconnectBtn) disconnectBtn.addEventListener("click", disconnectWallet);
  
+});
+  
+  document.addEventListener("DOMContentLoaded", function () {
+  loadLeaderboard();
 });
 
 </script>
