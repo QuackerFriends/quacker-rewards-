@@ -622,31 +622,44 @@ body:not(.loading) footer {
     transform: translateX(0) !important;
   }
 }
-/* Toggle Button */
+/* =========================
+   🏆 Leaderboard Toggle
+========================= */
+
 .leaderboard-toggle {
   position: fixed;
   right: 20px;
-  top: 100px;
+  top: 140px; /* below header */
   z-index: 1000;
-  padding: 10px 16px;
+  padding: 10px 18px;
   border-radius: 30px;
   border: none;
   cursor: pointer;
-  background: #111;
+  background: #ff7a1a; /* 🧡 ORANGE */
   color: white;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  transition: transform 0.2s ease;
 }
 
-/* Panel */
+.leaderboard-toggle:hover {
+  transform: scale(1.05);
+}
+
+/* =========================
+   🏆 Leaderboard Panel
+========================= */
+
 .leaderboard-panel {
   position: fixed;
-  right: -350px;
+  right: -360px;
   top: 0;
-  width: 320px;
+  width: 340px;
   height: 100vh;
-  background: #0d0d0d;
-  box-shadow: -4px 0 20px rgba(0,0,0,0.4);
-  transition: right 0.3s ease;
+  background: #1fbf73; /* 💚 GREEN */
+  color: white;
+  box-shadow: -6px 0 25px rgba(0,0,0,0.35);
+  transition: right 0.35s ease;
   z-index: 999;
   padding: 20px;
   overflow-y: auto;
@@ -660,15 +673,49 @@ body:not(.loading) footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-weight: bold;
   margin-bottom: 15px;
 }
 
+.leaderboard-header button {
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+
+/* rows */
 .leaderboard-row {
   display: flex;
   justify-content: space-between;
   padding: 8px 0;
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
   font-family: monospace;
+}
+
+/* =========================
+   📱 Mobile Fix
+========================= */
+
+@media (max-width: 768px) {
+
+  .leaderboard-toggle {
+    top: auto;
+    bottom: 20px;   /* move to bottom on phone */
+    right: 20px;
+  }
+
+  .leaderboard-panel {
+    width: 100%;
+    right: -100%;
+  }
+
+  .leaderboard-panel.open {
+    right: 0;
+  }
+
 }
 
   </style>
