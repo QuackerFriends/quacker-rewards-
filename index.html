@@ -819,6 +819,20 @@ body:not(.loading) footer {
     </div>
   </div>
   
+ <!-- 🏆 Leaderboard Toggle Button -->
+<button id="leaderboardToggle" class="leaderboard-toggle">
+  🏆 Leaderboard
+</button>
+
+<!-- 🏆 Slide Panel -->
+<div id="leaderboardPanel" class="leaderboard-panel">
+  <div class="leaderboard-header">
+    <span>🏆 Quacks Leaderboard</span>
+    <button id="closeLeaderboard">✕</button>
+  </div>
+  <div id="leaderboard"></div>
+</div>
+  
   <footer>
     <p>Follow Quacker Friends:</p>
     <a href="https://x.com/QuackerFriends" target="_blank"><i class="fab fa-x fa-lg"></i></a>
@@ -2777,9 +2791,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 </script>
-  <div class="leaderboard-container">
-  <h2>🏆 Quacks Leaderboard</h2>
-  <div id="leaderboard"></div>
-</div>
+ 
 </body>
 </html>
