@@ -1756,19 +1756,16 @@ async function updatePointsDisplay() {
 
 /* ===== CLAIM QUACKS (improved: checks multiple collections) ===== */
 const claimQuacksBtn = document.getElementById("claimQuacksBtn");
+
 if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
+
   if (!userAddress) {
     showToast("Connect wallet first", "warn");
     return;
   }
 
-  if (!window.ethereum && !window.web3) {
-    showToast("No web3 provider found", "error");
-    return;
-  }
-
   try {
-    // Minimal ERC-721 ABI for balanceOf
+
     const ERC721_MIN_ABI = [
       {
         constant: true,
@@ -1779,62 +1776,81 @@ if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
       }
     ];
 
-    // MAIN contract (your quacker collection)
-    const MAIN_CONTRACT_ADDRESS = CONTRACT_ADDRESS; // keep your existing constant
-    // Add any other eligible collection addresses here (lowercase or not — we'll normalize)
-    const OTHER_CONTRACTS = [
-      "0x50372c1153170840ecce9129c6cc70b912f34273",
-      "0xOtherCollection2" // add as needed
-    ];
-
+    let quackerCount = 0; // ✅ define OUTSIDE
     const ownsContracts = [];
 
-    // check main contract
+    const MAIN_CONTRACT_ADDRESS = CONTRACT_ADDRESS;
+
+    const OTHER_CONTRACTS = [
+      "0x50372c1153170840ecce9129c6cc70b912f34273"
+      // add real addresses only
+    ];
+
+    // ===== MAIN CONTRACT =====
     try {
-      const mainContract = new web3.eth.Contract(ERC721_MIN_ABI, MAIN_CONTRACT_ADDRESS);
-      const mainBal = await mainContract.methods.balanceOf(userAddress).call();
-      const quackerCount = Number(mainBal); console.log("quackerCount:", quackerCount);
-      console.log("mainBal:", mainBal);
+      const mainContract = new web3.eth.Contract(
+        ERC721_MIN_ABI,
+        MAIN_CONTRACT_ADDRESS
+      );
+
+      const mainBal = await mainContract.methods
+        .balanceOf(userAddress)
+        .call();
+
+      quackerCount = Number(mainBal);
+
+      if (quackerCount > 0) {
+        ownsContracts.push(MAIN_CONTRACT_ADDRESS.toLowerCase());
+      }
+
+      console.log("Main balance:", quackerCount);
+
     } catch (err) {
-      console.warn("Error checking main contract balance:", err);
+      console.warn("Error checking main contract:", err);
     }
 
-    // check other contracts (parallel)
-    const checks = OTHER_CONTRACTS.map(async addr => {
-      try {
-        const c = new web3.eth.Contract(ERC721_MIN_ABI, addr);
-        const b = await c.methods.balanceOf(userAddress).call();
-        if (Number(b) > 0) {
-          ownsContracts.push(addr.toLowerCase());
+    // ===== OTHER CONTRACTS =====
+    await Promise.all(
+      OTHER_CONTRACTS.map(async (addr) => {
+        try {
+          const c = new web3.eth.Contract(ERC721_MIN_ABI, addr);
+          const b = await c.methods.balanceOf(userAddress).call();
+
+          if (Number(b) > 0) {
+            ownsContracts.push(addr.toLowerCase());
+          }
+
+          console.log("Checked", addr, "balance:", b);
+
+        } catch (err) {
+          console.warn("Error checking contract", addr, err);
         }
-        console.log("checked", addr, "balance:", b);
-      } catch (err) {
-        console.warn("Error checking contract", addr, err);
-      }
+      })
+    );
+
+    console.log("ownsContracts:", ownsContracts);
+
+    const query = new URLSearchParams({
+      wallet: userAddress,
+      claim: "true",
+      nftCount: quackerCount.toString(),
+      ownsContracts: ownsContracts.join(",")
     });
 
-    await Promise.all(checks);
-
-    // Debug: show what we'll send
-    console.log("ownsContracts to send:", ownsContracts);
-
-   const query = new URLSearchParams({
-  wallet: userAddress,
-  claim: true,
-  nftCount: quackerCount
-});
     const res = await fetch(`${CLAIM_SHEET_API}?${query.toString()}`);
     const data = await res.json();
 
     if (data.error) {
-      console.warn("claim response error:", data);
       showToast(data.error, "warn");
-    } else {
-      const claimed = Number(data.added_quacks || 0);
-      showToast(`🦆 Claimed ${claimed} Quacks!`, "success");
+      return;
+    }
 
-      const quacksCountEl = document.getElementById("quacksCount");
-      if (quacksCountEl) quacksCountEl.innerText = "Daily Quacks: " + (data.new_quacks_total || claimed);
+    showToast(`🦆 Claimed ${data.added_quacks} Quacks!`, "success");
+
+    const quacksCountEl = document.getElementById("quacksCount");
+    if (quacksCountEl) {
+      quacksCountEl.innerText =
+        "Daily Quacks: " + data.new_quacks_total;
     }
 
   } catch (err) {
