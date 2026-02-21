@@ -629,19 +629,18 @@ body:not(.loading) footer {
 .leaderboard-toggle {
   position: fixed;
   right: 20px;
-  top: 140px; /* below header */
-  z-index: 1000;
+  top: 140px;
+  z-index: 2000; /* ↑ higher than footer */
   padding: 10px 18px;
   border-radius: 30px;
   border: none;
   cursor: pointer;
-  background: #ff7a1a; /* 🧡 ORANGE */
+  background: #ff7a1a;
   color: white;
   font-weight: 600;
   box-shadow: 0 6px 18px rgba(0,0,0,0.25);
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
-
 .leaderboard-toggle:hover {
   transform: scale(1.05);
 }
@@ -703,7 +702,7 @@ body:not(.loading) footer {
 
   .leaderboard-toggle {
     top: auto;
-    bottom: 20px;   /* move to bottom on phone */
+    bottom: 90px; /* ↑ push above footer */
     right: 20px;
   }
 
@@ -2821,7 +2820,7 @@ window.addEventListener("load", () => {
   
 document.addEventListener("DOMContentLoaded", function () {
 
-  loadLeaderboard(); // initial load
+  loadLeaderboard();
 
   const toggle = document.getElementById("leaderboardToggle");
   const panel = document.getElementById("leaderboardPanel");
@@ -2829,10 +2828,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   toggle.addEventListener("click", () => {
     panel.classList.add("open");
+    toggle.style.display = "none"; // hide button
   });
 
   closeBtn.addEventListener("click", () => {
     panel.classList.remove("open");
+    toggle.style.display = "block"; // show button again
   });
 
 });
