@@ -800,6 +800,7 @@ body:not(.loading) footer {
   </main>
 
  <!-- Cart Modal -->
+  
 <div id="cartModal" class="cart-modal" aria-hidden="true">
   <button class="close-x" title="Close cart" onclick="closeCart()">✕</button>
   <h3>Your Cart</h3>
@@ -813,6 +814,12 @@ body:not(.loading) footer {
         <option value="Canada">Canada</option>
       </select>
     </div>
+  
+  <select id="paymentSelector">
+  <option value="ETH">Pay with ETH</option>
+  <option value="USDC">Pay with USDC</option>
+  <option value="USDT">Pay with USDT</option>
+</select>
 
   <div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -852,7 +859,6 @@ body:not(.loading) footer {
 
     <button id="checkoutBtn" class="btn" style="width:100%;margin-top:12px">Checkout (Pay / Redeem)</button>
 
-    <div style="margin-top:8px;font-size:12px;color:#666;text-align:center">Network: Base Mainnet</div>
   </div>
 </div>
 
@@ -895,15 +901,50 @@ body:not(.loading) footer {
   </div>
 </div>
 
+  
 
 
 <script>
 /* ===== CONFIG ===== */
+ 
 const PURCHASE_API = "https://script.google.com/macros/s/AKfycbwZMlGQ2REZxTP1lIoWBYzc8n7l-h7C79F9u9MjDY4XIR6jKNO7ky1VXtCm3oP5RM_9qA/exec";
 const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbzu2RjvJf8-SyRIekMh53JODYZxoPXQpjJ2aGTqIHd93HgEZpnXcVC_zxoJbJt51zqSuQ/exec";
 const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
 const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"}];
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
+   const ERC20_ABI = [
+  {
+    "constant": false,
+    "inputs": [
+      { "name": "_to", "type": "address" },
+      { "name": "_value", "type": "uint256" }
+    ],
+    "name": "transfer",
+    "outputs": [{ "name": "", "type": "bool" }],
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "decimals",
+    "outputs": [{ "name": "", "type": "uint8" }],
+    "type": "function"
+  }
+];
+  const TOKEN_MAP = {
+  "0x1": { // Ethereum
+    USDC: "0xA0b86991c6218b36c1d19d19D4a2e9Eb0cE3606EB48",
+    USDT: "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+  },
+  "0x89": { // Polygon
+    USDC: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+    USDT: "0xc2132D05D31c914a87C6611C10748AaCbC5328"
+  },
+  "0x2105": { // Base
+    USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    USDT: null
+  }
+};
 
   
 /* ===== LOAD PROFILE (Web3.js version) ===== */
@@ -2012,23 +2053,7 @@ async function checkout() {
     if (!userAddress) { showToast("Connect wallet first", "error"); return; }
     if (cart.length === 0) { showToast("Cart is empty", "info"); return; }
 
-    // --- Ensure correct network ---
-    try {
-      const chain = await ethereum.request({ method: 'eth_chainId' });
-      if (chain !== BASE_CHAIN_ID_HEX) {
-        await ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: BASE_CHAIN_ID_HEX }] });
-        showToast("Switched to Base mainnet", "success");
-      }
-    } catch (switchErr) {
-      console.warn("Chain switch issue:", switchErr);
-    }
-
-    // --- Calculate subtotal in USD --- //
-  //  let subtotalUSD = 0;
-    // cart.forEach(ci => { subtotalUSD += Number(ci.priceUSD || 0) * (ci.q || 1); }); 
-
-
- // --- Shipping rules ---
+  
  // --- Determine shipping ---
 let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
 country = country.toLowerCase();
@@ -2065,26 +2090,71 @@ console.log("🧭 Country:", country, "| subtotalUSD =", subtotalUSD, "| Shippin
 const rate = await getEthRate();
 let txHash = "";
 
-// --- ETH Payment Handling ---
+let txHash = "";
+const selectedToken = document.getElementById("paymentSelector")?.value || "ETH";
+const chainId = await ethereum.request({ method: "eth_chainId" });
+const grandTotalUSD = subtotalUSD + shippingUSD;
+
 if (hasPaidItems) {
-  // Normal checkout
-  const grandTotalUSD = subtotalUSD + shippingUSD;
-  const totalEth = grandTotalUSD / rate;
-  const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
-  const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
 
   try {
-    showToast(`Please confirm payment (includes $${shippingUSD} shipping)`, "info", 8000);
-    txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
+
+    if (selectedToken === "ETH") {
+
+      const rate = await getEthRate();
+      const totalEth = grandTotalUSD / rate;
+      const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
+
+      const txParams = {
+        from: userAddress,
+        to: SHOP_WALLET,
+        value: valueHex
+      };
+
+      showToast(`Confirm ${selectedToken} payment`, "info", 8000);
+
+      txHash = await ethereum.request({
+        method: "eth_sendTransaction",
+        params: [txParams]
+      });
+
+    } else {
+
+      const tokenAddress = TOKEN_MAP[chainId]?.[selectedToken];
+
+      if (!tokenAddress) {
+        showToast("Token not supported on this network", "error");
+        return;
+      }
+
+      const web3 = new Web3(window.ethereum);
+      const tokenContract = new web3.eth.Contract(ERC20_ABI, tokenAddress);
+
+      const decimals = await tokenContract.methods.decimals().call();
+      const amount = BigInt(Math.floor(grandTotalUSD * (10 ** decimals)));
+
+      showToast(`Confirm ${selectedToken} payment`, "info", 8000);
+
+      const receipt = await tokenContract.methods
+        .transfer(SHOP_WALLET, amount.toString())
+        .send({ from: userAddress });
+
+      txHash = receipt.transactionHash;
+    }
+
     showToast("✅ Transaction sent — logging purchase...", "success", 4000);
     await new Promise(r => setTimeout(r, 1200));
+
   } catch (err) {
-    console.warn("tx aborted", err);
+    console.warn("Payment aborted", err);
     showToast("Transaction cancelled — not logged", "error");
     return;
   }
+}
 
-} else if ((isRedeemOnly || isQuacksOnly) && shippingUSD > 0) {
+
+
+else if ((isRedeemOnly || isQuacksOnly) && shippingUSD > 0) {
   // Pay only shipping for redeem/quacks
   const shippingEth = shippingUSD / rate;
   const valueHex = "0x" + BigInt(Math.floor(shippingEth * 1e18)).toString(16);
@@ -2170,15 +2240,6 @@ if (hasPaidItems) {
       showToast("✅ Purchase logged successfully!", "success", 4000);
     }
 
-    // --- Optional BaseScan link for ETH tx ---
-    if (txHash) {
-      const baseScanUrl = `https://basescan.org/tx/${txHash}`;
-      const linkToast = document.createElement("div");
-      linkToast.className = "toast success";
-      linkToast.innerHTML = `✅ Purchase sent — <a href="${baseScanUrl}" target="_blank" style="color:#fff;text-decoration:underline">View on BaseScan</a>`;
-      document.getElementById("toast-container").appendChild(linkToast);
-      setTimeout(() => linkToast.remove(), 8000);
-    }
 
   } catch (err) {
     console.error("checkout error", err);
@@ -2501,7 +2562,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
    const shippingMessages = [
   "🚚 Free Shipping on orders above $70!",
-  "💳 Easily Buy with Base ETH & Save Gas.",
+  "💳 Easily Buy ETH, USDT/USDC",
   "🦆 Collect Daily Quacks to redeem items.",
   "⚠️ Shipping is only available in the US and Canada."
 ];
@@ -2692,7 +2753,6 @@ async function loadOrderHistory() {
   }
 }
 
-const BASE_CHAIN_ID_HEX = "0x2105"; // 8453
 let web3, provider, web3Modal, userAddress = null;
 
 // Only injected + WalletConnect
@@ -2701,12 +2761,15 @@ const PROVIDER_OPTIONS = {
   walletconnect: {
   package: window.WalletConnectProvider.default, // <-- note .default
   options: {
-    rpc: { 8453: "https://mainnet.base.org" },
+     rpc: {
+        1: "https://rpc.ankr.com/eth",        // Ethereum
+        137: "https://rpc.ankr.com/polygon",  // Polygon
+        8453: "https://mainnet.base.org"      // Base
+      },
     qrcode: true
   }
 }
 };
-console.log("WalletConnectProvider", window.WalletConnectProvider);
 
 // Initialize Web3Modal
 function initWeb3Modal() {
@@ -2742,7 +2805,6 @@ async function connectWallet() {
     document.getElementById("connectBtn").style.display = "none";
     document.getElementById("profileBtn").style.display = "inline-block";
 
-    await ensureBaseNetwork();
 
     // Listen for changes
     if(provider.on){
@@ -2751,12 +2813,7 @@ async function connectWallet() {
         else disconnectWallet();
       });
 
-      provider.on("chainChanged", chainId => {
-        if(chainId.toLowerCase() !== BASE_CHAIN_ID_HEX.toLowerCase()){
-          alert("Please switch to Base network");
-        }
-      });
-
+      
       provider.on("disconnect", () => disconnectWallet());
     }
 
@@ -2780,32 +2837,6 @@ function disconnectWallet(){
   console.log("Wallet disconnected");
 }
   
-
-
-// Ensure Base network
-async function ensureBaseNetwork(){
-  if(!window.ethereum) return;
-  const currentChain = await window.ethereum.request({ method: "eth_chainId" });
-  if(currentChain.toLowerCase() === BASE_CHAIN_ID_HEX.toLowerCase()) return;
-
-  try {
-    await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: BASE_CHAIN_ID_HEX }] });
-  } catch(err){
-    if(err.code === 4902){
-      await window.ethereum.request({
-        method: "wallet_addEthereumChain",
-        params: [{
-          chainId: BASE_CHAIN_ID_HEX,
-          chainName: "Base Mainnet",
-          nativeCurrency: { name: "Ethereum", symbol: "ETH", decimals: 18 },
-          rpcUrls: ["https://mainnet.base.org"],
-          blockExplorerUrls: ["https://basescan.org"]
-        }]
-      });
-    } else throw err;
-  }
-}
-
 // DOM ready
 window.addEventListener("load", () => {
   initWeb3Modal();
