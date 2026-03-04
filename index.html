@@ -2088,7 +2088,6 @@ if ((isRedeemOnly || isQuacksOnly) && needsShipping && shippingUSD === 0) {
 console.log("🧭 Country:", country, "| subtotalUSD =", subtotalUSD, "| Shipping =", shippingUSD);
 
 const rate = await getEthRate();
-let txHash = "";
 
 let txHash = "";
 const selectedToken = document.getElementById("paymentSelector")?.value || "ETH";
