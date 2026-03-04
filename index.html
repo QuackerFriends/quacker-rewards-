@@ -942,7 +942,7 @@ const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
   },
   "0x2105": { // Base
     USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-    USDT: null
+    USDT: "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2"
   }
 };
 
@@ -1771,15 +1771,13 @@ if (!thumb) {
     if (ci.customInput) details.push(`Custom: ${ci.customInput}`);
     const detailsText = details.length ? details.join(" • ") : "No options selected";
 
-    const priceEth = (ci.price || 0).toFixed(6);
-    totalEth += (ci.price || 0) * ci.q;
-
+const priceUSD = ((ci.priceUSD || 0) * ci.q).toFixed(2);
     row.innerHTML = `
       <img src="${thumb}" alt="${ci.title}" />
       <div style="flex:1">
         <div style="font-weight:700">${ci.title}</div>
         <div style="font-size:13px;color:#666">${detailsText}</div>
-        <div style="margin-top:6px">${priceEth} ETH</div>
+        <div style="margin-top:6px">$${priceUSD}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
         <input class="qty" type="number" min="1" value="${ci.q}" onchange="changeQty(${idx}, this.value)" style="width:56px;padding:6px;border-radius:6px;border:1px solid #ddd;text-align:center" />
