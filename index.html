@@ -1,568 +1,343 @@
-<!DOCTYPE html>  
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Quacker Friends Shop</title>
 
-  <!-- WalletConnect Provider — deferred so they don't block page render -->
   <script defer src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
   <script defer src="https://unpkg.com/web3@1.8.2/dist/web3.min.js"></script>
   <script defer src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
 
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 
   <style>
-    .web3modal-modal-lightbox, .web3modal-modal-container {
-      z-index: 99999 !important;
-      pointer-events: auto !important;
-    }
-
+    .web3modal-modal-lightbox,.web3modal-modal-container{z-index:99999!important;pointer-events:auto!important}
     :root{
-      --brand-orange:#ff914d;
-      --brand-orange-dark:#ff7b2c;
-      --brand-teal:#66c7c4;
-      --card:#ffffff;
-      --shadow:0 8px 20px rgba(12,12,20,0.06);
-      --radius:14px;
-      --maxWidth:1100px;
+      --orange:#ff7b2c;--orange-light:#ff914d;--orange-glow:rgba(255,123,44,0.22);
+      --green:#1fbf73;--green-dark:#179959;--green-glow:rgba(31,191,115,0.18);
+      --dark:#0d1119;--dark-card:#131720;--dark-card2:#181e2c;
+      --border:rgba(255,255,255,0.07);--border-hover:rgba(255,255,255,0.13);
+      --text:#eef0f5;--muted:#7a8099;--dim:#444c62;
+      --r-sm:10px;--r-md:16px;--r-lg:22px;--r-xl:32px;
+      --max-w:1140px;
     }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
+    body::before{content:"";position:fixed;inset:0;background:url('https://quackerfriends.github.io/quackheads-assets/images/brandimages/Inside.png') center/cover no-repeat;opacity:.06;z-index:0;pointer-events:none}
+    body::after{content:"";position:fixed;inset:0;background:radial-gradient(ellipse 90% 55% at 50% -5%,rgba(31,191,115,.1) 0%,transparent 65%),radial-gradient(ellipse 55% 40% at 95% 85%,rgba(255,123,44,.07) 0%,transparent 60%);z-index:0;pointer-events:none}
 
-    *{box-sizing:border-box}
+    /* ===== INTRO ===== */
+    #introScreen{position:fixed;inset:0;background:var(--dark);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9000;transition:opacity .9s ease,visibility .9s ease;gap:28px}
+    #introScreen::before{content:"";position:absolute;inset:0;background:url('https://quackerfriends.github.io/quackheads-assets/images/brandimages/Enter.png') center/cover no-repeat;opacity:.3}
+    .intro-content{position:relative;display:flex;flex-direction:column;align-items:center;gap:24px;text-align:center}
+    .intro-logo{width:88px;height:88px;border-radius:22px;animation:pulse-logo 3s ease-in-out infinite;box-shadow:0 0 50px var(--green-glow)}
+    @keyframes pulse-logo{0%,100%{box-shadow:0 0 40px var(--green-glow)}50%{box-shadow:0 0 80px rgba(31,191,115,.4)}}
+    .intro-title{font-family:'Space Grotesk',sans-serif;font-size:2.3rem;font-weight:700;letter-spacing:-.03em;background:linear-gradient(135deg,#fff 30%,var(--green) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .enter-btn{display:inline-flex;align-items:center;gap:10px;padding:14px 36px;background:var(--green);color:#fff;border:none;border-radius:var(--r-xl);font-family:'Inter',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:all .25s;box-shadow:0 8px 30px var(--green-glow);letter-spacing:.01em}
+    .enter-btn:hover{background:var(--green-dark);transform:translateY(-2px);box-shadow:0 14px 40px rgba(31,191,115,.38)}
 
-    body{
-      font-family:'Poppins',sans-serif;
-      margin:0;padding:0;color:#222;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;position:relative;
+    /* ===== SHIPPING NOTICE ===== */
+    #shippingNotice{position:relative;z-index:200;background:rgba(31,191,115,.1);border-bottom:1px solid rgba(31,191,115,.18);color:var(--green);text-align:center;padding:9px 20px;font-size:13px;font-weight:500;letter-spacing:.02em;transition:opacity .5s}
+
+    /* ===== HEADER ===== */
+    header{position:sticky;top:0;z-index:1500;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:rgba(13,17,25,.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);transition:background .3s}
+    .header-brand{display:flex;align-items:center;gap:11px;text-decoration:none}
+    .header-logo{height:36px;width:auto;border-radius:9px}
+    .header-title{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:#fff;letter-spacing:-.02em}
+    .header-actions{display:flex;align-items:center;gap:9px}
+
+    /* ===== BUTTONS ===== */
+    .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border:none;border-radius:var(--r-xl);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+    .btn-primary{background:var(--orange);color:#fff;box-shadow:0 4px 16px var(--orange-glow)}
+    .btn-primary:hover{background:var(--orange-light);transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,123,44,.38)}
+    .btn-green{background:var(--green);color:#fff;box-shadow:0 4px 14px var(--green-glow)}
+    .btn-green:hover{background:var(--green-dark);transform:translateY(-1px)}
+    .btn-ghost{background:rgba(255,255,255,.055);color:var(--text);border:1px solid var(--border)}
+    .btn-ghost:hover{background:rgba(255,255,255,.1);border-color:var(--border-hover)}
+
+    /* ===== SHOP MENU ===== */
+    .shop-controls{position:relative}
+    #shopMenu{position:fixed;background:#16202e;border:1px solid var(--border-hover);border-radius:var(--r-md);padding:6px;min-width:190px;z-index:99999;display:flex;flex-direction:column;gap:2px;opacity:0;visibility:hidden;transform:translateY(-8px) scale(.97);transition:opacity .18s,transform .18s,visibility .18s;box-shadow:0 20px 60px rgba(0,0,0,.55)}
+    #shopMenu.open{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
+    .dropdown-item{padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:var(--muted);border-radius:var(--r-sm);transition:all .15s;display:flex;align-items:center;gap:8px}
+    .dropdown-item:hover{background:rgba(31,191,115,.1);color:var(--green)}
+
+    /* ===== INFO BADGE ===== */
+    .info-container{display:inline-flex;align-items:center;gap:7px;color:var(--muted);background:rgba(255,255,255,.04);border:1px solid var(--border);padding:7px 13px;border-radius:var(--r-xl);font-size:13px;font-weight:500;position:relative;cursor:default}
+    .info-icon{color:var(--orange);font-size:14px}
+    .tooltip-text{visibility:hidden;opacity:0;position:fixed;background:#16202e;border:1px solid var(--border-hover);color:var(--text);text-align:center;padding:8px 12px;border-radius:var(--r-sm);font-size:12px;width:210px;transition:opacity .2s;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.4);z-index:9999999;line-height:1.5}
+
+    /* ===== BLUR OVERLAY ===== */
+    #blurOverlay{position:fixed;inset:0;backdrop-filter:blur(12px) brightness(.5);background:rgba(0,0,0,.4);z-index:50;opacity:0;pointer-events:none;transition:opacity .3s}
+    body.blur-bg #blurOverlay{opacity:1;pointer-events:auto}
+    header,#shippingNotice,main,footer,#profileSection,.cart-modal,.modal-backdrop,#shopMenu,#toast-container{position:relative;z-index:200}
+
+    /* ===== MAIN ===== */
+    main{flex:1;padding:40px 24px 80px;max-width:var(--max-w);margin:0 auto;width:100%}
+
+    /* ===== CATEGORY HEADER ===== */
+    .cat-header{display:flex;align-items:center;gap:14px;margin-bottom:30px;animation:slide-up .3s ease}
+    .cat-header h2{font-family:'Space Grotesk',sans-serif;font-size:1.85rem;font-weight:700;letter-spacing:-.03em;color:#fff}
+    .cat-badge{background:rgba(31,191,115,.14);color:var(--green);border:1px solid rgba(31,191,115,.22);border-radius:var(--r-xl);padding:4px 12px;font-size:12px;font-weight:600}
+    @keyframes slide-up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ===== SHOP GRID ===== */
+    .shop-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+
+    /* ===== PRODUCT CARD ===== */
+    .item{background:var(--dark-card);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;display:flex;flex-direction:column;transition:border-color .25s,transform .25s,box-shadow .25s;animation:card-in .4s ease both}
+    @keyframes card-in{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .item:nth-child(2){animation-delay:.05s}.item:nth-child(3){animation-delay:.1s}.item:nth-child(4){animation-delay:.15s}.item:nth-child(5){animation-delay:.2s}.item:nth-child(6){animation-delay:.25s}
+    .item:hover{border-color:rgba(31,191,115,.28);transform:translateY(-4px);box-shadow:0 20px 50px rgba(0,0,0,.32),0 0 0 1px rgba(31,191,115,.09)}
+
+    /* image */
+    .item-image-wrap{position:relative;aspect-ratio:1/1;background:#161c2a;overflow:hidden}
+    .item-image-wrap img{width:100%;height:100%;object-fit:contain;cursor:zoom-in;transition:transform .4s}
+    .item:hover .item-image-wrap img{transform:scale(1.045)}
+    .zoom-hint{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.58);color:#fff;border-radius:8px;padding:5px 9px;font-size:11px;font-weight:500;opacity:0;transition:opacity .2s;pointer-events:none;backdrop-filter:blur(4px)}
+    .item:hover .zoom-hint{opacity:1}
+
+    /* slider */
+    .image-slider{position:relative;aspect-ratio:1/1;background:#161c2a;overflow:hidden}
+    .image-slider img{width:100%;height:100%;object-fit:contain;display:none;cursor:zoom-in;transition:transform .4s}
+    .image-slider img.active{display:block}
+    .item:hover .image-slider img.active{transform:scale(1.045)}
+    .slider-btn{position:absolute;top:50%;transform:translateY(-50%);width:32px;height:32px;background:rgba(13,17,25,.75);border:1px solid var(--border-hover);border-radius:50%;cursor:pointer;color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s;backdrop-filter:blur(6px);z-index:2}
+    .slider-btn:hover{background:var(--green);border-color:var(--green)}
+    .slider-btn.prev{left:10px}.slider-btn.next{right:10px}
+    .slide-dots{position:absolute;bottom:9px;left:50%;transform:translateX(-50%);display:flex;gap:5px}
+    .slide-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.28);transition:all .2s;cursor:pointer}
+    .slide-dot.active{background:var(--green);width:14px;border-radius:3px}
+
+    /* card body */
+    .item-body{padding:18px 18px 20px;display:flex;flex-direction:column;flex:1;gap:10px}
+    .item-title{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff;letter-spacing:-.02em}
+    .item-desc{font-size:13px;color:var(--muted);line-height:1.55}
+    .item-price{font-size:15px;font-weight:700;color:var(--orange-light)}
+    .item-selects{display:flex;flex-direction:column;gap:7px}
+
+    .styled-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:3px}
+    .styled-select{width:100%;padding:9px 32px 9px 11px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;transition:border-color .2s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a8099' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center}
+    .styled-select:hover,.styled-select:focus{border-color:var(--green);outline:none}
+    .styled-input{width:100%;padding:9px 11px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;transition:border-color .2s}
+    .styled-input:focus{border-color:var(--green);outline:none}
+    .styled-input::placeholder{color:var(--dim)}
+
+    .item-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+    .btn-add-cart{flex:1;padding:10px 14px;background:var(--orange);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+    .btn-add-cart:hover{background:var(--orange-light);transform:translateY(-1px)}
+    .btn-quacks{flex:1;padding:10px 14px;background:rgba(31,191,115,.13);color:var(--green);border:1px solid rgba(31,191,115,.22);border-radius:var(--r-sm);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+    .btn-quacks:hover{background:var(--green);color:#fff;border-color:var(--green)}
+    .btn-redeem{flex:1;padding:10px 14px;background:rgba(255,123,44,.11);color:var(--orange-light);border:1px solid rgba(255,123,44,.2);border-radius:var(--r-sm);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+    .btn-redeem:hover{background:var(--orange);color:#fff;border-color:var(--orange)}
+    .btn-size-guide{width:100%;padding:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s}
+    .btn-size-guide:hover{border-color:var(--border-hover);color:var(--text)}
+
+    /* ===== TOAST ===== */
+    #toast-container{position:fixed;top:80px;right:16px;z-index:100000;display:flex;flex-direction:column;gap:8px}
+    .toast{padding:12px 18px;border-radius:var(--r-md);color:#fff;display:flex;gap:10px;align-items:center;font-size:14px;font-weight:500;backdrop-filter:blur(12px);animation:toast-in .3s ease;max-width:320px;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+    @keyframes toast-in{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
+    .toast.info{background:rgba(28,95,210,.85);border:1px solid rgba(100,160,255,.25)}
+    .toast.success{background:rgba(18,150,80,.88);border:1px solid rgba(31,191,115,.3)}
+    .toast.error{background:rgba(195,40,40,.85);border:1px solid rgba(255,100,100,.25)}
+
+    /* ===== PROFILE SECTION ===== */
+    #profileSection{display:none;background:#16202e;border:1px solid var(--border-hover);color:var(--text);padding:20px;border-radius:var(--r-lg);box-shadow:0 24px 60px rgba(0,0,0,.55);min-width:255px;max-width:295px;z-index:3100}
+    #profileSection h3{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;margin-bottom:12px;color:#fff}
+    #profileSection p{font-size:13px;color:var(--muted);margin-bottom:6px}
+    #profileSection hr{border:none;border-top:1px solid var(--border);margin:12px 0}
+    #profileSection button{width:100%;background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--border);padding:9px 12px;border-radius:var(--r-sm);cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;margin-top:7px;transition:all .2s}
+    #profileSection button:hover{background:rgba(255,255,255,.1);border-color:var(--border-hover)}
+    #profileSection button.disconnect{background:rgba(195,40,40,.12);color:#ff6b6b;border-color:rgba(195,40,40,.22)}
+    #profileSection button.disconnect:hover{background:rgba(195,40,40,.22)}
+
+    /* ===== CART MODAL ===== */
+    .cart-modal{position:fixed;right:0;top:0;height:100vh;width:420px;background:#111621;border-left:1px solid var(--border);transform:translateX(110%);transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:3000!important;padding:24px 22px;display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.5)}
+    .cart-modal.open{transform:translateX(0)}
+    .cart-modal h3{font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:700;color:#fff;margin-bottom:18px}
+    .cart-modal .close-x{position:absolute;right:18px;top:19px;background:rgba(255,255,255,.06);border:1px solid var(--border);width:31px;height:31px;border-radius:50%;font-size:15px;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all .2s}
+    .cart-modal .close-x:hover{background:rgba(255,255,255,.12);color:#fff}
+    .cart-list{flex:1;overflow-y:auto;margin-bottom:14px}
+    .cart-list::-webkit-scrollbar{width:3px}
+    .cart-list::-webkit-scrollbar-track{background:transparent}
+    .cart-list::-webkit-scrollbar-thumb{background:var(--border-hover);border-radius:2px}
+    .cart-item{display:flex;gap:13px;align-items:center;padding:13px 0;border-bottom:1px solid var(--border)}
+    .cart-item img{width:58px;height:58px;object-fit:contain;border-radius:var(--r-sm);background:#161c2a;flex-shrink:0}
+    .cart-item-title{font-size:14px;font-weight:600;color:#fff}
+    .cart-item-details{font-size:12px;color:var(--muted);margin-top:2px}
+    .cart-item-price{font-size:14px;font-weight:700;color:var(--orange-light);margin-top:3px}
+    .btn-remove{background:transparent;border:none;color:var(--dim);font-size:12px;cursor:pointer;margin-top:3px;transition:color .2s}
+    .btn-remove:hover{color:#ff6b6b}
+    .qty-input{width:50px;padding:6px 7px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;text-align:center}
+    .cart-totals{border-top:1px solid var(--border);padding-top:14px;margin-top:2px}
+    .cart-total-row{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:7px}
+    .cart-total-row.grand{color:#fff;font-weight:700;font-size:17px;margin-top:9px;border-top:1px solid var(--border);padding-top:9px}
+    .cart-total-row.grand span:last-child{color:var(--orange-light)}
+    .cart-form-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:5px;margin-top:13px}
+    .cart-select,.cart-textarea,.cart-input{width:100%;padding:10px 12px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;transition:border-color .2s}
+    .cart-select:focus,.cart-textarea:focus,.cart-input:focus{border-color:var(--green);outline:none}
+    .cart-textarea{min-height:70px;resize:vertical}
+    .cart-input::placeholder,.cart-textarea::placeholder{color:var(--dim)}
+    .checkout-btn{width:100%;margin-top:15px;padding:14px;background:var(--orange);color:#fff;border:none;border-radius:var(--r-md);font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:0 6px 22px var(--orange-glow);letter-spacing:.01em}
+    .checkout-btn:hover{background:var(--orange-light);transform:translateY(-1px);box-shadow:0 10px 30px rgba(255,123,44,.42)}
+
+    /* ===== MODALS ===== */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:3000;backdrop-filter:blur(5px)}
+    .modal-backdrop.open{display:flex}
+    .modal-card{background:#16202e;border:1px solid var(--border-hover);border-radius:var(--r-lg);padding:20px;max-width:720px;width:92%;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.6);animation:modal-in .25s ease}
+    @keyframes modal-in{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    .modal-card img{max-width:100%;height:auto;display:block;border-radius:var(--r-sm)}
+    #itemModalContent img{max-width:90vw;max-height:75vh;width:auto;height:auto;display:block;margin:0 auto;border-radius:var(--r-md);object-fit:contain}
+    .modal-close{position:absolute;right:14px;top:14px;background:rgba(255,255,255,.08);border:1px solid var(--border);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;color:var(--muted);transition:all .2s}
+    .modal-close:hover{background:rgba(255,255,255,.14);color:#fff}
+
+    /* ===== LEADERBOARD ===== */
+    .leaderboard-toggle{position:fixed;right:20px;top:118px;z-index:2000;padding:10px 17px;border-radius:var(--r-xl);border:1px solid rgba(31,191,115,.28);cursor:pointer;background:rgba(31,191,115,.1);color:var(--green);font-family:'Inter',sans-serif;font-weight:600;font-size:13px;transition:all .2s;backdrop-filter:blur(8px)}
+    .leaderboard-toggle:hover{background:var(--green);color:#fff;border-color:var(--green)}
+    .leaderboard-panel{position:fixed;right:-360px;top:0;width:340px;height:100vh;background:#111621;border-left:1px solid var(--border);transition:right .35s cubic-bezier(.4,0,.2,1);z-index:2500;padding:24px 20px;overflow-y:auto;box-shadow:-16px 0 50px rgba(0,0,0,.5)}
+    .leaderboard-panel.open{right:0}
+    .leaderboard-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    .leaderboard-header span{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:#fff}
+    .leaderboard-header button{background:rgba(255,255,255,.06);border:1px solid var(--border);width:29px;height:29px;border-radius:50%;cursor:pointer;color:var(--muted);font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+    .leaderboard-header button:hover{background:rgba(255,255,255,.12);color:#fff}
+    .leaderboard-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);font-size:14px}
+    .lb-rank{color:var(--dim);font-size:12px;min-width:28px}
+    .lb-addr{color:var(--muted);font-family:monospace;font-size:13px}
+    .lb-score{color:var(--green);font-weight:600}
+
+    /* ===== FOOTER ===== */
+    footer{background:rgba(8,10,16,.9);border-top:1px solid var(--border);padding:18px 0;text-align:center;color:var(--muted);font-size:13px;position:relative;z-index:1000}
+    footer p{margin-bottom:10px}
+    footer a{margin:0 12px;color:var(--muted);text-decoration:none;transition:color .2s;font-size:18px}
+    footer a:hover{color:var(--green)}
+
+    /* ===== LOADING ===== */
+    body.loading header,body.loading main,body.loading footer,body.loading #shippingNotice,body.loading #cartModal,body.loading #profileSection{opacity:0;transition:opacity .5s}
+    body:not(.loading) header,body:not(.loading) main,body:not(.loading) footer{opacity:1}
+
+    /* ===== CART BADGE ===== */
+    .cart-badge{background:var(--orange);color:#fff;border-radius:50%;width:18px;height:18px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-left:2px}
+
+    /* ===== RESPONSIVE ===== */
+    @media(max-width:768px){
+      header{padding:0 14px;flex-wrap:wrap;height:auto;min-height:64px;padding-top:10px;padding-bottom:10px;gap:7px}
+      .header-title{font-size:15px}
+      .info-container{display:none}
+      .shop-container{grid-template-columns:1fr}
+      main{padding:20px 14px 60px}
+      #toast-container{left:10px;right:10px}
+      .leaderboard-toggle{top:auto;bottom:88px;right:14px}
+      .leaderboard-panel{width:100%;right:-100%}
     }
-
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      background:url('https://quackerfriends.github.io/quackheads-assets/images/brandimages/Inside.png') no-repeat center center fixed;
-      background-size:cover;
-      z-index:-1;
-      transition:filter .4s;
-      pointer-events:none;
-    }
-
-    header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--brand-teal);color:white;box-shadow:0 6px 18px rgba(0,0,0,0.08);z-index:1500;position:relative}
-    header h1{margin:0;font-size:20px;display:flex;align-items:center;gap:10px}
-    header h1 .logo {
-      height: 38px;
-      width: auto;
-      border-radius: 8px;
-      margin-right: 6px;
-    }
-
-    /* ===== REFERRAL INFO TOOLTIP ===== */
-    .info-container {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      color: #fff;
-      background: rgba(30, 30, 30, 0.5);
-      padding: 6px 12px;
-      border-radius: 12px;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
-    }
-
-    .info-icon {
-      cursor: pointer;
-      font-size: 15px;
-      color: #ffb84d;
-      opacity: 0.95;
-      transition: color 0.25s ease, opacity 0.25s ease;
-    }
-
-    .info-icon:hover { color: #ffd580; opacity: 1; }
-
-    .tooltip-text {
-      visibility: hidden;
-      opacity: 0;
-      position: fixed;
-      background: rgba(0,0,0,0.9);
-      color: #fff;
-      text-align: center;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      width: 220px;
-      transition: opacity 0.25s ease;
-      pointer-events: none;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-      z-index: 9999999;
-      white-space: normal;
-    }
-
-    .info-container:hover .tooltip-text {
-      visibility: visible;
-      opacity: 1;
-      top: calc(100% + 8px);
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
-    .product-description {
-      font-size: 0.9rem;
-      color: #555;
-      margin: 6px 0 12px 0;
-    }
-
-    .btn{padding:10px 16px;background:var(--brand-orange-dark);color:white;border:none;border-radius:999px;cursor:pointer;font-weight:600;transition:all .18s;display:inline-flex;gap:8px;align-items:center}
-    .btn.secondary{background:transparent;color:white;border:1px solid rgba(255,255,255,.25);padding:8px 12px;border-radius:10px}
-    main{flex:1;padding:30px 20px;max-width:var(--maxWidth);margin:0 auto 80px}
-    .shop-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
-    .item{background:var(--card);padding:16px;border-radius:14px;box-shadow:var(--shadow);text-align:center;position:relative}
-
-    /* Fixed image dimensions prevent reflow on load */
-    .item img{width:100%;height:220px;object-fit:contain;border-radius:8px;background:#f6f6f6}
-
-    .item h3{margin:10px 0 6px;font-size:16px}
-    .price{font-weight:700;color:var(--brand-orange-dark);margin-bottom:8px}
-    select{width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-bottom:8px}
-
-    /* carousel */
-    .carousel { position: relative; overflow: hidden; border-radius: 12px; background:#f6f6f6; }
-    .carousel img { width:100%; height:220px; object-fit:contain; display:none; transition:opacity .25s ease; }
-    .carousel img.active { display:block; }
-    .carousel button { position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.85); border:none; border-radius:999px; width:34px; height:34px; cursor:pointer; font-size:18px; color:#333; display:flex; align-items:center; justify-content:center; }
-    .carousel .prev-btn{ left:8px } .carousel .next-btn{ right:8px }
-    .carousel button:hover{ background:var(--brand-orange); color:#fff }
-
-    #modalOverlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 1800;
-      pointer-events: none !important;
-    }
-
-    #modalOverlay.active {
-      display: block;
-      pointer-events: auto !important;
-    }
-
-    header, .nav-container, .nav-actions, .nav-actions button {
-      position: relative;
-      z-index: 3000;
-      pointer-events: auto !important;
-    }
-
-    .profile-container { position: relative; }
-
-    #profileSection {
-      display: none;
-      position: absolute;
-      top: 100%;
-      right: 0;
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      color: #fff;
-      padding: 1rem 1.2rem;
-      border-radius: 1rem;
-      box-shadow: 0 4px 25px rgba(0,0,0,0.3);
-      min-width: 240px;
-      max-width: 300px;
-      border: 1px solid rgba(255,255,255,0.2);
-      z-index: 3100;
-      animation: fadeSlideDown 0.25s ease;
-    }
-
-    @media (max-width: 520px) {
-      #profileSection {
-        position: fixed !important;
-        top: 82px !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        width: 90% !important;
-        max-width: 280px !important;
-        right: auto !important;
-        border-radius: 1rem !important;
-        z-index: 4000 !important;
-      }
-    }
-
-    @keyframes fadeSlideDown {
-      from { opacity: 0; transform: translateY(-5px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    #profileSection h3 { margin-top: 0; margin-bottom: 0.5rem; font-weight: 600; color: #fff; }
-
-    #profileSection button {
-      width: 100%;
-      background: rgba(255, 255, 255, 0.2);
-      color: #fff;
-      border: none;
-      padding: 0.6rem 0.8rem;
-      border-radius: 0.6rem;
-      cursor: pointer;
-      margin-top: 6px;
-      transition: background 0.25s ease, color 0.25s ease;
-    }
-
-    #profileSection button:hover { background: #ff7a00; color: #fff; }
-
-    #profileSection button.disconnect { background: linear-gradient(135deg, #ff7043, #ff5252); }
-    #profileSection button.disconnect:hover { background: linear-gradient(135deg, #ff8a65, #ff5252); transform: translateY(-2px); }
-
-    #shopMenu, .cart-modal, .sizeguide-modal, #toastContainer {
-      pointer-events: auto !important;
-    }
-
-    #blurOverlay {
-      position: fixed;
-      inset: 0;
-      backdrop-filter: blur(10px) brightness(0.6);
-      background: rgba(0, 0, 0, 0.25);
-      z-index: 50;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-
-    body.blur-bg #blurOverlay { opacity: 1; pointer-events: auto; }
-
-    header, #shippingNotice, main, footer, #profileSection,
-    .cart-modal, .sizeguide-modal, #shopMenu, #toastContainer {
-      position: relative;
-      z-index: 200;
-    }
-
-    .sizeguide-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:3000;background:rgba(0,0,0,0.5)}
-    .sizeguide-modal.open{display:flex}
-    .sizeguide-modal .card{background:#fff;padding:12px;border-radius:12px;max-width:720px;width:92%;position:relative}
-    .sizeguide-modal img{max-width:100%;height:auto;display:block;border-radius:8px}
-
-    #itemModalContent img {
-      max-width: 90vw;
-      max-height: 80vh;
-      width: auto;
-      height: auto;
-      display: block;
-      margin: 0 auto;
-      border-radius: 12px;
-      object-fit: contain;
-    }
-
-    .sizeguide-modal .close-btn{position:absolute;right:12px;top:12px;background:transparent;border:none;font-size:20px;cursor:pointer}
-
-    .item-modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:3000; background:rgba(0,0,0,0.5); }
-    .item-modal.open { display:flex; }
-    .item-modal .card { background:#fff; padding:16px; border-radius:12px; max-width:700px; width:92%; position:relative; box-shadow:0 6px 24px rgba(0,0,0,0.2); animation:fadeIn 0.25s ease; }
-    .item-modal .close-btn { position:absolute; right:12px; top:12px; background:transparent; border:none; font-size:20px; cursor:pointer; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.96); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    .cart-modal { position:fixed; right:0; top:0; height:100vh; width:420px; background:var(--card); box-shadow:-12px 0 40px rgba(0,0,0,0.12); transform:translateX(110%); transition:transform 0.28s ease; z-index:3000 !important; padding:18px; display:flex; flex-direction:column; }
-    .cart-modal.open{transform:translateX(0); z-index:3000 !important;}
-    .cart-modal .close-x{position:absolute;right:12px;top:8px;background:transparent;border:none;font-size:20px;cursor:pointer}
-    .cart-list{flex:1;overflow:auto;margin-bottom:12px}
-    .cart-item{display:flex;gap:12px;align-items:center;padding:10px;border-bottom:1px solid #f1f1f1}
-    .cart-item img{width:64px;height:64px;object-fit:contain;border-radius:6px;background:#f6f6f6}
-
-    .image-slider { position:relative; width:100%; overflow:hidden; border-radius:12px; aspect-ratio: 1 / 1; background:#f6f6f6; }
-    .image-slider img { width:100%; height:100%; object-fit:contain; display:none; transition:opacity 0.3s ease; border-radius:12px; }
-    .image-slider img.active { display:block; }
-    .image-slider .prev, .image-slider .next { position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.4); color:white; border:none; font-size:20px; padding:4px 10px; cursor:pointer; border-radius:50%; }
-    .image-slider .prev { left:6px; }
-    .image-slider .next { right:6px; }
-
-    #toast-container{position:fixed;top:110px;right:12px;z-index:100000;display:flex;flex-direction:column;gap:8px}
-    .toast{padding:8px 12px;border-radius:8px;color:#fff;display:flex;gap:8px;align-items:center}
-    .toast.info{background:#2563eb}.toast.success{background:#059669}.toast.error{background:#ef4444}
-
-    /* ===== SHOP MENU — GPU-accelerated transition, no display toggling ===== */
-    #shopMenu {
-      position: fixed;
-      background: var(--card);
-      border-radius: 12px;
-      box-shadow: var(--shadow);
-      flex-direction: column;
-      min-width: 180px;
-      padding: 6px 0;
-      z-index: 99999;
-      display: flex;
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(-6px);
-      transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
-    }
-
-    #shopMenu.open {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-    }
-
-    .dropdown-item{padding:10px 16px;border:none;background:transparent;text-align:left;cursor:pointer;font-weight:600;transition:background .15s;color:#222;border-radius:8px;will-change:background;}
-    .dropdown-item:hover{background:var(--brand-orange);color:#fff}
-
-    footer{background:var(--brand-orange-dark);padding:5px 0;text-align:center;color:#fff;margin-top:auto;position:relative;z-index:1000}
-    footer a{margin:0 10px;color:#fff}
-
-    /* ---------- Intro Screen ---------- */
-    #introScreen {
-      position: fixed;
-      inset: 0;
-      background: url('https://quackerfriends.github.io/quackheads-assets/images/brandimages/Enter.png') no-repeat center center;
-      background-size: cover;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 5000;
-      transition: opacity 0.8s ease, visibility 0.8s ease;
-    }
-
-    .enter-btn {
-      font-size: 20px;
-      padding: 14px 32px;
-      border-radius: 999px;
-      background: var(--brand-orange-dark);
-      color: #fff;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .enter-btn:hover { background: var(--brand-orange); transform: scale(1.05); }
-
-    body.loading header, body.loading main, body.loading footer,
-    body.loading #shippingNotice, body.loading #cartModal, body.loading #profileSection {
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
-
-    body:not(.loading) header, body:not(.loading) main, body:not(.loading) footer { opacity: 1; }
-
     @media(max-width:520px){
-      #introScreen { background-position: center; background-size: cover; }
-      .enter-btn { font-size: 18px; padding: 12px 26px; }
-    }
-
-    @media (max-width: 1024px) {
-      header { padding: 12px 18px; gap: 10px; }
-      header h1 { font-size: 19px; }
-      .shop-container { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-      .item img { height: 210px; }
-      #profileSection { right: 16px; left: auto; top: 80px; }
-      footer { position: relative; margin-top: auto; }
-    }
-
-    @media (max-width: 768px) {
-      body, html { width: 100%; overflow-x: hidden; }
-      main { padding: 12px 10px; max-width: 100%; margin: 0 auto; }
-      header { flex-wrap: wrap; justify-content: center; text-align: center; gap: 8px; }
-      header h1 { font-size: 18px; }
-      .info-container { font-size: 13px; margin-top: 6px; }
-      .shop-container { grid-template-columns: 1fr !important; gap: 16px !important; width: 100%; }
-      .item { width: 100%; padding: 12px; }
-      .item img { height: 180px; }
-      #toast-container { top: 80px; right: 8px; left: 8px; width: auto; max-width: calc(100% - 16px); }
-      .tooltip-text { width: 180px; font-size: 11px; }
-      #orderList { font-size: 12px; overflow-x: auto; display: block; white-space: nowrap; padding-bottom: 8px; }
-      .btn, .btn.secondary { font-size: 14px; padding: 8px 12px; }
-      footer { padding: 10px 0; font-size: 14px; }
-    }
-
-    @media (max-width: 520px) {
-      .cart-modal { width:100% !important; right:0 !important; left:0 !important; transform:translateX(100%) !important; border-radius:0 !important; }
-      .cart-modal.open { transform:translateX(0) !important; }
-    }
-
-    .leaderboard-toggle {
-      position: fixed;
-      right: 20px;
-      top: 140px;
-      z-index: 2000;
-      padding: 10px 18px;
-      border-radius: 30px;
-      border: none;
-      cursor: pointer;
-      background: #ff7a1a;
-      color: white;
-      font-weight: 600;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
-      transition: transform 0.2s ease, opacity 0.2s ease;
-    }
-
-    .leaderboard-toggle:hover { transform: scale(1.05); }
-
-    .leaderboard-panel {
-      position: fixed;
-      right: -360px;
-      top: 0;
-      width: 340px;
-      height: 100vh;
-      background: #1fbf73;
-      color: white;
-      box-shadow: -6px 0 25px rgba(0,0,0,0.35);
-      transition: right 0.35s ease;
-      z-index: 999;
-      padding: 20px;
-      overflow-y: auto;
-    }
-
-    .leaderboard-panel.open { right: 0; }
-
-    .leaderboard-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: bold;
-      margin-bottom: 15px;
-    }
-
-    .leaderboard-header button { background: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; }
-
-    .leaderboard-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-      font-family: monospace;
-    }
-
-    @media (max-width: 768px) {
-      .leaderboard-toggle { top: auto; bottom: 110px; right: 20px; }
-      .leaderboard-panel { width: 100%; right: -100%; }
-      .leaderboard-panel.open { right: 0; }
+      .cart-modal{width:100%;border-left:none;border-top:1px solid var(--border);transform:translateY(100%);top:auto;bottom:0;height:92vh;border-radius:var(--r-lg) var(--r-lg) 0 0}
+      .cart-modal.open{transform:translateY(0)}
     }
   </style>
 </head>
 <body>
-
   <div id="blurOverlay"></div>
 
-  <!-- Intro Screen -->
   <div id="introScreen">
-    <button id="enterBtn" class="btn enter-btn">Enter</button>
+    <div class="intro-content">
+      <img src="https://quackerfriends.github.io/quackheads-assets/images/brandimages/logo%20transparent%20zoomed.png" alt="Quacker Friends" class="intro-logo"/>
+      <div class="intro-title">Quacker Friends Shop</div>
+      <button id="enterBtn" class="enter-btn">Enter the Shop →</button>
+    </div>
   </div>
 
-  <div id="shippingNotice" style="background:#fff;color:--brand-orange;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">
-    ⚠️ Note: Shipping is only available in the US and Canada.
-  </div>
+  <div id="shippingNotice">⚠️ Shipping is only available in the US and Canada.</div>
 
   <header>
-    <h1>
-      <img
-        src="https://quackerfriends.github.io/quackheads-assets/images/brandimages/logo%20transparent%20zoomed.png"
-        alt="Quacker Friends Logo"
-        class="logo"
-      />
-      Quacker Friends Shop
-    </h1>
-    <div style="display:flex;gap:10px;align-items:center">
-      <div class="shop-controls" style="position:relative">
-        <button class="btn secondary" id="menuBtn">Shop ▾</button>
-        <div id="shopMenu">
-          <button class="dropdown-item" onclick="showCategory('tees')">Tees</button>
-          <button class="dropdown-item" onclick="showCategory('miniplushies')">Mini Plushies</button>
-          <button class="dropdown-item" onclick="showCategory('plushies')">Plushies</button>
-          <button class="dropdown-item" onclick="showCategory('tapestry')">Tapestry</button>
-          <button class="dropdown-item" onclick="showCategory('keychains')">Keychains</button>
-        </div>
+    <div class="header-brand">
+      <img src="https://quackerfriends.github.io/quackheads-assets/images/brandimages/logo%20transparent%20zoomed.png" alt="Logo" class="header-logo"/>
+      <span class="header-title">Quacker Friends</span>
+    </div>
+    <div class="header-actions">
+      <div class="shop-controls">
+        <button class="btn btn-ghost" id="menuBtn">Shop ▾</button>
+        <div id="shopMenu"></div>
       </div>
-
       <div id="pointsDisplay" class="info-container">
         <i class="fa-solid fa-circle-info info-icon"></i>
         <span class="tooltip-text">Earn points every time a friend checks out with your address as referral!</span>
-        <span class="points-label">Referral Points: <span id="pointsValue"></span></span>
+        <span>Points: <strong id="pointsValue" style="color:var(--green)">—</strong></span>
       </div>
-
-      <button id="connectBtn" class="btn">Connect Wallet</button>
-      <div class="profile-container" style="position:relative;display:inline-block;">
-        <button id="profileBtn" class="btn secondary" style="display:none">Profile</button>
+      <button id="connectBtn" class="btn btn-green">Connect Wallet</button>
+      <div style="position:relative;display:inline-block">
+        <button id="profileBtn" class="btn btn-ghost" style="display:none">Profile</button>
       </div>
-      <button id="openCartBtn" class="btn" style="position:relative">Cart <span id="cartCount" class="cart-count" style="display:none">0</span></button>
+      <button id="openCartBtn" class="btn btn-primary">Cart <span id="cartCount" class="cart-badge" style="display:none">0</span></button>
     </div>
   </header>
 
   <div id="toast-container"></div>
 
-  <!-- Profile Panel -->
   <div id="profileSection" aria-hidden="true">
-    <h3>User Profile</h3>
-    <p id="nftCount">Quacker Friends Held: ...</p>
+    <h3>Your Profile</h3>
+    <p id="nftCount">Quacker Friends Held: …</p>
     <p id="quacksCount">Quacks Balance: 0</p>
     <div style="margin-top:10px">
-      <button id="claimQuacksBtn" class="btn">🦆 Collect Quacks</button>
+      <button id="claimQuacksBtn" style="background:var(--green)!important;color:#fff!important;border-color:var(--green)!important">🦆 Collect Quacks</button>
     </div>
     <hr>
-    <div id="myOrdersSection" style="margin-top:15px;">
-      <h4>📦 My Orders</h4>
-      <button id="loadOrdersBtn" class="btn secondary" onclick="loadOrderHistory()">View My Orders</button>
-      <div id="orderList" style="margin-top:10px;font-size:13px;"></div>
+    <div id="myOrdersSection" style="margin-top:4px">
+      <p style="font-weight:600;color:var(--text);margin-bottom:8px">📦 My Orders</p>
+      <button id="loadOrdersBtn" onclick="loadOrderHistory()">View My Orders</button>
+      <div id="orderList" style="margin-top:10px;font-size:13px;max-height:0;opacity:0;overflow:hidden;transition:all .4s"></div>
     </div>
-    <button class="btn secondary" onclick="disconnectWallet()">❌ Disconnect</button>
+    <button class="disconnect" onclick="disconnectWallet()">❌ Disconnect</button>
   </div>
 
-  <main id="mainContent" style="max-width:var(--maxWidth);margin:20px auto;padding:0 16px;width:100%">
+  <main id="mainContent">
     <section id="items" class="shop-container"></section>
   </main>
 
-  <!-- Cart Modal -->
   <div id="cartModal" class="cart-modal" aria-hidden="true">
-    <button class="close-x" title="Close cart" onclick="closeCart()">✕</button>
+    <button class="close-x" onclick="closeCart()">✕</button>
     <h3>Your Cart</h3>
     <div class="cart-list" id="cartList"></div>
-    <div style="margin-top:10px;">
-      <label for="shippingCountry" style="font-weight:bold;">Shipping Country:</label><br>
-      <select id="shippingCountry" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;margin-top:6px;">
-        <option value="USA">United States</option>
-        <option value="Canada">Canada</option>
-      </select>
+    <div class="cart-totals">
+      <div class="cart-total-row"><span>Subtotal</span><span id="subtotalDisplay">$0.00</span></div>
+      <div class="cart-total-row"><span>Shipping</span><span id="shippingDisplay">$0.00</span></div>
+      <div class="cart-total-row grand"><span>Total</span><span id="totalDisplay">$0.00</span></div>
     </div>
-    <select id="paymentSelector">
+    <label class="cart-form-label">Shipping Country</label>
+    <select id="shippingCountry" class="cart-select">
+      <option value="USA">United States</option>
+      <option value="Canada">Canada</option>
+    </select>
+    <label class="cart-form-label">Payment Method</label>
+    <select id="paymentSelector" class="cart-select">
       <option value="ETH">Pay with ETH</option>
       <option value="USDC">Pay with USDC</option>
       <option value="USDT">Pay with USDT</option>
     </select>
-    <div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <strong>Subtotal</strong><strong id="subtotalDisplay">$0.00</strong>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <strong>Shipping</strong><strong id="shippingDisplay">$0.00</strong>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <strong>Total</strong><strong id="totalDisplay">$0.00</strong>
-      </div>
-      <div id="addressSection" style="margin-top:12px;">
-        <label for="userAddressInput" style="font-weight:bold;">Shipping Address:</label><br>
-        <textarea id="userAddressInput" placeholder="Enter your full shipping address"
-          style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;min-height:70px;"></textarea>
-      </div>
-      <div id="referralSection" style="margin-top:12px;">
-        <label for="referrerInput" style="font-weight:bold;">Referral Address (optional):</label><br>
-        <input type="text" id="referrerInput" placeholder="Enter a friend's wallet address"
-          style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;" />
-      </div>
-      <button id="checkoutBtn" class="btn" style="width:100%;margin-top:12px">Checkout (Pay / Redeem)</button>
+    <label class="cart-form-label">Shipping Address</label>
+    <textarea id="userAddressInput" class="cart-textarea" placeholder="Enter your full shipping address"></textarea>
+    <label class="cart-form-label">Referral Address (optional)</label>
+    <input type="text" id="referrerInput" class="cart-input" placeholder="Friend's wallet address"/>
+    <button id="checkoutBtn" class="checkout-btn">Checkout →</button>
+  </div>
+
+  <div id="sizeGuideModal" class="modal-backdrop" aria-hidden="true" onclick="if(event.target===this)closeSizeGuide()">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeSizeGuide()">✕</button>
+      <img id="sizeGuideImage" src="" alt="Size guide"/>
     </div>
   </div>
 
-  <!-- Size guide modal -->
-  <div id="sizeGuideModal" class="sizeguide-modal" aria-hidden="true">
-    <div class="card">
-      <button class="close-btn" onclick="closeSizeGuide()">✕</button>
-      <img id="sizeGuideImage" src="" alt="Size guide" />
+  <div id="itemModal" class="modal-backdrop" aria-hidden="true" onclick="if(event.target===this)closeItemModal()">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeItemModal()">✕</button>
+      <div id="itemModalContent"></div>
     </div>
   </div>
 
-  <!-- Leaderboard Toggle Button -->
   <button id="leaderboardToggle" class="leaderboard-toggle">🏆 Leaderboard</button>
-
-  <!-- Leaderboard Slide Panel -->
   <div id="leaderboardPanel" class="leaderboard-panel">
     <div class="leaderboard-header">
       <span>🏆 Quacks Leaderboard</span>
@@ -572,1334 +347,328 @@
   </div>
 
   <footer>
-    <p>Follow Quacker Friends:</p>
-    <a href="https://x.com/QuackerFriends" target="_blank"><i class="fab fa-x fa-lg"></i></a>
-    <a href="https://www.tiktok.com/@quackerfriends" target="_blank"><i class="fab fa-tiktok fa-lg"></i></a>
-    <a href="https://www.instagram.com/QuackerFriends" target="_blank"><i class="fab fa-instagram fa-lg"></i></a>
+    <p>Follow Quacker Friends</p>
+    <a href="https://x.com/QuackerFriends" target="_blank"><i class="fab fa-x-twitter"></i></a>
+    <a href="https://www.tiktok.com/@quackerfriends" target="_blank"><i class="fab fa-tiktok"></i></a>
+    <a href="https://www.instagram.com/QuackerFriends" target="_blank"><i class="fab fa-instagram"></i></a>
   </footer>
 
-  <!-- Item Modal -->
-  <div id="itemModal" class="sizeguide-modal" aria-hidden="true" onclick="closeItemModal(event)">
-    <div class="card" onclick="event.stopPropagation();">
-      <button class="close-btn" onclick="closeItemModal()">✕</button>
-      <div id="itemModalContent"></div>
-    </div>
-  </div>
-
 <script>
-/* ===== CONFIG ===== */
-const PURCHASE_API = "https://script.google.com/macros/s/AKfycbwZMlGQ2REZxTP1lIoWBYzc8n7l-h7C79F9u9MjDY4XIR6jKNO7ky1VXtCm3oP5RM_9qA/exec";
-const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbzu2RjvJf8-SyRIekMh53JODYZxoPXQpjJ2aGTqIHd93HgEZpnXcVC_zxoJbJt51zqSuQ/exec";
-const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
-const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"}];
-const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
+const PURCHASE_API="https://script.google.com/macros/s/AKfycbwZMlGQ2REZxTP1lIoWBYzc8n7l-h7C79F9u9MjDY4XIR6jKNO7ky1VXtCm3oP5RM_9qA/exec";
+const CLAIM_SHEET_API="https://script.google.com/macros/s/AKfycbzu2RjvJf8-SyRIekMh53JODYZxoPXQpjJ2aGTqIHd93HgEZpnXcVC_zxoJbJt51zqSuQ/exec";
+const CONTRACT_ADDRESS="0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
+const CONTRACT_ABI=[{"constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"}];
+const SHOP_WALLET="0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
+const ERC20_ABI=[{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"type":"function"}];
+const TOKEN_MAP={"0x1":{USDC:"0xA0b86991c6218b36c1d19d19D4a2e9Eb0cE3606EB48",USDT:"0xdAC17F958D2ee523a2206206994597C13D831ec7"},"0x89":{USDC:"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",USDT:"0xc2132D05D31c914a87C6611C10748AaCbC5328"},"0x2105":{USDC:"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",USDT:"0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2"}};
 
-const ERC20_ABI = [
-  { "constant": false, "inputs": [{ "name": "_to", "type": "address" }, { "name": "_value", "type": "uint256" }], "name": "transfer", "outputs": [{ "name": "", "type": "bool" }], "type": "function" },
-  { "constant": true, "inputs": [], "name": "decimals", "outputs": [{ "name": "", "type": "uint8" }], "type": "function" }
-];
+let cart=[],PRODUCTS={},currentCategory=null,cachedEthRate=null,lastRateFetch=0,blurCount=0;
+function addBlur(){blurCount++;document.body.classList.add("blur-bg")}
+function removeBlur(){blurCount=Math.max(0,blurCount-1);if(!blurCount)document.body.classList.remove("blur-bg")}
 
-const TOKEN_MAP = {
-  "0x1":    { USDC: "0xA0b86991c6218b36c1d19d19D4a2e9Eb0cE3606EB48", USDT: "0xdAC17F958D2ee523a2206206994597C13D831ec7" },
-  "0x89":   { USDC: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",   USDT: "0xc2132D05D31c914a87C6611C10748AaCbC5328" },
-  "0x2105": { USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",   USDT: "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2" }
-};
-
-/* ===== STATE ===== */
-let cart = [];
-let selectedCountry = "USA";
-let PRODUCTS = {};
-let currentCategory = null;
-let cachedEthRate = null;
-let lastRateFetch = 0;
-
-/* ===== BLUR MANAGER ===== */
-let blurCount = 0;
-function addBlur() { blurCount++; document.body.classList.add("blur-bg"); }
-function removeBlur() {
-  blurCount = Math.max(0, blurCount - 1);
-  if (blurCount === 0) document.body.classList.remove("blur-bg");
+function showToast(msg,type="info",duration=3200){
+  const c=document.getElementById("toast-container");if(!c)return;
+  const el=document.createElement("div");el.className="toast "+(type==="success"?"success":type==="error"?"error":"info");
+  el.innerHTML=`<span>${msg}</span>`;c.appendChild(el);setTimeout(()=>el.remove(),duration);
 }
 
-/* ===== UI HELPERS ===== */
-function showToast(message, type="info", duration=3000){
-  const container = document.getElementById("toast-container");
-  if(!container) return console.warn("toast container missing");
-  const el = document.createElement("div");
-  el.className = "toast " + (type==="success"?"success":type==="error"?"error":"info");
-  el.innerHTML = `<span>${message}</span>`;
-  container.appendChild(el);
-  setTimeout(()=>el.remove(), duration);
-}
-
-/* ===== PRICE HELPERS ===== */
 async function getEthRate(){
-  const now = Date.now();
-  if(cachedEthRate && (now - lastRateFetch) < 60000) return cachedEthRate;
-  try {
-    const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd");
-    const data = await res.json();
-    cachedEthRate = (data && data.ethereum && data.ethereum.usd) ? data.ethereum.usd : 3000;
-  } catch (err) {
-    console.warn("CoinGecko fetch failed:", err);
-    cachedEthRate = 3000;
-  }
-  lastRateFetch = Date.now();
-  return cachedEthRate;
+  if(cachedEthRate&&Date.now()-lastRateFetch<60000)return cachedEthRate;
+  try{const r=await fetch("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd");const d=await r.json();cachedEthRate=d?.ethereum?.usd||3000;}catch{cachedEthRate=3000;}
+  lastRateFetch=Date.now();return cachedEthRate;
 }
 
-async function convertUsdToEth(usd){
-  const rate = await getEthRate();
-  return usd / rate;
+function formatPrice(usd,rate){
+  if(!rate||!usd)return usd>0?`$${usd}`:"";
+  return `$${usd} <span style="color:var(--muted);font-weight:400;font-size:12px">≈${(usd/rate).toFixed(4)} ETH</span>`;
 }
 
-function formatPrice(priceUSD, ethRate) {
-  const usd = Number(priceUSD) || 0;
-  if (!ethRate) return `$${usd} (≈... ETH)`;
-  const eth = (usd / ethRate).toFixed(4);
-  return `$${usd} (≈${eth} ETH)`;
+function getProductUsd(p){if(p.priceUSD)return p.priceUSD;if(Array.isArray(p.variants)&&typeof p.variants[0]==="object"&&p.variants[0].priceUSD)return p.variants[0].priceUSD;return 0;}
+
+const SHIPPING_RULES={USA:{fee:5,freeOver:70},Canada:{fee:10,freeOver:70}};
+function calcSubtotalUSD(){return cart.reduce((s,ci)=>s+(Number(ci.priceUSD||0)*ci.q),0)}
+function getShippingCharge(country,sub){const r=SHIPPING_RULES[country]||SHIPPING_RULES.USA;return sub>=r.freeOver?0:r.fee}
+
+function updateCheckoutDisplay(){
+  const country=document.getElementById("shippingCountry")?.value||"USA";
+  const sub=calcSubtotalUSD(),ship=getShippingCharge(country,sub),total=sub+ship;
+  const s=document.getElementById("subtotalDisplay"),sh=document.getElementById("shippingDisplay"),t=document.getElementById("totalDisplay");
+  if(s)s.innerText=`$${sub.toFixed(2)}`;if(sh)sh.innerText=`$${ship.toFixed(2)}`;if(t)t.innerText=`$${total.toFixed(2)}`;
 }
 
-function getProductUsd(p) {
-  if (p.priceUSD) return p.priceUSD;
-  if (p.variants && Array.isArray(p.variants) && typeof p.variants[0] === "object" && p.variants[0].priceUSD) return p.variants[0].priceUSD;
-  if (p.price) return Math.round(p.price * (cachedEthRate || 3000));
-  return 0;
-}
-
-/* ===== SHIPPING & PAYMENT UI HELPERS ===== */
-const SHIPPING_RULES = {
-  USA: { fee: 5, freeOver: 70 },
-  Canada: { fee: 10, freeOver: 70 }
-};
-
-function calcSubtotalUSD() {
-  return cart.reduce((s, ci) => s + (Number(ci.priceUSD || 0) * (ci.q || 1)), 0);
-}
-
-function getShippingCharge(country, subtotal) {
-  const rule = SHIPPING_RULES[country] || SHIPPING_RULES.USA;
-  return subtotal >= rule.freeOver ? 0 : rule.fee;
-}
-
-function updateCheckoutDisplay() {
-  const country = document.getElementById("shippingCountry")?.value || "USA";
-  const subtotal = calcSubtotalUSD();
-  const shipping = getShippingCharge(country, subtotal);
-  const total = subtotal + shipping;
-  const subtotalEl = document.getElementById("subtotalDisplay");
-  const shippingEl = document.getElementById("shippingDisplay");
-  const totalEl = document.getElementById("totalDisplay");
-  if (subtotalEl) subtotalEl.innerText = `$${subtotal.toFixed(2)}`;
-  if (shippingEl) shippingEl.innerText = `$${shipping.toFixed(2)}`;
-  if (totalEl) totalEl.innerText = `$${total.toFixed(2)}`;
-}
-
-if (document.getElementById("subtotalDisplay")) {
+function initCheckoutUI(){
+  const cs=document.getElementById("shippingCountry"),ps=document.getElementById("paymentSelector");
+  if(cs)cs.addEventListener("change",updateCheckoutDisplay);if(ps)ps.addEventListener("change",updateCheckoutDisplay);
   updateCheckoutDisplay();
 }
 
-function initCheckoutUI() {
-  const countrySel = document.getElementById("shippingCountry");
-  const paymentSel = document.getElementById("paymentSelector");
-  if (countrySel) countrySel.addEventListener("change", updateCheckoutDisplay);
-  if (paymentSel) paymentSel.addEventListener("change", updateCheckoutDisplay);
-  updateCheckoutDisplay();
-}
-
-/* ===== LOAD PRODUCTS FROM SHEET ===== */
-async function loadProducts() {
-  try {
-    const res = await fetch(`${PURCHASE_API}?action=getItems`);
-    const data = await res.json();
-
-    if (data.success && Array.isArray(data.items)) {
-      PRODUCTS = data.items.reduce((acc, item) => {
-        const rawCat = (item.Category || "Other").trim();
-        const category = rawCat || "Other";
-        if (!acc[category]) acc[category] = [];
-
-        const variantsFromSheet = item.VariantOptions
-          ? item.VariantOptions.toString().split(",").map(v => v.trim()).filter(Boolean) : [];
-        const colorsFromSheet = item.ColorOptions
-          ? item.ColorOptions.toString().split(",").map(c => c.trim()).filter(Boolean) : [];
-        const sizesFromSheet = item.SizeOptions
-          ? item.SizeOptions.toString().split(",").map(s => s.trim()).filter(Boolean) : [];
-
-        const product = {
-          id: String(item.ID || "").trim(),
-          title: item.Title || "",
-          description: item.Description || "",
-          priceUSD: item.PriceUSD ? Number(item.PriceUSD) : 0,
-          quacksCost: item.QuacksCost || 0,
-          pointsCost: item.PointsCost ? Number(item.PointsCost) : null,
-          variants: variantsFromSheet,
-          colors: colorsFromSheet,
-          sizes: sizesFromSheet,
-          sizeGuide: item.SizeGuide || "",
-          image: item.ImageURL ? String(item.ImageURL).trim() : "",
-          active: item.Active === true || String(item.Active).toUpperCase() === "TRUE",
-          CustomInput: item.CustomInput || "",
-          VariantPrices: item.VariantPrices || ""
-        };
-
-        if (product.image) {
-          if (product.image.includes(",") || product.image.includes("|")) {
-            product.images = product.image.split(/[,|]/).map(u => u.trim()).filter(Boolean);
-          } else {
-            product.images = [product.image];
-          }
-        } else {
-          product.images = ["https://quackerfriends.github.io/quackheads-assets/images/placeholder.png"];
-        }
-
-        if (product.VariantPrices && typeof product.VariantPrices === "string") {
-          const map = {};
-          product.VariantPrices.split(",").forEach(vp => {
-            const [name, price] = vp.split(":");
-            if (name && price) map[name.trim()] = Number(price.trim());
-          });
-          product.variantPricesMap = map;
-        }
-
-        acc[category].push(product);
-        return acc;
-      }, {});
-
-      console.log("✅ Loaded products from sheet:", PRODUCTS);
-
-      // Rebuild shop menu from real sheet categories
-      const shopMenu = document.getElementById("shopMenu");
-      if (shopMenu) {
-        shopMenu.innerHTML = Object.keys(PRODUCTS)
-          .map(cat => `<button class="dropdown-item" onclick="showCategory('${cat}')">${cat}</button>`)
-          .join("");
-      }
-
-      if (!currentCategory) {
-        document.getElementById("items").innerHTML = "";
-      } else {
-        await showCategory(currentCategory);
-        attachZoomFollow();
-      }
-    } else {
-      console.error("⚠️ Failed to load items or items missing:", data);
+async function loadProducts(){
+  try{
+    const res=await fetch(`${PURCHASE_API}?action=getItems`);const data=await res.json();
+    if(data.success&&Array.isArray(data.items)){
+      PRODUCTS=data.items.reduce((acc,item)=>{
+        const cat=(item.Category||"Other").trim()||"Other";if(!acc[cat])acc[cat]=[];
+        const product={id:String(item.ID||"").trim(),title:item.Title||"",description:item.Description||"",priceUSD:item.PriceUSD?Number(item.PriceUSD):0,quacksCost:item.QuacksCost||0,pointsCost:item.PointsCost?Number(item.PointsCost):null,variants:item.VariantOptions?item.VariantOptions.toString().split(",").map(v=>v.trim()).filter(Boolean):[],colors:item.ColorOptions?item.ColorOptions.toString().split(",").map(c=>c.trim()).filter(Boolean):[],sizes:item.SizeOptions?item.SizeOptions.toString().split(",").map(s=>s.trim()).filter(Boolean):[],sizeGuide:item.SizeGuide||"",image:item.ImageURL?String(item.ImageURL).trim():"",active:item.Active===true||String(item.Active).toUpperCase()==="TRUE",CustomInput:item.CustomInput||"",VariantPrices:item.VariantPrices||""};
+        product.images=product.image?(product.image.includes(",")||product.image.includes("|")?product.image.split(/[,|]/).map(u=>u.trim()).filter(Boolean):[product.image]):["https://quackerfriends.github.io/quackheads-assets/images/placeholder.png"];
+        if(product.VariantPrices){const map={};product.VariantPrices.split(",").forEach(vp=>{const[n,p]=vp.split(":");if(n&&p)map[n.trim()]=Number(p.trim())});product.variantPricesMap=map;}
+        acc[cat].push(product);return acc;
+      },{});
+      const sm=document.getElementById("shopMenu");
+      if(sm)sm.innerHTML=Object.keys(PRODUCTS).map(cat=>`<button class="dropdown-item" onclick="showCategory('${cat}')">${cat}</button>`).join("");
+      if(!currentCategory)document.getElementById("items").innerHTML="";else await showCategory(currentCategory);
     }
-  } catch (err) {
-    console.error("❌ Error fetching items:", err);
-  }
+  }catch(err){console.error("Error fetching items:",err)}
 }
 
-/* ===== RENDER CATEGORY ===== */
-async function showCategory(cat) {
-  const shopMenu = document.getElementById("shopMenu");
-
-  // Toggle same category closed
-  if (currentCategory === cat) {
-    document.getElementById("items").innerHTML = "";
-    currentCategory = null;
-    removeBlur();
-    // Close menu with class (GPU-accelerated)
-    if (shopMenu) shopMenu.classList.remove("open");
-    return;
-  }
-
+async function showCategory(cat){
+  const shopMenu=document.getElementById("shopMenu");if(shopMenu)shopMenu.classList.remove("open");
+  if(currentCategory===cat){document.getElementById("items").innerHTML="";currentCategory=null;removeBlur();return;}
   addBlur();
-
-  const key = (cat in PRODUCTS)
-    ? cat
-    : Object.keys(PRODUCTS).find(k => k.toLowerCase() === String(cat).toLowerCase());
-  currentCategory = key || cat;
-
-  const container = document.getElementById("items");
-  const items = PRODUCTS[currentCategory] || [];
-  container.innerHTML = "";
-
-  // Close menu with class after selection
-  if (shopMenu) shopMenu.classList.remove("open");
-
-  if (!items.length) {
-    container.innerHTML = `<div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:0 8px 20px rgba(12,12,20,0.06);"></div>`;
-    return;
-  }
-
-  const ethRate = await getEthRate();
-
-  // Use requestAnimationFrame so DOM updates happen at the right render cycle
-  requestAnimationFrame(() => {
-    items.forEach(p => {
-      const el = document.createElement("div");
-      el.className = "item";
-      el.dataset.category = currentCategory;
-
-      const priceDisplay = formatPrice(getProductUsd(p), ethRate);
-
-      let images = [];
-      if (Array.isArray(p.images) && p.images.length) {
-        images = p.images;
-      } else if (typeof p.image === "string" && p.image.includes(",")) {
-        images = p.image.split(",").map(u => u.trim()).filter(Boolean);
-      } else if (p.image) {
-        images = [p.image];
+  const key=(cat in PRODUCTS)?cat:Object.keys(PRODUCTS).find(k=>k.toLowerCase()===cat.toLowerCase());
+  currentCategory=key||cat;
+  const container=document.getElementById("items");container.innerHTML="";
+  const items=PRODUCTS[currentCategory]||[];
+  if(!items.length){container.innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--muted)">No items found.</div>`;return;}
+  const ethRate=await getEthRate();
+  requestAnimationFrame(()=>{
+    items.forEach((p,idx)=>{
+      const el=document.createElement("div");el.className="item";el.dataset.category=currentCategory;el.style.animationDelay=`${idx*.06}s`;
+      const productId=p.ID||p.id,usd=p.PriceUSD||p.priceUSD||0,quacks=p.QuacksCost||p.quacksCost||0,points=p.PointsCost||p.pointsCost||0;
+      const images=p.images||[];
+      let imageHTML="";
+      if(images.length>1){
+        const dotsHTML=images.map((_,i)=>`<div class="slide-dot ${i===0?"active":""}" onclick="goToSlide('${p.id}',${i})"></div>`).join("");
+        imageHTML=`<div class="image-slider" id="slider_${p.id}">${images.map((url,i)=>`<img src="${url}" alt="${p.title}" class="slide ${i===0?"active":""}" loading="lazy" onclick="openItemModal('<img src=\\'${url}\\' alt=\\'${p.title}\\' style=\\'border-radius:var(--r-md)\\'/><h3 style=\\'margin-top:14px;text-align:center;font-family:Space Grotesk,sans-serif\\' >${p.title}</h3>')"/>`).join("")}<button class="slider-btn prev" onclick="prevSlide('${p.id}')">‹</button><button class="slider-btn next" onclick="nextSlide('${p.id}')">›</button><div class="slide-dots">${dotsHTML}</div></div>`;
+      }else{
+        const src=images[0]||"https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
+        imageHTML=`<div class="item-image-wrap"><img src="${src}" alt="${p.title}" loading="lazy" onclick="openItemModal('<img src=\\'${src}\\' alt=\\'${p.title}\\' style=\\'border-radius:var(--r-md)\\'/><h3 style=\\'margin-top:14px;text-align:center;font-family:Space Grotesk,sans-serif\\'>${p.title}</h3>')"/><div class="zoom-hint">🔍 Zoom</div></div>`;
       }
-
-      let imageHTML = "";
-      if (images.length > 1) {
-        imageHTML = `
-          <div class="image-slider" id="slider_${p.id}">
-            ${images.map((url, i) => `
-              <img
-                src="${url}"
-                alt="${p.title}"
-                class="slide ${i === 0 ? "active" : ""}"
-                loading="lazy"
-                style="cursor:pointer"
-                onclick="openItemModal(\`<img src='${url}' alt='${p.title}' style='max-width:100%;border-radius:12px;display:block;margin:0 auto;' /><h3 style='margin-top:12px;text-align:center;'>${p.title}</h3>\`)"
-              />
-            `).join("")}
-            <button class="prev" onclick="prevSlide('${p.id}')">‹</button>
-            <button class="next" onclick="nextSlide('${p.id}')">›</button>
-          </div>
-        `;
-      } else {
-        const imgSrc = images[0] || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
-        imageHTML = `
-          <img
-            src="${imgSrc}"
-            alt="${p.title}"
-            loading="lazy"
-            style="cursor:pointer"
-            onclick="openItemModal(\`<img src='${imgSrc}' alt='${p.title}' style='max-width:100%;border-radius:12px;display:block;margin:0 auto;' /><h3 style='margin-top:12px;text-align:center;'>${p.title}</h3>\`)"
-          />
-        `;
-      }
-
-      let variantHTML = "";
-      if (p.variants && p.variants.length) {
-        if (typeof p.variants[0] === "string") {
-          variantHTML = `<label>Variant</label><select id="variant_${p.id}">${p.variants.map(v => `<option value="${v}">${v}</option>`).join("")}</select>`;
-        } else if (typeof p.variants[0] === "object") {
-          variantHTML = `<label>Variant</label><select id="variant_${p.id}">${p.variants.map(v => `<option value="${v.name}" data-price-usd="${v.priceUSD ?? ''}">${v.name}</option>`).join("")}</select>`;
-        }
-      }
-
-      let colorHTML = "";
-      if (p.colors && p.colors.length) {
-        colorHTML = `<label>Color</label><select id="color_${p.id}">${p.colors.map(c => `<option value="${c}">${c}</option>`).join("")}</select>`;
-      }
-
-      let sizeHTML = "";
-      if (p.sizes && p.sizes.length) {
-        sizeHTML = `<label>Size</label><select id="size_${p.id}">${p.sizes.map(s => `<option value="${s}">${s}</option>`).join("")}</select>`;
-      }
-
-      let customInputHTML = "";
-      if (p.CustomInput && p.CustomInput.trim() !== "") {
-        customInputHTML = `
-          <label style="display:block;text-align:left;font-weight:600">${p.CustomInput}</label>
-          <input id="custom_${p.id}" type="text" placeholder="${p.CustomInput}"
-            style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;margin-top:4px" />
-        `;
-      }
-
-      const productId = p.ID || p.id;
-      if (!productId) console.warn("Product missing ID:", p);
-
-      const points = p.PointsCost || p.pointsCost || 0;
-      const quacks = p.QuacksCost || p.quacksCost || p.quackscost || 0;
-      const usd = p.PriceUSD || p.priceUSD || 0;
-
-      const redeemHTML = (points > 0 && productId)
-        ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${productId}', ${points})">Redeem for ${points} Referral Points</button>` : "";
-      const quacksHTML = (quacks > 0 && productId)
-        ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${productId}', ${quacks})">Pay with ${quacks} 🪙 Quacks</button>` : "";
-      const buyHTML = (usd > 0 && productId)
-        ? `<button class="btn buy-btn" onclick="addToCart('${productId}')">Add to Cart</button>` : "";
-
-      el.innerHTML = `
-        ${imageHTML}
-        <h3>${p.title}</h3>
-        <p class="product-description">${p.description || ""}</p>
-        <div class="price" id="price_${productId}">${priceDisplay}</div>
-        ${variantHTML}
-        ${colorHTML}
-        ${sizeHTML}
-        ${customInputHTML}
-        ${p.sizeGuide ? `<button class="btn" onclick="openSizeGuide('${p.sizeGuide}')">Size Guide</button>` : ""}
-        <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-          ${buyHTML}
-          ${quacksHTML}
-          ${redeemHTML}
-        </div>
-      `;
-
+      const variantHTML=(p.variants&&p.variants.length)?`<div><label class="styled-label">Variant</label><select class="styled-select" id="variant_${p.id}">${p.variants.map(v=>`<option value="${v}">${v}</option>`).join("")}</select></div>`:"";
+      const colorHTML=(p.colors&&p.colors.length)?`<div><label class="styled-label">Color</label><select class="styled-select" id="color_${p.id}">${p.colors.map(c=>`<option value="${c}">${c}</option>`).join("")}</select></div>`:"";
+      const sizeHTML=(p.sizes&&p.sizes.length)?`<div><label class="styled-label">Size</label><select class="styled-select" id="size_${p.id}">${p.sizes.map(s=>`<option value="${s}">${s}</option>`).join("")}</select></div>`:"";
+      const customHTML=(p.CustomInput&&p.CustomInput.trim())?`<div><label class="styled-label">${p.CustomInput}</label><input class="styled-input" id="custom_${p.id}" type="text" placeholder="${p.CustomInput}"/></div>`:"";
+      const buyBtn=usd>0?`<button class="btn-add-cart" onclick="addToCart('${productId}')">Add to Cart</button>`:"";
+      const quacksBtn=quacks>0?`<button class="btn-quacks" onclick="addToCartWithQuacks('${productId}',${quacks})">🪙 ${quacks} Quacks</button>`:"";
+      const redeemBtn=points>0?`<button class="btn-redeem" onclick="redeemWithPoints('${productId}',${points})">⭐ ${points} Points</button>`:"";
+      const sizeGuideBtn=p.sizeGuide?`<button class="btn-size-guide" onclick="openSizeGuide('${p.sizeGuide}')">📏 Size Guide</button>`:"";
+      el.innerHTML=`${imageHTML}<div class="item-body"><div class="item-title">${p.title}</div>${p.description?`<div class="item-desc">${p.description}</div>`:""}<div class="item-price" id="price_${productId}">${formatPrice(usd,ethRate)}</div><div class="item-selects">${variantHTML}${colorHTML}${sizeHTML}${customHTML}</div>${sizeGuideBtn}<div class="item-actions">${buyBtn}${quacksBtn}${redeemBtn}</div></div>`;
       container.appendChild(el);
-
-      // Variant price update listener
-      const variantSelect = el.querySelector(`#variant_${p.id}`);
-      const priceEl = el.querySelector(`#price_${p.id}`);
-
-      if (variantSelect) {
-        variantSelect.addEventListener("change", async (e) => {
-          const selected = e.target.value;
-          const rate = await getEthRate();
-          let newUsd = getProductUsd(p);
-
-          if (Array.isArray(p.variants) && typeof p.variants[0] === "object") {
-            const matched = p.variants.find(v => v.name === selected);
-            if (matched?.priceUSD) newUsd = matched.priceUSD;
-          } else if (p.VariantPrices) {
-            const variantPricesMap = {};
-            p.VariantPrices.split(",").forEach(vp => {
-              const [name, price] = vp.split(":");
-              if (name && price) variantPricesMap[name.trim()] = Number(price.trim());
-            });
-            if (variantPricesMap[selected] != null) newUsd = variantPricesMap[selected];
-          }
-
-          if (priceEl) priceEl.textContent = formatPrice(newUsd, rate);
-        });
-      }
+      const vs=el.querySelector(`#variant_${p.id}`);
+      if(vs){vs.addEventListener("change",async(e)=>{const sel=e.target.value,rate=await getEthRate();let newUsd=getProductUsd(p);if(Array.isArray(p.variants)&&typeof p.variants[0]==="object"){const m=p.variants.find(v=>v.name===sel);if(m?.priceUSD)newUsd=m.priceUSD;}else if(p.variantPricesMap?.[sel]!=null){newUsd=p.variantPricesMap[sel];}const pe=el.querySelector(`#price_${productId}`);if(pe)pe.innerHTML=formatPrice(newUsd,rate);});}
     });
-
-    attachZoomFollow();
   });
 }
 
-/* ===== SLIDER FUNCTIONS ===== */
-function nextSlide(id) {
-  const slides = document.querySelectorAll(`#slider_${id} .slide`);
-  if (!slides.length) return;
-  let current = Array.from(slides).findIndex(s => s.classList.contains("active"));
-  slides[current].classList.remove("active");
-  slides[(current + 1) % slides.length].classList.add("active");
+function nextSlide(id){const sl=document.querySelectorAll(`#slider_${id} .slide`),dt=document.querySelectorAll(`#slider_${id} .slide-dot`);if(!sl.length)return;let cur=Array.from(sl).findIndex(s=>s.classList.contains("active"));sl[cur].classList.remove("active");if(dt[cur])dt[cur].classList.remove("active");const next=(cur+1)%sl.length;sl[next].classList.add("active");if(dt[next])dt[next].classList.add("active");}
+function prevSlide(id){const sl=document.querySelectorAll(`#slider_${id} .slide`),dt=document.querySelectorAll(`#slider_${id} .slide-dot`);if(!sl.length)return;let cur=Array.from(sl).findIndex(s=>s.classList.contains("active"));sl[cur].classList.remove("active");if(dt[cur])dt[cur].classList.remove("active");const prev=(cur-1+sl.length)%sl.length;sl[prev].classList.add("active");if(dt[prev])dt[prev].classList.add("active");}
+function goToSlide(id,idx){document.querySelectorAll(`#slider_${id} .slide`).forEach((s,i)=>s.classList.toggle("active",i===idx));document.querySelectorAll(`#slider_${id} .slide-dot`).forEach((d,i)=>d.classList.toggle("active",i===idx));}
+
+function openSizeGuide(url){const m=document.getElementById("sizeGuideModal");document.getElementById("sizeGuideImage").src=url;m.classList.add("open");m.setAttribute("aria-hidden","false");addBlur();}
+function closeSizeGuide(){const m=document.getElementById("sizeGuideModal");m.classList.remove("open");m.setAttribute("aria-hidden","true");removeBlur();}
+function openItemModal(html){const m=document.getElementById("itemModal");document.getElementById("itemModalContent").innerHTML=html;m.classList.add("open");addBlur();}
+function closeItemModal(){const m=document.getElementById("itemModal");m.classList.remove("open");removeBlur();}
+
+async function addToCart(productId){
+  const allP=Object.values(PRODUCTS).flat();const product=allP.find(p=>(p.ID&&p.ID===productId)||(p.id&&p.id===productId));
+  if(!product){showToast("Product not found","error");return;}
+  const vs=document.getElementById(`variant_${productId}`),cs=document.getElementById(`color_${productId}`),ss=document.getElementById(`size_${productId}`),ce=document.getElementById(`custom_${productId}`),pe=document.getElementById(`price_${productId}`);
+  const customInput=ce?ce.value.trim():"";
+  if((product.CustomInput||product.custominput)&&!customInput){showToast(`Please fill in: ${product.CustomInput||"custom field"}`,"error");if(ce)ce.focus();return;}
+  let priceUSD=product.priceUSD||0;if(pe){const m=pe.innerText.match(/\$([\d.]+)/);if(m)priceUSD=parseFloat(m[1]);}
+  const rate=await getEthRate();
+  cart.push({id:product.id,title:product.title,variant:vs?.value||"",color:cs?.value||"",size:ss?.value||"",q:1,priceUSD,price:priceUSD/rate,redeem:false,cost:0,customInput,thumb:product.images?.[0]||product.image||"placeholder.png"});
+  updateCartUI();showToast(`🛒 "${product.title}" added`,"success");
 }
 
-function prevSlide(id) {
-  const slides = document.querySelectorAll(`#slider_${id} .slide`);
-  if (!slides.length) return;
-  let current = Array.from(slides).findIndex(s => s.classList.contains("active"));
-  slides[current].classList.remove("active");
-  slides[(current - 1 + slides.length) % slides.length].classList.add("active");
-}
-
-/* ===== SIZE GUIDE ===== */
-function openSizeGuide(url){
-  const modal = document.getElementById("sizeGuideModal");
-  if(modal) document.getElementById("sizeGuideImage").src = url;
-  if(modal){ modal.classList.add("open"); modal.setAttribute("aria-hidden","false"); }
-}
-function closeSizeGuide(){
-  const modal = document.getElementById("sizeGuideModal");
-  if(modal){ modal.classList.remove("open"); modal.setAttribute("aria-hidden","true"); }
-}
-
-/* ===== ITEM MODAL ===== */
-function openItemModal(contentHTML) {
-  const modal = document.getElementById("itemModal");
-  const content = document.getElementById("itemModalContent");
-  content.innerHTML = contentHTML;
-  modal.classList.add("open");
-  addBlur();
-}
-
-function closeItemModal(e) {
-  if (e && e.target.closest('.card')) return;
-  const modal = document.getElementById("itemModal");
-  modal.classList.remove("open");
-  removeBlur();
-}
-
-/* ===== ADD TO CART ===== */
-async function addToCart(productId) {
-  const allProducts = Object.values(PRODUCTS).flat();
-  const product = allProducts.find(p => (p.ID && p.ID === productId) || (p.id && p.id === productId));
-
-  if (!product) {
-    console.error("Product not found:", productId);
-    showToast("Product not found", "error");
-    return;
-  }
-
-  const variantSel = document.getElementById(`variant_${productId}`);
-  const colorSel   = document.getElementById(`color_${productId}`);
-  const sizeSel    = document.getElementById(`size_${productId}`);
-  const customEl   = document.getElementById(`custom_${productId}`);
-  const priceEl    = document.getElementById(`price_${productId}`);
-
-  const variant    = variantSel ? variantSel.value : "";
-  const color      = colorSel ? colorSel.value : "";
-  const size       = sizeSel ? sizeSel.value : "";
-  const customInput = customEl ? customEl.value.trim() : "";
-
-  if ((product.CustomInput || product.custominput) && !customInput) {
-    showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
-    if (customEl) customEl.focus();
-    return;
-  }
-
-  let priceUSD = product.priceUSD || 0;
-  if (priceEl) {
-    const match = priceEl.innerText.match(/\$([\d.]+)/);
-    if (match && match[1]) priceUSD = parseFloat(match[1]);
-  }
-
-  const rate = await getEthRate();
-  const priceETH = priceUSD / rate;
-
-  cart.push({
-    id: product.id,
-    title: product.title,
-    variant, color, size,
-    q: 1,
-    priceUSD,
-    price: priceETH,
-    redeem: false,
-    cost: 0,
-    thumb: (product.images && product.images.length) ? product.images[0] : (product.image ? product.image : "placeholder.png"),
-    customInput
-  });
-
-  updateCartUI();
-  showToast(`🛒 "${product.title}" added to cart`, "success");
-}
-
-/* ===== CART UI ===== */
-async function updateCartUI() {
-  const countEl    = document.getElementById("cartCount");
-  const listEl     = document.getElementById("cartList");
-  const subtotalEl = document.getElementById("subtotalDisplay");
-  const shippingEl = document.getElementById("shippingDisplay");
-  const totalEl    = document.getElementById("totalDisplay");
-
-  if (!listEl || !totalEl) return console.warn("Cart UI elements missing");
-
-  const cartCount = cart.reduce((s, i) => s + i.q, 0);
-  if (countEl) {
-    if (cartCount > 0) { countEl.style.display = "inline-block"; countEl.innerText = cartCount; }
-    else { countEl.style.display = "none"; }
-  }
-
-  if (cart.length === 0) {
-    listEl.innerHTML = "<p style='color:#666'>Cart is empty</p>";
-    if (subtotalEl) subtotalEl.innerText = "$0.00";
-    if (shippingEl) shippingEl.innerText = "$0.00";
-    if (totalEl) totalEl.innerText = "$0.00";
-    return;
-  }
-
-  listEl.innerHTML = "";
-
-  cart.forEach((ci, idx) => {
-    const row = document.createElement("div");
-    row.className = "cart-item";
-
-    let thumb = ci.thumb || "";
-    if (thumb && thumb.includes("https%3A")) thumb = decodeURIComponent(thumb);
-    if (!thumb.startsWith("http")) thumb = "https://quackerfriends.github.io/quackheads-assets/images/" + thumb;
-    if (!thumb) thumb = "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
-
-    const details = [];
-    if (ci.variant && ci.variant !== "N/A") details.push(`Variant: ${ci.variant}`);
-    if (ci.color && ci.color !== "N/A") details.push(`Color: ${ci.color}`);
-    if (ci.size && ci.size !== "N/A") details.push(`Size: ${ci.size}`);
-    if (ci.customInput) details.push(`Custom: ${ci.customInput}`);
-    const detailsText = details.length ? details.join(" • ") : "No options selected";
-    const priceUSD = ((ci.priceUSD || 0) * ci.q).toFixed(2);
-
-    row.innerHTML = `
-      <img src="${thumb}" alt="${ci.title}" loading="lazy" />
-      <div style="flex:1">
-        <div style="font-weight:700">${ci.title}</div>
-        <div style="font-size:13px;color:#666">${detailsText}</div>
-        <div style="margin-top:6px">$${priceUSD}</div>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
-        <input class="qty" type="number" min="1" value="${ci.q}" onchange="changeQty(${idx}, this.value)"
-          style="width:56px;padding:6px;border-radius:6px;border:1px solid #ddd;text-align:center" />
-        <button style="background:transparent;border:none;color:#e11;cursor:pointer" onclick="removeFromCart(${idx})">Remove</button>
-      </div>
-    `;
+async function updateCartUI(){
+  const countEl=document.getElementById("cartCount"),listEl=document.getElementById("cartList");
+  const sub=document.getElementById("subtotalDisplay"),sh=document.getElementById("shippingDisplay"),tot=document.getElementById("totalDisplay");
+  if(!listEl)return;
+  const total=cart.reduce((s,i)=>s+i.q,0);
+  if(countEl){countEl.style.display=total>0?"inline-flex":"none";countEl.innerText=total;}
+  if(!cart.length){listEl.innerHTML="<p style='color:var(--muted);padding:20px 0'>Your cart is empty.</p>";if(sub)sub.innerText="$0.00";if(sh)sh.innerText="$0.00";if(tot)tot.innerText="$0.00";return;}
+  listEl.innerHTML="";
+  cart.forEach((ci,idx)=>{
+    const row=document.createElement("div");row.className="cart-item";
+    let thumb=ci.thumb||"";if(thumb&&thumb.includes("https%3A"))thumb=decodeURIComponent(thumb);if(!thumb.startsWith("http"))thumb="https://quackerfriends.github.io/quackheads-assets/images/"+thumb;
+    const details=[];if(ci.variant&&ci.variant!=="N/A")details.push(ci.variant);if(ci.color&&ci.color!=="N/A")details.push(ci.color);if(ci.size&&ci.size!=="N/A")details.push(ci.size);if(ci.customInput)details.push(ci.customInput);
+    row.innerHTML=`<img src="${thumb}" alt="${ci.title}" loading="lazy"/><div style="flex:1"><div class="cart-item-title">${ci.title}</div><div class="cart-item-details">${details.join(" · ")||"No options"}</div><div class="cart-item-price">$${((ci.priceUSD||0)*ci.q).toFixed(2)}</div><button class="btn-remove" onclick="removeFromCart(${idx})">Remove</button></div><input class="qty-input" type="number" min="1" value="${ci.q}" onchange="changeQty(${idx},this.value)"/>`;
     listEl.appendChild(row);
   });
-
-  const rate = await getEthRate();
-  const subtotalUSD = cart.reduce((s, i) => s + i.priceUSD * i.q, 0);
-  const countrySelect = document.getElementById("shippingCountry");
-  const selCountry = countrySelect ? countrySelect.value : "USA";
-  const shippingUSD = subtotalUSD >= 70 ? 0 : (selCountry === "USA" ? 5 : 10);
-  const totalUSD = subtotalUSD + shippingUSD;
-
-  if (subtotalEl) subtotalEl.innerText = `$${subtotalUSD.toFixed(2)}`;
-  if (shippingEl) shippingEl.innerText = `$${shippingUSD.toFixed(2)}`;
-  if (totalEl) totalEl.innerText = `$${totalUSD.toFixed(2)}`;
+  const subtotalUSD=cart.reduce((s,i)=>s+(i.priceUSD*i.q),0);const country=document.getElementById("shippingCountry")?.value||"USA";const shippingUSD=subtotalUSD>=70?0:country==="USA"?5:10;
+  if(sub)sub.innerText=`$${subtotalUSD.toFixed(2)}`;if(sh)sh.innerText=`$${shippingUSD.toFixed(2)}`;if(tot)tot.innerText=`$${(subtotalUSD+shippingUSD).toFixed(2)}`;
 }
 
-try { updateCheckoutDisplay(); } catch(e) { /* ignore */ }
+function changeQty(i,v){cart[i].q=Math.max(1,Number(v)||1);updateCartUI();}
+function removeFromCart(i){cart.splice(i,1);updateCartUI();}
 
-function changeQty(index, val){ const v = Number(val)||1; cart[index].q = Math.max(1,v); updateCartUI(); }
-function removeFromCart(index){ cart.splice(index,1); updateCartUI(); }
+function openCart(){const m=document.getElementById("cartModal");if(m){m.classList.add("open");m.setAttribute("aria-hidden","false");initCheckoutUI();}}
+function closeCart(){const m=document.getElementById("cartModal");if(m){m.classList.remove("open");m.setAttribute("aria-hidden","true");}}
+document.getElementById("openCartBtn").addEventListener("click",openCart);
 
-function openCart() {
-  const modal = document.getElementById("cartModal");
-  if (modal) {
-    modal.classList.add("open");
-    modal.setAttribute("aria-hidden", "false");
-    initCheckoutUI();
-  }
+async function loadProfile(wallet){
+  if(!web3||!wallet)return null;let quackerBalance=0;
+  try{const c=new web3.eth.Contract(CONTRACT_ABI,CONTRACT_ADDRESS);quackerBalance=await c.methods.balanceOf(wallet).call();}catch{}
+  let claimData={};try{claimData=await(await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(wallet)}&check=true`)).json();}catch{}
+  let shopData={};try{const r=await(await fetch(`${PURCHASE_API}?wallet=${encodeURIComponent(wallet)}&checkPoints=true`)).json();shopData.points=r.points||0;}catch{}
+  return{wallet,quackerBalance:Number(quackerBalance),dailyQuacks:Number(claimData.quacks_collected||0),referralPoints:shopData.points||0};
 }
 
-function closeCart() {
-  const modal = document.getElementById("cartModal");
-  if (modal) { modal.classList.remove("open"); modal.setAttribute("aria-hidden", "true"); }
+async function updatePointsDisplay(){
+  const wallet=(userAddress||"").toLowerCase(),el=document.getElementById("pointsValue");if(!el||!wallet)return;
+  try{const r=await(await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`)).json();el.textContent=r.success?r.points:"—";}catch{el.textContent="—";}
 }
 
-const openCartBtn = document.getElementById("openCartBtn");
-if (openCartBtn) openCartBtn.addEventListener("click", openCart);
-
-/* ===== PROFILE TOGGLE ===== */
-const profileBtn = document.getElementById("profileBtn");
-if (profileBtn) {
-  profileBtn.addEventListener("click", async () => {
-    const panel = document.getElementById("profileSection");
-    if (panel) panel.style.display = panel.style.display === "block" ? "none" : "block";
-    if (!userAddress) return;
-    try {
-      const profileData = await loadProfile(userAddress);
-      const nftCountEl = document.getElementById("nftCount");
-      if (nftCountEl) nftCountEl.innerText = "Quacker Friends Held:" + profileData.quackerBalance;
-      const quacksCount = document.getElementById("quacksCount");
-      if (quacksCount) quacksCount.innerText = "Quacks Balance: " + profileData.dailyQuacks;
-      const pointsValue = document.getElementById("pointsValue");
-      if (pointsValue) pointsValue.innerText = profileData.referralPoints;
-    } catch (err) {
-      console.error(err);
-      showToast("Error loading profile", "warn");
-    }
-  });
-}
-
-/* ===== LOAD PROFILE ===== */
-async function loadProfile(wallet) {
-  if (!web3 || !wallet) return null;
-  let quackerBalance = 0;
-  try {
-    const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-    quackerBalance = await contract.methods.balanceOf(wallet).call();
-  } catch (err) { console.warn("Failed to fetch Quacker NFT balance:", err); }
-
-  let claimData = {};
-  try {
-    const claimResp = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(wallet)}&check=true`);
-    claimData = await claimResp.json();
-  } catch (err) { console.warn("Failed to fetch claim data:", err); }
-
-  let shopData = {};
-  try {
-    const shopResp = await fetch(`${PURCHASE_API}?wallet=${encodeURIComponent(wallet)}&checkPoints=true`);
-    const pointsResp = await shopResp.json();
-    shopData.points = pointsResp.points || 0;
-  } catch (err) { console.warn("Failed to fetch shop/referral data:", err); }
-
-  return {
-    wallet,
-    quackerBalance: Number(quackerBalance),
-    dailyQuacks: Number(claimData.quacks_collected || 0),
-    lastClaim: claimData.last_claim ? new Date(claimData.last_claim) : null,
-    priority: claimData.priority || "none",
-    triggeredBy: claimData.triggered_by || "none",
-    referralPoints: shopData.points || 0
-  };
-}
-
-/* ===== POINTS DISPLAY ===== */
-async function updatePointsDisplay() {
-  const wallet = (userAddress || "").toLowerCase();
-  const pointsValue = document.getElementById("pointsValue");
-  if (!pointsValue) return;
-  if (!wallet) { pointsValue.textContent = ""; return; }
-  try {
-    const res = await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`);
-    const data = await res.json();
-    pointsValue.textContent = data.success ? data.points : "Error";
-  } catch (err) { pointsValue.textContent = "Error"; }
-}
-
-/* ===== LEADERBOARD ===== */
-async function loadLeaderboard() {
-  try {
-    const res = await fetch(`${CLAIM_SHEET_API}?leaderboard=true`);
-    const data = await res.json();
-    const container = document.getElementById("leaderboard");
-    if (!container) return;
-    container.innerHTML = "";
-    data.forEach((user, index) => {
-      const row = document.createElement("div");
-      row.className = "leaderboard-row";
-      const shortAddr = user.address.slice(0, 6) + "..." + user.address.slice(-4);
-      row.innerHTML = `<span>#${index + 1}</span><span>${shortAddr}</span><span>${user.quacks} 🦆</span>`;
-      container.appendChild(row);
-    });
-  } catch (err) { console.error("Leaderboard error:", err); }
-}
-
-/* ===== CLAIM QUACKS ===== */
-const claimQuacksBtn = document.getElementById("claimQuacksBtn");
-if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
-  if (!userAddress) { showToast("Connect wallet first", "warn"); return; }
-  try {
-    const ERC721_MIN_ABI = [{ constant: true, inputs: [{ name: "owner", type: "address" }], name: "balanceOf", outputs: [{ name: "", type: "uint256" }], type: "function" }];
-    let quackerCount = 0;
-    const ownsContracts = [];
-    const OTHER_CONTRACTS = ["0x50372c1153170840ecce9129c6cc70b912f34273"];
-
-    try {
-      const mainContract = new web3.eth.Contract(ERC721_MIN_ABI, CONTRACT_ADDRESS);
-      const mainBal = await mainContract.methods.balanceOf(userAddress).call();
-      quackerCount = Number(mainBal);
-      if (quackerCount > 0) ownsContracts.push(CONTRACT_ADDRESS.toLowerCase());
-    } catch (err) { console.warn("Error checking main contract:", err); }
-
-    await Promise.all(OTHER_CONTRACTS.map(async (addr) => {
-      try {
-        const c = new web3.eth.Contract(ERC721_MIN_ABI, addr);
-        const b = await c.methods.balanceOf(userAddress).call();
-        if (Number(b) > 0) ownsContracts.push(addr.toLowerCase());
-      } catch (err) { console.warn("Error checking contract", addr, err); }
-    }));
-
-    const query = new URLSearchParams({ wallet: userAddress, claim: "true", nftCount: quackerCount.toString(), ownsContracts: ownsContracts.join(",") });
-    const res = await fetch(`${CLAIM_SHEET_API}?${query.toString()}`);
-    const data = await res.json();
-
-    if (data.error) { showToast(data.error, "warn"); return; }
-    showToast("🦆 Quacks Claimed Successfully!", "success");
-    const quacksCountEl = document.getElementById("quacksCount");
-    if (quacksCountEl) quacksCountEl.innerText = "Quacks Balance: " + data.new_quacks_total;
-  } catch (err) {
-    console.error("Error claiming quacks:", err);
-    showToast("Error claiming quacks", "error");
-  }
+document.getElementById("claimQuacksBtn")?.addEventListener("click",async()=>{
+  if(!userAddress){showToast("Connect wallet first","warn");return;}
+  try{
+    const ABI=[{"constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"type":"function"}];
+    let quackerCount=0;const ownsContracts=[];
+    try{const c=new web3.eth.Contract(ABI,CONTRACT_ADDRESS);quackerCount=Number(await c.methods.balanceOf(userAddress).call());if(quackerCount>0)ownsContracts.push(CONTRACT_ADDRESS.toLowerCase());}catch{}
+    await Promise.all(["0x50372c1153170840ecce9129c6cc70b912f34273"].map(async addr=>{try{const c=new web3.eth.Contract(ABI,addr);if(Number(await c.methods.balanceOf(userAddress).call())>0)ownsContracts.push(addr.toLowerCase());}catch{}}));
+    const q=new URLSearchParams({wallet:userAddress,claim:"true",nftCount:String(quackerCount),ownsContracts:ownsContracts.join(",")});
+    const data=await(await fetch(`${CLAIM_SHEET_API}?${q}`)).json();
+    if(data.error){showToast(data.error,"warn");return;}
+    showToast("🦆 Quacks Claimed!","success");const el=document.getElementById("quacksCount");if(el)el.innerText="Quacks Balance: "+data.new_quacks_total;
+  }catch{showToast("Error claiming quacks","error");}
 });
 
-/* ===== CHECKOUT ===== */
-const checkoutBtn = document.getElementById("checkoutBtn");
-if (checkoutBtn) checkoutBtn.addEventListener("click", checkout);
+document.getElementById("checkoutBtn")?.addEventListener("click",checkout);
 
-async function checkout() {
-  const shippingAddress = document.getElementById("userAddressInput")?.value || "";
-  const referrer = document.getElementById("referrerInput")?.value?.trim() || "";
-
-  if (!shippingAddress.trim()) {
-    showToast("Please enter your shipping address before completing your purchase!", "error");
-    return;
+async function checkout(){
+  const shippingAddress=document.getElementById("userAddressInput")?.value||"";const referrer=document.getElementById("referrerInput")?.value?.trim()||"";
+  if(!shippingAddress.trim()){showToast("Please enter your shipping address!","error");return;}
+  if(!window.ethereum){showToast("MetaMask not found","error");return;}
+  if(!userAddress){showToast("Connect wallet first","error");return;}
+  if(!cart.length){showToast("Cart is empty","info");return;}
+  let country=(window.selectedCountry||document.getElementById("shippingCountry")?.value||"USA").toLowerCase();
+  const subtotalUSD=cart.reduce((s,i)=>s+(i.priceUSD*(i.q||1)),0);
+  const isRedeemOnly=cart.every(ci=>ci.redeem),isQuacksOnly=cart.every(ci=>ci.useQuacks),hasPaidItems=cart.some(ci=>!ci.redeem&&!ci.useQuacks);
+  let shippingUSD=subtotalUSD>=70?0:country==="canada"?10:5;
+  if((isRedeemOnly||isQuacksOnly)&&shippingUSD===0)shippingUSD=country==="canada"?10:5;
+  const rate=await getEthRate(),grandTotalUSD=subtotalUSD+shippingUSD;
+  const selectedToken=document.getElementById("paymentSelector")?.value||"ETH";const chainId=await ethereum.request({method:"eth_chainId"});let txHash="";
+  try{
+    if(hasPaidItems){
+      if(selectedToken==="ETH"){const hex="0x"+BigInt(Math.floor((grandTotalUSD/rate)*1e18)).toString(16);showToast(`Confirm ${selectedToken} payment`,"info",8000);txHash=await ethereum.request({method:"eth_sendTransaction",params:[{from:userAddress,to:SHOP_WALLET,value:hex}]});}
+      else{const tokenAddress=TOKEN_MAP[chainId]?.[selectedToken];if(!tokenAddress){showToast("Token not supported","error");return;}const w3=new Web3(window.ethereum),tc=new w3.eth.Contract(ERC20_ABI,tokenAddress);const dec=await tc.methods.decimals().call();const amount=BigInt(Math.floor(grandTotalUSD*(10**dec)));showToast(`Confirm ${selectedToken} payment`,"info",8000);const receipt=await tc.methods.transfer(SHOP_WALLET,amount.toString()).send({from:userAddress});txHash=receipt.transactionHash;}
+      showToast("✅ Transaction sent!","success",4000);await new Promise(r=>setTimeout(r,1200));
+    }else if((isRedeemOnly||isQuacksOnly)&&shippingUSD>0){
+      const hex="0x"+BigInt(Math.floor((shippingUSD/rate)*1e18)).toString(16);showToast(`Confirm $${shippingUSD} shipping`,"info",8000);txHash=await ethereum.request({method:"eth_sendTransaction",params:[{from:userAddress,to:SHOP_WALLET,value:hex}]});showToast("✅ Shipping paid!","success",4000);await new Promise(r=>setTimeout(r,1200));
+    }else{showToast("🎁 Free shipping!","info");}
+  }catch{showToast("Transaction cancelled","error");return;}
+  for(const ci of cart){
+    let payload={wallet:userAddress,variant:ci.variant||"",color:ci.color||"",size:ci.size||"",quantity:ci.q||1,address:shippingAddress,txHash:ci.useQuacks?"":txHash,referrer,customInput:ci.customInput||""};
+    if(ci.redeem){payload.redeem=ci.title;payload.cost=ci.cost;}
+    else if(ci.useQuacks){payload.itemName=ci.title;payload.quacksCost=ci.quacksCost;try{const sd=await(await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&spend=${ci.quacksCost}`)).json();if(sd.error){showToast(`Quacks deduction failed`,"error");return;}showToast(`💸 ${ci.quacksCost} Quacks used`,"success",4000);}catch{showToast("Quacks deduction failed","error");return;}}
+    else{payload.itemName=ci.title;payload.price=Number(ci.price||0);}
+    try{await fetch(`${PURCHASE_API}?${new URLSearchParams({...payload,action:ci.useQuacks?"payWithQuacks":""})}`);}catch{}
   }
-
-  try {
-    if (!window.ethereum) { showToast("MetaMask not found", "error"); return; }
-    if (!userAddress) { showToast("Connect wallet first", "error"); return; }
-    if (cart.length === 0) { showToast("Cart is empty", "info"); return; }
-
-    let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
-    country = country.toLowerCase();
-    let subtotalUSD = cart.reduce((sum, item) => sum + (item.priceUSD * (item.q || 1)), 0);
-    let shippingUSD = 0;
-
-    const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
-    const isQuacksOnly = cart.length > 0 && cart.every(ci => ci.useQuacks);
-    const hasPaidItems = cart.some(ci => !ci.redeem && !ci.useQuacks);
-
-    if (subtotalUSD >= 70) {
-      shippingUSD = 0;
-    } else if (country === "canada") {
-      shippingUSD = 10;
-    } else {
-      shippingUSD = 5;
-    }
-
-    if ((isRedeemOnly || isQuacksOnly) && shippingUSD === 0) {
-      shippingUSD = country === "canada" ? 10 : 5;
-    }
-
-    const rate = await getEthRate();
-    let txHash = "";
-    const selectedToken = document.getElementById("paymentSelector")?.value || "ETH";
-    const chainId = await ethereum.request({ method: "eth_chainId" });
-    const grandTotalUSD = subtotalUSD + shippingUSD;
-
-    if (hasPaidItems) {
-      try {
-        if (selectedToken === "ETH") {
-          const totalEth = grandTotalUSD / rate;
-          const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
-          showToast(`Confirm ${selectedToken} payment`, "info", 8000);
-          txHash = await ethereum.request({ method: "eth_sendTransaction", params: [{ from: userAddress, to: SHOP_WALLET, value: valueHex }] });
-        } else {
-          const tokenAddress = TOKEN_MAP[chainId]?.[selectedToken];
-          if (!tokenAddress) { showToast("Token not supported on this network", "error"); return; }
-          const web3 = new Web3(window.ethereum);
-          const tokenContract = new web3.eth.Contract(ERC20_ABI, tokenAddress);
-          const decimals = await tokenContract.methods.decimals().call();
-          const amount = BigInt(Math.floor(grandTotalUSD * (10 ** decimals)));
-          showToast(`Confirm ${selectedToken} payment`, "info", 8000);
-          const receipt = await tokenContract.methods.transfer(SHOP_WALLET, amount.toString()).send({ from: userAddress });
-          txHash = receipt.transactionHash;
-        }
-        showToast("✅ Transaction sent — logging purchase...", "success", 4000);
-        await new Promise(r => setTimeout(r, 1200));
-      } catch (err) {
-        console.warn("Payment aborted", err);
-        showToast("Transaction cancelled — not logged", "error");
-        return;
-      }
-    } else if ((isRedeemOnly || isQuacksOnly) && shippingUSD > 0) {
-      const shippingEth = shippingUSD / rate;
-      const valueHex = "0x" + BigInt(Math.floor(shippingEth * 1e18)).toString(16);
-      try {
-        showToast(`Please confirm $${shippingUSD} shipping payment`, "info", 8000);
-        txHash = await ethereum.request({ method: "eth_sendTransaction", params: [{ from: userAddress, to: SHOP_WALLET, value: valueHex }] });
-        showToast("✅ Shipping paid — logging order...", "success", 4000);
-        await new Promise(r => setTimeout(r, 1200));
-      } catch (err) {
-        console.warn("Shipping tx aborted", err);
-        showToast("Shipping payment cancelled — not logged", "error");
-        return;
-      }
-    } else {
-      showToast("🎁 Free shipping applied!", "info");
-    }
-
-    for (const ci of cart) {
-      let payload = {
-        wallet: userAddress, variant: ci.variant || "", color: ci.color || "",
-        size: ci.size || "", quantity: ci.q || 1, address: shippingAddress,
-        txHash: ci.useQuacks ? "" : txHash, referrer, customInput: ci.customInput || ""
-      };
-
-      if (ci.redeem) {
-        payload.redeem = ci.title;
-        payload.cost = ci.cost;
-      } else if (ci.useQuacks) {
-        payload.itemName = ci.title;
-        payload.quacksCost = ci.quacksCost;
-        try {
-          const spendRes = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&spend=${ci.quacksCost}`);
-          const spendData = await spendRes.json();
-          if (spendData.error) { showToast(`Quacks deduction failed: ${spendData.error}`, "error"); return; }
-          showToast(`💸 ${ci.quacksCost} Quacks used for "${ci.title}"!`, "success", 4000);
-        } catch (quackErr) {
-          console.warn("Quacks deduction error:", quackErr);
-          showToast("Quacks deduction failed — purchase not logged", "error");
-          return;
-        }
-      } else {
-        payload.itemName = ci.title;
-        payload.price = Number(ci.price || 0);
-      }
-
-      const params = new URLSearchParams({ ...payload, action: ci.useQuacks ? "payWithQuacks" : "" }).toString();
-      try {
-        const res = await fetch(`${PURCHASE_API}?${params}`);
-        const data = await res.json();
-        console.log("Server response:", data);
-      } catch (logErr) { console.warn("Logging failed for item", payload, logErr); }
-    }
-
-    if (isRedeemOnly) { showToast("✅ Redemption logged successfully!", "success", 4000); updatePointsDisplay(); }
-    else { showToast("✅ Purchase logged successfully!", "success", 4000); }
-
-  } catch (err) {
-    console.error("checkout error", err);
-    showToast("Checkout failed", "error");
-  }
+  showToast(isRedeemOnly?"✅ Redemption logged!":"✅ Purchase logged!","success",4000);
 }
 
-/* ===== ADD TO CART WITH QUACKS ===== */
-async function addToCartWithQuacks(productId, quacksCost) {
-  const wallet = (userAddress || "").toLowerCase();
-  if (!wallet) { showToast("Connect your wallet first.", "error"); return; }
-
-  const allProducts = Object.values(PRODUCTS).flat();
-  const product = allProducts.find(p => ((p.ID || p.id || "").toLowerCase() === productId.toLowerCase()));
-  if (!product) { showToast("Product not found", "error"); return; }
-
-  const variantSel  = document.getElementById(`variant_${productId}`);
-  const colorSel    = document.getElementById(`color_${productId}`);
-  const sizeSel     = document.getElementById(`size_${productId}`);
-  const customEl    = document.getElementById(`custom_${productId}`);
-  const customInput = customEl ? customEl.value.trim() : "";
-
-  if ((product.CustomInput || product.customInput) && !customInput) {
-    showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
-    if (customEl) customEl.focus();
-    return;
-  }
-
-  const res = await fetch(`${CLAIM_SHEET_API}?wallet=${wallet}`);
-  const data = await res.json();
-  const userRow = data.find(u => (u.address || "").toLowerCase() === wallet);
-  const currentQuacks = userRow ? Number(userRow.quacks_collected || 0) : 0;
-
-  if (currentQuacks < quacksCost) {
-    showToast(`You only have ${currentQuacks} Quacks — need ${quacksCost}.`, "error");
-    return;
-  }
-
-  cart.push({
-    id: productId, title: product.Title || product.title,
-    price: 0, priceUSD: 0, q: 1, redeem: false, useQuacks: true, quacksCost,
-    variant: variantSel ? variantSel.value : "",
-    color: colorSel ? colorSel.value : "",
-    size: sizeSel ? sizeSel.value : "",
-    thumb: (product.images && product.images.length) ? product.images[0] : (product.image ? product.image : "placeholder.png"),
-    customInput
-  });
-
-  updateCartUI();
-  showToast(`🪙 "${product.Title || product.title}" added using ${quacksCost} Quacks`, "success");
-  if (typeof openCart === "function") openCart();
+async function addToCartWithQuacks(productId,quacksCost){
+  if(!userAddress){showToast("Connect wallet first","error");return;}
+  const product=Object.values(PRODUCTS).flat().find(p=>(p.ID||p.id||"").toLowerCase()===productId.toLowerCase());
+  if(!product){showToast("Product not found","error");return;}
+  const ce=document.getElementById(`custom_${productId}`);const customInput=ce?ce.value.trim():"";
+  if((product.CustomInput||product.customInput)&&!customInput){showToast(`Please fill in: ${product.CustomInput}`,"error");ce?.focus();return;}
+  const data=await(await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress.toLowerCase()}`)).json();
+  const row=data.find(u=>(u.address||"").toLowerCase()===userAddress.toLowerCase());
+  if((row?Number(row.quacks_collected||0):0)<quacksCost){showToast(`Need ${quacksCost} Quacks`,"error");return;}
+  cart.push({id:productId,title:product.Title||product.title,price:0,priceUSD:0,q:1,redeem:false,useQuacks:true,quacksCost,variant:document.getElementById(`variant_${productId}`)?.value||"",color:document.getElementById(`color_${productId}`)?.value||"",size:document.getElementById(`size_${productId}`)?.value||"",thumb:product.images?.[0]||product.image||"placeholder.png",customInput});
+  updateCartUI();showToast(`🪙 Added using ${quacksCost} Quacks`,"success");openCart();
 }
 
-/* ===== REDEEM WITH POINTS ===== */
-async function redeemWithPoints(productId, cost) {
-  const wallet = (userAddress || "").toLowerCase();
-  if (!wallet) { showToast("Please connect your wallet first.", "error"); return; }
-
-  const allProducts = Object.values(PRODUCTS).flat();
-  const product = allProducts.find(p => ((p.ID || p.id || "").toLowerCase() === productId.toLowerCase()));
-  if (!product) { showToast("Product not found", "error"); return; }
-
-  const variantSel  = document.getElementById(`variant_${productId}`);
-  const colorSel    = document.getElementById(`color_${productId}`);
-  const sizeSel     = document.getElementById(`size_${productId}`);
-  const customEl    = document.getElementById(`custom_${productId}`);
-  const customInput = customEl ? customEl.value.trim() : "";
-
-  if ((product.CustomInput || product.customInput) && !customInput) {
-    showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
-    if (customEl) customEl.focus();
-    return;
-  }
-
-  const checkRes = await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`);
-  const checkData = await checkRes.json();
-  const currentPoints = checkData.points || 0;
-
-  if (currentPoints < cost) {
-    showToast(`❌ You only have ${currentPoints} Referral Points — need ${cost} to redeem this item.`, "error");
-    return;
-  }
-
-  const alreadyInCart = cart.find(i => (i.id || i.ID).toLowerCase() === productId.toLowerCase() && i.redeem);
-  if (alreadyInCart) { showToast("Item already added for redemption.", "info"); return; }
-
-  cart.push({
-    id: productId, title: product.Title || product.title,
-    price: 0, priceUSD: 0, q: 1, redeem: true, cost,
-    variant: variantSel ? variantSel.value : "",
-    color: colorSel ? colorSel.value : "",
-    size: sizeSel ? sizeSel.value : "",
-    thumb: (product.images && product.images.length) ? product.images[0] : (product.image ? product.image : "placeholder.png"),
-    customInput
-  });
-
-  updateCartUI();
-  showToast(`🎉 "${product.Title || product.title}" added to cart for ${cost} Referral Points`, "success");
-  if (typeof openCart === "function") openCart();
+async function redeemWithPoints(productId,cost){
+  if(!userAddress){showToast("Connect wallet first","error");return;}
+  const product=Object.values(PRODUCTS).flat().find(p=>(p.ID||p.id||"").toLowerCase()===productId.toLowerCase());
+  if(!product){showToast("Product not found","error");return;}
+  const ce=document.getElementById(`custom_${productId}`);const customInput=ce?ce.value.trim():"";
+  if((product.CustomInput||product.customInput)&&!customInput){showToast(`Please fill in: ${product.CustomInput}`,"error");ce?.focus();return;}
+  const check=await(await fetch(`${PURCHASE_API}?wallet=${userAddress.toLowerCase()}&checkPoints=true`)).json();
+  if((check.points||0)<cost){showToast(`Need ${cost} Referral Points`,"error");return;}
+  if(cart.find(i=>(i.id||i.ID).toLowerCase()===productId.toLowerCase()&&i.redeem)){showToast("Already in cart","info");return;}
+  cart.push({id:productId,title:product.Title||product.title,price:0,priceUSD:0,q:1,redeem:true,cost,variant:document.getElementById(`variant_${productId}`)?.value||"",color:document.getElementById(`color_${productId}`)?.value||"",size:document.getElementById(`size_${productId}`)?.value||"",thumb:product.images?.[0]||product.image||"placeholder.png",customInput});
+  updateCartUI();showToast(`🎉 Added for ${cost} Points`,"success");openCart();
 }
 
-/* ===== ATTACH ZOOM FOLLOW ===== */
-function attachZoomFollow(){
-  document.querySelectorAll('.carousel').forEach(car => {
-    car.querySelectorAll('img').forEach(im => {
-      if (!im.classList.contains('active')) {
-        im.style.pointerEvents = 'none';
-        im.style.opacity = '0';
-        im.style.position = 'absolute';
-      } else {
-        im.style.pointerEvents = 'auto';
-        im.style.opacity = '1';
-        im.style.position = 'relative';
-      }
-    });
-  });
+async function loadLeaderboard(){
+  try{const data=await(await fetch(`${CLAIM_SHEET_API}?leaderboard=true`)).json();const c=document.getElementById("leaderboard");if(!c)return;c.innerHTML="";data.forEach((user,i)=>{const row=document.createElement("div");row.className="leaderboard-row";row.innerHTML=`<span class="lb-rank">#${i+1}</span><span class="lb-addr">${user.address.slice(0,6)}...${user.address.slice(-4)}</span><span class="lb-score">${user.quacks} 🦆</span>`;c.appendChild(row);});}catch(err){console.error("Leaderboard error:",err);}
 }
 
-/* ===== ORDER HISTORY ===== */
-async function loadOrderHistory() {
-  const wallet = (userAddress || "").toLowerCase();
-  const orderList = document.getElementById("orderList");
-  const btn = document.getElementById("loadOrdersBtn");
-
-  if (!wallet) {
-    showToast("Please connect your wallet first!", "error");
-    orderList.innerHTML = "<p>Please connect your wallet to view your orders.</p>";
-    return;
-  }
-
-  if (orderList.dataset.visible === "true") {
-    orderList.style.maxHeight = "0";
-    orderList.style.opacity = "0";
-    orderList.dataset.visible = "false";
-    btn.textContent = "View My Orders";
-    return;
-  }
-
-  btn.textContent = "Loading...";
-  orderList.style.display = "block";
-  orderList.style.transition = "all 0.4s ease";
-  orderList.style.overflow = "auto";
-  orderList.innerHTML = "<p>Loading your orders...</p>";
-
-  try {
-    const res = await fetch(`${PURCHASE_API}?action=getOrders&wallet=${wallet}`);
-    const data = await res.json();
-
-    if (!data.success) {
-      orderList.innerHTML = `<p style="color:red;">Error fetching orders: ${data.error || "Unknown error"}</p>`;
-      btn.textContent = "View My Orders";
-      return;
-    }
-
-    const orders = data.orders || [];
-    if (orders.length === 0) {
-      orderList.innerHTML = "<p>No orders found.</p>";
-      btn.textContent = "Hide My Orders";
-      orderList.dataset.visible = "true";
-      orderList.style.maxHeight = orderList.scrollHeight + "px";
-      orderList.style.opacity = "1";
-      return;
-    }
-
-    const grouped = {};
-    orders.forEach(o => {
-      const key = o.Timestamp;
-      if (!grouped[key]) grouped[key] = [];
-      grouped[key].push(o);
-    });
-
-    const groupedOrders = Object.entries(grouped).map(([timestamp, items]) => {
-      const totalPoints = items.reduce((s, x) => s + (Number(x.PointsCost) || 0), 0);
-      const totalQuacks = items.reduce((s, x) => s + (Number(x.QuacksCost) || 0), 0);
-      const totalUSD    = items.reduce((s, x) => s + (Number(x.Price) || 0), 0);
-      return { timestamp, items, totalItems: items.length, totalPoints, totalQuacks, totalUSD, progress: items[0].Progress || "Not Shipped" };
-    });
-
-    let html = `
-      <div style="overflow-x:auto;padding:10px;background:rgba(0,0,0,0.7);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.3);">
-        <table style="width:100%;border-collapse:collapse;font-size:14px;color:#fff;">
-          <thead style="background:rgba(255,255,255,0.1);">
-            <tr>
-              <th style="padding:10px 8px;">Date</th>
-              <th style="padding:10px 8px;text-align:center;">Items</th>
-              <th style="padding:10px 8px;text-align:right;">Spent</th>
-              <th style="padding:10px 8px;text-align:center;">Status</th>
-              <th style="padding:10px 8px;text-align:center;">Details</th>
-            </tr>
-          </thead>
-          <tbody>
-    `;
-
-    groupedOrders.reverse().forEach((order, index) => {
-      const dateStr = new Date(order.timestamp).toLocaleString();
-      let spent = "—";
-      if (order.totalPoints > 0) spent = `${order.totalPoints} pts`;
-      else if (order.totalQuacks > 0) spent = `${order.totalQuacks} 🦆`;
-      else if (order.totalUSD > 0) spent = `$${order.totalUSD.toFixed(2)}`;
-
-      html += `
-        <tr style="border-bottom:1px solid rgba(255,255,255,0.2);">
-          <td style="padding:10px 8px;">${dateStr}</td>
-          <td style="padding:10px 8px;text-align:center;">${order.totalItems}</td>
-          <td style="padding:10px 8px;text-align:right;">${spent}</td>
-          <td style="padding:10px 8px;text-align:center;">${order.progress}</td>
-          <td style="padding:10px 8px;text-align:center;">
-            <button class="expandOrderBtn" data-id="${index}"
-              style="padding:4px 10px;border-radius:6px;border:none;background:#ff7a00;color:#fff;cursor:pointer;">
-              Expand
-            </button>
-          </td>
-        </tr>
-        <tr class="orderDetailsRow" id="details-${index}" style="display:none;">
-          <td colspan="5" style="padding:10px;background:rgba(255,255,255,0.06);">
-            <div style="display:grid;gap:8px;">
-              ${order.items.map(i => `
-                <div style="padding:8px;border-radius:8px;background:rgba(255,255,255,0.12);">
-                  <strong>${i["Item Name"] || i.Item}</strong><br>
-                  Type: ${i.PointsCost > 0 ? "Points" : i.QuacksCost > 0 ? "Quacks" : "ETH"}<br>
-                  Progress: ${i.Progress}
-                </div>
-              `).join("")}
-            </div>
-          </td>
-        </tr>
-      `;
-    });
-
-    html += `</tbody></table></div>`;
-    orderList.innerHTML = html;
-
-    document.querySelectorAll(".expandOrderBtn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const id = btn.dataset.id;
-        const row = document.getElementById(`details-${id}`);
-        row.style.display = row.style.display === "none" ? "table-row" : "none";
-      });
-    });
-
-    orderList.dataset.visible = "true";
-    btn.textContent = "Hide My Orders";
-    orderList.style.maxHeight = orderList.scrollHeight + "px";
-    orderList.style.opacity = "1";
-
-  } catch (err) {
-    console.error("Order history error:", err);
-    orderList.innerHTML = `<p style="color:red;">Error loading orders.</p>`;
-    btn.textContent = "View My Orders";
-  }
+async function loadOrderHistory(){
+  const wallet=(userAddress||"").toLowerCase(),orderList=document.getElementById("orderList"),btn=document.getElementById("loadOrdersBtn");
+  if(!wallet){showToast("Connect wallet first","error");orderList.innerHTML="<p>Connect wallet to view orders.</p>";return;}
+  if(orderList.dataset.visible==="true"){orderList.style.maxHeight="0";orderList.style.opacity="0";orderList.dataset.visible="false";btn.textContent="View My Orders";return;}
+  btn.textContent="Loading…";orderList.innerHTML="<p>Loading orders…</p>";
+  try{
+    const data=await(await fetch(`${PURCHASE_API}?action=getOrders&wallet=${wallet}`)).json();
+    if(!data.success){orderList.innerHTML=`<p style="color:#ff6b6b">Error: ${data.error||"Unknown"}</p>`;btn.textContent="View My Orders";return;}
+    const orders=data.orders||[];if(!orders.length){orderList.innerHTML="<p>No orders found.</p>";orderList.dataset.visible="true";orderList.style.maxHeight="400px";orderList.style.opacity="1";btn.textContent="Hide Orders";return;}
+    const grouped={};orders.forEach(o=>{if(!grouped[o.Timestamp])grouped[o.Timestamp]=[];grouped[o.Timestamp].push(o);});
+    const groupedOrders=Object.entries(grouped).reverse().map(([ts,items])=>({ts,items,total:items.reduce((s,x)=>s+(Number(x.Price)||0),0),points:items.reduce((s,x)=>s+(Number(x.PointsCost)||0),0),quacks:items.reduce((s,x)=>s+(Number(x.QuacksCost)||0),0),progress:items[0].Progress||"Not Shipped"}));
+    orderList.innerHTML=groupedOrders.map(o=>{
+      let spent=o.points>0?`${o.points} pts`:o.quacks>0?`${o.quacks} 🦆`:`$${o.total.toFixed(2)}`;
+      return `<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px"><span>${new Date(o.ts).toLocaleDateString()}</span><span style="color:var(--green)">${o.progress}</span></div><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:14px">${o.items.length} item${o.items.length>1?"s":""}</span><span style="color:var(--orange-light);font-weight:700">${spent}</span></div><button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'" style="margin-top:8px;background:transparent;border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer">Details</button><div style="display:none;margin-top:8px">${o.items.map(it=>`<div style="font-size:12px;color:var(--muted);padding:4px 0;border-top:1px solid var(--border)">${it["Item Name"]||it.Item} — ${it.Progress}</div>`).join("")}</div></div>`;
+    }).join("");
+    orderList.dataset.visible="true";orderList.style.maxHeight="400px";orderList.style.opacity="1";btn.textContent="Hide Orders";
+  }catch{orderList.innerHTML=`<p style="color:#ff6b6b">Error loading orders.</p>`;btn.textContent="View My Orders";}
 }
 
-/* ===== WEB3 WALLET ===== */
-let web3, provider, web3Modal, userAddress = null;
+const msgs=["🚚 Free Shipping on orders above $70!","💳 Pay with ETH, USDC, or USDT","🦆 Collect Daily Quacks to redeem items","⚠️ Shipping available in US and Canada only"];
+let msgIdx=0;const noticeEl=document.getElementById("shippingNotice");
+if(noticeEl){noticeEl.style.transition="opacity .5s";setInterval(()=>{noticeEl.style.opacity="0";setTimeout(()=>{noticeEl.textContent=msgs[msgIdx=(msgIdx+1)%msgs.length];noticeEl.style.opacity="1";},500);},5000);}
 
-const PROVIDER_OPTIONS = {
-  injected: { package: null },
-  walletconnect: {
-    package: null, // set after deferred scripts load
-    options: {
-      rpc: { 1: "https://rpc.ankr.com/eth", 137: "https://rpc.ankr.com/polygon", 8453: "https://mainnet.base.org" },
-      qrcode: true
-    }
-  }
-};
+let web3,provider,web3Modal,userAddress=null;
+const PROVIDER_OPTIONS={injected:{package:null},walletconnect:{package:null,options:{rpc:{1:"https://rpc.ankr.com/eth",137:"https://rpc.ankr.com/polygon",8453:"https://mainnet.base.org"},qrcode:true}}};
 
-function initWeb3Modal() {
-  try {
-    // Deferred scripts may now be loaded
-    if (window.WalletConnectProvider && window.WalletConnectProvider.default) {
-      PROVIDER_OPTIONS.walletconnect.package = window.WalletConnectProvider.default;
-    }
-    web3Modal = new window.Web3Modal.default({
-      cacheProvider: false,
-      providerOptions: PROVIDER_OPTIONS,
-      disableInjectedProvider: false,
-      theme: "light",
-      network: "mainnet"
-    });
-    console.log("✅ Web3Modal initialized");
-  } catch(err) { console.error("❌ initWeb3Modal error:", err); }
-}
+function initWeb3Modal(){try{if(window.WalletConnectProvider?.default)PROVIDER_OPTIONS.walletconnect.package=window.WalletConnectProvider.default;web3Modal=new window.Web3Modal.default({cacheProvider:false,providerOptions:PROVIDER_OPTIONS,disableInjectedProvider:false,theme:"dark",network:"mainnet"});}catch(err){console.error("Web3Modal init error:",err);}}
 
-async function connectWallet() {
-  try {
-    if(!web3Modal) initWeb3Modal();
-    provider = await web3Modal.connect();
-    if(!provider) return alert("No wallet selected");
-    web3 = new Web3(provider);
-    const accounts = await web3.eth.getAccounts();
-    if(!accounts || !accounts.length) return alert("No accounts found");
-    userAddress = accounts[0].toLowerCase();
-    console.log("Connected:", userAddress);
-    document.getElementById("connectBtn").style.display = "none";
-    document.getElementById("profileBtn").style.display = "inline-block";
-    if(provider.on){
-      provider.on("accountsChanged", accounts => {
-        if(accounts && accounts.length) userAddress = accounts[0].toLowerCase();
-        else disconnectWallet();
-      });
-      provider.on("disconnect", () => disconnectWallet());
-    }
-  } catch(err){
-    console.error(err);
-    alert("Wallet connection failed");
-  }
-}
+async function connectWallet(){try{if(!web3Modal)initWeb3Modal();provider=await web3Modal.connect();if(!provider)return;web3=new Web3(provider);const accounts=await web3.eth.getAccounts();if(!accounts?.length)return;userAddress=accounts[0].toLowerCase();document.getElementById("connectBtn").style.display="none";document.getElementById("profileBtn").style.display="inline-flex";if(provider.on){provider.on("accountsChanged",a=>{if(a?.length)userAddress=a[0].toLowerCase();else disconnectWallet();});provider.on("disconnect",disconnectWallet);}}catch(err){console.error(err);}}
 
-function disconnectWallet(){
-  if(web3Modal && web3Modal.clearCachedProvider) web3Modal.clearCachedProvider();
-  if(provider && provider.disconnect) provider.disconnect();
-  web3 = provider = userAddress = null;
-  document.getElementById("connectBtn").style.display = "inline-block";
-  document.getElementById("profileBtn").style.display = "none";
-  document.getElementById("profileSection").style.display = "none";
-  console.log("Wallet disconnected");
-}
+function disconnectWallet(){if(web3Modal?.clearCachedProvider)web3Modal.clearCachedProvider();if(provider?.disconnect)provider.disconnect();web3=provider=userAddress=null;document.getElementById("connectBtn").style.display="inline-flex";document.getElementById("profileBtn").style.display="none";document.getElementById("profileSection").style.display="none";}
 
-/* ===== INIT ===== */
-document.body.classList.add('loading');
+document.body.classList.add("loading");
+document.getElementById("enterBtn").addEventListener("click",()=>{const intro=document.getElementById("introScreen");intro.style.opacity="0";intro.style.visibility="hidden";document.body.classList.remove("loading");setTimeout(()=>intro.remove(),900);});
 
-const enterBtn = document.getElementById('enterBtn');
-const introScreen = document.getElementById('introScreen');
-
-enterBtn.addEventListener('click', () => {
-  introScreen.style.opacity = '0';
-  introScreen.style.visibility = 'hidden';
-  document.body.classList.remove('loading');
-  setTimeout(() => introScreen.remove(), 700);
-});
-
-document.addEventListener('DOMContentLoaded', async () => {
-  await loadProducts();
-
-  // Shipping country listener
-  const countrySelect = document.getElementById("shippingCountry");
-  if (countrySelect) {
-    window.selectedCountry = countrySelect.value;
-    countrySelect.addEventListener("change", (e) => {
-      window.selectedCountry = e.target.value.trim();
-    });
-  }
-});
-
-/* ===== SHOP MENU TOGGLE — class-based, GPU-accelerated ===== */
-document.addEventListener("DOMContentLoaded", () => {
-  const menuBtn  = document.getElementById("menuBtn");
-  const shopMenu = document.getElementById("shopMenu");
-  if (!menuBtn || !shopMenu) return;
-
-  // Position dropdown under the button
-  menuBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    document.body.appendChild(shopMenu); // escape stacking context
-    const rect = menuBtn.getBoundingClientRect();
-    shopMenu.style.top  = `${rect.bottom + 6}px`;
-    shopMenu.style.left = `${rect.left}px`;
-    shopMenu.classList.toggle("open");
-  });
-
-  // Close when clicking outside
-  document.addEventListener("click", (e) => {
-    if (!menuBtn.contains(e.target) && !shopMenu.contains(e.target)) {
-      shopMenu.classList.remove("open");
-    }
-  });
-
-  // Close on item click (class-based — no display:none flash)
-  shopMenu.addEventListener("click", (e) => {
-    if (e.target.classList.contains("dropdown-item")) {
-      shopMenu.classList.remove("open");
-    }
-  });
-});
-
-/* ===== PROFILE DROPDOWN ===== */
-document.addEventListener("DOMContentLoaded", () => {
-  const profileBtn     = document.getElementById("profileBtn");
-  const profileSection = document.getElementById("profileSection");
-  if (!profileBtn || !profileSection) return;
-
-  profileBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const isVisible = profileSection.classList.contains("show");
-    if (isVisible) {
-      profileSection.classList.remove("show");
-      setTimeout(() => (profileSection.style.display = "none"), 200);
-      return;
-    }
-    document.body.appendChild(profileSection);
-    profileSection.style.display = "block";
-    profileSection.style.position = "fixed";
-    profileSection.style.zIndex = "999999";
-    const rect = profileBtn.getBoundingClientRect();
-    const dropdownWidth = profileSection.offsetWidth || 200;
-    profileSection.style.top  = `${rect.bottom + 6}px`;
-    profileSection.style.left = `${rect.right - dropdownWidth}px`;
-    requestAnimationFrame(() => profileSection.classList.add("show"));
-  });
-
-  document.addEventListener("click", (e) => {
-    if (!profileSection.contains(e.target) && e.target !== profileBtn) {
-      profileSection.classList.remove("show");
-      setTimeout(() => (profileSection.style.display = "none"), 200);
-    }
-  });
-});
-
-/* ===== TOOLTIP ===== */
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".info-container").forEach(container => {
-    const icon    = container.querySelector(".info-icon");
-    const tooltip = container.querySelector(".tooltip-text");
-    if (!icon || !tooltip) return;
-
-    icon.addEventListener("mouseenter", () => {
-      document.body.appendChild(tooltip);
-      const rect = icon.getBoundingClientRect();
-      tooltip.style.position   = "fixed";
-      tooltip.style.top        = `${rect.bottom + 8}px`;
-      tooltip.style.left       = `${rect.left + rect.width / 2}px`;
-      tooltip.style.transform  = "translateX(-50%)";
-      tooltip.style.visibility = "visible";
-      tooltip.style.opacity    = "1";
-      tooltip.style.pointerEvents = "auto";
-      tooltip.style.zIndex     = "9999999";
-    });
-
-    icon.addEventListener("mouseleave", () => {
-      tooltip.style.opacity    = "0";
-      tooltip.style.visibility = "hidden";
-      tooltip.style.pointerEvents = "none";
-      container.appendChild(tooltip);
-    });
-  });
-});
-
-/* ===== SHIPPING NOTICE ROTATOR ===== */
-const shippingMessages = [
-  "🚚 Free Shipping on orders above $70!",
-  "💳 Easily Buy ETH, USDT/USDC",
-  "🦆 Collect Daily Quacks to redeem items.",
-  "⚠️ Shipping is only available in the US and Canada."
-];
-
-let currentMsgIndex = 0;
-const noticeEl = document.getElementById("shippingNotice");
-
-if (noticeEl) {
-  noticeEl.style.minHeight = noticeEl.offsetHeight + "px";
-  noticeEl.style.transition = "opacity 0.5s";
-
-  function rotateShippingNotice() {
-    noticeEl.style.opacity = 0;
-    setTimeout(() => {
-      currentMsgIndex = (currentMsgIndex + 1) % shippingMessages.length;
-      noticeEl.textContent = shippingMessages[currentMsgIndex];
-      noticeEl.style.opacity = 1;
-    }, 500);
+document.addEventListener("DOMContentLoaded",()=>{
+  const menuBtn=document.getElementById("menuBtn"),shopMenu=document.getElementById("shopMenu");
+  if(menuBtn&&shopMenu){
+    menuBtn.addEventListener("click",(e)=>{e.stopPropagation();document.body.appendChild(shopMenu);const r=menuBtn.getBoundingClientRect();shopMenu.style.top=`${r.bottom+6}px`;shopMenu.style.left=`${r.left}px`;shopMenu.classList.toggle("open");});
+    document.addEventListener("click",(e)=>{if(!menuBtn.contains(e.target)&&!shopMenu.contains(e.target))shopMenu.classList.remove("open");});
+    shopMenu.addEventListener("click",(e)=>{if(e.target.classList.contains("dropdown-item"))shopMenu.classList.remove("open");});
   }
 
-  setInterval(rotateShippingNotice, 5000);
-}
+  const pb=document.getElementById("profileBtn"),ps=document.getElementById("profileSection");
+  if(pb&&ps){
+    pb.addEventListener("click",async(e)=>{
+      e.stopPropagation();if(ps.style.display==="block"){ps.style.display="none";return;}
+      document.body.appendChild(ps);ps.style.position="fixed";ps.style.zIndex="999999";ps.style.display="block";
+      const r=pb.getBoundingClientRect();ps.style.top=`${r.bottom+6}px`;ps.style.left=`${r.right-(ps.offsetWidth||260)}px`;
+      if(userAddress){try{const d=await loadProfile(userAddress);const nc=document.getElementById("nftCount"),qc=document.getElementById("quacksCount"),pv=document.getElementById("pointsValue");if(nc)nc.innerText="Quacker Friends Held: "+d.quackerBalance;if(qc)qc.innerText="Quacks Balance: "+d.dailyQuacks;if(pv)pv.textContent=d.referralPoints;}catch{}}
+    });
+    document.addEventListener("click",(e)=>{if(!ps.contains(e.target)&&e.target!==pb)ps.style.display="none";});
+  }
 
-/* ===== LEADERBOARD TOGGLE ===== */
-document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".info-container").forEach(c=>{
+    const icon=c.querySelector(".info-icon"),tip=c.querySelector(".tooltip-text");if(!icon||!tip)return;
+    icon.addEventListener("mouseenter",()=>{document.body.appendChild(tip);const r=icon.getBoundingClientRect();tip.style.cssText=`position:fixed;top:${r.bottom+8}px;left:${r.left+r.width/2}px;transform:translateX(-50%);visibility:visible;opacity:1;pointer-events:auto;z-index:9999999`;});
+    icon.addEventListener("mouseleave",()=>{tip.style.opacity="0";tip.style.visibility="hidden";tip.style.pointerEvents="none";c.appendChild(tip);});
+  });
+
   loadLeaderboard();
-
-  const toggle  = document.getElementById("leaderboardToggle");
-  const panel   = document.getElementById("leaderboardPanel");
-  const closeBtn = document.getElementById("closeLeaderboard");
-
-  toggle.addEventListener("click", () => {
-    panel.classList.add("open");
-    toggle.style.display = "none";
-  });
-
-  closeBtn.addEventListener("click", () => {
-    panel.classList.remove("open");
-    toggle.style.display = "block";
-  });
+  const toggle=document.getElementById("leaderboardToggle"),panel=document.getElementById("leaderboardPanel"),close=document.getElementById("closeLeaderboard");
+  toggle?.addEventListener("click",()=>{panel.classList.add("open");toggle.style.display="none";});
+  close?.addEventListener("click",()=>{panel.classList.remove("open");toggle.style.display="block";});
 });
 
-/* ===== WALLET LOAD ===== */
-window.addEventListener("load", () => {
-  // Small delay to let deferred scripts finish loading
-  setTimeout(() => {
-    initWeb3Modal();
-    const btn = document.getElementById("connectBtn");
-    if(btn) btn.addEventListener("click", connectWallet);
-  }, 500);
+document.addEventListener("DOMContentLoaded",async()=>{
+  await loadProducts();
+  const cs=document.getElementById("shippingCountry");if(cs){window.selectedCountry=cs.value;cs.addEventListener("change",e=>window.selectedCountry=e.target.value);}
 });
+
+window.addEventListener("load",()=>{setTimeout(()=>{initWeb3Modal();document.getElementById("connectBtn")?.addEventListener("click",connectWallet);},500);});
 </script>
-
 </body>
 </html>
