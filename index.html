@@ -60,8 +60,8 @@
 
     /* ===== SHOP MENU ===== */
     .shop-controls{position:relative;display:inline-block}
-    #shopMenu{display:none;position:fixed;background:#1a2535;border:1px solid rgba(255,255,255,0.18);border-radius:var(--r-md);padding:6px;min-width:190px;z-index:99998;flex-direction:column;gap:2px;box-shadow:0 16px 50px rgba(0,0,0,.65)}
-    #shopMenu.open{display:flex}
+    #shopMenu{position:fixed !important;top:80px;left:0;background:#1a2535;border:1px solid rgba(255,255,255,0.18);border-radius:var(--r-md);padding:6px;min-width:190px;z-index:99998;flex-direction:column;gap:2px;box-shadow:0 16px 50px rgba(0,0,0,.65);display:none}
+    #shopMenu.open{display:flex !important}
     .dropdown-item{padding:11px 15px;border:none;background:transparent;text-align:left;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#c8cfe0;border-radius:var(--r-sm);transition:background .15s,color .15s;width:100%}
     .dropdown-item:hover{background:rgba(31,191,115,.15);color:var(--green)}
 
@@ -649,9 +649,9 @@ document.addEventListener("DOMContentLoaded",()=>{
         shopMenu.classList.remove("open");
         return;
       }
-      const r=menuBtn.getBoundingClientRect();
-      shopMenu.style.top  = (r.bottom + 6) + "px";
-      shopMenu.style.left = r.left + "px";
+      const r = menuBtn.getBoundingClientRect();
+      shopMenu.style.setProperty("top",  (r.bottom + 6) + "px", "important");
+      shopMenu.style.setProperty("left", r.left + "px", "important");
       shopMenu.classList.add("open");
     });
     document.addEventListener("click",(e)=>{
