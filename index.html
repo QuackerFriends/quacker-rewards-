@@ -43,7 +43,7 @@
     #shippingNotice{position:relative;z-index:200;background:rgba(31,191,115,.1);border-bottom:1px solid rgba(31,191,115,.18);color:var(--green);text-align:center;padding:9px 20px;font-size:13px;font-weight:500;letter-spacing:.02em;transition:opacity .5s}
 
     /* ===== HEADER ===== */
-    header{position:sticky;top:0;z-index:1500;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:rgba(13,17,25,.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);transition:background .3s}
+    header{position:sticky;top:0;z-index:1500;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:#66c7c4;border-bottom:1px solid rgba(0,0,0,0.1);transition:background .3s;box-shadow:0 4px 20px rgba(0,0,0,0.15)}
     .header-brand{display:flex;align-items:center;gap:11px;text-decoration:none}
     .header-logo{height:36px;width:auto;border-radius:9px}
     .header-title{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:#fff;letter-spacing:-.02em}
@@ -53,10 +53,10 @@
     .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border:none;border-radius:var(--r-xl);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
     .btn-primary{background:var(--orange);color:#fff;box-shadow:0 4px 16px var(--orange-glow)}
     .btn-primary:hover{background:var(--orange-light);transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,123,44,.38)}
-    .btn-green{background:var(--green);color:#fff;box-shadow:0 4px 14px var(--green-glow)}
-    .btn-green:hover{background:var(--green-dark);transform:translateY(-1px)}
-    .btn-ghost{background:rgba(255,255,255,.055);color:var(--text);border:1px solid var(--border)}
-    .btn-ghost:hover{background:rgba(255,255,255,.1);border-color:var(--border-hover)}
+    .btn-green{background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.3)}
+    .btn-green:hover{background:rgba(255,255,255,0.32);transform:translateY(-1px)}
+    .btn-ghost{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.25)}
+    .btn-ghost:hover{background:rgba(255,255,255,0.28);border-color:rgba(255,255,255,0.4)}
 
     /* ===== SHOP MENU ===== */
     .shop-controls{position:relative}
@@ -66,8 +66,8 @@
     .dropdown-item:hover{background:rgba(31,191,115,.1);color:var(--green)}
 
     /* ===== INFO BADGE ===== */
-    .info-container{display:inline-flex;align-items:center;gap:7px;color:var(--muted);background:rgba(255,255,255,.04);border:1px solid var(--border);padding:7px 13px;border-radius:var(--r-xl);font-size:13px;font-weight:500;position:relative;cursor:default}
-    .info-icon{color:var(--orange);font-size:14px}
+    .info-container{display:inline-flex;align-items:center;gap:7px;color:#fff;background:rgba(0,0,0,0.18);border:1px solid rgba(255,255,255,0.2);padding:7px 13px;border-radius:var(--r-xl);font-size:13px;font-weight:500;position:relative;cursor:default}
+    .info-icon{color:#ffe0a0;font-size:14px}
     .tooltip-text{visibility:hidden;opacity:0;position:fixed;background:#16202e;border:1px solid var(--border-hover);color:var(--text);text-align:center;padding:8px 12px;border-radius:var(--r-sm);font-size:12px;width:210px;transition:opacity .2s;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.4);z-index:9999999;line-height:1.5}
 
     /* ===== BLUR OVERLAY ===== */
@@ -264,7 +264,7 @@
       <div id="pointsDisplay" class="info-container">
         <i class="fa-solid fa-circle-info info-icon"></i>
         <span class="tooltip-text">Earn points every time a friend checks out with your address as referral!</span>
-        <span>Points: <strong id="pointsValue" style="color:var(--green)">—</strong></span>
+        <span>Points: <strong id="pointsValue" style="color:#fff">—</strong></span>
       </div>
       <button id="connectBtn" class="btn btn-green">Connect Wallet</button>
       <div style="position:relative;display:inline-block">
@@ -414,7 +414,9 @@ async function loadProducts(){
         acc[cat].push(product);return acc;
       },{});
       const sm=document.getElementById("shopMenu");
-      if(sm)sm.innerHTML=Object.keys(PRODUCTS).map(cat=>`<button class="dropdown-item" onclick="showCategory('${cat}')">${cat}</button>`).join("");
+      if(sm){
+        sm.innerHTML=Object.keys(PRODUCTS).map(cat=>`<button class="dropdown-item" onclick="showCategory('${cat}');this.closest('#shopMenu').classList.remove('open')">${cat}</button>`).join("");
+      }
       if(!currentCategory)document.getElementById("items").innerHTML="";else await showCategory(currentCategory);
     }
   }catch(err){console.error("Error fetching items:",err)}
@@ -635,7 +637,15 @@ document.getElementById("enterBtn").addEventListener("click",()=>{const intro=do
 document.addEventListener("DOMContentLoaded",()=>{
   const menuBtn=document.getElementById("menuBtn"),shopMenu=document.getElementById("shopMenu");
   if(menuBtn&&shopMenu){
-    menuBtn.addEventListener("click",(e)=>{e.stopPropagation();document.body.appendChild(shopMenu);const r=menuBtn.getBoundingClientRect();shopMenu.style.top=`${r.bottom+6}px`;shopMenu.style.left=`${r.left}px`;shopMenu.classList.toggle("open");});
+    menuBtn.addEventListener("click",(e)=>{
+      e.stopPropagation();
+      // Always move to body so it escapes any stacking context
+      if(shopMenu.parentElement!==document.body) document.body.appendChild(shopMenu);
+      const r=menuBtn.getBoundingClientRect();
+      shopMenu.style.top=`${r.bottom+6}px`;
+      shopMenu.style.left=`${r.left}px`;
+      shopMenu.classList.toggle("open");
+    });
     document.addEventListener("click",(e)=>{if(!menuBtn.contains(e.target)&&!shopMenu.contains(e.target))shopMenu.classList.remove("open");});
     shopMenu.addEventListener("click",(e)=>{if(e.target.classList.contains("dropdown-item"))shopMenu.classList.remove("open");});
   }
