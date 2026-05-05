@@ -5,138 +5,121 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Quacker Friends Shop</title>
 
-
-  <!-- WalletConnect Provider -->
-  <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
-
-  <!-- Web3 -->
-  <script src="https://unpkg.com/web3@1.8.2/dist/web3.min.js"></script>
-
-  <!-- Web3Modal v1 -->
-  <script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
+  <!-- WalletConnect Provider — deferred so they don't block page render -->
+  <script defer src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+  <script defer src="https://unpkg.com/web3@1.8.2/dist/web3.min.js"></script>
+  <script defer src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 
   <style>
-    
-   .web3modal-modal-lightbox, .web3modal-modal-container {
-    z-index: 99999 !important;
-    pointer-events: auto !important;
-}
+    .web3modal-modal-lightbox, .web3modal-modal-container {
+      z-index: 99999 !important;
+      pointer-events: auto !important;
+    }
 
     :root{
       --brand-orange:#ff914d;
       --brand-orange-dark:#ff7b2c;
       --brand-teal:#66c7c4;
       --card:#ffffff;
-
       --shadow:0 8px 20px rgba(12,12,20,0.06);
       --radius:14px;
       --maxWidth:1100px;
     }
+
     *{box-sizing:border-box}
+
     body{
       font-family:'Poppins',sans-serif;
       margin:0;padding:0;color:#222;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;position:relative;
     }
+
     body::before{
       content:"";
       position:fixed;
       inset:0;
-      background:url('https://quackerfriends.github.io/quackheads-assets/images/brandimages/Inside.png') no-repeat center center fixed;background-size:cover;
+      background:url('https://quackerfriends.github.io/quackheads-assets/images/brandimages/Inside.png') no-repeat center center fixed;
+      background-size:cover;
       z-index:-1;
       transition:filter .4s;
       pointer-events:none;
     }
-    
-
 
     header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--brand-teal);color:white;box-shadow:0 6px 18px rgba(0,0,0,0.08);z-index:1500;position:relative}
     header h1{margin:0;font-size:20px;display:flex;align-items:center;gap:10px}
     header h1 .logo {
-  height: 38px;
-  width: auto;
-  border-radius: 8px;
-  margin-right: 6px;
-}
+      height: 38px;
+      width: auto;
+      border-radius: 8px;
+      margin-right: 6px;
+    }
 
-/* ===== REFERRAL INFO TOOLTIP (Z-FIXED) ===== */
-.info-container {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #fff;
-  background: rgba(30, 30, 30, 0.5);
-  padding: 6px 12px;
-  border-radius: 12px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
-  /* 🚫 No z-index here, keeps it out of stacking traps */
-}
+    /* ===== REFERRAL INFO TOOLTIP ===== */
+    .info-container {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #fff;
+      background: rgba(30, 30, 30, 0.5);
+      padding: 6px 12px;
+      border-radius: 12px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    }
 
-.info-icon {
-  cursor: pointer;
-  font-size: 15px;
-  color: #ffb84d;
-  opacity: 0.95;
-  transition: color 0.25s ease, opacity 0.25s ease;
-}
+    .info-icon {
+      cursor: pointer;
+      font-size: 15px;
+      color: #ffb84d;
+      opacity: 0.95;
+      transition: color 0.25s ease, opacity 0.25s ease;
+    }
 
-.info-icon:hover {
-  color: #ffd580;
-  opacity: 1;
-}
+    .info-icon:hover { color: #ffd580; opacity: 1; }
 
-.tooltip-text {
-  visibility: hidden;
-  opacity: 0;
-  position: fixed;
-  background: rgba(0,0,0,0.9);
-  color: #fff;
-  text-align: center;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  width: 220px;
-  transition: opacity 0.25s ease;
-  pointer-events: none;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-  z-index: 9999999;
-  white-space: normal;
-}
+    .tooltip-text {
+      visibility: hidden;
+      opacity: 0;
+      position: fixed;
+      background: rgba(0,0,0,0.9);
+      color: #fff;
+      text-align: center;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      width: 220px;
+      transition: opacity 0.25s ease;
+      pointer-events: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      z-index: 9999999;
+      white-space: normal;
+    }
 
-
-.info-container:hover .tooltip-text {
-  visibility: visible;
-  opacity: 1;
-  transform: translateY(-4px);
-}
-
-/* --- Align tooltip under the info icon --- */
-.info-container:hover .tooltip-text {
-  top: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-}
+    .info-container:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+    }
 
     .product-description {
-  font-size: 0.9rem;
-  color: #555;
-  margin: 6px 0 12px 0;
-}
-
+      font-size: 0.9rem;
+      color: #555;
+      margin: 6px 0 12px 0;
+    }
 
     .btn{padding:10px 16px;background:var(--brand-orange-dark);color:white;border:none;border-radius:999px;cursor:pointer;font-weight:600;transition:all .18s;display:inline-flex;gap:8px;align-items:center}
     .btn.secondary{background:transparent;color:white;border:1px solid rgba(255,255,255,.25);padding:8px 12px;border-radius:10px}
     main{flex:1;padding:30px 20px;max-width:var(--maxWidth);margin:0 auto 80px}
     .shop-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
     .item{background:var(--card);padding:16px;border-radius:14px;box-shadow:var(--shadow);text-align:center;position:relative}
+
+    /* Fixed image dimensions prevent reflow on load */
     .item img{width:100%;height:220px;object-fit:contain;border-radius:8px;background:#f6f6f6}
-    
-
-
 
     .item h3{margin:10px 0 6px;font-size:16px}
     .price{font-weight:700;color:var(--brand-orange-dark);margin-bottom:8px}
@@ -150,573 +133,310 @@
     .carousel .prev-btn{ left:8px } .carousel .next-btn{ right:8px }
     .carousel button:hover{ background:var(--brand-orange); color:#fff }
 
-    /* --- GLOBAL Z-INDEX & CLICK FIX --- */
+    #modalOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1800;
+      pointer-events: none !important;
+    }
 
-/* Overlay must never block anything unless active */
-#modalOverlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 1800;
-  pointer-events: none !important;
-}
+    #modalOverlay.active {
+      display: block;
+      pointer-events: auto !important;
+    }
 
-#modalOverlay.active {
-  display: block;
-  pointer-events: auto !important;
-}
+    header, .nav-container, .nav-actions, .nav-actions button {
+      position: relative;
+      z-index: 3000;
+      pointer-events: auto !important;
+    }
 
-/* Header & navigation always clickable */
-header, .nav-container, .nav-actions, .nav-actions button {
-  position: relative;
-  z-index: 3000;
-  pointer-events: auto !important;
-}
-/* ===== PROFILE DROPDOWN ===== */
-.profile-container {
-  position: relative; /* dropdown is relative to the button */
-}
+    .profile-container { position: relative; }
 
-/* Desktop & general */
-#profileSection {
-  display: none;
-  position: absolute;      /* relative to .profile-container */
-  top: 100%;               /* directly below button */
-  right: 0;                /* align right edge with button */
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  color: #fff;
-  padding: 1rem 1.2rem;
-  border-radius: 1rem;
-  box-shadow: 0 4px 25px rgba(0,0,0,0.3);
-  min-width: 240px;
-  max-width: 300px;
-  border: 1px solid rgba(255,255,255,0.2);
-  z-index: 3100;
-  animation: fadeSlideDown 0.25s ease;
-}
+    #profileSection {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      color: #fff;
+      padding: 1rem 1.2rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 25px rgba(0,0,0,0.3);
+      min-width: 240px;
+      max-width: 300px;
+      border: 1px solid rgba(255,255,255,0.2);
+      z-index: 3100;
+      animation: fadeSlideDown 0.25s ease;
+    }
 
-/* 🔹 MOBILE — profile dropdown below header */
-@media (max-width: 520px) {
-  #profileSection {
-    position: fixed !important;
-    top: 82px !important; /* 👈 push further down below profile button/header */
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    width: 90% !important;
-    max-width: 280px !important;
-    right: auto !important;
-    border-radius: 1rem !important;
-    z-index: 4000 !important;
-  }
-}
+    @media (max-width: 520px) {
+      #profileSection {
+        position: fixed !important;
+        top: 82px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 90% !important;
+        max-width: 280px !important;
+        right: auto !important;
+        border-radius: 1rem !important;
+        z-index: 4000 !important;
+      }
+    }
 
+    @keyframes fadeSlideDown {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-/* ===== ANIMATION ===== */
-@keyframes fadeSlideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+    #profileSection h3 { margin-top: 0; margin-bottom: 0.5rem; font-weight: 600; color: #fff; }
 
+    #profileSection button {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border: none;
+      padding: 0.6rem 0.8rem;
+      border-radius: 0.6rem;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
 
-#profileSection h3 {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: #fff;
-}
+    #profileSection button:hover { background: #ff7a00; color: #fff; }
 
-#profileSection button {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
-  border: none;
-  padding: 0.6rem 0.8rem;
-  border-radius: 0.6rem;
-  cursor: pointer;
-  margin-top: 6px;
-  transition: background 0.25s ease, color 0.25s ease;
-}
+    #profileSection button.disconnect { background: linear-gradient(135deg, #ff7043, #ff5252); }
+    #profileSection button.disconnect:hover { background: linear-gradient(135deg, #ff8a65, #ff5252); transform: translateY(-2px); }
 
-#profileSection button:hover {
-  background: #ff7a00;
-  color: #fff;
-}
+    #shopMenu, .cart-modal, .sizeguide-modal, #toastContainer {
+      pointer-events: auto !important;
+    }
 
-/* 🔻 Disconnect button special color */
-#profileSection button.disconnect {
-  background: linear-gradient(135deg, #ff7043, #ff5252);
-}
+    #blurOverlay {
+      position: fixed;
+      inset: 0;
+      backdrop-filter: blur(10px) brightness(0.6);
+      background: rgba(0, 0, 0, 0.25);
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
 
-#profileSection button.disconnect:hover {
-  background: linear-gradient(135deg, #ff8a65, #ff5252);
-  transform: translateY(-2px);
-}
+    body.blur-bg #blurOverlay { opacity: 1; pointer-events: auto; }
 
-    
-
-/* Shop dropdown, modals, and toasts also stay clickable */
-#shopMenu,
-.cart-modal,
-.sizeguide-modal,
-#toastContainer {
-  pointer-events: auto !important;
-}
-  
-
-/* === BACKGROUND BLUR (only background, not content) === */
-#blurOverlay {
-  position: fixed;
-  inset: 0;
-  backdrop-filter: blur(10px) brightness(0.6);
-  background: rgba(0, 0, 0, 0.25);
-  z-index: 50; /* LOW → sits behind everything else */
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-/* When blur active */
-body.blur-bg #blurOverlay {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* Make sure all key UI layers stay above blur */
-header,
-#shippingNotice,
-main,
-footer,
-#profileSection,
-.cart-modal,
-.sizeguide-modal,
-#shopMenu,
-#toastContainer {
-  position: relative;
-  z-index: 200;
-}
-
-
-
-
+    header, #shippingNotice, main, footer, #profileSection,
+    .cart-modal, .sizeguide-modal, #shopMenu, #toastContainer {
+      position: relative;
+      z-index: 200;
+    }
 
     .sizeguide-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:3000;background:rgba(0,0,0,0.5)}
     .sizeguide-modal.open{display:flex}
     .sizeguide-modal .card{background:#fff;padding:12px;border-radius:12px;max-width:720px;width:92%;position:relative}
     .sizeguide-modal img{max-width:100%;height:auto;display:block;border-radius:8px}
+
     #itemModalContent img {
-  max-width: 90vw;
-  max-height: 80vh;
-  width: auto;
-  height: auto;
-  display: block;
-  margin: 0 auto;
-  border-radius: 12px;
-  object-fit: contain;
-}
+      max-width: 90vw;
+      max-height: 80vh;
+      width: auto;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      border-radius: 12px;
+      object-fit: contain;
+    }
 
     .sizeguide-modal .close-btn{position:absolute;right:12px;top:12px;background:transparent;border:none;font-size:20px;cursor:pointer}
 
-    .item-modal {
-  position: fixed;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 3000;
-  background: rgba(0,0,0,0.5);
-}
+    .item-modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:3000; background:rgba(0,0,0,0.5); }
+    .item-modal.open { display:flex; }
+    .item-modal .card { background:#fff; padding:16px; border-radius:12px; max-width:700px; width:92%; position:relative; box-shadow:0 6px 24px rgba(0,0,0,0.2); animation:fadeIn 0.25s ease; }
+    .item-modal .close-btn { position:absolute; right:12px; top:12px; background:transparent; border:none; font-size:20px; cursor:pointer; }
 
-.item-modal.open {
-  display: flex;
-}
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
 
-.item-modal .card {
-  background: #fff;
-  padding: 16px;
-  border-radius: 12px;
-  max-width: 700px;
-  width: 92%;
-  position: relative;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.2);
-  animation: fadeIn 0.25s ease;
-}
-
-.item-modal .close-btn {
-  position: absolute;
-  right: 12px;
-  top: 12px;
-  background: transparent;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-
-    .cart-modal {   position: fixed;   right: 0;   top: 0;   height: 100vh;   width: 420px;   background: var(--card);   box-shadow: -12px 0 40px rgba(0,0,0,0.12);   transform: translateX(110%);   transition: transform 0.28s ease;   z-index: 3000 !important;   padding: 18px;   display: flex;   flex-direction: column; }
-    .cart-modal.open{transform:translateX(0); z-index: 3000 !important;}
+    .cart-modal { position:fixed; right:0; top:0; height:100vh; width:420px; background:var(--card); box-shadow:-12px 0 40px rgba(0,0,0,0.12); transform:translateX(110%); transition:transform 0.28s ease; z-index:3000 !important; padding:18px; display:flex; flex-direction:column; }
+    .cart-modal.open{transform:translateX(0); z-index:3000 !important;}
     .cart-modal .close-x{position:absolute;right:12px;top:8px;background:transparent;border:none;font-size:20px;cursor:pointer}
     .cart-list{flex:1;overflow:auto;margin-bottom:12px}
     .cart-item{display:flex;gap:12px;align-items:center;padding:10px;border-bottom:1px solid #f1f1f1}
     .cart-item img{width:64px;height:64px;object-fit:contain;border-radius:6px;background:#f6f6f6}
 
+    .image-slider { position:relative; width:100%; overflow:hidden; border-radius:12px; aspect-ratio: 1 / 1; background:#f6f6f6; }
+    .image-slider img { width:100%; height:100%; object-fit:contain; display:none; transition:opacity 0.3s ease; border-radius:12px; }
+    .image-slider img.active { display:block; }
+    .image-slider .prev, .image-slider .next { position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.4); color:white; border:none; font-size:20px; padding:4px 10px; cursor:pointer; border-radius:50%; }
+    .image-slider .prev { left:6px; }
+    .image-slider .next { right:6px; }
 
-    .image-slider {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  border-radius: 12px;
-}
-.image-slider img {
-  width: 100%;
-  display: none;
-  transition: opacity 0.3s ease;
-  border-radius: 12px;
-}
-.image-slider img.active {
-  display: block;
-}
-.image-slider .prev,
-.image-slider .next {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(0,0,0,0.4);
-  color: white;
-  border: none;
-  font-size: 20px;
-  padding: 4px 10px;
-  cursor: pointer;
-  border-radius: 50%;
-}
-.image-slider .prev { left: 6px; }
-.image-slider .next { right: 6px; }
-
-
-
-
-    #toast-container{position:fixed;top:110px;right:12px; z-index: 100000;display:flex;flex-direction:column;gap:8px}
+    #toast-container{position:fixed;top:110px;right:12px;z-index:100000;display:flex;flex-direction:column;gap:8px}
     .toast{padding:8px 12px;border-radius:8px;color:#fff;display:flex;gap:8px;align-items:center}
     .toast.info{background:#2563eb}.toast.success{background:#059669}.toast.error{background:#ef4444}
 
+    /* ===== SHOP MENU — GPU-accelerated transition, no display toggling ===== */
+    #shopMenu {
+      position: fixed;
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      flex-direction: column;
+      min-width: 180px;
+      padding: 6px 0;
+      z-index: 99999;
+      display: flex;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-6px);
+      transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+    }
 
+    #shopMenu.open {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
 
-#shopMenu {
-  display: none;
-  position: fixed; /* fixed so it’s independent of blur or stacking issues */
-  background: var(--card);
-  border-radius: 12px;
-  box-shadow: var(--shadow);
-  flex-direction: column;
-  min-width: 180px;
-  padding: 6px 0;
-  z-index: 99999; /* topmost layer */
-}
-
-
-
-    .dropdown-item{padding:10px 16px;border:none;background:transparent;text-align:left;cursor:pointer;font-weight:600;transition:background .15s;color:#222;border-radius:8px}
+    .dropdown-item{padding:10px 16px;border:none;background:transparent;text-align:left;cursor:pointer;font-weight:600;transition:background .15s;color:#222;border-radius:8px;will-change:background;}
     .dropdown-item:hover{background:var(--brand-orange);color:#fff}
 
     footer{background:var(--brand-orange-dark);padding:5px 0;text-align:center;color:#fff;margin-top:auto;position:relative;z-index:1000}
     footer a{margin:0 10px;color:#fff}
 
     /* ---------- Intro Screen ---------- */
-#introScreen {
-  position: fixed;
-  inset: 0;
-  background: url('https://quackerfriends.github.io/quackheads-assets/images/brandimages/Enter.png')
-              no-repeat center center;
-  background-size: cover;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 5000;
-  transition: opacity 0.8s ease, visibility 0.8s ease;
-}
+    #introScreen {
+      position: fixed;
+      inset: 0;
+      background: url('https://quackerfriends.github.io/quackheads-assets/images/brandimages/Enter.png') no-repeat center center;
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 5000;
+      transition: opacity 0.8s ease, visibility 0.8s ease;
+    }
 
-/* Enter button style */
-.enter-btn {
-  font-size: 20px;
-  padding: 14px 32px;
-  border-radius: 999px;
-  background: var(--brand-orange-dark);
-  color: #fff;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.enter-btn:hover {
-  background: var(--brand-orange);
-  transform: scale(1.05);
-}
+    .enter-btn {
+      font-size: 20px;
+      padding: 14px 32px;
+      border-radius: 999px;
+      background: var(--brand-orange-dark);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
 
-/* While intro is active, hide main content visually */
-body.loading header,
-body.loading main,
-body.loading footer,
-body.loading #shippingNotice,
-body.loading #cartModal,
-body.loading #profileSection {
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
+    .enter-btn:hover { background: var(--brand-orange); transform: scale(1.05); }
 
-/* When intro removed, everything fades back */
-body:not(.loading) header,
-body:not(.loading) main,
-body:not(.loading) footer {
-  opacity: 1;
-}
+    body.loading header, body.loading main, body.loading footer,
+    body.loading #shippingNotice, body.loading #cartModal, body.loading #profileSection {
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
 
-/* Mobile friendly adjustments */
-@media(max-width:520px){
-  #introScreen {
-    background-position: center;
-    background-size: cover;
-  }
-  .enter-btn {
-    font-size: 18px;
-    padding: 12px 26px;
-  }
-}
+    body:not(.loading) header, body:not(.loading) main, body:not(.loading) footer { opacity: 1; }
 
-/* ======= RESPONSIVE LAYOUT FIXES ======= */
+    @media(max-width:520px){
+      #introScreen { background-position: center; background-size: cover; }
+      .enter-btn { font-size: 18px; padding: 12px 26px; }
+    }
 
-/* --- Tablet: 769px–1024px --- */
-@media (max-width: 1024px) {
-  header {
-    padding: 12px 18px;
-    gap: 10px;
-  }
+    @media (max-width: 1024px) {
+      header { padding: 12px 18px; gap: 10px; }
+      header h1 { font-size: 19px; }
+      .shop-container { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+      .item img { height: 210px; }
+      #profileSection { right: 16px; left: auto; top: 80px; }
+      footer { position: relative; margin-top: auto; }
+    }
 
-  header h1 {
-    font-size: 19px;
-  }
+    @media (max-width: 768px) {
+      body, html { width: 100%; overflow-x: hidden; }
+      main { padding: 12px 10px; max-width: 100%; margin: 0 auto; }
+      header { flex-wrap: wrap; justify-content: center; text-align: center; gap: 8px; }
+      header h1 { font-size: 18px; }
+      .info-container { font-size: 13px; margin-top: 6px; }
+      .shop-container { grid-template-columns: 1fr !important; gap: 16px !important; width: 100%; }
+      .item { width: 100%; padding: 12px; }
+      .item img { height: 180px; }
+      #toast-container { top: 80px; right: 8px; left: 8px; width: auto; max-width: calc(100% - 16px); }
+      .tooltip-text { width: 180px; font-size: 11px; }
+      #orderList { font-size: 12px; overflow-x: auto; display: block; white-space: nowrap; padding-bottom: 8px; }
+      .btn, .btn.secondary { font-size: 14px; padding: 8px 12px; }
+      footer { padding: 10px 0; font-size: 14px; }
+    }
 
-  .shop-container {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-  }
+    @media (max-width: 520px) {
+      .cart-modal { width:100% !important; right:0 !important; left:0 !important; transform:translateX(100%) !important; border-radius:0 !important; }
+      .cart-modal.open { transform:translateX(0) !important; }
+    }
 
-  .item img {
-    height: 210px;
-  }
+    .leaderboard-toggle {
+      position: fixed;
+      right: 20px;
+      top: 140px;
+      z-index: 2000;
+      padding: 10px 18px;
+      border-radius: 30px;
+      border: none;
+      cursor: pointer;
+      background: #ff7a1a;
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
 
-  #profileSection {
-    right: 16px;
-    left: auto;
-    top: 80px;
-  }
+    .leaderboard-toggle:hover { transform: scale(1.05); }
 
-  footer {
-    position: relative;
-    margin-top: auto;
-  }
-}
+    .leaderboard-panel {
+      position: fixed;
+      right: -360px;
+      top: 0;
+      width: 340px;
+      height: 100vh;
+      background: #1fbf73;
+      color: white;
+      box-shadow: -6px 0 25px rgba(0,0,0,0.35);
+      transition: right 0.35s ease;
+      z-index: 999;
+      padding: 20px;
+      overflow-y: auto;
+    }
 
-/* Mobile adjustments for screens <= 768px */
-@media (max-width: 768px) {
-  /* Body & main content */
-  body, html {
-    width: 100%;
-    overflow-x: hidden;
-  }
-  main {
-    padding: 12px 10px;
-    max-width: 100%;
-    margin: 0 auto;
-  }
+    .leaderboard-panel.open { right: 0; }
 
-  /* Header adjustments */
-  header {
-    flex-wrap: wrap;
-    justify-content: center;
-    text-align: center;
-    gap: 8px;
-  }
-  header h1 {
-    font-size: 18px;
-  }
-  .info-container {
-    font-size: 13px;
-    margin-top: 6px;
-  }
+    .leaderboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
 
-  /* Shop container (grid) becomes single column */
-  .shop-container {
-    grid-template-columns: 1fr !important;
-    gap: 16px !important;
-    width: 100%;
-  }
-  .item {
-    width: 100%;
-    padding: 12px;
-  }
-  .item img {
-    height: 180px;
-  }
+    .leaderboard-header button { background: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; }
 
-  
-  /* Toast container mobile-friendly */
-  #toast-container {
-    top: 80px;
-    right: 8px;
-    left: 8px;
-    width: auto;
-    max-width: calc(100% - 16px);
-  }
+    .leaderboard-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      font-family: monospace;
+    }
 
-  /* Tooltip adjustments */
-  .tooltip-text {
-    width: 180px;
-    font-size: 11px;
-  }
-
-  /* Table / order list */
-  #orderList {
-    font-size: 12px;
-    overflow-x: auto;
-    display: block;
-    white-space: nowrap;
-    padding-bottom: 8px;
-  }
-
-  /* Buttons */
-  .btn, .btn.secondary {
-    font-size: 14px;
-    padding: 8px 12px;
-  }
-
-  /* Footer */
-  footer {
-    padding: 10px 0;
-    font-size: 14px;
-  }
-}
-    
-/* --- Mobile: Fix cart cutting off --- */
-@media (max-width: 520px) {
-  .cart-modal {
-    width: 100% !important;
-    right: 0 !important;
-    left: 0 !important;
-    transform: translateX(100%) !important;
-    border-radius: 0 !important;
-  }
-
-  .cart-modal.open {
-    transform: translateX(0) !important;
-  }
-}
-/* =========================
-   🏆 Leaderboard Toggle
-========================= */
-
-.leaderboard-toggle {
-  position: fixed;
-  right: 20px;
-  top: 140px;
-  z-index: 2000; /* ↑ higher than footer */
-  padding: 10px 18px;
-  border-radius: 30px;
-  border: none;
-  cursor: pointer;
-  background: #ff7a1a;
-  color: white;
-  font-weight: 600;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-.leaderboard-toggle:hover {
-  transform: scale(1.05);
-}
-
-/* =========================
-   🏆 Leaderboard Panel
-========================= */
-
-.leaderboard-panel {
-  position: fixed;
-  right: -360px;
-  top: 0;
-  width: 340px;
-  height: 100vh;
-  background: #1fbf73; /* 💚 GREEN */
-  color: white;
-  box-shadow: -6px 0 25px rgba(0,0,0,0.35);
-  transition: right 0.35s ease;
-  z-index: 999;
-  padding: 20px;
-  overflow-y: auto;
-}
-
-.leaderboard-panel.open {
-  right: 0;
-}
-
-.leaderboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: bold;
-  margin-bottom: 15px;
-}
-
-.leaderboard-header button {
-  background: white;
-  border: none;
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  cursor: pointer;
-}
-
-/* rows */
-.leaderboard-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.2);
-  font-family: monospace;
-}
-
-/* =========================
-   📱 Mobile Fix
-========================= */
-
-@media (max-width: 768px) {
-
-  .leaderboard-toggle {
-    top: auto;
-    bottom: 110px; /* ↑ push above footer */
-    right: 20px;
-  }
-
-  .leaderboard-panel {
-    width: 100%;
-    right: -100%;
-  }
-
-  .leaderboard-panel.open {
-    right: 0;
-  }
-
-}
-
+    @media (max-width: 768px) {
+      .leaderboard-toggle { top: auto; bottom: 110px; right: 20px; }
+      .leaderboard-panel { width: 100%; right: -100%; }
+      .leaderboard-panel.open { right: 0; }
+    }
   </style>
 </head>
 <body>
@@ -724,52 +444,45 @@ body:not(.loading) footer {
   <div id="blurOverlay"></div>
 
   <!-- Intro Screen -->
-<div id="introScreen">
-  <button id="enterBtn" class="btn enter-btn">Enter</button>
-</div>
+  <div id="introScreen">
+    <button id="enterBtn" class="btn enter-btn">Enter</button>
+  </div>
 
-  <!-- overlay sits directly under header/above content; pointer-events controlled by .active  <div id="tees"></div> -->
- 
-
-  <div id="shippingNotice" style="background:#fff ; color:--brand-orange;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">
+  <div id="shippingNotice" style="background:#fff;color:--brand-orange;text-align:center;padding:8px 0;font-weight:600;font-size:14px;">
     ⚠️ Note: Shipping is only available in the US and Canada.
   </div>
 
   <header>
-  <h1>
-    <img 
-    
-      src="https://quackerfriends.github.io/quackheads-assets/images/brandimages/logo%20transparent%20zoomed.png" 
-      alt="Quacker Friends Logo" 
-      class="logo"
-    />
-    Quacker Friends Shop
-  </h1>
+    <h1>
+      <img
+        src="https://quackerfriends.github.io/quackheads-assets/images/brandimages/logo%20transparent%20zoomed.png"
+        alt="Quacker Friends Logo"
+        class="logo"
+      />
+      Quacker Friends Shop
+    </h1>
     <div style="display:flex;gap:10px;align-items:center">
       <div class="shop-controls" style="position:relative">
         <button class="btn secondary" id="menuBtn">Shop ▾</button>
-        <div id="shopMenu">      
-          <button class="dropdown-item" onclick="showCategory('tees')">Tees</button>        
-          <button class="dropdown-item" onclick="showCategory('miniplushies')">Mini Plushies</button>     
-          <button class="dropdown-item" onclick="showCategory('plushies')">Plushies</button>           
-          <button class="dropdown-item" onclick="showCategory('tapestry')">Tapestry</button>       
-          <button class="dropdown-item" onclick="showCategory('keychains')">Keychains</button>      
+        <div id="shopMenu">
+          <button class="dropdown-item" onclick="showCategory('tees')">Tees</button>
+          <button class="dropdown-item" onclick="showCategory('miniplushies')">Mini Plushies</button>
+          <button class="dropdown-item" onclick="showCategory('plushies')">Plushies</button>
+          <button class="dropdown-item" onclick="showCategory('tapestry')">Tapestry</button>
+          <button class="dropdown-item" onclick="showCategory('keychains')">Keychains</button>
         </div>
       </div>
-      
-   <div id="pointsDisplay" class="info-container">
-  <i class="fa-solid fa-circle-info info-icon"></i>
-  <span class="tooltip-text">
-    Earn points every time a friend checks out with your address as referral!  </span>
- <span class="points-label">Referral Points: <span id="pointsValue"></span></span>
-</div>
-      
 
+      <div id="pointsDisplay" class="info-container">
+        <i class="fa-solid fa-circle-info info-icon"></i>
+        <span class="tooltip-text">Earn points every time a friend checks out with your address as referral!</span>
+        <span class="points-label">Referral Points: <span id="pointsValue"></span></span>
+      </div>
 
       <button id="connectBtn" class="btn">Connect Wallet</button>
-<div class="profile-container" style="position:relative; display:inline-block;">
-  <button id="profileBtn" class="btn secondary" style="display:none">Profile</button>
-</div>
+      <div class="profile-container" style="position:relative;display:inline-block;">
+        <button id="profileBtn" class="btn secondary" style="display:none">Profile</button>
+      </div>
       <button id="openCartBtn" class="btn" style="position:relative">Cart <span id="cartCount" class="cart-count" style="display:none">0</span></button>
     </div>
   </header>
@@ -779,18 +492,17 @@ body:not(.loading) footer {
   <!-- Profile Panel -->
   <div id="profileSection" aria-hidden="true">
     <h3>User Profile</h3>
-    <p id="nftCount"> Quacker Friends Held: ...</p>
+    <p id="nftCount">Quacker Friends Held: ...</p>
     <p id="quacksCount">Quacks Balance: 0</p>
     <div style="margin-top:10px">
       <button id="claimQuacksBtn" class="btn">🦆 Collect Quacks</button>
     </div>
     <hr>
-    <!-- My Orders Section -->
-<div id="myOrdersSection" style="margin-top:15px;">
-  <h4>📦 My Orders</h4>
-  <button id="loadOrdersBtn" class="btn secondary" onclick="loadOrderHistory()">View My Orders</button>
-  <div id="orderList" style="margin-top:10px;font-size:13px;"></div>
-</div>
+    <div id="myOrdersSection" style="margin-top:15px;">
+      <h4>📦 My Orders</h4>
+      <button id="loadOrdersBtn" class="btn secondary" onclick="loadOrderHistory()">View My Orders</button>
+      <div id="orderList" style="margin-top:10px;font-size:13px;"></div>
+    </div>
     <button class="btn secondary" onclick="disconnectWallet()">❌ Disconnect</button>
   </div>
 
@@ -798,92 +510,67 @@ body:not(.loading) footer {
     <section id="items" class="shop-container"></section>
   </main>
 
- <!-- Cart Modal -->
-  
-<div id="cartModal" class="cart-modal" aria-hidden="true">
-  <button class="close-x" title="Close cart" onclick="closeCart()">✕</button>
-  <h3>Your Cart</h3>
-
-  <div class="cart-list" id="cartList"></div>
-
-   <div style="margin-top:10px;">
+  <!-- Cart Modal -->
+  <div id="cartModal" class="cart-modal" aria-hidden="true">
+    <button class="close-x" title="Close cart" onclick="closeCart()">✕</button>
+    <h3>Your Cart</h3>
+    <div class="cart-list" id="cartList"></div>
+    <div style="margin-top:10px;">
       <label for="shippingCountry" style="font-weight:bold;">Shipping Country:</label><br>
       <select id="shippingCountry" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;margin-top:6px;">
         <option value="USA">United States</option>
         <option value="Canada">Canada</option>
       </select>
     </div>
-  
-  <select id="paymentSelector">
-  <option value="ETH">Pay with ETH</option>
-  <option value="USDC">Pay with USDC</option>
-  <option value="USDT">Pay with USDT</option>
-</select>
-
-  <div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <strong>Subtotal</strong>
-      <strong id="subtotalDisplay">$0.00</strong>
+    <select id="paymentSelector">
+      <option value="ETH">Pay with ETH</option>
+      <option value="USDC">Pay with USDC</option>
+      <option value="USDT">Pay with USDT</option>
+    </select>
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong>Subtotal</strong><strong id="subtotalDisplay">$0.00</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong>Shipping</strong><strong id="shippingDisplay">$0.00</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong>Total</strong><strong id="totalDisplay">$0.00</strong>
+      </div>
+      <div id="addressSection" style="margin-top:12px;">
+        <label for="userAddressInput" style="font-weight:bold;">Shipping Address:</label><br>
+        <textarea id="userAddressInput" placeholder="Enter your full shipping address"
+          style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;min-height:70px;"></textarea>
+      </div>
+      <div id="referralSection" style="margin-top:12px;">
+        <label for="referrerInput" style="font-weight:bold;">Referral Address (optional):</label><br>
+        <input type="text" id="referrerInput" placeholder="Enter a friend's wallet address"
+          style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;" />
+      </div>
+      <button id="checkoutBtn" class="btn" style="width:100%;margin-top:12px">Checkout (Pay / Redeem)</button>
     </div>
-    
-    
-
-
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <strong>Shipping</strong>
-      <strong id="shippingDisplay">$0.00</strong>
-    </div>
-
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <strong>Total</strong>
-      <strong id="totalDisplay">$0.00</strong>
-    </div>
-
-    <div id="addressSection" style="margin-top:12px;">
-      <label for="userAddressInput" style="font-weight:bold;">Shipping Address:</label><br>
-      <textarea id="userAddressInput" placeholder="Enter your full shipping address"
-        style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;min-height:70px;"></textarea>
-    </div>
-
-
-    <div id="referralSection" style="margin-top:12px;">
-      <label for="referrerInput" style="font-weight:bold;">Referral Address (optional):</label><br>
-      <input
-        type="text"
-        id="referrerInput"
-        placeholder="Enter a friend’s wallet address"
-        style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;"
-      />
-    </div>
-
-    <button id="checkoutBtn" class="btn" style="width:100%;margin-top:12px">Checkout (Pay / Redeem)</button>
-
   </div>
-</div>
 
-  
- <!-- Size guide modal -->
+  <!-- Size guide modal -->
   <div id="sizeGuideModal" class="sizeguide-modal" aria-hidden="true">
     <div class="card">
       <button class="close-btn" onclick="closeSizeGuide()">✕</button>
       <img id="sizeGuideImage" src="" alt="Size guide" />
     </div>
   </div>
-  
- <!-- 🏆 Leaderboard Toggle Button -->
-<button id="leaderboardToggle" class="leaderboard-toggle">
-  🏆 Leaderboard
-</button>
 
-<!-- 🏆 Slide Panel -->
-<div id="leaderboardPanel" class="leaderboard-panel">
-  <div class="leaderboard-header">
-    <span>🏆 Quacks Leaderboard</span>
-    <button id="closeLeaderboard">✕</button>
+  <!-- Leaderboard Toggle Button -->
+  <button id="leaderboardToggle" class="leaderboard-toggle">🏆 Leaderboard</button>
+
+  <!-- Leaderboard Slide Panel -->
+  <div id="leaderboardPanel" class="leaderboard-panel">
+    <div class="leaderboard-header">
+      <span>🏆 Quacks Leaderboard</span>
+      <button id="closeLeaderboard">✕</button>
+    </div>
+    <div id="leaderboard"></div>
   </div>
-  <div id="leaderboard"></div>
-</div>
-  
+
   <footer>
     <p>Follow Quacker Friends:</p>
     <a href="https://x.com/QuackerFriends" target="_blank"><i class="fab fa-x fa-lg"></i></a>
@@ -891,115 +578,48 @@ body:not(.loading) footer {
     <a href="https://www.instagram.com/QuackerFriends" target="_blank"><i class="fab fa-instagram fa-lg"></i></a>
   </footer>
 
-
-<!-- 🛍️ Item Modal -->
-<div id="itemModal" class="sizeguide-modal" aria-hidden="true" onclick="closeItemModal(event)">
-  <div class="card" onclick="event.stopPropagation();">
-    <button class="close-btn" onclick="closeItemModal()">✕</button>
-    <div id="itemModalContent"></div>
+  <!-- Item Modal -->
+  <div id="itemModal" class="sizeguide-modal" aria-hidden="true" onclick="closeItemModal(event)">
+    <div class="card" onclick="event.stopPropagation();">
+      <button class="close-btn" onclick="closeItemModal()">✕</button>
+      <div id="itemModalContent"></div>
+    </div>
   </div>
-</div>
-
-  
-
 
 <script>
 /* ===== CONFIG ===== */
- 
 const PURCHASE_API = "https://script.google.com/macros/s/AKfycbwZMlGQ2REZxTP1lIoWBYzc8n7l-h7C79F9u9MjDY4XIR6jKNO7ky1VXtCm3oP5RM_9qA/exec";
 const CLAIM_SHEET_API = "https://script.google.com/macros/s/AKfycbzu2RjvJf8-SyRIekMh53JODYZxoPXQpjJ2aGTqIHd93HgEZpnXcVC_zxoJbJt51zqSuQ/exec";
 const CONTRACT_ADDRESS = "0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
 const CONTRACT_ABI = [{"constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"type":"function"}];
 const SHOP_WALLET = "0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
-   const ERC20_ABI = [
-  {
-    "constant": false,
-    "inputs": [
-      { "name": "_to", "type": "address" },
-      { "name": "_value", "type": "uint256" }
-    ],
-    "name": "transfer",
-    "outputs": [{ "name": "", "type": "bool" }],
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "decimals",
-    "outputs": [{ "name": "", "type": "uint8" }],
-    "type": "function"
-  }
+
+const ERC20_ABI = [
+  { "constant": false, "inputs": [{ "name": "_to", "type": "address" }, { "name": "_value", "type": "uint256" }], "name": "transfer", "outputs": [{ "name": "", "type": "bool" }], "type": "function" },
+  { "constant": true, "inputs": [], "name": "decimals", "outputs": [{ "name": "", "type": "uint8" }], "type": "function" }
 ];
-  const TOKEN_MAP = {
-  "0x1": { // Ethereum
-    USDC: "0xA0b86991c6218b36c1d19d19D4a2e9Eb0cE3606EB48",
-    USDT: "0xdAC17F958D2ee523a2206206994597C13D831ec7"
-  },
-  "0x89": { // Polygon
-    USDC: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
-    USDT: "0xc2132D05D31c914a87C6611C10748AaCbC5328"
-  },
-  "0x2105": { // Base
-    USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-    USDT: "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2"
-  }
+
+const TOKEN_MAP = {
+  "0x1":    { USDC: "0xA0b86991c6218b36c1d19d19D4a2e9Eb0cE3606EB48", USDT: "0xdAC17F958D2ee523a2206206994597C13D831ec7" },
+  "0x89":   { USDC: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",   USDT: "0xc2132D05D31c914a87C6611C10748AaCbC5328" },
+  "0x2105": { USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",   USDT: "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2" }
 };
 
-  
-/* ===== LOAD PROFILE (Web3.js version) ===== */
-async function loadProfile(wallet) {
-  if (!web3 || !wallet) return null;
-
-  let quackerBalance = 0;
-  try {
-    const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-    quackerBalance = await contract.methods.balanceOf(wallet).call();
-  } catch (err) {
-    console.warn("Failed to fetch Quacker NFT balance:", err);
-  }
-
-  let claimData = {};
-  try {
-    const claimResp = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(wallet)}&check=true`);
-    claimData = await claimResp.json();
-  } catch (err) {
-    console.warn("Failed to fetch claim data:", err);
-  }
-
-  let shopData = {};
-  try {
-    const shopResp = await fetch(`${PURCHASE_API}?wallet=${encodeURIComponent(wallet)}&checkPoints=true`);
-    const pointsResp = await shopResp.json();
-    shopData.points = pointsResp.points || 0;
-  } catch (err) {
-    console.warn("Failed to fetch shop/referral data:", err);
-  }
-
-  return {
-    wallet,
-    quackerBalance: Number(quackerBalance),
-    dailyQuacks: Number(claimData.quacks_collected || 0),
-    lastClaim: claimData.last_claim ? new Date(claimData.last_claim) : null,
-    priority: claimData.priority || "none",
-    triggeredBy: claimData.triggered_by || "none",
-    referralPoints: shopData.points || 0
-  };
-}
-
 /* ===== STATE ===== */
-let cart = []; let selectedCountry = "USA"; // ✅ Default selection for shipping
-let PRODUCTS = {};                 // will be filled by loadProducts()
-let currentCategory = null;     // default (sheet categories may vary in case)
+let cart = [];
+let selectedCountry = "USA";
+let PRODUCTS = {};
+let currentCategory = null;
 let cachedEthRate = null;
 let lastRateFetch = 0;
 
-  /* ===== BLUR MANAGER ===== */
+/* ===== BLUR MANAGER ===== */
 let blurCount = 0;
-function addBlur() { blurCount++; document.body.classList.add("blur-bg");}
+function addBlur() { blurCount++; document.body.classList.add("blur-bg"); }
 function removeBlur() {
   blurCount = Math.max(0, blurCount - 1);
-  if (blurCount === 0) document.body.classList.remove("blur-bg"); }
-
+  if (blurCount === 0) document.body.classList.remove("blur-bg");
+}
 
 /* ===== UI HELPERS ===== */
 function showToast(message, type="info", duration=3000){
@@ -1027,6 +647,7 @@ async function getEthRate(){
   lastRateFetch = Date.now();
   return cachedEthRate;
 }
+
 async function convertUsdToEth(usd){
   const rate = await getEthRate();
   return usd / rate;
@@ -1041,20 +662,18 @@ function formatPrice(priceUSD, ethRate) {
 
 function getProductUsd(p) {
   if (p.priceUSD) return p.priceUSD;
-  // If variants are objects and first variant has a priceUSD, use that
   if (p.variants && Array.isArray(p.variants) && typeof p.variants[0] === "object" && p.variants[0].priceUSD) return p.variants[0].priceUSD;
   if (p.price) return Math.round(p.price * (cachedEthRate || 3000));
   return 0;
 }
 
-  /* ===== SHIPPING & PAYMENT UI HELPERS ===== */
+/* ===== SHIPPING & PAYMENT UI HELPERS ===== */
 const SHIPPING_RULES = {
   USA: { fee: 5, freeOver: 70 },
   Canada: { fee: 10, freeOver: 70 }
 };
 
 function calcSubtotalUSD() {
-  // sum priceUSD (fallback to 0)
   return cart.reduce((s, ci) => s + (Number(ci.priceUSD || 0) * (ci.q || 1)), 0);
 }
 
@@ -1068,32 +687,25 @@ function updateCheckoutDisplay() {
   const subtotal = calcSubtotalUSD();
   const shipping = getShippingCharge(country, subtotal);
   const total = subtotal + shipping;
-
   const subtotalEl = document.getElementById("subtotalDisplay");
   const shippingEl = document.getElementById("shippingDisplay");
   const totalEl = document.getElementById("totalDisplay");
-
   if (subtotalEl) subtotalEl.innerText = `$${subtotal.toFixed(2)}`;
   if (shippingEl) shippingEl.innerText = `$${shipping.toFixed(2)}`;
   if (totalEl) totalEl.innerText = `$${total.toFixed(2)}`;
 }
-  // refresh checkout numbers only if elements exist
+
 if (document.getElementById("subtotalDisplay")) {
   updateCheckoutDisplay();
 }
 
-
 function initCheckoutUI() {
   const countrySel = document.getElementById("shippingCountry");
   const paymentSel = document.getElementById("paymentSelector");
-
   if (countrySel) countrySel.addEventListener("change", updateCheckoutDisplay);
   if (paymentSel) paymentSel.addEventListener("change", updateCheckoutDisplay);
-
-  // update now
   updateCheckoutDisplay();
 }
-
 
 /* ===== LOAD PRODUCTS FROM SHEET ===== */
 async function loadProducts() {
@@ -1108,18 +720,12 @@ async function loadProducts() {
         if (!acc[category]) acc[category] = [];
 
         const variantsFromSheet = item.VariantOptions
-          ? item.VariantOptions.toString().split(",").map(v => v.trim()).filter(Boolean)
-          : [];
-
+          ? item.VariantOptions.toString().split(",").map(v => v.trim()).filter(Boolean) : [];
         const colorsFromSheet = item.ColorOptions
-          ? item.ColorOptions.toString().split(",").map(c => c.trim()).filter(Boolean)
-          : [];
-
+          ? item.ColorOptions.toString().split(",").map(c => c.trim()).filter(Boolean) : [];
         const sizesFromSheet = item.SizeOptions
-          ? item.SizeOptions.toString().split(",").map(s => s.trim()).filter(Boolean)
-          : [];
+          ? item.SizeOptions.toString().split(",").map(s => s.trim()).filter(Boolean) : [];
 
-        // --- Create product object ---
         const product = {
           id: String(item.ID || "").trim(),
           title: item.Title || "",
@@ -1134,29 +740,26 @@ async function loadProducts() {
           image: item.ImageURL ? String(item.ImageURL).trim() : "",
           active: item.Active === true || String(item.Active).toUpperCase() === "TRUE",
           CustomInput: item.CustomInput || "",
-          VariantPrices: item.VariantPrices || "" // ✅ add from sheet
+          VariantPrices: item.VariantPrices || ""
         };
 
-        
-        // --- Normalize images as array ---
-if (product.image) {
-  if (product.image.includes(",") || product.image.includes("|")) {
-    product.images = product.image.split(/[,|]/).map(u => u.trim()).filter(Boolean);
-  } else {
-    product.images = [product.image];
-  }
-} else {
-  product.images = ["https://quackerfriends.github.io/quackheads-assets/images/placeholder.png"];
-}
+        if (product.image) {
+          if (product.image.includes(",") || product.image.includes("|")) {
+            product.images = product.image.split(/[,|]/).map(u => u.trim()).filter(Boolean);
+          } else {
+            product.images = [product.image];
+          }
+        } else {
+          product.images = ["https://quackerfriends.github.io/quackheads-assets/images/placeholder.png"];
+        }
 
-        // --- Parse VariantPrices into usable map ---
         if (product.VariantPrices && typeof product.VariantPrices === "string") {
           const map = {};
           product.VariantPrices.split(",").forEach(vp => {
             const [name, price] = vp.split(":");
             if (name && price) map[name.trim()] = Number(price.trim());
           });
-          product.variantPricesMap = map; // ✅ ready-to-use parsed object
+          product.variantPricesMap = map;
         }
 
         acc[category].push(product);
@@ -1165,7 +768,7 @@ if (product.image) {
 
       console.log("✅ Loaded products from sheet:", PRODUCTS);
 
-      // --- Build shop menu ---
+      // Rebuild shop menu from real sheet categories
       const shopMenu = document.getElementById("shopMenu");
       if (shopMenu) {
         shopMenu.innerHTML = Object.keys(PRODUCTS)
@@ -1173,15 +776,12 @@ if (product.image) {
           .join("");
       }
 
-      // --- Don't auto-load anything at start ---
       if (!currentCategory) {
-        const itemsSection = document.getElementById("items");
-        itemsSection.innerHTML = null;
+        document.getElementById("items").innerHTML = "";
       } else {
         await showCategory(currentCategory);
         attachZoomFollow();
       }
-
     } else {
       console.error("⚠️ Failed to load items or items missing:", data);
     }
@@ -1190,411 +790,179 @@ if (product.image) {
   }
 }
 
-/* ===== RENDER PRODUCT CARD (with Quacks + Points + USD) ===== */
-function renderProductCard(p, ethRate) {
-  // Normalize IDs and prices
-  const productId = p.ID || p.id;
-  const priceUSD = p.PriceUSD || p.priceUSD || p.price || 0;
-  const pointsCost = p.PointsCost || p.pointsCost || 0;
-  const quacksCost = p.QuacksCost || p.quacksCost || 0;
-
-  const priceDisplay = [];
-  if (priceUSD > 0) priceDisplay.push(`$${priceUSD}`);
-  if (quacksCost > 0) priceDisplay.push(`🪙 ${quacksCost} Quacks`);
-  if (pointsCost > 0) priceDisplay.push(`⭐ ${pointsCost} Points`);
-  
-  const priceHTML = priceDisplay.join(" | ");
-
-  // Variants
-  let variantHTML = "";
-  if (p.VariantOptions || p.variants) {
-    const variants = (p.VariantOptions ? p.VariantOptions.split(",") : p.variants).map(v => v.trim());
-    if (variants.length) {
-      variantHTML = `<label>Variant:</label>
-        <select id="variant_${productId}">
-          ${variants.map(v => `<option value="${v}">${v}</option>`).join("")}
-        </select>`;
-    }
-  }
-
-  // Colors
-  let colorHTML = "";
-  if (p.ColorOptions || p.colors) {
-    const colors = (p.ColorOptions ? p.ColorOptions.split(",") : p.colors).map(c => c.trim());
-    if (colors.length) {
-      colorHTML = `<label>Color:</label>
-        <select id="color_${productId}">
-          ${colors.map(c => `<option value="${c}">${c}</option>`).join("")}
-        </select>`;
-    }
-  }
-
-  // Sizes
-  let sizeHTML = "";
-  if (p.SizeOptions || p.sizes) {
-    const sizes = (p.SizeOptions ? p.SizeOptions.split(",") : p.sizes).map(s => s.trim());
-    if (sizes.length) {
-      sizeHTML = `<label>Size:</label>
-        <select id="size_${productId}">
-          ${sizes.map(s => `<option value="${s}">${s}</option>`).join("")}
-        </select>`;
-    }
-  }
-
-  // Custom input
-  let customHTML = "";
-  if (p.CustomInput && p.CustomInput.trim() !== "") {
-    customHTML = `<div>
-      <label for="custom_${productId}">${p.CustomInput}</label>
-      <input id="custom_${productId}" type="text" placeholder="${p.CustomInput}" />
-    </div>`;
-  }
-
-  // Buttons
-  const buyHTML = priceUSD > 0
-    ? `<button class="btn buy-btn" onclick="addToCart('${productId}')">Add to Cart</button>`
-    : "";
-
-  const quacksHTML = quacksCost > 0
-    ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${productId}', ${quacksCost})">
-         Pay with ${quacksCost} 🪙 Quacks
-       </button>` : "";
-
-  const redeemHTML = pointsCost > 0
-    ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${productId}', ${pointsCost})">
-         Redeem for ${pointsCost} ⭐ Referral Points
-       </button>` : "";
-
-  // Card HTML
-  const html = `
-    <div class="item" style="padding:16px;border-radius:12px;box-shadow:var(--shadow);background:var(--card);">
-      <img src="${p.ImageURL || p.image || ""}" alt="${p.Title || p.title}" style="width:100%;border-radius:8px;object-fit:contain;" />
-      <h3>${p.Title || p.title}</h3>
-      <p id="price_${productId}" style="margin:6px 0;">${priceHTML}</p>
-      ${variantHTML}
-      ${colorHTML}
-      ${sizeHTML}
-      ${customHTML}
-      <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
-        ${buyHTML}
-        ${quacksHTML}
-        ${redeemHTML}
-      </div>
-    </div>
-  `;
-  return html;
-}
-
- 
-
-/* ===== RENDER CATEGORY (with image carousel) ===== */
+/* ===== RENDER CATEGORY ===== */
 async function showCategory(cat) {
-  
-  // 🧠 If clicking the same category again → close it
-  if (currentCategory === cat) {
-    const itemsSection = document.getElementById("items");
-    itemsSection.innerHTML = null;
-    currentCategory = null;
+  const shopMenu = document.getElementById("shopMenu");
 
-    // 🔹 Remove blur
+  // Toggle same category closed
+  if (currentCategory === cat) {
+    document.getElementById("items").innerHTML = "";
+    currentCategory = null;
     removeBlur();
+    // Close menu with class (GPU-accelerated)
+    if (shopMenu) shopMenu.classList.remove("open");
     return;
   }
 
-  // 🔹 Apply blur when new category opens
-addBlur();
+  addBlur();
 
   const key = (cat in PRODUCTS)
     ? cat
     : Object.keys(PRODUCTS).find(k => k.toLowerCase() === String(cat).toLowerCase());
-  if (key) currentCategory = key;
-  else currentCategory = cat;
+  currentCategory = key || cat;
 
   const container = document.getElementById("items");
   const items = PRODUCTS[currentCategory] || [];
   container.innerHTML = "";
+
+  // Close menu with class after selection
+  if (shopMenu) shopMenu.classList.remove("open");
+
   if (!items.length) {
-    container.innerHTML = `
-      <div style="background:var(--card);padding:20px;border-radius:12px;
-                  box-shadow:0 8px 20px rgba(12,12,20,0.06);">
-      </div>`;
+    container.innerHTML = `<div style="background:var(--card);padding:20px;border-radius:12px;box-shadow:0 8px 20px rgba(12,12,20,0.06);"></div>`;
     return;
   }
 
   const ethRate = await getEthRate();
-  items.forEach(p => {
-    const el = document.createElement("div");
-    el.className = "item";
 
-    const priceDisplay = formatPrice(getProductUsd(p), ethRate);
+  // Use requestAnimationFrame so DOM updates happen at the right render cycle
+  requestAnimationFrame(() => {
+    items.forEach(p => {
+      const el = document.createElement("div");
+      el.className = "item";
+      el.dataset.category = currentCategory;
 
-   // 🖼️ Normalize images array
-  let images = [];
-  if (Array.isArray(p.images) && p.images.length) {
-    images = p.images;
-  } else if (typeof p.image === "string" && p.image.includes(",")) {
-    images = p.image.split(",").map(u => u.trim()).filter(Boolean);
-  } else if (p.image) {
-    images = [p.image];
-  }
+      const priceDisplay = formatPrice(getProductUsd(p), ethRate);
 
-    // --- Build slider / single image HTML ---
-  let imageHTML = "";
-  if (images.length > 1) {
-    imageHTML = `
-      <div class="image-slider" id="slider_${p.id}">
-        ${images.map((url, i) => `
-          <img 
-            src="${url}" 
-            alt="${p.title}" 
-            class="slide ${i === 0 ? "active" : ""}" 
+      let images = [];
+      if (Array.isArray(p.images) && p.images.length) {
+        images = p.images;
+      } else if (typeof p.image === "string" && p.image.includes(",")) {
+        images = p.image.split(",").map(u => u.trim()).filter(Boolean);
+      } else if (p.image) {
+        images = [p.image];
+      }
+
+      let imageHTML = "";
+      if (images.length > 1) {
+        imageHTML = `
+          <div class="image-slider" id="slider_${p.id}">
+            ${images.map((url, i) => `
+              <img
+                src="${url}"
+                alt="${p.title}"
+                class="slide ${i === 0 ? "active" : ""}"
+                loading="lazy"
+                style="cursor:pointer"
+                onclick="openItemModal(\`<img src='${url}' alt='${p.title}' style='max-width:100%;border-radius:12px;display:block;margin:0 auto;' /><h3 style='margin-top:12px;text-align:center;'>${p.title}</h3>\`)"
+              />
+            `).join("")}
+            <button class="prev" onclick="prevSlide('${p.id}')">‹</button>
+            <button class="next" onclick="nextSlide('${p.id}')">›</button>
+          </div>
+        `;
+      } else {
+        const imgSrc = images[0] || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
+        imageHTML = `
+          <img
+            src="${imgSrc}"
+            alt="${p.title}"
+            loading="lazy"
             style="cursor:pointer"
-            onclick="openItemModal(\`
-              <img src='${url}' alt='${p.title}' style='max-width:100%;border-radius:12px;display:block;margin:0 auto;' />
-              <h3 style='margin-top:12px;text-align:center;'>${p.title}</h3>
-            \`)"
+            onclick="openItemModal(\`<img src='${imgSrc}' alt='${p.title}' style='max-width:100%;border-radius:12px;display:block;margin:0 auto;' /><h3 style='margin-top:12px;text-align:center;'>${p.title}</h3>\`)"
           />
-        `).join("")}
-        <button class="prev" onclick="prevSlide('${p.id}')">‹</button>
-        <button class="next" onclick="nextSlide('${p.id}')">›</button>
-      </div>
-    `;
-  } else {
-    const imgSrc = images[0] || "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
-    imageHTML = `
-      <img 
-        src="${imgSrc}" 
-        alt="${p.title}" 
-        style="cursor:pointer"
-        onclick="openItemModal(\`
-          <img src='${imgSrc}' alt='${p.title}' style='max-width:100%;border-radius:12px;display:block;margin:0 auto;' />
-          <h3 style='margin-top:12px;text-align:center;'>${p.title}</h3>
-        \`)"
-      />
-    `;
-  }
-
-
-    // 🧩 Variants
-    let variantHTML = "";
-    if (p.variants && p.variants.length) {
-      if (typeof p.variants[0] === "string") {
-        variantHTML = `
-          <label>Variant</label>
-          <select id="variant_${p.id}">
-            ${p.variants.map(v => `<option value="${v}">${v}</option>`).join("")}
-          </select>`;
-      } else if (typeof p.variants[0] === "object") {
-        variantHTML = `
-          <label>Variant</label>
-          <select id="variant_${p.id}">
-            ${p.variants
-              .map(v => `<option value="${v.name}" data-price-usd="${v.priceUSD ?? ''}">${v.name}</option>`)
-              .join("")}
-          </select>`;
+        `;
       }
-    }
 
-    // 🎨 Colors
-    let colorHTML = "";
-    if (p.colors && p.colors.length) {
-      colorHTML = `
-        <label>Color</label>
-        <select id="color_${p.id}">
-          ${p.colors.map(c => `<option value="${c}">${c}</option>`).join("")}
-        </select>`;
-    }
+      let variantHTML = "";
+      if (p.variants && p.variants.length) {
+        if (typeof p.variants[0] === "string") {
+          variantHTML = `<label>Variant</label><select id="variant_${p.id}">${p.variants.map(v => `<option value="${v}">${v}</option>`).join("")}</select>`;
+        } else if (typeof p.variants[0] === "object") {
+          variantHTML = `<label>Variant</label><select id="variant_${p.id}">${p.variants.map(v => `<option value="${v.name}" data-price-usd="${v.priceUSD ?? ''}">${v.name}</option>`).join("")}</select>`;
+        }
+      }
 
-    // 📏 Sizes
-    let sizeHTML = "";
-    if (p.sizes && p.sizes.length) {
-      sizeHTML = `
-        <label>Size</label>
-        <select id="size_${p.id}">
-          ${p.sizes.map(s => `<option value="${s}">${s}</option>`).join("")}
-        </select>`;
-    }
+      let colorHTML = "";
+      if (p.colors && p.colors.length) {
+        colorHTML = `<label>Color</label><select id="color_${p.id}">${p.colors.map(c => `<option value="${c}">${c}</option>`).join("")}</select>`;
+      }
 
-    let customInputHTML = "";
-if (p.CustomInput && p.CustomInput.trim() !== "") {
-  customInputHTML = `
-    <label style="display:block;text-align:left;font-weight:600">${p.CustomInput}</label>
-    <input id="custom_${p.id}" type="text" placeholder="${p.CustomInput}" 
-      style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;margin-top:4px" />
-  `;
-}
+      let sizeHTML = "";
+      if (p.sizes && p.sizes.length) {
+        sizeHTML = `<label>Size</label><select id="size_${p.id}">${p.sizes.map(s => `<option value="${s}">${s}</option>`).join("")}</select>`;
+      }
 
-// 🛒 Generate product buttons safely
-const productId = p.ID || p.id; // normalize ID
-if (!productId) {
-  console.warn("Product missing ID:", p);
-}
+      let customInputHTML = "";
+      if (p.CustomInput && p.CustomInput.trim() !== "") {
+        customInputHTML = `
+          <label style="display:block;text-align:left;font-weight:600">${p.CustomInput}</label>
+          <input id="custom_${p.id}" type="text" placeholder="${p.CustomInput}"
+            style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;margin-top:4px" />
+        `;
+      }
 
-// Costs
-const points = p.PointsCost || p.pointsCost || 0;
-const quacks = p.QuacksCost || p.quacksCost || p.quackscost || 0;
-const usd = p.PriceUSD || p.priceUSD || 0;
+      const productId = p.ID || p.id;
+      if (!productId) console.warn("Product missing ID:", p);
 
-// Redeem button
-const redeemHTML = (points > 0 && productId)
-  ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${productId}', ${points})">
-       Redeem for ${points} Referral Points
-     </button>`
-  : "";
+      const points = p.PointsCost || p.pointsCost || 0;
+      const quacks = p.QuacksCost || p.quacksCost || p.quackscost || 0;
+      const usd = p.PriceUSD || p.priceUSD || 0;
 
-// Quacks button
-const quacksHTML = (quacks > 0 && productId)
-  ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${productId}', ${quacks})">
-       Pay with ${quacks} 🪙 Quacks
-     </button>`
-  : "";
+      const redeemHTML = (points > 0 && productId)
+        ? `<button class="btn redeem-btn" onclick="redeemWithPoints('${productId}', ${points})">Redeem for ${points} Referral Points</button>` : "";
+      const quacksHTML = (quacks > 0 && productId)
+        ? `<button class="btn quacks-btn" onclick="addToCartWithQuacks('${productId}', ${quacks})">Pay with ${quacks} 🪙 Quacks</button>` : "";
+      const buyHTML = (usd > 0 && productId)
+        ? `<button class="btn buy-btn" onclick="addToCart('${productId}')">Add to Cart</button>` : "";
 
-// USD purchase button
-const buyHTML = (usd > 0 && productId)
-  ? `<button class="btn buy-btn" onclick="addToCart('${productId}')">
-       Add to Cart
-     </button>`
-  : "";
+      el.innerHTML = `
+        ${imageHTML}
+        <h3>${p.title}</h3>
+        <p class="product-description">${p.description || ""}</p>
+        <div class="price" id="price_${productId}">${priceDisplay}</div>
+        ${variantHTML}
+        ${colorHTML}
+        ${sizeHTML}
+        ${customInputHTML}
+        ${p.sizeGuide ? `<button class="btn" onclick="openSizeGuide('${p.sizeGuide}')">Size Guide</button>` : ""}
+        <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+          ${buyHTML}
+          ${quacksHTML}
+          ${redeemHTML}
+        </div>
+      `;
 
-// Combine all HTML
-el.innerHTML = `
-  ${imageHTML}
-  <h3>${p.title}</h3>
-  <p class="product-description">${p.description || ""}</p>
-  <div class="price" id="price_${productId}">${priceDisplay}</div>
-  ${variantHTML}
-  ${colorHTML}
-  ${sizeHTML}
-  ${customInputHTML}
-  ${p.sizeGuide ? `<button class="btn" onclick="openSizeGuide('${p.sizeGuide}')">Size Guide</button>` : ""}
-  <div style="margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
-    ${buyHTML}
-    ${quacksHTML}
-    ${redeemHTML}
-  </div>
-`;
+      container.appendChild(el);
 
-container.appendChild(el);
+      // Variant price update listener
+      const variantSelect = el.querySelector(`#variant_${p.id}`);
+      const priceEl = el.querySelector(`#price_${p.id}`);
 
+      if (variantSelect) {
+        variantSelect.addEventListener("change", async (e) => {
+          const selected = e.target.value;
+          const rate = await getEthRate();
+          let newUsd = getProductUsd(p);
 
-    // update price/image on variant select
-    const variantSelect = el.querySelector(`#variant_${p.id}`);
-    const priceEl = el.querySelector(`#price_${p.id}`);
-    const imgEl = el.querySelector(`#img_${p.id}`);
+          if (Array.isArray(p.variants) && typeof p.variants[0] === "object") {
+            const matched = p.variants.find(v => v.name === selected);
+            if (matched?.priceUSD) newUsd = matched.priceUSD;
+          } else if (p.VariantPrices) {
+            const variantPricesMap = {};
+            p.VariantPrices.split(",").forEach(vp => {
+              const [name, price] = vp.split(":");
+              if (name && price) variantPricesMap[name.trim()] = Number(price.trim());
+            });
+            if (variantPricesMap[selected] != null) newUsd = variantPricesMap[selected];
+          }
 
-    if (variantSelect) {
-  variantSelect.addEventListener("change", async (e) => {
-    const selected = e.target.value;
-    const rate = await getEthRate();
-
-    let newUsd = getProductUsd(p);
-
-    // Case 1: variant objects with their own priceUSD
-    if (Array.isArray(p.variants) && typeof p.variants[0] === "object") {
-      const matched = p.variants.find(v => v.name === selected);
-      if (matched?.priceUSD) newUsd = matched.priceUSD;
-      if (matched?.images?.length && imgEl) imgEl.src = matched.images[0];
-    }
-
-    // Case 2: sheet variant + VariantPrices string
-    else if (p.VariantPrices) {
-      const variantPricesMap = {};
-      p.VariantPrices.split(",").forEach(vp => {
-        const [name, price] = vp.split(":");
-        if (name && price) variantPricesMap[name.trim()] = Number(price.trim());
-      });
-      if (variantPricesMap[selected] != null) newUsd = variantPricesMap[selected];
-    }
-
-    if (priceEl) priceEl.textContent = formatPrice(newUsd, rate);
-  });
-}
-
-  });
-
-  attachZoomFollow();
-}
-
-  setTimeout(() => {
-  document.querySelectorAll('.variant-select').forEach(sel => {
-    sel.addEventListener('change', async e => {
-      const productId = e.target.id.replace('variant_', '');
-      const selected = e.target.value;
-      const product = Object.values(PRODUCTS).flat().find(p => p.id === productId);
-      console.log("🟡 Variant changed:", { productId, selected, product });
-
-      if (!product) return;
-      const ethRate = await getEthRate();
-
-      let newPrice = product.priceUSD || 0;
-
-      if (product.VariantPrices) {
-        const map = {};
-        product.VariantPrices.split(",").forEach(vp => {
-          const [name, price] = vp.split(":");
-          if (name && price) map[name.trim()] = Number(price.trim());
+          if (priceEl) priceEl.textContent = formatPrice(newUsd, rate);
         });
-
-        console.log("🟢 VariantPrices map:", map);
-
-        if (map[selected] != null) newPrice = map[selected];
       }
-
-      const priceEl = document.getElementById(`price_${productId}`);
-      console.log("🔵 Updating price element:", priceEl, "→", newPrice);
-
-      if (priceEl) priceEl.textContent = formatPrice(newPrice, ethRate);
     });
-  });
-}, 1000); // <-- wait a sec so elements exist
 
-  
-// === Variant change listener (updates displayed price) ===
-document.querySelectorAll('.variant-select').forEach(sel => {
-  sel.addEventListener('change', async e => {
-    const productId = e.target.id.replace('variant_', '');
-    const selected = e.target.value;
-    const product = Object.values(PRODUCTS).flat().find(p => p.id === productId);
-    if (!product) return;
-
-    const ethRate = await getEthRate();
-
-    let newPrice = product.priceUSD || 0;
-    if (product.VariantPrices) {
-      const map = {};
-      product.VariantPrices.split(",").forEach(vp => {
-        const [name, price] = vp.split(":");
-        if (name && price) map[name.trim()] = Number(price.trim());
-      });
-      if (map[selected] != null) newPrice = map[selected];
-    }
-
-    const priceEl = document.getElementById(`price_${productId}`);
-    if (priceEl) priceEl.textContent = formatPrice(newPrice, ethRate);
-  });
-});
-
-  /* ===== UPDATE PRICE ON VARIANT CHANGE ===== */
-function attachVariantPriceListeners() {
-  Object.values(PRODUCTS).flat().forEach(product => {
-    const selectEl = document.getElementById(`variant_${product.id}`);
-    if (selectEl && product.VariantPrices) {
-      const variantPrices = {};
-      product.VariantPrices.split(",").forEach(vp => {
-        const [name, price] = vp.split(":");
-        if (name && price) variantPrices[name.trim()] = Number(price.trim());
-      });
-
-      selectEl.addEventListener("change", async function() {
-        const selectedVariant = selectEl.value;
-        const newPriceUSD = variantPrices[selectedVariant] != null
-          ? variantPrices[selectedVariant]
-          : product.priceUSD || 0;
-        const ethRate = await getEthRate();
-        const priceTextEl = selectEl.closest(".item").querySelector("p");
-        if (priceTextEl) priceTextEl.textContent = formatPrice(newPriceUSD, ethRate);
-      });
-    }
+    attachZoomFollow();
   });
 }
 
@@ -1604,8 +972,7 @@ function nextSlide(id) {
   if (!slides.length) return;
   let current = Array.from(slides).findIndex(s => s.classList.contains("active"));
   slides[current].classList.remove("active");
-  const next = (current + 1) % slides.length;
-  slides[next].classList.add("active");
+  slides[(current + 1) % slides.length].classList.add("active");
 }
 
 function prevSlide(id) {
@@ -1613,13 +980,8 @@ function prevSlide(id) {
   if (!slides.length) return;
   let current = Array.from(slides).findIndex(s => s.classList.contains("active"));
   slides[current].classList.remove("active");
-  const prev = (current - 1 + slides.length) % slides.length;
-  slides[prev].classList.add("active");
+  slides[(current - 1 + slides.length) % slides.length].classList.add("active");
 }
-
-/* ===== OPEN/CLOSE Helpers ===== */
-function showOverlay(){ const ov = document.getElementById('tees'); if(ov){ ov.classList.add('active'); ov.style.display='block'; } }
-function hideOverlay(){ const ov = document.getElementById('tees'); if(ov){ ov.classList.remove('active'); ov.style.display='none'; } }
 
 /* ===== SIZE GUIDE ===== */
 function openSizeGuide(url){
@@ -1627,22 +989,22 @@ function openSizeGuide(url){
   if(modal) document.getElementById("sizeGuideImage").src = url;
   if(modal){ modal.classList.add("open"); modal.setAttribute("aria-hidden","false"); }
 }
-function closeSizeGuide(){ const modal = document.getElementById("sizeGuideModal"); if(modal){ modal.classList.remove("open"); modal.setAttribute("aria-hidden","true"); } }
+function closeSizeGuide(){
+  const modal = document.getElementById("sizeGuideModal");
+  if(modal){ modal.classList.remove("open"); modal.setAttribute("aria-hidden","true"); }
+}
 
-  /* ===== open images in items  ===== */
-  function openItemModal(contentHTML) {
+/* ===== ITEM MODAL ===== */
+function openItemModal(contentHTML) {
   const modal = document.getElementById("itemModal");
   const content = document.getElementById("itemModalContent");
-
   content.innerHTML = contentHTML;
   modal.classList.add("open");
-  addBlur(); // blur the background
+  addBlur();
 }
 
 function closeItemModal(e) {
-  // If called from click event, ensure we clicked background, not content
   if (e && e.target.closest('.card')) return;
-
   const modal = document.getElementById("itemModal");
   modal.classList.remove("open");
   removeBlur();
@@ -1650,38 +1012,32 @@ function closeItemModal(e) {
 
 /* ===== ADD TO CART ===== */
 async function addToCart(productId) {
- const allProducts = Object.values(PRODUCTS).flat();
-const product = allProducts.find(p =>
-  (p.ID && p.ID === productId) ||
-  (p.id && p.id === productId)
-);
+  const allProducts = Object.values(PRODUCTS).flat();
+  const product = allProducts.find(p => (p.ID && p.ID === productId) || (p.id && p.id === productId));
 
-if (!product) {
-  console.error("Product not found:", productId, "Available IDs:", allProducts.map(p => p.ID || p.id));
-  showToast("Product not found", "error");
-  return;
-}
-
+  if (!product) {
+    console.error("Product not found:", productId);
+    showToast("Product not found", "error");
+    return;
+  }
 
   const variantSel = document.getElementById(`variant_${productId}`);
-  const colorSel = document.getElementById(`color_${productId}`);
-  const sizeSel = document.getElementById(`size_${productId}`);
-  const customEl = document.getElementById(`custom_${productId}`);
-  const priceEl = document.getElementById(`price_${productId}`);
+  const colorSel   = document.getElementById(`color_${productId}`);
+  const sizeSel    = document.getElementById(`size_${productId}`);
+  const customEl   = document.getElementById(`custom_${productId}`);
+  const priceEl    = document.getElementById(`price_${productId}`);
 
-  const variant = variantSel ? variantSel.value : "";
-  const color = colorSel ? colorSel.value : "";
-  const size = sizeSel ? sizeSel.value : "";
+  const variant    = variantSel ? variantSel.value : "";
+  const color      = colorSel ? colorSel.value : "";
+  const size       = sizeSel ? sizeSel.value : "";
   const customInput = customEl ? customEl.value.trim() : "";
 
-  // ✅ Require custom input if field exists
   if ((product.CustomInput || product.custominput) && !customInput) {
     showToast(`Please fill in: ${product.CustomInput || "custom field"}`, "error");
     if (customEl) customEl.focus();
     return;
   }
 
-  // ✅ Read displayed USD price directly from DOM
   let priceUSD = product.priceUSD || 0;
   if (priceEl) {
     const match = priceEl.innerText.match(/\$([\d.]+)/);
@@ -1691,47 +1047,37 @@ if (!product) {
   const rate = await getEthRate();
   const priceETH = priceUSD / rate;
 
-  const item = {
+  cart.push({
     id: product.id,
     title: product.title,
-    variant,
-    color,
-    size,
+    variant, color, size,
     q: 1,
     priceUSD,
     price: priceETH,
     redeem: false,
     cost: 0,
-    thumb: (product.images && product.images.length) 
-         ? product.images[0] 
-         : (product.image ? product.image : "placeholder.png"),
+    thumb: (product.images && product.images.length) ? product.images[0] : (product.image ? product.image : "placeholder.png"),
     customInput
-  };
+  });
 
-  cart.push(item);
   updateCartUI();
   showToast(`🛒 "${product.title}" added to cart`, "success");
 }
 
-/* ===== CART UI (Improved + Shipping + Subtotal) ===== */
+/* ===== CART UI ===== */
 async function updateCartUI() {
-  const countEl = document.getElementById("cartCount");
-  const listEl = document.getElementById("cartList");
+  const countEl    = document.getElementById("cartCount");
+  const listEl     = document.getElementById("cartList");
   const subtotalEl = document.getElementById("subtotalDisplay");
   const shippingEl = document.getElementById("shippingDisplay");
-  const totalEl = document.getElementById("totalDisplay");
+  const totalEl    = document.getElementById("totalDisplay");
 
   if (!listEl || !totalEl) return console.warn("Cart UI elements missing");
 
-  // 🧮 Update cart count bubble if present
   const cartCount = cart.reduce((s, i) => s + i.q, 0);
   if (countEl) {
-    if (cartCount > 0) {
-      countEl.style.display = "inline-block";
-      countEl.innerText = cartCount;
-    } else {
-      countEl.style.display = "none";
-    }
+    if (cartCount > 0) { countEl.style.display = "inline-block"; countEl.innerText = cartCount; }
+    else { countEl.style.display = "none"; }
   }
 
   if (cart.length === 0) {
@@ -1743,25 +1089,15 @@ async function updateCartUI() {
   }
 
   listEl.innerHTML = "";
-  let totalEth = 0;
 
   cart.forEach((ci, idx) => {
     const row = document.createElement("div");
     row.className = "cart-item";
-    
- let thumb = ci.thumb || "";
 
-// ✅ Fix double-encoded or missing image paths
-if (thumb && thumb.includes("https%3A")) {
-  thumb = decodeURIComponent(thumb);
-}
-if (!thumb.startsWith("http")) {
-  thumb = "https://quackerfriends.github.io/quackheads-assets/images/" + thumb;
-}
-if (!thumb) {
-  thumb = "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
-}
-
+    let thumb = ci.thumb || "";
+    if (thumb && thumb.includes("https%3A")) thumb = decodeURIComponent(thumb);
+    if (!thumb.startsWith("http")) thumb = "https://quackerfriends.github.io/quackheads-assets/images/" + thumb;
+    if (!thumb) thumb = "https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
 
     const details = [];
     if (ci.variant && ci.variant !== "N/A") details.push(`Variant: ${ci.variant}`);
@@ -1769,270 +1105,184 @@ if (!thumb) {
     if (ci.size && ci.size !== "N/A") details.push(`Size: ${ci.size}`);
     if (ci.customInput) details.push(`Custom: ${ci.customInput}`);
     const detailsText = details.length ? details.join(" • ") : "No options selected";
+    const priceUSD = ((ci.priceUSD || 0) * ci.q).toFixed(2);
 
-const priceUSD = ((ci.priceUSD || 0) * ci.q).toFixed(2);
     row.innerHTML = `
-      <img src="${thumb}" alt="${ci.title}" />
+      <img src="${thumb}" alt="${ci.title}" loading="lazy" />
       <div style="flex:1">
         <div style="font-weight:700">${ci.title}</div>
         <div style="font-size:13px;color:#666">${detailsText}</div>
         <div style="margin-top:6px">$${priceUSD}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
-        <input class="qty" type="number" min="1" value="${ci.q}" onchange="changeQty(${idx}, this.value)" style="width:56px;padding:6px;border-radius:6px;border:1px solid #ddd;text-align:center" />
+        <input class="qty" type="number" min="1" value="${ci.q}" onchange="changeQty(${idx}, this.value)"
+          style="width:56px;padding:6px;border-radius:6px;border:1px solid #ddd;text-align:center" />
         <button style="background:transparent;border:none;color:#e11;cursor:pointer" onclick="removeFromCart(${idx})">Remove</button>
       </div>
     `;
     listEl.appendChild(row);
   });
 
-  // 🧾 Compute USD totals
   const rate = await getEthRate();
   const subtotalUSD = cart.reduce((s, i) => s + i.priceUSD * i.q, 0);
-
-// 🚚 Determine shipping cost
   const countrySelect = document.getElementById("shippingCountry");
-  const selectedCountry = countrySelect ? countrySelect.value : "USA";
-  const shippingUSD = subtotalUSD >= 70 ? 0 : (selectedCountry === "USA" ? 5 : 10);
-
+  const selCountry = countrySelect ? countrySelect.value : "USA";
+  const shippingUSD = subtotalUSD >= 70 ? 0 : (selCountry === "USA" ? 5 : 10);
   const totalUSD = subtotalUSD + shippingUSD;
 
-  // 🪄 Update UI
   if (subtotalEl) subtotalEl.innerText = `$${subtotalUSD.toFixed(2)}`;
   if (shippingEl) shippingEl.innerText = `$${shippingUSD.toFixed(2)}`;
   if (totalEl) totalEl.innerText = `$${totalUSD.toFixed(2)}`;
 }
 
-// refresh checkout numbers (if modal visible)
-try { updateCheckoutDisplay(); } catch(e) { /* ignore if elements missing */ }
+try { updateCheckoutDisplay(); } catch(e) { /* ignore */ }
 
-function changeQty(index,val){ const v = Number(val)||1; cart[index].q = Math.max(1,v); updateCartUI(); }
+function changeQty(index, val){ const v = Number(val)||1; cart[index].q = Math.max(1,v); updateCartUI(); }
 function removeFromCart(index){ cart.splice(index,1); updateCartUI(); }
 
- function openCart() {
+function openCart() {
   const modal = document.getElementById("cartModal");
-  const overlay = document.getElementById("cartOverlay");
   if (modal) {
     modal.classList.add("open");
     modal.setAttribute("aria-hidden", "false");
-    if (overlay) overlay.style.display = "block";
-    // init checkout UI (subtotal, shipping, payment selector)
     initCheckoutUI();
   }
 }
 
 function closeCart() {
   const modal = document.getElementById("cartModal");
-  const overlay = document.getElementById("cartOverlay");
-  if (modal) {
-    modal.classList.remove("open");
-    modal.setAttribute("aria-hidden", "true");
-    if (overlay) overlay.style.display = "none";
-  }
+  if (modal) { modal.classList.remove("open"); modal.setAttribute("aria-hidden", "true"); }
 }
-  
-  // 🛒 Cart open button
+
 const openCartBtn = document.getElementById("openCartBtn");
 if (openCartBtn) openCartBtn.addEventListener("click", openCart);
 
-
-
 /* ===== PROFILE TOGGLE ===== */
 const profileBtn = document.getElementById("profileBtn");
-if (profileBtn)
+if (profileBtn) {
   profileBtn.addEventListener("click", async () => {
     const panel = document.getElementById("profileSection");
     if (panel) panel.style.display = panel.style.display === "block" ? "none" : "block";
     if (!userAddress) return;
-
     try {
       const profileData = await loadProfile(userAddress);
-
       const nftCountEl = document.getElementById("nftCount");
-      if (nftCountEl)
-        nftCountEl.innerText = "Quacker Friends Held:" + profileData.quackerBalance;
-
+      if (nftCountEl) nftCountEl.innerText = "Quacker Friends Held:" + profileData.quackerBalance;
       const quacksCount = document.getElementById("quacksCount");
-      if (quacksCount)
-        quacksCount.innerText = "Quacks Balance: " + profileData.dailyQuacks;
-
+      if (quacksCount) quacksCount.innerText = "Quacks Balance: " + profileData.dailyQuacks;
       const pointsValue = document.getElementById("pointsValue");
-      if (pointsValue)
-        pointsValue.innerText = profileData.referralPoints;
-
+      if (pointsValue) pointsValue.innerText = profileData.referralPoints;
     } catch (err) {
       console.error(err);
       showToast("Error loading profile", "warn");
     }
   });
+}
 
-/* ===== Redeem Points Display ===== */
+/* ===== LOAD PROFILE ===== */
+async function loadProfile(wallet) {
+  if (!web3 || !wallet) return null;
+  let quackerBalance = 0;
+  try {
+    const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+    quackerBalance = await contract.methods.balanceOf(wallet).call();
+  } catch (err) { console.warn("Failed to fetch Quacker NFT balance:", err); }
+
+  let claimData = {};
+  try {
+    const claimResp = await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(wallet)}&check=true`);
+    claimData = await claimResp.json();
+  } catch (err) { console.warn("Failed to fetch claim data:", err); }
+
+  let shopData = {};
+  try {
+    const shopResp = await fetch(`${PURCHASE_API}?wallet=${encodeURIComponent(wallet)}&checkPoints=true`);
+    const pointsResp = await shopResp.json();
+    shopData.points = pointsResp.points || 0;
+  } catch (err) { console.warn("Failed to fetch shop/referral data:", err); }
+
+  return {
+    wallet,
+    quackerBalance: Number(quackerBalance),
+    dailyQuacks: Number(claimData.quacks_collected || 0),
+    lastClaim: claimData.last_claim ? new Date(claimData.last_claim) : null,
+    priority: claimData.priority || "none",
+    triggeredBy: claimData.triggered_by || "none",
+    referralPoints: shopData.points || 0
+  };
+}
+
+/* ===== POINTS DISPLAY ===== */
 async function updatePointsDisplay() {
   const wallet = (userAddress || "").toLowerCase();
   const pointsValue = document.getElementById("pointsValue");
   if (!pointsValue) return;
-
-  if (!wallet) {
-    pointsValue.textContent = ""; // leave empty if wallet not connected
-    return;
-  }
-
+  if (!wallet) { pointsValue.textContent = ""; return; }
   try {
     const res = await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`);
     const data = await res.json();
-
-    if (data.success) {
-      pointsValue.textContent = data.points;
-    } else {
-      pointsValue.textContent = "Error";
-    }
-  } catch (err) {
-    pointsValue.textContent = "Error";
-  }
+    pointsValue.textContent = data.success ? data.points : "Error";
+  } catch (err) { pointsValue.textContent = "Error"; }
 }
-  
-  /* ===== Leaderboard Display ===== */
 
+/* ===== LEADERBOARD ===== */
 async function loadLeaderboard() {
   try {
-
     const res = await fetch(`${CLAIM_SHEET_API}?leaderboard=true`);
     const data = await res.json();
-
     const container = document.getElementById("leaderboard");
     if (!container) return;
-
     container.innerHTML = "";
-
     data.forEach((user, index) => {
-
       const row = document.createElement("div");
       row.className = "leaderboard-row";
-
-      const shortAddr =
-        user.address.slice(0, 6) +
-        "..." +
-        user.address.slice(-4);
-
-      row.innerHTML = `
-        <span>#${index + 1}</span>
-        <span>${shortAddr}</span>
-        <span>${user.quacks} 🦆</span>
-      `;
-
+      const shortAddr = user.address.slice(0, 6) + "..." + user.address.slice(-4);
+      row.innerHTML = `<span>#${index + 1}</span><span>${shortAddr}</span><span>${user.quacks} 🦆</span>`;
       container.appendChild(row);
     });
-
-  } catch (err) {
-    console.error("Leaderboard error:", err);
-  }
+  } catch (err) { console.error("Leaderboard error:", err); }
 }
-/* ===== CLAIM QUACKS (improved: checks multiple collections) ===== */
+
+/* ===== CLAIM QUACKS ===== */
 const claimQuacksBtn = document.getElementById("claimQuacksBtn");
-
 if (claimQuacksBtn) claimQuacksBtn.addEventListener("click", async () => {
-
-  if (!userAddress) {
-    showToast("Connect wallet first", "warn");
-    return;
-  }
-
+  if (!userAddress) { showToast("Connect wallet first", "warn"); return; }
   try {
-
-    const ERC721_MIN_ABI = [
-      {
-        constant: true,
-        inputs: [{ name: "owner", type: "address" }],
-        name: "balanceOf",
-        outputs: [{ name: "", type: "uint256" }],
-        type: "function"
-      }
-    ];
-
-    let quackerCount = 0; // ✅ define OUTSIDE
+    const ERC721_MIN_ABI = [{ constant: true, inputs: [{ name: "owner", type: "address" }], name: "balanceOf", outputs: [{ name: "", type: "uint256" }], type: "function" }];
+    let quackerCount = 0;
     const ownsContracts = [];
+    const OTHER_CONTRACTS = ["0x50372c1153170840ecce9129c6cc70b912f34273"];
 
-    const MAIN_CONTRACT_ADDRESS = CONTRACT_ADDRESS;
-
-    const OTHER_CONTRACTS = [
-      "0x50372c1153170840ecce9129c6cc70b912f34273"
-      // add real addresses only
-    ];
-
-    // ===== MAIN CONTRACT =====
     try {
-      const mainContract = new web3.eth.Contract(
-        ERC721_MIN_ABI,
-        MAIN_CONTRACT_ADDRESS
-      );
-
-      const mainBal = await mainContract.methods
-        .balanceOf(userAddress)
-        .call();
-
+      const mainContract = new web3.eth.Contract(ERC721_MIN_ABI, CONTRACT_ADDRESS);
+      const mainBal = await mainContract.methods.balanceOf(userAddress).call();
       quackerCount = Number(mainBal);
+      if (quackerCount > 0) ownsContracts.push(CONTRACT_ADDRESS.toLowerCase());
+    } catch (err) { console.warn("Error checking main contract:", err); }
 
-      if (quackerCount > 0) {
-        ownsContracts.push(MAIN_CONTRACT_ADDRESS.toLowerCase());
-      }
+    await Promise.all(OTHER_CONTRACTS.map(async (addr) => {
+      try {
+        const c = new web3.eth.Contract(ERC721_MIN_ABI, addr);
+        const b = await c.methods.balanceOf(userAddress).call();
+        if (Number(b) > 0) ownsContracts.push(addr.toLowerCase());
+      } catch (err) { console.warn("Error checking contract", addr, err); }
+    }));
 
-      console.log("Main balance:", quackerCount);
-
-    } catch (err) {
-      console.warn("Error checking main contract:", err);
-    }
-
-    // ===== OTHER CONTRACTS =====
-    await Promise.all(
-      OTHER_CONTRACTS.map(async (addr) => {
-        try {
-          const c = new web3.eth.Contract(ERC721_MIN_ABI, addr);
-          const b = await c.methods.balanceOf(userAddress).call();
-
-          if (Number(b) > 0) {
-            ownsContracts.push(addr.toLowerCase());
-          }
-
-          console.log("Checked", addr, "balance:", b);
-
-        } catch (err) {
-          console.warn("Error checking contract", addr, err);
-        }
-      })
-    );
-
-    console.log("ownsContracts:", ownsContracts);
-
-    const query = new URLSearchParams({
-      wallet: userAddress,
-      claim: "true",
-      nftCount: quackerCount.toString(),
-      ownsContracts: ownsContracts.join(",")
-    });
-
+    const query = new URLSearchParams({ wallet: userAddress, claim: "true", nftCount: quackerCount.toString(), ownsContracts: ownsContracts.join(",") });
     const res = await fetch(`${CLAIM_SHEET_API}?${query.toString()}`);
     const data = await res.json();
 
-    if (data.error) {
-      showToast(data.error, "warn");
-      return;
-    }
-
-    showToast(`🦆 Quacks Claimed Successfully!`, "success");
-
+    if (data.error) { showToast(data.error, "warn"); return; }
+    showToast("🦆 Quacks Claimed Successfully!", "success");
     const quacksCountEl = document.getElementById("quacksCount");
-    if (quacksCountEl) {
-      quacksCountEl.innerText =
-        "Quacks Balance: " + data.new_quacks_total;
-    }
-
+    if (quacksCountEl) quacksCountEl.innerText = "Quacks Balance: " + data.new_quacks_total;
   } catch (err) {
     console.error("Error claiming quacks:", err);
     showToast("Error claiming quacks", "error");
   }
 });
 
-/* ===== CHECKOUT / PURCHASE LOGGING ===== */
+/* ===== CHECKOUT ===== */
 const checkoutBtn = document.getElementById("checkoutBtn");
 if (checkoutBtn) checkoutBtn.addEventListener("click", checkout);
 
@@ -2050,141 +1300,80 @@ async function checkout() {
     if (!userAddress) { showToast("Connect wallet first", "error"); return; }
     if (cart.length === 0) { showToast("Cart is empty", "info"); return; }
 
-  
- // --- Determine shipping ---
-let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
-country = country.toLowerCase();
-let shippingUSD = 0;
-let subtotalUSD = cart.reduce((sum, item) => sum + (item.priceUSD * (item.q || 1)), 0);
+    let country = window.selectedCountry || document.getElementById("shippingCountry")?.value || "USA";
+    country = country.toLowerCase();
+    let subtotalUSD = cart.reduce((sum, item) => sum + (item.priceUSD * (item.q || 1)), 0);
+    let shippingUSD = 0;
 
-// --- Identify order types ---
-const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
-const isQuacksOnly = cart.length > 0 && cart.every(ci => ci.useQuacks);
-const hasPaidItems = cart.some(ci => !ci.redeem && !ci.useQuacks);
+    const isRedeemOnly = cart.length > 0 && cart.every(ci => ci.redeem);
+    const isQuacksOnly = cart.length > 0 && cart.every(ci => ci.useQuacks);
+    const hasPaidItems = cart.some(ci => !ci.redeem && !ci.useQuacks);
 
-// --- Force shipping for all physical goods ---
-const needsShipping = cart.length > 0; // assume all items physical
-
-// --- Apply shipping rules ---
-if (subtotalUSD >= 70) {
-  shippingUSD = 0;
-} else if (country === "canada") {
-  shippingUSD = 10;
-} else {
-  shippingUSD = 5;
-}
-
-// 👉 Force shipping even if subtotal is 0 (for quacks/redeem)
-if ((isRedeemOnly || isQuacksOnly) && needsShipping && shippingUSD === 0) {
-  if (country === "canada") {
-    shippingUSD = 10;
-  } else {
-    shippingUSD = 5;
-  }
-}
-console.log("🧭 Country:", country, "| subtotalUSD =", subtotalUSD, "| Shipping =", shippingUSD);
-
-const rate = await getEthRate();
-
-let txHash = "";
-const selectedToken = document.getElementById("paymentSelector")?.value || "ETH";
-const chainId = await ethereum.request({ method: "eth_chainId" });
-const grandTotalUSD = subtotalUSD + shippingUSD;
-
-if (hasPaidItems) {
-
-  try {
-
-    if (selectedToken === "ETH") {
-
-      const rate = await getEthRate();
-      const totalEth = grandTotalUSD / rate;
-      const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
-
-      const txParams = {
-        from: userAddress,
-        to: SHOP_WALLET,
-        value: valueHex
-      };
-
-      showToast(`Confirm ${selectedToken} payment`, "info", 8000);
-
-      txHash = await ethereum.request({
-        method: "eth_sendTransaction",
-        params: [txParams]
-      });
-
+    if (subtotalUSD >= 70) {
+      shippingUSD = 0;
+    } else if (country === "canada") {
+      shippingUSD = 10;
     } else {
-
-      const tokenAddress = TOKEN_MAP[chainId]?.[selectedToken];
-
-      if (!tokenAddress) {
-        showToast("Token not supported on this network", "error");
-        return;
-      }
-
-      const web3 = new Web3(window.ethereum);
-      const tokenContract = new web3.eth.Contract(ERC20_ABI, tokenAddress);
-
-      const decimals = await tokenContract.methods.decimals().call();
-      const amount = BigInt(Math.floor(grandTotalUSD * (10 ** decimals)));
-
-      showToast(`Confirm ${selectedToken} payment`, "info", 8000);
-
-      const receipt = await tokenContract.methods
-        .transfer(SHOP_WALLET, amount.toString())
-        .send({ from: userAddress });
-
-      txHash = receipt.transactionHash;
+      shippingUSD = 5;
     }
 
-    showToast("✅ Transaction sent — logging purchase...", "success", 4000);
-    await new Promise(r => setTimeout(r, 1200));
+    if ((isRedeemOnly || isQuacksOnly) && shippingUSD === 0) {
+      shippingUSD = country === "canada" ? 10 : 5;
+    }
 
-  } catch (err) {
-    console.warn("Payment aborted", err);
-    showToast("Transaction cancelled — not logged", "error");
-    return;
-  }
-}
+    const rate = await getEthRate();
+    let txHash = "";
+    const selectedToken = document.getElementById("paymentSelector")?.value || "ETH";
+    const chainId = await ethereum.request({ method: "eth_chainId" });
+    const grandTotalUSD = subtotalUSD + shippingUSD;
 
+    if (hasPaidItems) {
+      try {
+        if (selectedToken === "ETH") {
+          const totalEth = grandTotalUSD / rate;
+          const valueHex = "0x" + BigInt(Math.floor(totalEth * 1e18)).toString(16);
+          showToast(`Confirm ${selectedToken} payment`, "info", 8000);
+          txHash = await ethereum.request({ method: "eth_sendTransaction", params: [{ from: userAddress, to: SHOP_WALLET, value: valueHex }] });
+        } else {
+          const tokenAddress = TOKEN_MAP[chainId]?.[selectedToken];
+          if (!tokenAddress) { showToast("Token not supported on this network", "error"); return; }
+          const web3 = new Web3(window.ethereum);
+          const tokenContract = new web3.eth.Contract(ERC20_ABI, tokenAddress);
+          const decimals = await tokenContract.methods.decimals().call();
+          const amount = BigInt(Math.floor(grandTotalUSD * (10 ** decimals)));
+          showToast(`Confirm ${selectedToken} payment`, "info", 8000);
+          const receipt = await tokenContract.methods.transfer(SHOP_WALLET, amount.toString()).send({ from: userAddress });
+          txHash = receipt.transactionHash;
+        }
+        showToast("✅ Transaction sent — logging purchase...", "success", 4000);
+        await new Promise(r => setTimeout(r, 1200));
+      } catch (err) {
+        console.warn("Payment aborted", err);
+        showToast("Transaction cancelled — not logged", "error");
+        return;
+      }
+    } else if ((isRedeemOnly || isQuacksOnly) && shippingUSD > 0) {
+      const shippingEth = shippingUSD / rate;
+      const valueHex = "0x" + BigInt(Math.floor(shippingEth * 1e18)).toString(16);
+      try {
+        showToast(`Please confirm $${shippingUSD} shipping payment`, "info", 8000);
+        txHash = await ethereum.request({ method: "eth_sendTransaction", params: [{ from: userAddress, to: SHOP_WALLET, value: valueHex }] });
+        showToast("✅ Shipping paid — logging order...", "success", 4000);
+        await new Promise(r => setTimeout(r, 1200));
+      } catch (err) {
+        console.warn("Shipping tx aborted", err);
+        showToast("Shipping payment cancelled — not logged", "error");
+        return;
+      }
+    } else {
+      showToast("🎁 Free shipping applied!", "info");
+    }
 
-
-else if ((isRedeemOnly || isQuacksOnly) && shippingUSD > 0) {
-  // Pay only shipping for redeem/quacks
-  const shippingEth = shippingUSD / rate;
-  const valueHex = "0x" + BigInt(Math.floor(shippingEth * 1e18)).toString(16);
-  const txParams = { from: userAddress, to: SHOP_WALLET, value: valueHex };
-
-  try {
-    showToast(`Please confirm $${shippingUSD} shipping payment`, "info", 8000);
-    txHash = await ethereum.request({ method: "eth_sendTransaction", params: [txParams] });
-    showToast("✅ Shipping paid — logging order...", "success", 4000);
-    await new Promise(r => setTimeout(r, 1200));
-  } catch (err) {
-    console.warn("Shipping tx aborted", err);
-    showToast("Shipping payment cancelled — not logged", "error");
-    return;
-  }
-
-} else {
-  // Free shipping
-  showToast("🎁 Free shipping applied!", "info");
-}
-
-
-    // --- Loop through cart items ---
     for (const ci of cart) {
       let payload = {
-        wallet: userAddress,
-        variant: ci.variant || "",
-        color: ci.color || "",
-        size: ci.size || "",
-        quantity: ci.q || 1,
-        address: shippingAddress,
-        txHash: ci.useQuacks ? "" : txHash,
-        referrer,
-        customInput: ci.customInput || ""
+        wallet: userAddress, variant: ci.variant || "", color: ci.color || "",
+        size: ci.size || "", quantity: ci.q || 1, address: shippingAddress,
+        txHash: ci.useQuacks ? "" : txHash, referrer, customInput: ci.customInput || ""
       };
 
       if (ci.redeem) {
@@ -2193,15 +1382,10 @@ else if ((isRedeemOnly || isQuacksOnly) && shippingUSD > 0) {
       } else if (ci.useQuacks) {
         payload.itemName = ci.title;
         payload.quacksCost = ci.quacksCost;
-
-        // 🪙 Deduct Quacks from user sheet
         try {
           const spendRes = await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&spend=${ci.quacksCost}`);
           const spendData = await spendRes.json();
-          if (spendData.error) {
-            showToast(`Quacks deduction failed: ${spendData.error}`, "error");
-            return; // stop checkout if not enough Quacks
-          }
+          if (spendData.error) { showToast(`Quacks deduction failed: ${spendData.error}`, "error"); return; }
           showToast(`💸 ${ci.quacksCost} Quacks used for "${ci.title}"!`, "success", 4000);
         } catch (quackErr) {
           console.warn("Quacks deduction error:", quackErr);
@@ -2213,29 +1397,16 @@ else if ((isRedeemOnly || isQuacksOnly) && shippingUSD > 0) {
         payload.price = Number(ci.price || 0);
       }
 
-      // --- Log to Apps Script ---
-      const params = new URLSearchParams({
-        ...payload,
-        action: ci.useQuacks ? "payWithQuacks" : ""
-      }).toString();
-
+      const params = new URLSearchParams({ ...payload, action: ci.useQuacks ? "payWithQuacks" : "" }).toString();
       try {
         const res = await fetch(`${PURCHASE_API}?${params}`);
         const data = await res.json();
         console.log("Server response:", data);
-      } catch (logErr) {
-        console.warn("Logging failed for item", payload, logErr);
-      }
+      } catch (logErr) { console.warn("Logging failed for item", payload, logErr); }
     }
 
-    // --- Success Toasts ---
-    if (isRedeemOnly) {
-      showToast("✅ Redemption logged successfully!", "success", 4000);
-      updatePointsDisplay();
-    } else {
-      showToast("✅ Purchase logged successfully!", "success", 4000);
-    }
-
+    if (isRedeemOnly) { showToast("✅ Redemption logged successfully!", "success", 4000); updatePointsDisplay(); }
+    else { showToast("✅ Purchase logged successfully!", "success", 4000); }
 
   } catch (err) {
     console.error("checkout error", err);
@@ -2243,32 +1414,19 @@ else if ((isRedeemOnly || isQuacksOnly) && shippingUSD > 0) {
   }
 }
 
-  
 /* ===== ADD TO CART WITH QUACKS ===== */
 async function addToCartWithQuacks(productId, quacksCost) {
-  console.log("🪙 addToCartWithQuacks called with:", productId, quacksCost);
-
   const wallet = (userAddress || "").toLowerCase();
-  if (!wallet) {
-    showToast("Connect your wallet first.", "error");
-    return;
-  }
+  if (!wallet) { showToast("Connect your wallet first.", "error"); return; }
 
   const allProducts = Object.values(PRODUCTS).flat();
-  const product = allProducts.find(p =>
-    ((p.ID || p.id || "").toLowerCase() === productId.toLowerCase())
-  );
+  const product = allProducts.find(p => ((p.ID || p.id || "").toLowerCase() === productId.toLowerCase()));
+  if (!product) { showToast("Product not found", "error"); return; }
 
-  if (!product) {
-    console.log("Product not found:", productId, "Available IDs:", allProducts.map(p => p.ID || p.id));
-    showToast("Product not found", "error");
-    return;
-  }
-
-  const variantSel = document.getElementById(`variant_${productId}`);
-  const colorSel = document.getElementById(`color_${productId}`);
-  const sizeSel = document.getElementById(`size_${productId}`);
-  const customEl = document.getElementById(`custom_${productId}`);
+  const variantSel  = document.getElementById(`variant_${productId}`);
+  const colorSel    = document.getElementById(`color_${productId}`);
+  const sizeSel     = document.getElementById(`size_${productId}`);
+  const customEl    = document.getElementById(`custom_${productId}`);
   const customInput = customEl ? customEl.value.trim() : "";
 
   if ((product.CustomInput || product.customInput) && !customInput) {
@@ -2277,7 +1435,6 @@ async function addToCartWithQuacks(productId, quacksCost) {
     return;
   }
 
-  // Check user's Quacks balance
   const res = await fetch(`${CLAIM_SHEET_API}?wallet=${wallet}`);
   const data = await res.json();
   const userRow = data.find(u => (u.address || "").toLowerCase() === wallet);
@@ -2289,20 +1446,12 @@ async function addToCartWithQuacks(productId, quacksCost) {
   }
 
   cart.push({
-    id: productId,
-    title: product.Title || product.title,
-    price: 0,
-    priceUSD: 0,
-    q: 1,
-    redeem: false,
-    useQuacks: true,
-    quacksCost,
+    id: productId, title: product.Title || product.title,
+    price: 0, priceUSD: 0, q: 1, redeem: false, useQuacks: true, quacksCost,
     variant: variantSel ? variantSel.value : "",
     color: colorSel ? colorSel.value : "",
     size: sizeSel ? sizeSel.value : "",
-   thumb: (product.images && product.images.length) 
-         ? product.images[0] 
-         : (product.image ? product.image : "placeholder.png"),
+    thumb: (product.images && product.images.length) ? product.images[0] : (product.image ? product.image : "placeholder.png"),
     customInput
   });
 
@@ -2314,26 +1463,16 @@ async function addToCartWithQuacks(productId, quacksCost) {
 /* ===== REDEEM WITH POINTS ===== */
 async function redeemWithPoints(productId, cost) {
   const wallet = (userAddress || "").toLowerCase();
-  if (!wallet) {
-    showToast("Please connect your wallet first.", "error");
-    return;
-  }
+  if (!wallet) { showToast("Please connect your wallet first.", "error"); return; }
 
   const allProducts = Object.values(PRODUCTS).flat();
-  const product = allProducts.find(p =>
-    ((p.ID || p.id || "").toLowerCase() === productId.toLowerCase())
-  );
+  const product = allProducts.find(p => ((p.ID || p.id || "").toLowerCase() === productId.toLowerCase()));
+  if (!product) { showToast("Product not found", "error"); return; }
 
-  if (!product) {
-    console.log("Product not found:", productId, "Available IDs:", allProducts.map(p => p.ID || p.id));
-    showToast("Product not found", "error");
-    return;
-  }
-
-  const variantSel = document.getElementById(`variant_${productId}`);
-  const colorSel = document.getElementById(`color_${productId}`);
-  const sizeSel = document.getElementById(`size_${productId}`);
-  const customEl = document.getElementById(`custom_${productId}`);
+  const variantSel  = document.getElementById(`variant_${productId}`);
+  const colorSel    = document.getElementById(`color_${productId}`);
+  const sizeSel     = document.getElementById(`size_${productId}`);
+  const customEl    = document.getElementById(`custom_${productId}`);
   const customInput = customEl ? customEl.value.trim() : "";
 
   if ((product.CustomInput || product.customInput) && !customInput) {
@@ -2342,7 +1481,6 @@ async function redeemWithPoints(productId, cost) {
     return;
   }
 
-  // Check points balance from your API
   const checkRes = await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`);
   const checkData = await checkRes.json();
   const currentPoints = checkData.points || 0;
@@ -2353,25 +1491,15 @@ async function redeemWithPoints(productId, cost) {
   }
 
   const alreadyInCart = cart.find(i => (i.id || i.ID).toLowerCase() === productId.toLowerCase() && i.redeem);
-  if (alreadyInCart) {
-    showToast("Item already added for redemption.", "info");
-    return;
-  }
+  if (alreadyInCart) { showToast("Item already added for redemption.", "info"); return; }
 
   cart.push({
-    id: productId,
-    title: product.Title || product.title,
-    price: 0,
-    priceUSD: 0,
-    q: 1,
-    redeem: true,
-    cost,
+    id: productId, title: product.Title || product.title,
+    price: 0, priceUSD: 0, q: 1, redeem: true, cost,
     variant: variantSel ? variantSel.value : "",
     color: colorSel ? colorSel.value : "",
     size: sizeSel ? sizeSel.value : "",
-     thumb: (product.images && product.images.length) 
-         ? product.images[0] 
-         : (product.image ? product.image : "placeholder.png"),
+    thumb: (product.images && product.images.length) ? product.images[0] : (product.image ? product.image : "placeholder.png"),
     customInput
   });
 
@@ -2380,39 +1508,8 @@ async function redeemWithPoints(productId, cost) {
   if (typeof openCart === "function") openCart();
 }
 
-
-/* ===== MENU & overlay safety ===== */
-
-hideOverlay();
-
-/* ===== INIT ===== */
-document.addEventListener('DOMContentLoaded', async ()=>{
-  // load items from sheet first (will render category when loaded)
-  await loadProducts();
-  
-
-// --- shipping country listener ---
-document.addEventListener("DOMContentLoaded", () => {
-  const countrySelect = document.getElementById("shippingCountry");
-  if (countrySelect) {
-    // set global variable for selected country
-    window.selectedCountry = countrySelect.value;
-
-    countrySelect.addEventListener("change", (e) => {
-      window.selectedCountry = e.target.value.trim();
-      console.log("🌎 Country changed to:", window.selectedCountry);
-    });
-  } else {
-    console.warn("⚠️ shippingCountry select not found in DOM!");
-  }
-});
-
-
-});
-
-/* --- zoom follow helpers --- */
+/* ===== ATTACH ZOOM FOLLOW ===== */
 function attachZoomFollow(){
-  // only adjust carousel pointer events if you need
   document.querySelectorAll('.carousel').forEach(car => {
     car.querySelectorAll('img').forEach(im => {
       if (!im.classList.contains('active')) {
@@ -2428,169 +1525,7 @@ function attachZoomFollow(){
   });
 }
 
-   // Hide content until Enter is clicked
-  document.body.classList.add('loading');
-
-  const enterBtn = document.getElementById('enterBtn');
-  const introScreen = document.getElementById('introScreen');
-
-  enterBtn.addEventListener('click', () => {
-    introScreen.style.opacity = '0';
-    introScreen.style.visibility = 'hidden';
-    document.body.classList.remove('loading');
-    setTimeout(() => introScreen.remove(), 700);
-  });
-
-/* ===== SHOP MENU FIX (ESCAPE STACKING CONTEXT) ===== */
-document.addEventListener("DOMContentLoaded", () => {
-  const menuBtn = document.getElementById("menuBtn");
-  const shopMenu = document.getElementById("shopMenu");
-
-  if (!menuBtn || !shopMenu) return;
-
-  menuBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-
-    // Move dropdown to body to avoid blur/stacking issues
-    document.body.appendChild(shopMenu);
-
-    const rect = menuBtn.getBoundingClientRect();
-    shopMenu.style.position = "fixed";
-    shopMenu.style.top = `${rect.bottom + 6}px`;
-    shopMenu.style.left = `${rect.left}px`;
-    shopMenu.style.display =
-      shopMenu.style.display === "flex" ? "none" : "flex";
-    shopMenu.style.zIndex = "999999";
-  });
-
-  document.addEventListener("click", (e) => {
-    if (!menuBtn.contains(e.target) && !shopMenu.contains(e.target)) {
-      shopMenu.style.display = "none";
-    }
-  });
-
-  shopMenu.addEventListener("click", (e) => {
-    if (e.target.classList.contains("dropdown-item")) {
-      shopMenu.style.display = "none";
-    }
-  });
-});
-
-
-/* ===== PROFILE DROPDOWN FIX (POSITION + ANIMATION) ===== */
-document.addEventListener("DOMContentLoaded", () => {
-  const profileBtn = document.getElementById("profileBtn");
-  const profileSection = document.getElementById("profileSection");
-
-  if (!profileBtn || !profileSection) return;
-
-  profileBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    console.log("Profile button clicked");
-
-    const isVisible = profileSection.classList.contains("show");
-
-    if (isVisible) {
-      profileSection.classList.remove("show");
-      setTimeout(() => (profileSection.style.display = "none"), 200);
-      return;
-    }
-
-    // Move to body so it layers above blur
-    document.body.appendChild(profileSection);
-
-    profileSection.style.display = "block";
-    profileSection.style.position = "fixed";
-    profileSection.style.zIndex = "999999";
-
-    const rect = profileBtn.getBoundingClientRect();
-    const dropdownWidth = profileSection.offsetWidth || 200;
-
-    profileSection.style.top = `${rect.bottom + 6}px`;
-    profileSection.style.left = `${rect.right - dropdownWidth}px`;
-
-    requestAnimationFrame(() => {
-      profileSection.classList.add("show");
-    });
-  });
-
-  document.addEventListener("click", (e) => {
-    if (!profileSection.contains(e.target) && e.target !== profileBtn) {
-      profileSection.classList.remove("show");
-      setTimeout(() => (profileSection.style.display = "none"), 200);
-    }
-  });
-});
-
-
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".info-container").forEach(container => {
-    const icon = container.querySelector(".info-icon");
-    const tooltip = container.querySelector(".tooltip-text");
-
-    if (!icon || !tooltip) return;
-
-    icon.addEventListener("mouseenter", () => {
-      // move tooltip to body so it's not clipped by stacking context
-      document.body.appendChild(tooltip);
-
-      const rect = icon.getBoundingClientRect();
-      tooltip.style.position = "fixed";
-      tooltip.style.top = `${rect.bottom + 8}px`;
-      tooltip.style.left = `${rect.left + rect.width / 2}px`;
-      tooltip.style.transform = "translateX(-50%)";
-      tooltip.style.visibility = "visible";
-      tooltip.style.opacity = "1";
-      tooltip.style.pointerEvents = "auto";
-      tooltip.style.zIndex = "9999999";
-    });
-
-    icon.addEventListener("mouseleave", () => {
-      tooltip.style.opacity = "0";
-      tooltip.style.visibility = "hidden";
-      tooltip.style.pointerEvents = "none";
-
-      // return tooltip back inside its container for structure consistency
-      container.appendChild(tooltip);
-    });
-  });
-});
-
-   const shippingMessages = [
-  "🚚 Free Shipping on orders above $70!",
-  "💳 Easily Buy ETH, USDT/USDC",
-  "🦆 Collect Daily Quacks to redeem items.",
-  "⚠️ Shipping is only available in the US and Canada."
-];
-
-let currentMsgIndex = 0;
-const noticeEl = document.getElementById("shippingNotice");
-
-if (noticeEl) {
-  // Fix the height based on the first message
-  noticeEl.style.minHeight = noticeEl.offsetHeight + "px";
-  noticeEl.style.transition = "opacity 0.5s"; // smooth fade
-
-  function rotateShippingNotice() {
-    // Fade out
-    noticeEl.style.opacity = 0;
-
-    setTimeout(() => {
-      // Change message
-      currentMsgIndex = (currentMsgIndex + 1) % shippingMessages.length;
-      noticeEl.textContent = shippingMessages[currentMsgIndex];
-
-      // Fade in
-      noticeEl.style.opacity = 1;
-    }, 500); // fade duration matches CSS transition
-  }
-
-  // Rotate every 5 seconds
-  setInterval(rotateShippingNotice, 5000);
-}
-
-  
-
+/* ===== ORDER HISTORY ===== */
 async function loadOrderHistory() {
   const wallet = (userAddress || "").toLowerCase();
   const orderList = document.getElementById("orderList");
@@ -2602,7 +1537,6 @@ async function loadOrderHistory() {
     return;
   }
 
-  // Toggle visibility
   if (orderList.dataset.visible === "true") {
     orderList.style.maxHeight = "0";
     orderList.style.opacity = "0";
@@ -2637,7 +1571,6 @@ async function loadOrderHistory() {
       return;
     }
 
-    // ---------- GROUP ORDERS BY TIMESTAMP ----------
     const grouped = {};
     orders.forEach(o => {
       const key = o.Timestamp;
@@ -2645,32 +1578,15 @@ async function loadOrderHistory() {
       grouped[key].push(o);
     });
 
-    // Convert to array
     const groupedOrders = Object.entries(grouped).map(([timestamp, items]) => {
       const totalPoints = items.reduce((s, x) => s + (Number(x.PointsCost) || 0), 0);
       const totalQuacks = items.reduce((s, x) => s + (Number(x.QuacksCost) || 0), 0);
-      const totalUSD = items.reduce((s, x) => s + (Number(x.Price) || 0), 0);
-
-      return {
-        timestamp,
-        items,
-        totalItems: items.length,
-        totalPoints,
-        totalQuacks,
-        totalUSD,
-        progress: items[0].Progress || "Not Shipped"
-      };
+      const totalUSD    = items.reduce((s, x) => s + (Number(x.Price) || 0), 0);
+      return { timestamp, items, totalItems: items.length, totalPoints, totalQuacks, totalUSD, progress: items[0].Progress || "Not Shipped" };
     });
 
-    // ---------- BUILD HTML ----------
     let html = `
-      <div style="
-        overflow-x:auto;
-        padding:10px;
-        background:rgba(0,0,0,0.7);
-        border-radius:12px;
-        box-shadow:0 8px 24px rgba(0,0,0,0.3);
-      ">
+      <div style="overflow-x:auto;padding:10px;background:rgba(0,0,0,0.7);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.3);">
         <table style="width:100%;border-collapse:collapse;font-size:14px;color:#fff;">
           <thead style="background:rgba(255,255,255,0.1);">
             <tr>
@@ -2686,7 +1602,6 @@ async function loadOrderHistory() {
 
     groupedOrders.reverse().forEach((order, index) => {
       const dateStr = new Date(order.timestamp).toLocaleString();
-      
       let spent = "—";
       if (order.totalPoints > 0) spent = `${order.totalPoints} pts`;
       else if (order.totalQuacks > 0) spent = `${order.totalQuacks} 🦆`;
@@ -2699,14 +1614,12 @@ async function loadOrderHistory() {
           <td style="padding:10px 8px;text-align:right;">${spent}</td>
           <td style="padding:10px 8px;text-align:center;">${order.progress}</td>
           <td style="padding:10px 8px;text-align:center;">
-            <button class="expandOrderBtn" data-id="${index}" 
+            <button class="expandOrderBtn" data-id="${index}"
               style="padding:4px 10px;border-radius:6px;border:none;background:#ff7a00;color:#fff;cursor:pointer;">
               Expand
             </button>
           </td>
         </tr>
-
-        <!-- Hidden details row -->
         <tr class="orderDetailsRow" id="details-${index}" style="display:none;">
           <td colspan="5" style="padding:10px;background:rgba(255,255,255,0.06);">
             <div style="display:grid;gap:8px;">
@@ -2724,10 +1637,8 @@ async function loadOrderHistory() {
     });
 
     html += `</tbody></table></div>`;
-
     orderList.innerHTML = html;
 
-    // ---------- Add expand buttons ----------
     document.querySelectorAll(".expandOrderBtn").forEach(btn => {
       btn.addEventListener("click", () => {
         const id = btn.dataset.id;
@@ -2736,7 +1647,6 @@ async function loadOrderHistory() {
       });
     });
 
-    // Show with animation
     orderList.dataset.visible = "true";
     btn.textContent = "Hide My Orders";
     orderList.style.maxHeight = orderList.scrollHeight + "px";
@@ -2749,123 +1659,247 @@ async function loadOrderHistory() {
   }
 }
 
+/* ===== WEB3 WALLET ===== */
 let web3, provider, web3Modal, userAddress = null;
 
-// Only injected + WalletConnect
 const PROVIDER_OPTIONS = {
-  injected: { package: null }, // MetaMask, Rabby, etc.
+  injected: { package: null },
   walletconnect: {
-  package: window.WalletConnectProvider.default, // <-- note .default
-  options: {
-     rpc: {
-        1: "https://rpc.ankr.com/eth",        // Ethereum
-        137: "https://rpc.ankr.com/polygon",  // Polygon
-        8453: "https://mainnet.base.org"      // Base
-      },
-    qrcode: true
+    package: null, // set after deferred scripts load
+    options: {
+      rpc: { 1: "https://rpc.ankr.com/eth", 137: "https://rpc.ankr.com/polygon", 8453: "https://mainnet.base.org" },
+      qrcode: true
+    }
   }
-}
 };
 
-// Initialize Web3Modal
 function initWeb3Modal() {
   try {
+    // Deferred scripts may now be loaded
+    if (window.WalletConnectProvider && window.WalletConnectProvider.default) {
+      PROVIDER_OPTIONS.walletconnect.package = window.WalletConnectProvider.default;
+    }
     web3Modal = new window.Web3Modal.default({
-    cacheProvider: false,
-    providerOptions: PROVIDER_OPTIONS,
-    disableInjectedProvider: false,
-    theme: "light",
-    network: "mainnet"
-});
+      cacheProvider: false,
+      providerOptions: PROVIDER_OPTIONS,
+      disableInjectedProvider: false,
+      theme: "light",
+      network: "mainnet"
+    });
     console.log("✅ Web3Modal initialized");
-  } catch(err) {
-    console.error("❌ initWeb3Modal error:", err);
-  }
+  } catch(err) { console.error("❌ initWeb3Modal error:", err); }
 }
 
-// Connect wallet
 async function connectWallet() {
   try {
     if(!web3Modal) initWeb3Modal();
-
     provider = await web3Modal.connect();
     if(!provider) return alert("No wallet selected");
-
     web3 = new Web3(provider);
     const accounts = await web3.eth.getAccounts();
     if(!accounts || !accounts.length) return alert("No accounts found");
-
     userAddress = accounts[0].toLowerCase();
     console.log("Connected:", userAddress);
-
     document.getElementById("connectBtn").style.display = "none";
     document.getElementById("profileBtn").style.display = "inline-block";
-
-
-    // Listen for changes
     if(provider.on){
       provider.on("accountsChanged", accounts => {
         if(accounts && accounts.length) userAddress = accounts[0].toLowerCase();
         else disconnectWallet();
       });
-
-      
       provider.on("disconnect", () => disconnectWallet());
     }
-
   } catch(err){
     console.error(err);
     alert("Wallet connection failed");
   }
 }
 
-// Disconnect wallet
 function disconnectWallet(){
   if(web3Modal && web3Modal.clearCachedProvider) web3Modal.clearCachedProvider();
   if(provider && provider.disconnect) provider.disconnect();
-
   web3 = provider = userAddress = null;
-
   document.getElementById("connectBtn").style.display = "inline-block";
   document.getElementById("profileBtn").style.display = "none";
   document.getElementById("profileSection").style.display = "none";
-
   console.log("Wallet disconnected");
 }
-  
-// DOM ready
-window.addEventListener("load", () => {
-  initWeb3Modal();
 
-  const btn = document.getElementById("connectBtn");
-  if(btn) btn.addEventListener("click", connectWallet);
+/* ===== INIT ===== */
+document.body.classList.add('loading');
 
-  const disconnectBtn = document.querySelector("#profileSection button.disconnect");
-  if(disconnectBtn) disconnectBtn.addEventListener("click", disconnectWallet);
- 
+const enterBtn = document.getElementById('enterBtn');
+const introScreen = document.getElementById('introScreen');
+
+enterBtn.addEventListener('click', () => {
+  introScreen.style.opacity = '0';
+  introScreen.style.visibility = 'hidden';
+  document.body.classList.remove('loading');
+  setTimeout(() => introScreen.remove(), 700);
 });
-  
-document.addEventListener("DOMContentLoaded", function () {
 
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadProducts();
+
+  // Shipping country listener
+  const countrySelect = document.getElementById("shippingCountry");
+  if (countrySelect) {
+    window.selectedCountry = countrySelect.value;
+    countrySelect.addEventListener("change", (e) => {
+      window.selectedCountry = e.target.value.trim();
+    });
+  }
+});
+
+/* ===== SHOP MENU TOGGLE — class-based, GPU-accelerated ===== */
+document.addEventListener("DOMContentLoaded", () => {
+  const menuBtn  = document.getElementById("menuBtn");
+  const shopMenu = document.getElementById("shopMenu");
+  if (!menuBtn || !shopMenu) return;
+
+  // Position dropdown under the button
+  menuBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    document.body.appendChild(shopMenu); // escape stacking context
+    const rect = menuBtn.getBoundingClientRect();
+    shopMenu.style.top  = `${rect.bottom + 6}px`;
+    shopMenu.style.left = `${rect.left}px`;
+    shopMenu.classList.toggle("open");
+  });
+
+  // Close when clicking outside
+  document.addEventListener("click", (e) => {
+    if (!menuBtn.contains(e.target) && !shopMenu.contains(e.target)) {
+      shopMenu.classList.remove("open");
+    }
+  });
+
+  // Close on item click (class-based — no display:none flash)
+  shopMenu.addEventListener("click", (e) => {
+    if (e.target.classList.contains("dropdown-item")) {
+      shopMenu.classList.remove("open");
+    }
+  });
+});
+
+/* ===== PROFILE DROPDOWN ===== */
+document.addEventListener("DOMContentLoaded", () => {
+  const profileBtn     = document.getElementById("profileBtn");
+  const profileSection = document.getElementById("profileSection");
+  if (!profileBtn || !profileSection) return;
+
+  profileBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isVisible = profileSection.classList.contains("show");
+    if (isVisible) {
+      profileSection.classList.remove("show");
+      setTimeout(() => (profileSection.style.display = "none"), 200);
+      return;
+    }
+    document.body.appendChild(profileSection);
+    profileSection.style.display = "block";
+    profileSection.style.position = "fixed";
+    profileSection.style.zIndex = "999999";
+    const rect = profileBtn.getBoundingClientRect();
+    const dropdownWidth = profileSection.offsetWidth || 200;
+    profileSection.style.top  = `${rect.bottom + 6}px`;
+    profileSection.style.left = `${rect.right - dropdownWidth}px`;
+    requestAnimationFrame(() => profileSection.classList.add("show"));
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!profileSection.contains(e.target) && e.target !== profileBtn) {
+      profileSection.classList.remove("show");
+      setTimeout(() => (profileSection.style.display = "none"), 200);
+    }
+  });
+});
+
+/* ===== TOOLTIP ===== */
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".info-container").forEach(container => {
+    const icon    = container.querySelector(".info-icon");
+    const tooltip = container.querySelector(".tooltip-text");
+    if (!icon || !tooltip) return;
+
+    icon.addEventListener("mouseenter", () => {
+      document.body.appendChild(tooltip);
+      const rect = icon.getBoundingClientRect();
+      tooltip.style.position   = "fixed";
+      tooltip.style.top        = `${rect.bottom + 8}px`;
+      tooltip.style.left       = `${rect.left + rect.width / 2}px`;
+      tooltip.style.transform  = "translateX(-50%)";
+      tooltip.style.visibility = "visible";
+      tooltip.style.opacity    = "1";
+      tooltip.style.pointerEvents = "auto";
+      tooltip.style.zIndex     = "9999999";
+    });
+
+    icon.addEventListener("mouseleave", () => {
+      tooltip.style.opacity    = "0";
+      tooltip.style.visibility = "hidden";
+      tooltip.style.pointerEvents = "none";
+      container.appendChild(tooltip);
+    });
+  });
+});
+
+/* ===== SHIPPING NOTICE ROTATOR ===== */
+const shippingMessages = [
+  "🚚 Free Shipping on orders above $70!",
+  "💳 Easily Buy ETH, USDT/USDC",
+  "🦆 Collect Daily Quacks to redeem items.",
+  "⚠️ Shipping is only available in the US and Canada."
+];
+
+let currentMsgIndex = 0;
+const noticeEl = document.getElementById("shippingNotice");
+
+if (noticeEl) {
+  noticeEl.style.minHeight = noticeEl.offsetHeight + "px";
+  noticeEl.style.transition = "opacity 0.5s";
+
+  function rotateShippingNotice() {
+    noticeEl.style.opacity = 0;
+    setTimeout(() => {
+      currentMsgIndex = (currentMsgIndex + 1) % shippingMessages.length;
+      noticeEl.textContent = shippingMessages[currentMsgIndex];
+      noticeEl.style.opacity = 1;
+    }, 500);
+  }
+
+  setInterval(rotateShippingNotice, 5000);
+}
+
+/* ===== LEADERBOARD TOGGLE ===== */
+document.addEventListener("DOMContentLoaded", function () {
   loadLeaderboard();
 
-  const toggle = document.getElementById("leaderboardToggle");
-  const panel = document.getElementById("leaderboardPanel");
+  const toggle  = document.getElementById("leaderboardToggle");
+  const panel   = document.getElementById("leaderboardPanel");
   const closeBtn = document.getElementById("closeLeaderboard");
 
   toggle.addEventListener("click", () => {
     panel.classList.add("open");
-    toggle.style.display = "none"; // hide button
+    toggle.style.display = "none";
   });
 
   closeBtn.addEventListener("click", () => {
     panel.classList.remove("open");
-    toggle.style.display = "block"; // show button again
+    toggle.style.display = "block";
   });
-
 });
 
+/* ===== WALLET LOAD ===== */
+window.addEventListener("load", () => {
+  // Small delay to let deferred scripts finish loading
+  setTimeout(() => {
+    initWeb3Modal();
+    const btn = document.getElementById("connectBtn");
+    if(btn) btn.addEventListener("click", connectWallet);
+  }, 500);
+});
 </script>
- 
+
 </body>
 </html>
