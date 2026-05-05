@@ -43,7 +43,7 @@
     #shippingNotice{position:relative;z-index:200;background:rgba(31,191,115,.1);border-bottom:1px solid rgba(31,191,115,.18);color:var(--green);text-align:center;padding:9px 20px;font-size:13px;font-weight:500;letter-spacing:.02em;transition:opacity .5s}
 
     /* ===== HEADER ===== */
-    header{position:sticky;top:0;z-index:99999;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:#66c7c4;border-bottom:1px solid rgba(0,0,0,0.1);transition:background .3s;box-shadow:0 4px 20px rgba(0,0,0,0.15)}
+    header{position:sticky;top:0;z-index:100000;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:#66c7c4;border-bottom:1px solid rgba(0,0,0,0.1);transition:background .3s;box-shadow:0 4px 20px rgba(0,0,0,0.15)}
     .header-brand{display:flex;align-items:center;gap:11px;text-decoration:none}
     .header-logo{height:36px;width:auto;border-radius:9px}
     .header-title{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:#fff;letter-spacing:-.02em}
@@ -60,7 +60,7 @@
 
     /* ===== SHOP MENU ===== */
     .shop-controls{position:relative}
-    #shopMenu{position:fixed;background:#1a2535;border:1px solid rgba(255,255,255,0.12);border-radius:var(--r-md);padding:6px;min-width:190px;z-index:99998;display:flex;flex-direction:column;gap:2px;opacity:0;visibility:hidden;transform:translateY(-8px) scale(.97);transition:opacity .18s,transform .18s,visibility .18s;box-shadow:0 20px 60px rgba(0,0,0,.55)}
+    #shopMenu{position:fixed;background:#1a2535;border:1px solid rgba(255,255,255,0.14);border-radius:var(--r-md);padding:6px;min-width:190px;z-index:99998;display:flex;flex-direction:column;gap:2px;opacity:0;visibility:hidden;transform:translateY(-6px) scale(.97);transition:opacity .18s,transform .18s,visibility .18s;box-shadow:0 20px 60px rgba(0,0,0,.6)}
     #shopMenu.open{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
     .dropdown-item{padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:var(--muted);border-radius:var(--r-sm);transition:all .15s;display:flex;align-items:center;gap:8px}
     .dropdown-item:hover{background:rgba(31,191,115,.1);color:var(--green)}
@@ -417,7 +417,7 @@ async function loadProducts(){
       },{});
       const sm=document.getElementById("shopMenu");
       if(sm){
-        sm.innerHTML=Object.keys(PRODUCTS).map(cat=>`<button class="dropdown-item" onclick="showCategory('${cat}');this.closest('#shopMenu').classList.remove('open')">${cat}</button>`).join("");
+        sm.innerHTML=Object.keys(PRODUCTS).map(cat=>`<button class="dropdown-item" onclick="showCategory('${cat}')">${cat}</button>`).join("");
       }
       if(!currentCategory)document.getElementById("items").innerHTML="";else await showCategory(currentCategory);
     }
@@ -641,15 +641,20 @@ document.addEventListener("DOMContentLoaded",()=>{
   if(menuBtn&&shopMenu){
     menuBtn.addEventListener("click",(e)=>{
       e.stopPropagation();
-      if(shopMenu.parentElement!==document.body) document.body.appendChild(shopMenu);
-      const r=menuBtn.getBoundingClientRect();
-      const headerBottom = document.querySelector('header').getBoundingClientRect().bottom;
-      shopMenu.style.top=`${headerBottom + 6}px`;
-      shopMenu.style.left=`${r.left}px`;
-      shopMenu.classList.toggle("open");
+      const isOpen = shopMenu.classList.contains("open");
+      if(isOpen){ shopMenu.classList.remove("open"); return; }
+      // Recalculate position fresh every time from the button's current position
+      const r = menuBtn.getBoundingClientRect();
+      shopMenu.style.top  = (r.bottom + 8) + "px";
+      shopMenu.style.left = r.left + "px";
+      shopMenu.classList.add("open");
     });
-    document.addEventListener("click",(e)=>{if(!menuBtn.contains(e.target)&&!shopMenu.contains(e.target))shopMenu.classList.remove("open");});
-    shopMenu.addEventListener("click",(e)=>{if(e.target.classList.contains("dropdown-item"))shopMenu.classList.remove("open");});
+    document.addEventListener("click",(e)=>{
+      if(!menuBtn.contains(e.target)&&!shopMenu.contains(e.target)) shopMenu.classList.remove("open");
+    });
+    shopMenu.addEventListener("click",(e)=>{
+      if(e.target.classList.contains("dropdown-item")) shopMenu.classList.remove("open");
+    });
   }
 
   const pb=document.getElementById("profileBtn"),ps=document.getElementById("profileSection");
