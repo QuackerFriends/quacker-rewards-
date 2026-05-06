@@ -41,14 +41,7 @@
     #shippingNotice{position:relative;z-index:200;background:rgba(31,191,115,.1);border-bottom:1px solid rgba(31,191,115,.18);color:var(--green);text-align:center;padding:9px 20px;font-size:13px;font-weight:500;transition:opacity .5s}
 
     /* HEADER */
-    header{position:sticky;top:0;z-index:100000;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:var(--teal);border-bottom:1px solid rgba(0,0,0,.1);box-shadow:0 4px 20px rgba(0,0,0,.15);overflow:visible}
-
-    /* SHOP MENU DROPDOWN */
-    .shop-controls{position:relative;display:inline-block}
-    #shopMenu{display:none;position:fixed;background:#1a2535;border:1px solid rgba(255,255,255,.18);border-radius:var(--r-md);padding:6px;min-width:190px;z-index:200000;flex-direction:column;gap:2px;box-shadow:0 16px 50px rgba(0,0,0,.7)}
-    #shopMenu.open{display:flex}
-    .dropdown-item{padding:11px 15px;border:none;background:transparent;text-align:left;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#c8cfe0;border-radius:var(--r-sm);transition:background .15s,color .15s;width:100%}
-    .dropdown-item:hover{background:rgba(31,191,115,.15);color:var(--green)}
+    header{position:sticky;top:0;z-index:100000;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:var(--teal);border-bottom:1px solid rgba(0,0,0,.1);box-shadow:0 4px 20px rgba(0,0,0,.15)}
     .header-brand{display:flex;align-items:center;gap:11px;text-decoration:none}
     .header-logo{height:36px;width:auto;border-radius:9px}
     .header-title{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:#fff;letter-spacing:-.02em}
@@ -63,6 +56,13 @@
     .btn-green{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3)}
     .btn-green:hover{background:rgba(255,255,255,.32);transform:translateY(-1px)}
 
+    /* SHOP MENU */
+    .shop-controls{position:relative;display:inline-block}
+    #shopMenu{display:none;position:fixed;background:#1a2535;border:1px solid rgba(255,255,255,.18);border-radius:var(--r-md);padding:6px;min-width:190px;z-index:99998;flex-direction:column;gap:2px;box-shadow:0 16px 50px rgba(0,0,0,.65)}
+    #shopMenu.open{display:flex!important}
+    .dropdown-item{padding:11px 15px;border:none;background:transparent;text-align:left;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#c8cfe0;border-radius:var(--r-sm);transition:background .15s,color .15s;width:100%}
+    .dropdown-item:hover{background:rgba(31,191,115,.15);color:var(--green)}
+
     /* HEADER BADGES */
     .info-container{display:inline-flex;align-items:center;gap:7px;color:#fff;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.2);padding:7px 13px;border-radius:var(--r-xl);font-size:13px;font-weight:500;position:relative;cursor:default;white-space:nowrap}
     .info-icon{font-size:14px}
@@ -75,15 +75,17 @@
     body.blur-bg #blurOverlay{opacity:1;pointer-events:auto}
     header,#shippingNotice,main,#auctionSection,footer,#profileSection,.cart-modal,.modal-backdrop,#shopMenu,#toast-container{position:relative;z-index:200}
 
-    /* MAIN */
+    /* MAIN — shop items float over page, don't push content down */
     main{padding:0;max-width:var(--max-w);margin:0 auto;width:100%;position:relative;z-index:10}
-
-    /* SHOP OVERLAY — hidden until a category is picked */
-    #shopOverlayBg{display:none;position:fixed;top:66px;left:0;right:0;bottom:0;background:rgba(13,17,25,.88);backdrop-filter:blur(4px);z-index:8999}
-    #shopOverlayBg.active{display:block}
-    #shopOverlay{display:none;position:fixed;top:66px;left:0;right:0;bottom:0;z-index:9000;overflow-y:auto}
-    #shopOverlay.active{display:block}
-    #shopOverlayInner{max-width:var(--max-w);margin:0 auto;padding:24px 24px 60px}
+    #shopOverlay{position:fixed;top:66px;left:0;right:0;bottom:0;z-index:9000;pointer-events:none;overflow-y:auto}
+    #shopOverlay.active{pointer-events:auto}
+    #shopOverlayInner{max-width:var(--max-w);margin:0 auto;padding:24px 24px 40px;min-height:100%}
+    #shopOverlayBg{position:fixed;top:66px;left:0;right:0;bottom:0;background:rgba(13,17,25,.96);backdrop-filter:blur(6px);z-index:8999;opacity:0;pointer-events:none;transition:opacity .25s}
+    #shopOverlayBg.active{opacity:1;pointer-events:auto}
+    .shop-close-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+    .shop-close-bar h3{font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:700;color:#fff}
+    .shop-close-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(255,255,255,.08);border:1px solid var(--border-hover);border-radius:var(--r-xl);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+    .shop-close-btn:hover{background:rgba(255,255,255,.14);color:#fff}
     .shop-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
 
     /* PRODUCT CARD */
@@ -360,11 +362,15 @@
   <!-- Shop overlay content -->
   <div id="shopOverlay">
     <div id="shopOverlayInner">
+      <div class="shop-close-bar">
+        <h3 id="shopCategoryTitle">Shop</h3>
+        <button class="shop-close-btn" onclick="closeShopOverlay()">✕ Close Shop</button>
+      </div>
       <section id="items" class="shop-container"></section>
     </div>
   </div>
 
-  <!-- Main placeholder -->
+  <!-- Main (empty placeholder so page structure holds) -->
   <main id="mainContent" style="display:none"></main>
 
   <!-- Auction Section -->
@@ -545,14 +551,13 @@ async function loadProducts(){
 function openShopOverlay(catName){
   document.getElementById("shopOverlay").classList.add("active");
   document.getElementById("shopOverlayBg").classList.add("active");
-  document.getElementById("menuBtn").textContent="✕ Close";
+  document.getElementById("shopCategoryTitle").textContent=catName;
   document.body.style.overflow="hidden";
 }
 function closeShopOverlay(){
   document.getElementById("shopOverlay").classList.remove("active");
   document.getElementById("shopOverlayBg").classList.remove("active");
   document.getElementById("items").innerHTML="";
-  document.getElementById("menuBtn").textContent="Shop ▾";
   document.body.style.overflow="";
   currentCategory=null;
 }
@@ -935,20 +940,17 @@ document.getElementById("enterBtn").addEventListener("click",()=>{
 
 /* ===== SHOP MENU ===== */
 document.addEventListener("DOMContentLoaded",()=>{
+  // Move shopMenu to body once — keeps it out of header layout
+  const _sm=document.getElementById("shopMenu");if(_sm)document.body.appendChild(_sm);
   const menuBtn=document.getElementById("menuBtn"),shopMenu=document.getElementById("shopMenu");
   if(menuBtn&&shopMenu){
     menuBtn.addEventListener("click",(e)=>{
       e.stopPropagation();
-      // If shop overlay is open, close it
-      if(document.getElementById("shopOverlay").classList.contains("active")){
-        closeShopOverlay();
-        return;
-      }
-      // Toggle dropdown — compute position fresh each click
       if(shopMenu.classList.contains("open")){shopMenu.classList.remove("open");return;}
       const r=menuBtn.getBoundingClientRect();
-      shopMenu.style.top=(r.bottom+6)+"px";
-      shopMenu.style.left=r.left+"px";
+      // Always position relative to button bottom — header is sticky so r.bottom is always correct
+      shopMenu.style.setProperty("top",(r.bottom+6)+"px","important");
+      shopMenu.style.setProperty("left",r.left+"px","important");
       shopMenu.classList.add("open");
     });
     document.addEventListener("click",(e)=>{if(!shopMenu.contains(e.target)&&e.target!==menuBtn)shopMenu.classList.remove("open");});
