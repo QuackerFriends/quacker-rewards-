@@ -1,23 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Quacker Friends Shop</title>
-
   <script defer src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
   <script defer src="https://unpkg.com/web3@1.8.2/dist/web3.min.js"></script>
   <script defer src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
-
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
-
   <style>
     .web3modal-modal-lightbox,.web3modal-modal-container{z-index:99999!important;pointer-events:auto!important}
     :root{
       --orange:#ff7b2c;--orange-light:#ff914d;--orange-glow:rgba(255,123,44,0.22);
       --green:#1fbf73;--green-dark:#179959;--green-glow:rgba(31,191,115,0.18);
-      --dark:#0d1119;--dark-card:#131720;--dark-card2:#181e2c;
+      --teal:#66c7c4;
+      --dark:#0d1119;--dark-card:#131720;
       --border:rgba(255,255,255,0.07);--border-hover:rgba(255,255,255,0.13);
       --text:#eef0f5;--muted:#7a8099;--dim:#444c62;
       --r-sm:10px;--r-md:16px;--r-lg:22px;--r-xl:32px;
@@ -29,78 +27,70 @@
     body::before{content:"";position:fixed;inset:0;background:url('https://quackerfriends.github.io/quackheads-assets/images/brandimages/Inside.png') center/cover no-repeat;opacity:.06;z-index:0;pointer-events:none}
     body::after{content:"";position:fixed;inset:0;background:radial-gradient(ellipse 90% 55% at 50% -5%,rgba(31,191,115,.1) 0%,transparent 65%),radial-gradient(ellipse 55% 40% at 95% 85%,rgba(255,123,44,.07) 0%,transparent 60%);z-index:0;pointer-events:none}
 
-    /* ===== INTRO ===== */
-    #introScreen{position:fixed;inset:0;background:var(--dark);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9000;transition:opacity .9s ease,visibility .9s ease;gap:28px}
+    /* INTRO */
+    #introScreen{position:fixed;inset:0;background:var(--dark);display:flex;align-items:center;justify-content:center;z-index:9000;transition:opacity .9s,visibility .9s}
     #introScreen::before{content:"";position:absolute;inset:0;background:url('https://quackerfriends.github.io/quackheads-assets/images/brandimages/Enter.png') center/cover no-repeat;opacity:.3}
     .intro-content{position:relative;display:flex;flex-direction:column;align-items:center;gap:24px;text-align:center}
     .intro-logo{width:88px;height:88px;border-radius:22px;animation:pulse-logo 3s ease-in-out infinite;box-shadow:0 0 50px var(--green-glow)}
     @keyframes pulse-logo{0%,100%{box-shadow:0 0 40px var(--green-glow)}50%{box-shadow:0 0 80px rgba(31,191,115,.4)}}
     .intro-title{font-family:'Space Grotesk',sans-serif;font-size:2.3rem;font-weight:700;letter-spacing:-.03em;background:linear-gradient(135deg,#fff 30%,var(--green) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-    .enter-btn{display:inline-flex;align-items:center;gap:10px;padding:14px 36px;background:var(--green);color:#fff;border:none;border-radius:var(--r-xl);font-family:'Inter',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:all .25s;box-shadow:0 8px 30px var(--green-glow);letter-spacing:.01em}
-    .enter-btn:hover{background:var(--green-dark);transform:translateY(-2px);box-shadow:0 14px 40px rgba(31,191,115,.38)}
+    .enter-btn{display:inline-flex;align-items:center;gap:10px;padding:14px 36px;background:var(--green);color:#fff;border:none;border-radius:var(--r-xl);font-family:'Inter',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:all .25s;box-shadow:0 8px 30px var(--green-glow)}
+    .enter-btn:hover{background:var(--green-dark);transform:translateY(-2px)}
 
-    /* ===== SHIPPING NOTICE ===== */
-    #shippingNotice{position:relative;z-index:200;background:rgba(31,191,115,.1);border-bottom:1px solid rgba(31,191,115,.18);color:var(--green);text-align:center;padding:9px 20px;font-size:13px;font-weight:500;letter-spacing:.02em;transition:opacity .5s}
+    /* SHIPPING NOTICE */
+    #shippingNotice{position:relative;z-index:200;background:rgba(31,191,115,.1);border-bottom:1px solid rgba(31,191,115,.18);color:var(--green);text-align:center;padding:9px 20px;font-size:13px;font-weight:500;transition:opacity .5s}
 
-    /* ===== HEADER ===== */
-    header{position:sticky;top:0;z-index:100000;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:#66c7c4;border-bottom:1px solid rgba(0,0,0,0.1);transition:background .3s;box-shadow:0 4px 20px rgba(0,0,0,0.15)}
+    /* HEADER */
+    header{position:sticky;top:0;z-index:100000;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:var(--teal);border-bottom:1px solid rgba(0,0,0,.1);box-shadow:0 4px 20px rgba(0,0,0,.15)}
     .header-brand{display:flex;align-items:center;gap:11px;text-decoration:none}
     .header-logo{height:36px;width:auto;border-radius:9px}
     .header-title{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:#fff;letter-spacing:-.02em}
-    .header-actions{display:flex;align-items:center;gap:9px}
+    .header-actions{display:flex;align-items:center;gap:9px;flex-wrap:nowrap}
 
-    /* ===== BUTTONS ===== */
+    /* BUTTONS */
     .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border:none;border-radius:var(--r-xl);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
     .btn-primary{background:var(--orange);color:#fff;box-shadow:0 4px 16px var(--orange-glow)}
-    .btn-primary:hover{background:var(--orange-light);transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,123,44,.38)}
-    .btn-green{background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.3)}
-    .btn-green:hover{background:rgba(255,255,255,0.32);transform:translateY(-1px)}
-    .btn-ghost{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.25)}
-    .btn-ghost:hover{background:rgba(255,255,255,0.28);border-color:rgba(255,255,255,0.4)}
+    .btn-primary:hover{background:var(--orange-light);transform:translateY(-1px)}
+    .btn-ghost{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25)}
+    .btn-ghost:hover{background:rgba(255,255,255,.28)}
+    .btn-green{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3)}
+    .btn-green:hover{background:rgba(255,255,255,.32);transform:translateY(-1px)}
 
-    /* ===== SHOP MENU ===== */
+    /* SHOP MENU */
     .shop-controls{position:relative;display:inline-block}
-    #shopMenu{position:fixed !important;top:80px;left:0;background:#1a2535;border:1px solid rgba(255,255,255,0.18);border-radius:var(--r-md);padding:6px;min-width:190px;z-index:99998;flex-direction:column;gap:2px;box-shadow:0 16px 50px rgba(0,0,0,.65);display:none}
-    #shopMenu.open{display:flex !important}
+    #shopMenu{display:none;position:fixed;background:#1a2535;border:1px solid rgba(255,255,255,.18);border-radius:var(--r-md);padding:6px;min-width:190px;z-index:99998;flex-direction:column;gap:2px;box-shadow:0 16px 50px rgba(0,0,0,.65)}
+    #shopMenu.open{display:flex!important}
     .dropdown-item{padding:11px 15px;border:none;background:transparent;text-align:left;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#c8cfe0;border-radius:var(--r-sm);transition:background .15s,color .15s;width:100%}
     .dropdown-item:hover{background:rgba(31,191,115,.15);color:var(--green)}
 
-    /* ===== INFO BADGE ===== */
-    .info-container{display:inline-flex;align-items:center;gap:7px;color:#fff;background:rgba(0,0,0,0.18);border:1px solid rgba(255,255,255,0.2);padding:7px 13px;border-radius:var(--r-xl);font-size:13px;font-weight:500;position:relative;cursor:default}
-    .info-icon{color:#ffe0a0;font-size:14px}
-    .tooltip-text{visibility:hidden;opacity:0;position:fixed;background:#16202e;border:1px solid var(--border-hover);color:var(--text);text-align:center;padding:8px 12px;border-radius:var(--r-sm);font-size:12px;width:210px;transition:opacity .2s;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.4);z-index:9999999;line-height:1.5}
+    /* HEADER BADGES */
+    .info-container{display:inline-flex;align-items:center;gap:7px;color:#fff;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.2);padding:7px 13px;border-radius:var(--r-xl);font-size:13px;font-weight:500;position:relative;cursor:default;white-space:nowrap}
+    .info-icon{font-size:14px}
+    .info-icon.orange{color:#ffe0a0}
+    .info-icon.yellow{color:#ffd700}
+    .tooltip-text{visibility:hidden;opacity:0;position:fixed;background:#16202e;border:1px solid var(--border-hover);color:var(--text);text-align:center;padding:8px 12px;border-radius:var(--r-sm);font-size:12px;width:210px;transition:opacity .2s;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.4);z-index:200000;line-height:1.5}
 
-    /* ===== BLUR OVERLAY ===== */
+    /* BLUR */
     #blurOverlay{position:fixed;inset:0;backdrop-filter:blur(12px) brightness(.5);background:rgba(0,0,0,.4);z-index:50;opacity:0;pointer-events:none;transition:opacity .3s}
     body.blur-bg #blurOverlay{opacity:1;pointer-events:auto}
-    header,#shippingNotice,main,footer,#profileSection,.cart-modal,.modal-backdrop,#shopMenu,#toast-container{position:relative;z-index:200}
+    header,#shippingNotice,main,#auctionSection,footer,#profileSection,.cart-modal,.modal-backdrop,#shopMenu,#toast-container{position:relative;z-index:200}
 
-    /* ===== MAIN ===== */
-    main{flex:1;padding:40px 24px 80px;max-width:var(--max-w);margin:0 auto;width:100%}
+    /* MAIN */
+    main{flex:1;padding:40px 24px 40px;max-width:var(--max-w);margin:0 auto;width:100%}
 
-    /* ===== CATEGORY HEADER ===== */
-    .cat-header{display:flex;align-items:center;gap:14px;margin-bottom:30px;animation:slide-up .3s ease}
-    .cat-header h2{font-family:'Space Grotesk',sans-serif;font-size:1.85rem;font-weight:700;letter-spacing:-.03em;color:#fff}
-    .cat-badge{background:rgba(31,191,115,.14);color:var(--green);border:1px solid rgba(31,191,115,.22);border-radius:var(--r-xl);padding:4px 12px;font-size:12px;font-weight:600}
-    @keyframes slide-up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-
-    /* ===== SHOP GRID ===== */
+    /* SHOP GRID */
     .shop-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
 
-    /* ===== PRODUCT CARD ===== */
+    /* PRODUCT CARD */
     .item{background:var(--dark-card);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;display:flex;flex-direction:column;transition:border-color .25s,transform .25s,box-shadow .25s;animation:card-in .4s ease both}
     @keyframes card-in{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
     .item:nth-child(2){animation-delay:.05s}.item:nth-child(3){animation-delay:.1s}.item:nth-child(4){animation-delay:.15s}.item:nth-child(5){animation-delay:.2s}.item:nth-child(6){animation-delay:.25s}
     .item:hover{border-color:rgba(31,191,115,.28);transform:translateY(-4px);box-shadow:0 20px 50px rgba(0,0,0,.32),0 0 0 1px rgba(31,191,115,.09)}
-
-    /* image */
     .item-image-wrap{position:relative;aspect-ratio:1/1;background:#161c2a;overflow:hidden}
     .item-image-wrap img{width:100%;height:100%;object-fit:contain;cursor:zoom-in;transition:transform .4s}
     .item:hover .item-image-wrap img{transform:scale(1.045)}
-    .zoom-hint{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.58);color:#fff;border-radius:8px;padding:5px 9px;font-size:11px;font-weight:500;opacity:0;transition:opacity .2s;pointer-events:none;backdrop-filter:blur(4px)}
+    .zoom-hint{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.58);color:#fff;border-radius:8px;padding:5px 9px;font-size:11px;opacity:0;transition:opacity .2s;pointer-events:none;backdrop-filter:blur(4px)}
     .item:hover .zoom-hint{opacity:1}
-
-    /* slider */
     .image-slider{position:relative;aspect-ratio:1/1;background:#161c2a;overflow:hidden}
     .image-slider img{width:100%;height:100%;object-fit:contain;display:none;cursor:zoom-in;transition:transform .4s}
     .image-slider img.active{display:block}
@@ -111,42 +101,38 @@
     .slide-dots{position:absolute;bottom:9px;left:50%;transform:translateX(-50%);display:flex;gap:5px}
     .slide-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.28);transition:all .2s;cursor:pointer}
     .slide-dot.active{background:var(--green);width:14px;border-radius:3px}
-
-    /* card body */
     .item-body{padding:18px 18px 20px;display:flex;flex-direction:column;flex:1;gap:10px}
     .item-title{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff;letter-spacing:-.02em}
     .item-desc{font-size:13px;color:var(--muted);line-height:1.55}
     .item-price{font-size:15px;font-weight:700;color:var(--orange-light)}
     .item-selects{display:flex;flex-direction:column;gap:7px}
-
     .styled-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:3px}
-    .styled-select{width:100%;padding:9px 32px 9px 11px;background:#1e2a3a;border:1px solid rgba(255,255,255,0.15);border-radius:var(--r-sm);color:#eef0f5;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;transition:border-color .2s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a8099' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center}
+    .styled-select{width:100%;padding:9px 32px 9px 11px;background:#1e2a3a;border:1px solid rgba(255,255,255,.15);border-radius:var(--r-sm);color:#eef0f5;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;transition:border-color .2s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a8099' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center}
     .styled-select:hover,.styled-select:focus{border-color:var(--green);outline:none}
     .styled-select option{background:#1e2a3a;color:#eef0f5}
-    .styled-input{width:100%;padding:9px 11px;background:#1e2a3a;border:1px solid rgba(255,255,255,0.15);border-radius:var(--r-sm);color:#eef0f5;font-family:'Inter',sans-serif;font-size:13px;transition:border-color .2s}
+    .styled-input{width:100%;padding:9px 11px;background:#1e2a3a;border:1px solid rgba(255,255,255,.15);border-radius:var(--r-sm);color:#eef0f5;font-family:'Inter',sans-serif;font-size:13px;transition:border-color .2s}
     .styled-input:focus{border-color:var(--green);outline:none}
     .styled-input::placeholder{color:var(--dim)}
-
     .item-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
     .btn-add-cart{flex:1;padding:10px 14px;background:var(--orange);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
     .btn-add-cart:hover{background:var(--orange-light);transform:translateY(-1px)}
     .btn-quacks{flex:1;padding:10px 14px;background:rgba(31,191,115,.13);color:var(--green);border:1px solid rgba(31,191,115,.22);border-radius:var(--r-sm);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
-    .btn-quacks:hover{background:var(--green);color:#fff;border-color:var(--green)}
+    .btn-quacks:hover{background:var(--green);color:#fff}
     .btn-redeem{flex:1;padding:10px 14px;background:rgba(255,123,44,.11);color:var(--orange-light);border:1px solid rgba(255,123,44,.2);border-radius:var(--r-sm);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
-    .btn-redeem:hover{background:var(--orange);color:#fff;border-color:var(--orange)}
+    .btn-redeem:hover{background:var(--orange);color:#fff}
     .btn-size-guide{width:100%;padding:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s}
     .btn-size-guide:hover{border-color:var(--border-hover);color:var(--text)}
 
-    /* ===== TOAST ===== */
-    #toast-container{position:fixed;top:80px;right:16px;z-index:100000;display:flex;flex-direction:column;gap:8px}
-    .toast{padding:12px 18px;border-radius:var(--r-md);color:#fff;display:flex;gap:10px;align-items:center;font-size:14px;font-weight:500;backdrop-filter:blur(12px);animation:toast-in .3s ease;max-width:320px;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+    /* TOAST — highest z-index so it's always on top */
+    #toast-container{position:fixed;top:80px;right:16px;z-index:999999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+    .toast{padding:12px 18px;border-radius:var(--r-md);color:#fff;display:flex;gap:10px;align-items:center;font-size:14px;font-weight:500;backdrop-filter:blur(12px);animation:toast-in .3s ease;max-width:320px;box-shadow:0 8px 30px rgba(0,0,0,.4);pointer-events:auto}
     @keyframes toast-in{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
-    .toast.info{background:rgba(28,95,210,.85);border:1px solid rgba(100,160,255,.25)}
-    .toast.success{background:rgba(18,150,80,.88);border:1px solid rgba(31,191,115,.3)}
-    .toast.error{background:rgba(195,40,40,.85);border:1px solid rgba(255,100,100,.25)}
+    .toast.info{background:rgba(28,95,210,.9);border:1px solid rgba(100,160,255,.25)}
+    .toast.success{background:rgba(18,150,80,.92);border:1px solid rgba(31,191,115,.3)}
+    .toast.error{background:rgba(195,40,40,.9);border:1px solid rgba(255,100,100,.25)}
 
-    /* ===== PROFILE SECTION ===== */
-    #profileSection{display:none;background:#16202e;border:1px solid var(--border-hover);color:var(--text);padding:20px;border-radius:var(--r-lg);box-shadow:0 24px 60px rgba(0,0,0,.55);min-width:255px;max-width:295px;z-index:3100}
+    /* PROFILE */
+    #profileSection{display:none;background:#16202e;border:1px solid var(--border-hover);color:var(--text);padding:20px;border-radius:var(--r-lg);box-shadow:0 24px 60px rgba(0,0,0,.55);min-width:270px;max-width:310px;z-index:110000;overflow-y:auto;max-height:85vh}
     #profileSection h3{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;margin-bottom:12px;color:#fff}
     #profileSection p{font-size:13px;color:var(--muted);margin-bottom:6px}
     #profileSection hr{border:none;border-top:1px solid var(--border);margin:12px 0}
@@ -154,8 +140,13 @@
     #profileSection button:hover{background:rgba(255,255,255,.1);border-color:var(--border-hover)}
     #profileSection button.disconnect{background:rgba(195,40,40,.12);color:#ff6b6b;border-color:rgba(195,40,40,.22)}
     #profileSection button.disconnect:hover{background:rgba(195,40,40,.22)}
+    .name-row{display:flex;gap:6px;margin-top:8px}
+    .name-input{flex:1;padding:8px 10px;background:#1e2a3a;border:1px solid rgba(255,255,255,.15);border-radius:var(--r-sm);color:#eef0f5;font-family:'Inter',sans-serif;font-size:13px;outline:none}
+    .name-input:focus{border-color:var(--green)}
+    .name-save-btn{padding:8px 14px;background:var(--green);color:#fff;border:none;border-radius:var(--r-sm);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:0!important;width:auto!important}
+    .name-save-btn:hover{background:var(--green-dark)}
 
-    /* ===== CART MODAL ===== */
+    /* CART */
     .cart-modal{position:fixed;right:0;top:0;height:100vh;width:420px;background:#111621;border-left:1px solid var(--border);transform:translateX(110%);transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:3000!important;padding:24px 22px;display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.5)}
     .cart-modal.open{transform:translateX(0)}
     .cart-modal h3{font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:700;color:#fff;margin-bottom:18px}
@@ -163,30 +154,28 @@
     .cart-modal .close-x:hover{background:rgba(255,255,255,.12);color:#fff}
     .cart-list{flex:1;overflow-y:auto;margin-bottom:14px}
     .cart-list::-webkit-scrollbar{width:3px}
-    .cart-list::-webkit-scrollbar-track{background:transparent}
     .cart-list::-webkit-scrollbar-thumb{background:var(--border-hover);border-radius:2px}
     .cart-item{display:flex;gap:13px;align-items:center;padding:13px 0;border-bottom:1px solid var(--border)}
     .cart-item img{width:58px;height:58px;object-fit:contain;border-radius:var(--r-sm);background:#161c2a;flex-shrink:0}
     .cart-item-title{font-size:14px;font-weight:600;color:#fff}
     .cart-item-details{font-size:12px;color:var(--muted);margin-top:2px}
-    .cart-item-price{font-size:14px;font-weight:700;color:var(--orange-light);margin-top:3px}
     .btn-remove{background:transparent;border:none;color:var(--dim);font-size:12px;cursor:pointer;margin-top:3px;transition:color .2s}
     .btn-remove:hover{color:#ff6b6b}
-    .qty-input{width:50px;padding:6px 7px;background:#1e2a3a;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#eef0f5;font-family:'Inter',sans-serif;font-size:13px;text-align:center}
+    .qty-input{width:50px;padding:6px 7px;background:#1e2a3a;border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#eef0f5;font-family:'Inter',sans-serif;font-size:13px;text-align:center}
     .cart-totals{border-top:1px solid var(--border);padding-top:14px;margin-top:2px}
     .cart-total-row{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:7px}
     .cart-total-row.grand{color:#fff;font-weight:700;font-size:17px;margin-top:9px;border-top:1px solid var(--border);padding-top:9px}
     .cart-total-row.grand span:last-child{color:var(--orange-light)}
     .cart-form-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:5px;margin-top:13px}
-    .cart-select,.cart-textarea,.cart-input{width:100%;padding:10px 12px;background:#1e2a3a;border:1px solid rgba(255,255,255,0.15);border-radius:var(--r-sm);color:#eef0f5;font-family:'Inter',sans-serif;font-size:13px;transition:border-color .2s}
+    .cart-select,.cart-textarea,.cart-input{width:100%;padding:10px 12px;background:#1e2a3a;border:1px solid rgba(255,255,255,.15);border-radius:var(--r-sm);color:#eef0f5;font-family:'Inter',sans-serif;font-size:13px;transition:border-color .2s}
     .cart-select:focus,.cart-textarea:focus,.cart-input:focus{border-color:var(--green);outline:none}
     .cart-select option{background:#1e2a3a;color:#eef0f5}
     .cart-textarea{min-height:70px;resize:vertical}
     .cart-input::placeholder,.cart-textarea::placeholder{color:#555d75}
-    .checkout-btn{width:100%;margin-top:15px;padding:14px;background:var(--orange);color:#fff;border:none;border-radius:var(--r-md);font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:0 6px 22px var(--orange-glow);letter-spacing:.01em}
-    .checkout-btn:hover{background:var(--orange-light);transform:translateY(-1px);box-shadow:0 10px 30px rgba(255,123,44,.42)}
+    .checkout-btn{width:100%;margin-top:15px;padding:14px;background:var(--orange);color:#fff;border:none;border-radius:var(--r-md);font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:0 6px 22px var(--orange-glow)}
+    .checkout-btn:hover{background:var(--orange-light);transform:translateY(-1px)}
 
-    /* ===== MODALS ===== */
+    /* MODALS */
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:3000;backdrop-filter:blur(5px)}
     .modal-backdrop.open{display:flex}
     .modal-card{background:#16202e;border:1px solid var(--border-hover);border-radius:var(--r-lg);padding:20px;max-width:720px;width:92%;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.6);animation:modal-in .25s ease}
@@ -196,9 +185,57 @@
     .modal-close{position:absolute;right:14px;top:14px;background:rgba(255,255,255,.08);border:1px solid var(--border);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;color:var(--muted);transition:all .2s}
     .modal-close:hover{background:rgba(255,255,255,.14);color:#fff}
 
-    /* ===== LEADERBOARD ===== */
+    /* AUCTION SECTION */
+    #auctionSection{width:100%;background:linear-gradient(180deg,rgba(255,123,44,.04) 0%,transparent 100%);border-top:1px solid rgba(255,123,44,.15);padding:50px 24px 60px;position:relative;overflow:hidden}
+    #auctionSection::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(255,123,44,.06) 0%,transparent 70%);pointer-events:none}
+    .auction-inner{max-width:var(--max-w);margin:0 auto;position:relative;z-index:1}
+    .auction-heading{display:flex;align-items:center;gap:16px;margin-bottom:10px}
+    .auction-heading h2{font-family:'Space Grotesk',sans-serif;font-size:2rem;font-weight:700;letter-spacing:-.03em;color:#fff}
+    .auction-badge{background:linear-gradient(135deg,var(--orange),var(--orange-light));color:#fff;border-radius:var(--r-xl);padding:5px 14px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;animation:badge-pulse 2s ease-in-out infinite}
+    @keyframes badge-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,123,44,.4)}50%{box-shadow:0 0 0 8px rgba(255,123,44,0)}}
+    .auction-subtitle{color:var(--muted);font-size:14px;margin-bottom:36px;max-width:520px;line-height:1.6}
+    .auction-subtitle strong{color:var(--orange-light)}
+    .auction-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px}
+
+    /* AUCTION CARD */
+    .auction-card{background:linear-gradient(145deg,#16202e,#1a1f2e);border:1px solid rgba(255,123,44,.2);border-radius:var(--r-lg);overflow:hidden;display:flex;flex-direction:column;transition:all .3s;animation:card-in .5s ease both;position:relative}
+    .auction-card::before{content:"";position:absolute;inset:0;border-radius:var(--r-lg);background:linear-gradient(145deg,rgba(255,123,44,.04),transparent);pointer-events:none}
+    .auction-card:hover{border-color:rgba(255,123,44,.5);transform:translateY(-5px);box-shadow:0 25px 60px rgba(0,0,0,.4),0 0 30px rgba(255,123,44,.08)}
+    .auction-card.ended{border-color:rgba(255,255,255,.08);opacity:.75}
+    .auction-img-wrap{position:relative;aspect-ratio:4/3;background:#0f1520;overflow:hidden}
+    .auction-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+    .auction-card:hover .auction-img-wrap img{transform:scale(1.06)}
+    .auction-exclusive{position:absolute;top:12px;left:12px;background:linear-gradient(135deg,var(--orange),#ff5500);color:#fff;border-radius:var(--r-xl);padding:4px 12px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+    .auction-ended-badge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.7);color:var(--muted);border:1px solid var(--border);border-radius:var(--r-xl);padding:4px 12px;font-size:11px;font-weight:600}
+    .auction-body{padding:20px;display:flex;flex-direction:column;gap:14px;flex:1}
+    .auction-title{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:-.02em}
+    .auction-desc{font-size:13px;color:var(--muted);line-height:1.55}
+    .auction-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .auction-stat{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px}
+    .auction-stat-label{font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+    .auction-stat-value{font-size:18px;font-weight:700;color:var(--orange-light)}
+    .auction-stat-value.quacks{color:var(--green)}
+    .auction-leader{background:rgba(31,191,115,.06);border:1px solid rgba(31,191,115,.15);border-radius:var(--r-sm);padding:10px 12px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+    .auction-leader-name{font-weight:700;color:var(--green)}
+    .auction-leader.nobody{color:var(--dim);font-style:italic}
+    .countdown{font-size:13px;font-weight:600;color:var(--orange-light);display:flex;align-items:center;gap:6px}
+    .countdown.urgent{color:#ff4444;animation:urgency .8s ease-in-out infinite}
+    @keyframes urgency{0%,100%{opacity:1}50%{opacity:.5}}
+    .countdown.ended{color:var(--dim)}
+    .bid-row{display:flex;gap:8px;margin-top:4px}
+    .bid-input{flex:1;padding:10px 12px;background:#1e2a3a;border:1px solid rgba(255,123,44,.25);border-radius:var(--r-sm);color:#eef0f5;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;transition:border-color .2s;outline:none}
+    .bid-input:focus{border-color:var(--orange)}
+    .bid-input::placeholder{color:var(--dim);font-weight:400}
+    .bid-btn{padding:10px 18px;background:var(--orange);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap}
+    .bid-btn:hover{background:var(--orange-light);transform:translateY(-1px);box-shadow:0 6px 20px var(--orange-glow)}
+    .bid-btn:disabled{background:var(--dim);cursor:not-allowed;transform:none;box-shadow:none}
+    .auction-winner-banner{background:linear-gradient(135deg,rgba(255,123,44,.15),rgba(255,80,0,.1));border:1px solid rgba(255,123,44,.4);border-radius:var(--r-sm);padding:12px 14px;text-align:center;font-size:13px;font-weight:600;color:var(--orange-light)}
+    .your-win{background:linear-gradient(135deg,rgba(31,191,115,.15),rgba(31,191,115,.08));border-color:rgba(31,191,115,.4);color:var(--green)}
+    .auction-empty{text-align:center;padding:60px 20px;color:var(--muted);font-size:15px}
+
+    /* LEADERBOARD */
     .leaderboard-toggle{position:fixed;right:20px;top:118px;z-index:2000;padding:10px 17px;border-radius:var(--r-xl);border:1px solid rgba(31,191,115,.28);cursor:pointer;background:rgba(31,191,115,.1);color:var(--green);font-family:'Inter',sans-serif;font-weight:600;font-size:13px;transition:all .2s;backdrop-filter:blur(8px)}
-    .leaderboard-toggle:hover{background:var(--green);color:#fff;border-color:var(--green)}
+    .leaderboard-toggle:hover{background:var(--green);color:#fff}
     .leaderboard-panel{position:fixed;right:-360px;top:0;width:340px;height:100vh;background:#111621;border-left:1px solid var(--border);transition:right .35s cubic-bezier(.4,0,.2,1);z-index:2500;padding:24px 20px;overflow-y:auto;box-shadow:-16px 0 50px rgba(0,0,0,.5)}
     .leaderboard-panel.open{right:0}
     .leaderboard-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
@@ -210,26 +247,26 @@
     .lb-addr{color:var(--muted);font-family:monospace;font-size:13px}
     .lb-score{color:var(--green);font-weight:600}
 
-    /* ===== FOOTER ===== */
+    /* FOOTER */
     footer{background:rgba(8,10,16,.9);border-top:1px solid var(--border);padding:18px 0;text-align:center;color:var(--muted);font-size:13px;position:relative;z-index:1000}
     footer p{margin-bottom:10px}
     footer a{margin:0 12px;color:var(--muted);text-decoration:none;transition:color .2s;font-size:18px}
     footer a:hover{color:var(--green)}
 
-    /* ===== LOADING ===== */
-    body.loading header,body.loading main,body.loading footer,body.loading #shippingNotice,body.loading #cartModal,body.loading #profileSection{opacity:0;transition:opacity .5s}
-    body:not(.loading) header,body:not(.loading) main,body:not(.loading) footer{opacity:1}
+    /* LOADING */
+    body.loading header,body.loading main,body.loading #auctionSection,body.loading footer,body.loading #shippingNotice{opacity:0;transition:opacity .5s}
+    body:not(.loading) header,body:not(.loading) main,body:not(.loading) #auctionSection,body:not(.loading) footer{opacity:1}
 
-    /* ===== CART BADGE ===== */
     .cart-badge{background:var(--orange);color:#fff;border-radius:50%;width:18px;height:18px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-left:2px}
 
-    /* ===== RESPONSIVE ===== */
     @media(max-width:768px){
       header{padding:0 14px;flex-wrap:wrap;height:auto;min-height:64px;padding-top:10px;padding-bottom:10px;gap:7px}
       .header-title{font-size:15px}
       .info-container{display:none}
       .shop-container{grid-template-columns:1fr}
-      main{padding:20px 14px 60px}
+      main{padding:20px 14px 30px}
+      #auctionSection{padding:30px 14px 40px}
+      .auction-grid{grid-template-columns:1fr}
       #toast-container{left:10px;right:10px}
       .leaderboard-toggle{top:auto;bottom:88px;right:14px}
       .leaderboard-panel{width:100%;right:-100%}
@@ -263,10 +300,17 @@
         <button class="btn btn-ghost" id="menuBtn">Shop ▾</button>
         <div id="shopMenu"></div>
       </div>
+      <!-- Referral Points Badge -->
       <div id="pointsDisplay" class="info-container">
-        <i class="fa-solid fa-circle-info info-icon"></i>
+        <i class="fa-solid fa-circle-info info-icon orange"></i>
         <span class="tooltip-text">Earn points every time a friend checks out with your address as referral!</span>
-        <span> Referral Points: <strong id="pointsValue" style="color:#fff">—</strong></span>
+        <span>Points: <strong id="pointsValue" style="color:#fff">—</strong></span>
+      </div>
+      <!-- Quacks Balance Badge -->
+      <div id="quacksDisplay" class="info-container" style="display:none">
+        <i class="fa-solid fa-coins info-icon yellow"></i>
+        <span class="tooltip-text">Your Quacks balance. Collect daily and spend on items or bid in auctions!</span>
+        <span>🦆 <strong id="quacksHeaderValue" style="color:#ffd700">—</strong></span>
       </div>
       <button id="connectBtn" class="btn btn-green">Connect Wallet</button>
       <div style="position:relative;display:inline-block">
@@ -278,10 +322,21 @@
 
   <div id="toast-container"></div>
 
+  <!-- Profile Panel -->
   <div id="profileSection" aria-hidden="true">
     <h3>Your Profile</h3>
+    <!-- Display Name -->
+    <div style="margin-bottom:10px">
+      <p style="margin-bottom:4px;color:var(--text);font-weight:600">Display Name</p>
+      <div class="name-row">
+        <input class="name-input" id="displayNameInput" type="text" placeholder="Set your name..." maxlength="24"/>
+        <button class="name-save-btn" onclick="saveDisplayName()">Save</button>
+      </div>
+    </div>
+    <hr>
     <p id="nftCount">Quacker Friends Held: …</p>
-    <p id="quacksCount">Quacks Balance: 0</p>
+    <p id="quacksCount">🦆 Quacks Balance: 0</p>
+    <p id="tierDisplay" style="color:var(--orange-light);font-size:12px"></p>
     <div style="margin-top:10px">
       <button id="claimQuacksBtn" style="background:var(--green)!important;color:#fff!important;border-color:var(--green)!important">🦆 Collect Quacks</button>
     </div>
@@ -294,10 +349,26 @@
     <button class="disconnect" onclick="disconnectWallet()">❌ Disconnect</button>
   </div>
 
+  <!-- Main Shop -->
   <main id="mainContent">
     <section id="items" class="shop-container"></section>
   </main>
 
+  <!-- Auction Section -->
+  <section id="auctionSection">
+    <div class="auction-inner">
+      <div class="auction-heading">
+        <h2>🔥 Live Auctions</h2>
+        <span class="auction-badge">Quacks Only</span>
+      </div>
+      <p class="auction-subtitle">Bid on exclusive one-of-a-kind items using your <strong>🦆 Quacks</strong>. Highest bidder when the timer runs out wins. Your Quacks are only deducted if you win.</p>
+      <div id="auctionGrid" class="auction-grid">
+        <div class="auction-empty">Loading auctions…</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cart -->
   <div id="cartModal" class="cart-modal" aria-hidden="true">
     <button class="close-x" onclick="closeCart()">✕</button>
     <h3>Your Cart</h3>
@@ -308,16 +379,9 @@
       <div class="cart-total-row grand"><span>Total</span><span id="totalDisplay">$0.00</span></div>
     </div>
     <label class="cart-form-label">Shipping Country</label>
-    <select id="shippingCountry" class="cart-select">
-      <option value="USA">United States</option>
-      <option value="Canada">Canada</option>
-    </select>
+    <select id="shippingCountry" class="cart-select"><option value="USA">United States</option><option value="Canada">Canada</option></select>
     <label class="cart-form-label">Payment Method</label>
-    <select id="paymentSelector" class="cart-select">
-      <option value="ETH">Pay with ETH</option>
-      <option value="USDC">Pay with USDC</option>
-      <option value="USDT">Pay with USDT</option>
-    </select>
+    <select id="paymentSelector" class="cart-select"><option value="ETH">Pay with ETH</option><option value="USDC">Pay with USDC</option><option value="USDT">Pay with USDT</option></select>
     <label class="cart-form-label">Shipping Address</label>
     <textarea id="userAddressInput" class="cart-textarea" placeholder="Enter your full shipping address"></textarea>
     <label class="cart-form-label">Referral Address (optional)</label>
@@ -325,26 +389,20 @@
     <button id="checkoutBtn" class="checkout-btn">Checkout →</button>
   </div>
 
+  <!-- Size Guide Modal -->
   <div id="sizeGuideModal" class="modal-backdrop" aria-hidden="true" onclick="if(event.target===this)closeSizeGuide()">
-    <div class="modal-card">
-      <button class="modal-close" onclick="closeSizeGuide()">✕</button>
-      <img id="sizeGuideImage" src="" alt="Size guide"/>
-    </div>
+    <div class="modal-card"><button class="modal-close" onclick="closeSizeGuide()">✕</button><img id="sizeGuideImage" src="" alt="Size guide"/></div>
   </div>
 
+  <!-- Item Zoom Modal -->
   <div id="itemModal" class="modal-backdrop" aria-hidden="true" onclick="if(event.target===this)closeItemModal()">
-    <div class="modal-card" onclick="event.stopPropagation()">
-      <button class="modal-close" onclick="closeItemModal()">✕</button>
-      <div id="itemModalContent"></div>
-    </div>
+    <div class="modal-card" onclick="event.stopPropagation()"><button class="modal-close" onclick="closeItemModal()">✕</button><div id="itemModalContent"></div></div>
   </div>
 
+  <!-- Leaderboard -->
   <button id="leaderboardToggle" class="leaderboard-toggle">🏆 Leaderboard</button>
   <div id="leaderboardPanel" class="leaderboard-panel">
-    <div class="leaderboard-header">
-      <span>🏆 Quacks Leaderboard</span>
-      <button id="closeLeaderboard">✕</button>
-    </div>
+    <div class="leaderboard-header"><span>🏆 Quacks Leaderboard</span><button id="closeLeaderboard">✕</button></div>
     <div id="leaderboard"></div>
   </div>
 
@@ -356,6 +414,7 @@
   </footer>
 
 <script>
+/* ===== CONFIG ===== */
 const PURCHASE_API="https://script.google.com/macros/s/AKfycbwZMlGQ2REZxTP1lIoWBYzc8n7l-h7C79F9u9MjDY4XIR6jKNO7ky1VXtCm3oP5RM_9qA/exec";
 const CLAIM_SHEET_API="https://script.google.com/macros/s/AKfycbzu2RjvJf8-SyRIekMh53JODYZxoPXQpjJ2aGTqIHd93HgEZpnXcVC_zxoJbJt51zqSuQ/exec";
 const CONTRACT_ADDRESS="0xa2c82bda5585c1d729e2b4f85dcc9a11ded7db4c";
@@ -364,46 +423,94 @@ const SHOP_WALLET="0x38aF7644b120B56e2FEce98b8A9A3DE14F8Fbf1D";
 const ERC20_ABI=[{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"type":"function"}];
 const TOKEN_MAP={"0x1":{USDC:"0xA0b86991c6218b36c1d19d19D4a2e9Eb0cE3606EB48",USDT:"0xdAC17F958D2ee523a2206206994597C13D831ec7"},"0x89":{USDC:"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",USDT:"0xc2132D05D31c914a87C6611C10748AaCbC5328"},"0x2105":{USDC:"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",USDT:"0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2"}};
 
+/* ===== STATE ===== */
 let cart=[],PRODUCTS={},currentCategory=null,cachedEthRate=null,lastRateFetch=0,blurCount=0;
+let userAddress=null,web3=null,provider=null,web3Modal=null;
+let userQuacksBalance=0,userDisplayName="";
+let auctionTimers={};
+
 function addBlur(){blurCount++;document.body.classList.add("blur-bg")}
 function removeBlur(){blurCount=Math.max(0,blurCount-1);if(!blurCount)document.body.classList.remove("blur-bg")}
 
+/* ===== TOAST — always on top ===== */
 function showToast(msg,type="info",duration=3200){
   const c=document.getElementById("toast-container");if(!c)return;
-  const el=document.createElement("div");el.className="toast "+(type==="success"?"success":type==="error"?"error":"info");
-  el.innerHTML=`<span>${msg}</span>`;c.appendChild(el);setTimeout(()=>el.remove(),duration);
+  const el=document.createElement("div");
+  el.className="toast "+(type==="success"?"success":type==="error"?"error":"info");
+  el.innerHTML=`<span>${msg}</span>`;
+  c.appendChild(el);
+  setTimeout(()=>el.remove(),duration);
 }
 
+/* ===== ETH PRICE ===== */
 async function getEthRate(){
   if(cachedEthRate&&Date.now()-lastRateFetch<60000)return cachedEthRate;
   try{const r=await fetch("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd");const d=await r.json();cachedEthRate=d?.ethereum?.usd||3000;}catch{cachedEthRate=3000;}
   lastRateFetch=Date.now();return cachedEthRate;
 }
-
-function formatPrice(usd,rate){
-  if(!rate||!usd)return usd>0?`$${usd}`:"";
-  return `$${usd} <span style="color:var(--muted);font-weight:400;font-size:12px">≈${(usd/rate).toFixed(4)} ETH</span>`;
-}
-
+function formatPrice(usd,rate){if(!rate||!usd)return usd>0?`$${usd}`:"";return `$${usd} <span style="color:var(--muted);font-weight:400;font-size:12px">≈${(usd/rate).toFixed(4)} ETH</span>`;}
 function getProductUsd(p){if(p.priceUSD)return p.priceUSD;if(Array.isArray(p.variants)&&typeof p.variants[0]==="object"&&p.variants[0].priceUSD)return p.variants[0].priceUSD;return 0;}
 
+/* ===== SHIPPING ===== */
 const SHIPPING_RULES={USA:{fee:5,freeOver:70},Canada:{fee:10,freeOver:70}};
 function calcSubtotalUSD(){return cart.reduce((s,ci)=>s+(Number(ci.priceUSD||0)*ci.q),0)}
 function getShippingCharge(country,sub){const r=SHIPPING_RULES[country]||SHIPPING_RULES.USA;return sub>=r.freeOver?0:r.fee}
-
 function updateCheckoutDisplay(){
   const country=document.getElementById("shippingCountry")?.value||"USA";
   const sub=calcSubtotalUSD(),ship=getShippingCharge(country,sub),total=sub+ship;
   const s=document.getElementById("subtotalDisplay"),sh=document.getElementById("shippingDisplay"),t=document.getElementById("totalDisplay");
   if(s)s.innerText=`$${sub.toFixed(2)}`;if(sh)sh.innerText=`$${ship.toFixed(2)}`;if(t)t.innerText=`$${total.toFixed(2)}`;
 }
-
 function initCheckoutUI(){
   const cs=document.getElementById("shippingCountry"),ps=document.getElementById("paymentSelector");
   if(cs)cs.addEventListener("change",updateCheckoutDisplay);if(ps)ps.addEventListener("change",updateCheckoutDisplay);
   updateCheckoutDisplay();
 }
 
+/* ===== QUACKS BALANCE ===== */
+async function fetchQuacksBalance(){
+  if(!userAddress)return 0;
+  try{
+    const r=await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress.toLowerCase()}`);
+    const d=await r.json();
+    userQuacksBalance=Number(d.quacks_collected||0);
+    // Update header badge
+    const hv=document.getElementById("quacksHeaderValue");
+    if(hv)hv.textContent=userQuacksBalance;
+    const qd=document.getElementById("quacksDisplay");
+    if(qd)qd.style.display="inline-flex";
+    // Update profile
+    const qc=document.getElementById("quacksCount");
+    if(qc)qc.innerText=`🦆 Quacks Balance: ${userQuacksBalance}`;
+    const td=document.getElementById("tierDisplay");
+    if(td&&d.tier)td.innerText=`Tier: ${d.tier} · Daily rate: ${d.daily_rate||0}/day`;
+    // Also grab display name if stored
+    if(d.display_name){
+      userDisplayName=d.display_name;
+      const inp=document.getElementById("displayNameInput");
+      if(inp)inp.value=d.display_name;
+    }
+    return userQuacksBalance;
+  }catch{return 0;}
+}
+
+/* ===== DISPLAY NAME ===== */
+async function saveDisplayName(){
+  if(!userAddress){showToast("Connect wallet first","error");return;}
+  const inp=document.getElementById("displayNameInput");
+  const name=(inp?.value||"").trim();
+  if(!name){showToast("Please enter a name","error");return;}
+  if(name.length>24){showToast("Max 24 characters","error");return;}
+  try{
+    const r=await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress.toLowerCase()}&setName=${encodeURIComponent(name)}`);
+    const d=await r.json();
+    if(d.error){showToast(d.error,"error");return;}
+    userDisplayName=name;
+    showToast(`Name set to "${name}" 🎉`,"success");
+  }catch{showToast("Failed to save name","error");}
+}
+
+/* ===== LOAD PRODUCTS ===== */
 async function loadProducts(){
   try{
     const res=await fetch(`${PURCHASE_API}?action=getItems`);const data=await res.json();
@@ -416,14 +523,13 @@ async function loadProducts(){
         acc[cat].push(product);return acc;
       },{});
       const sm=document.getElementById("shopMenu");
-      if(sm){
-        sm.innerHTML=Object.keys(PRODUCTS).map(cat=>`<button class="dropdown-item" onclick="showCategory('${cat}')">${cat}</button>`).join("");
-      }
+      if(sm)sm.innerHTML=Object.keys(PRODUCTS).map(cat=>`<button class="dropdown-item" onclick="showCategory('${cat}')">${cat}</button>`).join("");
       if(!currentCategory)document.getElementById("items").innerHTML="";else await showCategory(currentCategory);
     }
   }catch(err){console.error("Error fetching items:",err)}
 }
 
+/* ===== RENDER CATEGORY ===== */
 async function showCategory(cat){
   const shopMenu=document.getElementById("shopMenu");if(shopMenu)shopMenu.classList.remove("open");
   if(currentCategory===cat){document.getElementById("items").innerHTML="";currentCategory=null;removeBlur();return;}
@@ -436,16 +542,15 @@ async function showCategory(cat){
   const ethRate=await getEthRate();
   requestAnimationFrame(()=>{
     items.forEach((p,idx)=>{
-      const el=document.createElement("div");el.className="item";el.dataset.category=currentCategory;el.style.animationDelay=`${idx*.06}s`;
+      const el=document.createElement("div");el.className="item";el.style.animationDelay=`${idx*.06}s`;
       const productId=p.ID||p.id,usd=p.PriceUSD||p.priceUSD||0,quacks=p.QuacksCost||p.quacksCost||0,points=p.PointsCost||p.pointsCost||0;
       const images=p.images||[];
       let imageHTML="";
       if(images.length>1){
-        const dotsHTML=images.map((_,i)=>`<div class="slide-dot ${i===0?"active":""}" onclick="goToSlide('${p.id}',${i})"></div>`).join("");
-        imageHTML=`<div class="image-slider" id="slider_${p.id}">${images.map((url,i)=>`<img src="${url}" alt="${p.title}" class="slide ${i===0?"active":""}" loading="lazy" onclick="openItemModal('<img src=\\'${url}\\' alt=\\'${p.title}\\' style=\\'border-radius:var(--r-md)\\'/><h3 style=\\'margin-top:14px;text-align:center;font-family:Space Grotesk,sans-serif\\' >${p.title}</h3>')"/>`).join("")}<button class="slider-btn prev" onclick="prevSlide('${p.id}')">‹</button><button class="slider-btn next" onclick="nextSlide('${p.id}')">›</button><div class="slide-dots">${dotsHTML}</div></div>`;
+        imageHTML=`<div class="image-slider" id="slider_${p.id}">${images.map((url,i)=>`<img src="${url}" alt="${p.title}" class="slide ${i===0?"active":""}" loading="lazy" onclick="openItemModal('<img src=\\'${url}\\'/><h3 style=\\'margin-top:14px;text-align:center;font-family:Space Grotesk,sans-serif\\'>${p.title}</h3>')"/>`).join("")}<button class="slider-btn prev" onclick="prevSlide('${p.id}')">‹</button><button class="slider-btn next" onclick="nextSlide('${p.id}')">›</button><div class="slide-dots">${images.map((_,i)=>`<div class="slide-dot ${i===0?"active":""}" onclick="goToSlide('${p.id}',${i})"></div>`).join("")}</div></div>`;
       }else{
         const src=images[0]||"https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
-        imageHTML=`<div class="item-image-wrap"><img src="${src}" alt="${p.title}" loading="lazy" onclick="openItemModal('<img src=\\'${src}\\' alt=\\'${p.title}\\' style=\\'border-radius:var(--r-md)\\'/><h3 style=\\'margin-top:14px;text-align:center;font-family:Space Grotesk,sans-serif\\'>${p.title}</h3>')"/><div class="zoom-hint">🔍 Zoom</div></div>`;
+        imageHTML=`<div class="item-image-wrap"><img src="${src}" alt="${p.title}" loading="lazy" onclick="openItemModal('<img src=\\'${src}\\'/><h3 style=\\'margin-top:14px;text-align:center;font-family:Space Grotesk,sans-serif\\'>${p.title}</h3>')"/><div class="zoom-hint">🔍 Zoom</div></div>`;
       }
       const variantHTML=(p.variants&&p.variants.length)?`<div><label class="styled-label">Variant</label><select class="styled-select" id="variant_${p.id}">${p.variants.map(v=>`<option value="${v}">${v}</option>`).join("")}</select></div>`:"";
       const colorHTML=(p.colors&&p.colors.length)?`<div><label class="styled-label">Color</label><select class="styled-select" id="color_${p.id}">${p.colors.map(c=>`<option value="${c}">${c}</option>`).join("")}</select></div>`:"";
@@ -463,15 +568,135 @@ async function showCategory(cat){
   });
 }
 
+/* ===== AUCTIONS ===== */
+async function loadAuctions(){
+  const grid=document.getElementById("auctionGrid");
+  if(!grid)return;
+  try{
+    const r=await fetch(`${PURCHASE_API}?action=getAuctions`);
+    const d=await r.json();
+    if(!d.success||!d.auctions||!d.auctions.length){
+      grid.innerHTML=`<div class="auction-empty">🦆 No live auctions right now. Check back soon!</div>`;
+      return;
+    }
+    // Clear existing timers
+    Object.values(auctionTimers).forEach(t=>clearInterval(t));
+    auctionTimers={};
+    grid.innerHTML="";
+    d.auctions.forEach((a,idx)=>{
+      const card=buildAuctionCard(a,idx);
+      grid.appendChild(card);
+      startCountdown(a.AuctionID,a.EndTime,a.Status);
+    });
+  }catch(err){
+    console.error("Auction load error:",err);
+    grid.innerHTML=`<div class="auction-empty">Could not load auctions. Try again soon.</div>`;
+  }
+}
+
+function buildAuctionCard(a,idx){
+  const el=document.createElement("div");
+  const isEnded=a.Status==="ended"||a.Status==="Ended";
+  el.className=`auction-card${isEnded?" ended":""}`;
+  el.style.animationDelay=`${idx*.08}s`;
+  const currentBid=Number(a.CurrentBid)||Number(a.StartingBid)||0;
+  const hasLeader=a.CurrentLeader&&a.CurrentLeader.trim();
+  const leaderDisplay=a.CurrentLeaderName||shortenAddr(a.CurrentLeader||"");
+  const isMyLead=userAddress&&a.CurrentLeader&&a.CurrentLeader.toLowerCase()===userAddress.toLowerCase();
+  const imgSrc=a.ImageURL||"https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
+  let actionHTML="";
+  if(isEnded){
+    if(hasLeader){
+      const winnerName=a.WinnerName||shortenAddr(a.Winner||a.CurrentLeader||"");
+      const isMyWin=userAddress&&(a.Winner||a.CurrentLeader||"").toLowerCase()===userAddress.toLowerCase();
+      actionHTML=`<div class="auction-winner-banner${isMyWin?" your-win":""}">${isMyWin?"🏆 You won this auction!":"🏆 Won by "+winnerName}</div>`;
+    }else{
+      actionHTML=`<div class="auction-winner-banner">No bids — auction ended.</div>`;
+    }
+  }else{
+    const minBid=currentBid+1;
+    actionHTML=`
+      <div class="bid-row">
+        <input class="bid-input" id="bidInput_${a.AuctionID}" type="number" min="${minBid}" placeholder="Min: ${minBid} 🦆"/>
+        <button class="bid-btn" onclick="placeBid('${a.AuctionID}',${currentBid})" ${isMyLead?"disabled":""}>
+          ${isMyLead?"Leading!":"Place Bid"}
+        </button>
+      </div>`;
+  }
+  el.innerHTML=`
+    <div class="auction-img-wrap">
+      <img src="${imgSrc}" alt="${a.Title}" loading="lazy" onclick="openItemModal('<img src=\\'${imgSrc}\\'/><h3 style=\\'margin-top:14px;text-align:center;font-family:Space Grotesk,sans-serif\\'>${a.Title}</h3>')"/>
+      ${isEnded?`<div class="auction-ended-badge">Ended</div>`:`<div class="auction-exclusive">Exclusive</div>`}
+    </div>
+    <div class="auction-body">
+      <div class="auction-title">${a.Title}</div>
+      ${a.Description?`<div class="auction-desc">${a.Description}</div>`:""}
+      <div class="auction-stats">
+        <div class="auction-stat">
+          <div class="auction-stat-label">Current Bid</div>
+          <div class="auction-stat-value quacks">${currentBid} 🦆</div>
+        </div>
+        <div class="auction-stat">
+          <div class="auction-stat-label">Time Left</div>
+          <div class="countdown" id="countdown_${a.AuctionID}">${isEnded?"Ended":"Loading…"}</div>
+        </div>
+      </div>
+      <div class="auction-leader ${hasLeader?"":"nobody"}">
+        ${hasLeader?`🥇 Leading: <span class="auction-leader-name">${leaderDisplay}</span>${isMyLead?" (You!)":""}`:isEnded?"No bids placed":"🦆 No bids yet — be first!"}
+      </div>
+      ${actionHTML}
+    </div>`;
+  return el;
+}
+
+function startCountdown(id,endTimeStr,status){
+  if(status==="ended"||status==="Ended")return;
+  const endTime=new Date(endTimeStr).getTime();
+  function update(){
+    const el=document.getElementById(`countdown_${id}`);if(!el)return;
+    const now=Date.now(),diff=endTime-now;
+    if(diff<=0){el.textContent="Ended";el.className="countdown ended";clearInterval(auctionTimers[id]);loadAuctions();return;}
+    const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
+    el.textContent=h>0?`${h}h ${m}m ${s}s`:`${m}m ${s}s`;
+    el.className=diff<300000?"countdown urgent":"countdown";
+  }
+  update();
+  auctionTimers[id]=setInterval(update,1000);
+}
+
+async function placeBid(auctionId,currentBid){
+  if(!userAddress){showToast("Connect your wallet first","error");return;}
+  const inp=document.getElementById(`bidInput_${auctionId}`);
+  const bid=parseInt(inp?.value||"0",10);
+  if(!bid||bid<=currentBid){showToast(`Bid must be higher than ${currentBid} Quacks`,"error");return;}
+  // Check balance
+  await fetchQuacksBalance();
+  if(userQuacksBalance<bid){showToast(`Not enough Quacks! You have ${userQuacksBalance} 🦆`,"error");return;}
+  const displayName=userDisplayName||shortenAddr(userAddress);
+  try{
+    showToast("Placing bid…","info",2000);
+    const r=await fetch(`${PURCHASE_API}?action=placeBid&auctionId=${auctionId}&wallet=${userAddress.toLowerCase()}&bid=${bid}&displayName=${encodeURIComponent(displayName)}`);
+    const d=await r.json();
+    if(!d.success){showToast(d.error||"Bid failed","error");return;}
+    showToast(`🔥 Bid of ${bid} Quacks placed! You're leading!`,"success");
+    loadAuctions(); // Refresh cards
+  }catch(err){showToast("Failed to place bid","error");console.error(err);}
+}
+
+function shortenAddr(addr){if(!addr||addr.length<10)return addr;return addr.slice(0,6)+"…"+addr.slice(-4);}
+
+/* ===== SLIDER ===== */
 function nextSlide(id){const sl=document.querySelectorAll(`#slider_${id} .slide`),dt=document.querySelectorAll(`#slider_${id} .slide-dot`);if(!sl.length)return;let cur=Array.from(sl).findIndex(s=>s.classList.contains("active"));sl[cur].classList.remove("active");if(dt[cur])dt[cur].classList.remove("active");const next=(cur+1)%sl.length;sl[next].classList.add("active");if(dt[next])dt[next].classList.add("active");}
 function prevSlide(id){const sl=document.querySelectorAll(`#slider_${id} .slide`),dt=document.querySelectorAll(`#slider_${id} .slide-dot`);if(!sl.length)return;let cur=Array.from(sl).findIndex(s=>s.classList.contains("active"));sl[cur].classList.remove("active");if(dt[cur])dt[cur].classList.remove("active");const prev=(cur-1+sl.length)%sl.length;sl[prev].classList.add("active");if(dt[prev])dt[prev].classList.add("active");}
 function goToSlide(id,idx){document.querySelectorAll(`#slider_${id} .slide`).forEach((s,i)=>s.classList.toggle("active",i===idx));document.querySelectorAll(`#slider_${id} .slide-dot`).forEach((d,i)=>d.classList.toggle("active",i===idx));}
 
-function openSizeGuide(url){const m=document.getElementById("sizeGuideModal");document.getElementById("sizeGuideImage").src=url;m.classList.add("open");m.setAttribute("aria-hidden","false");addBlur();}
-function closeSizeGuide(){const m=document.getElementById("sizeGuideModal");m.classList.remove("open");m.setAttribute("aria-hidden","true");removeBlur();}
+/* ===== MODALS ===== */
+function openSizeGuide(url){const m=document.getElementById("sizeGuideModal");document.getElementById("sizeGuideImage").src=url;m.classList.add("open");addBlur();}
+function closeSizeGuide(){const m=document.getElementById("sizeGuideModal");m.classList.remove("open");removeBlur();}
 function openItemModal(html){const m=document.getElementById("itemModal");document.getElementById("itemModalContent").innerHTML=html;m.classList.add("open");addBlur();}
 function closeItemModal(){const m=document.getElementById("itemModal");m.classList.remove("open");removeBlur();}
 
+/* ===== CART ===== */
 async function addToCart(productId){
   const allP=Object.values(PRODUCTS).flat();const product=allP.find(p=>(p.ID&&p.ID===productId)||(p.id&&p.id===productId));
   if(!product){showToast("Product not found","error");return;}
@@ -496,7 +721,7 @@ async function updateCartUI(){
     const row=document.createElement("div");row.className="cart-item";
     let thumb=ci.thumb||"";if(thumb&&thumb.includes("https%3A"))thumb=decodeURIComponent(thumb);if(!thumb.startsWith("http"))thumb="https://quackerfriends.github.io/quackheads-assets/images/"+thumb;
     const details=[];if(ci.variant&&ci.variant!=="N/A")details.push(ci.variant);if(ci.color&&ci.color!=="N/A")details.push(ci.color);if(ci.size&&ci.size!=="N/A")details.push(ci.size);if(ci.customInput)details.push(ci.customInput);
-    row.innerHTML=`<img src="${thumb}" alt="${ci.title}" loading="lazy"/><div style="flex:1"><div class="cart-item-title">${ci.title}</div><div class="cart-item-details">${details.join(" · ")||"No options"}</div><div class="cart-item-price">$${((ci.priceUSD||0)*ci.q).toFixed(2)}</div><button class="btn-remove" onclick="removeFromCart(${idx})">Remove</button></div><input class="qty-input" type="number" min="1" value="${ci.q}" onchange="changeQty(${idx},this.value)"/>`;
+    row.innerHTML=`<img src="${thumb}" alt="${ci.title}" loading="lazy"/><div style="flex:1"><div class="cart-item-title">${ci.title}</div><div class="cart-item-details">${details.join(" · ")||"No options"}</div><button class="btn-remove" onclick="removeFromCart(${idx})">Remove</button></div><input class="qty-input" type="number" min="1" value="${ci.q}" onchange="changeQty(${idx},this.value)"/>`;
     listEl.appendChild(row);
   });
   const subtotalUSD=cart.reduce((s,i)=>s+(i.priceUSD*i.q),0);const country=document.getElementById("shippingCountry")?.value||"USA";const shippingUSD=subtotalUSD>=70?0:country==="USA"?5:10;
@@ -505,17 +730,16 @@ async function updateCartUI(){
 
 function changeQty(i,v){cart[i].q=Math.max(1,Number(v)||1);updateCartUI();}
 function removeFromCart(i){cart.splice(i,1);updateCartUI();}
-
 function openCart(){const m=document.getElementById("cartModal");if(m){m.classList.add("open");m.setAttribute("aria-hidden","false");initCheckoutUI();}}
 function closeCart(){const m=document.getElementById("cartModal");if(m){m.classList.remove("open");m.setAttribute("aria-hidden","true");}}
 document.getElementById("openCartBtn").addEventListener("click",openCart);
 
+/* ===== PROFILE ===== */
 async function loadProfile(wallet){
-  if(!web3||!wallet)return null;let quackerBalance=0;
+  if(!web3||!wallet)return null;
+  let quackerBalance=0;
   try{const c=new web3.eth.Contract(CONTRACT_ABI,CONTRACT_ADDRESS);quackerBalance=await c.methods.balanceOf(wallet).call();}catch{}
-  let claimData={};try{claimData=await(await fetch(`${CLAIM_SHEET_API}?wallet=${encodeURIComponent(wallet)}&check=true`)).json();}catch{}
-  let shopData={};try{const r=await(await fetch(`${PURCHASE_API}?wallet=${encodeURIComponent(wallet)}&checkPoints=true`)).json();shopData.points=r.points||0;}catch{}
-  return{wallet,quackerBalance:Number(quackerBalance),dailyQuacks:Number(claimData.quacks_collected||0),referralPoints:shopData.points||0};
+  return{wallet,quackerBalance:Number(quackerBalance)};
 }
 
 async function updatePointsDisplay(){
@@ -523,6 +747,7 @@ async function updatePointsDisplay(){
   try{const r=await(await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`)).json();el.textContent=r.success?r.points:"—";}catch{el.textContent="—";}
 }
 
+/* ===== CLAIM QUACKS ===== */
 document.getElementById("claimQuacksBtn")?.addEventListener("click",async()=>{
   if(!userAddress){showToast("Connect wallet first","warn");return;}
   try{
@@ -533,12 +758,15 @@ document.getElementById("claimQuacksBtn")?.addEventListener("click",async()=>{
     const q=new URLSearchParams({wallet:userAddress,claim:"true",nftCount:String(quackerCount),ownsContracts:ownsContracts.join(",")});
     const data=await(await fetch(`${CLAIM_SHEET_API}?${q}`)).json();
     if(data.error){showToast(data.error,"warn");return;}
-    showToast("🦆 Quacks Claimed!","success");const el=document.getElementById("quacksCount");if(el)el.innerText="Quacks Balance: "+data.new_quacks_total;
-  }catch{showToast("Error claiming quacks","error");}
+    userQuacksBalance=Number(data.new_quacks_total||0);
+    const qc=document.getElementById("quacksCount");if(qc)qc.innerText=`🦆 Quacks Balance: ${userQuacksBalance}`;
+    const hv=document.getElementById("quacksHeaderValue");if(hv)hv.textContent=userQuacksBalance;
+    showToast(`🦆 Quacks Collected! Balance: ${userQuacksBalance}`,"success");
+  }catch{showToast("Error collecting quacks","error");}
 });
 
+/* ===== CHECKOUT ===== */
 document.getElementById("checkoutBtn")?.addEventListener("click",checkout);
-
 async function checkout(){
   const shippingAddress=document.getElementById("userAddressInput")?.value||"";const referrer=document.getElementById("referrerInput")?.value?.trim()||"";
   if(!shippingAddress.trim()){showToast("Please enter your shipping address!","error");return;}
@@ -564,11 +792,12 @@ async function checkout(){
   for(const ci of cart){
     let payload={wallet:userAddress,variant:ci.variant||"",color:ci.color||"",size:ci.size||"",quantity:ci.q||1,address:shippingAddress,txHash:ci.useQuacks?"":txHash,referrer,customInput:ci.customInput||""};
     if(ci.redeem){payload.redeem=ci.title;payload.cost=ci.cost;}
-    else if(ci.useQuacks){payload.itemName=ci.title;payload.quacksCost=ci.quacksCost;try{const sd=await(await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&spend=${ci.quacksCost}`)).json();if(sd.error){showToast(`Quacks deduction failed`,"error");return;}showToast(`💸 ${ci.quacksCost} Quacks used`,"success",4000);}catch{showToast("Quacks deduction failed","error");return;}}
+    else if(ci.useQuacks){payload.itemName=ci.title;payload.quacksCost=ci.quacksCost;try{const sd=await(await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress}&spend=${ci.quacksCost}`)).json();if(sd.error){showToast("Quacks deduction failed","error");return;}showToast(`💸 ${ci.quacksCost} Quacks used`,"success",4000);}catch{showToast("Quacks deduction failed","error");return;}}
     else{payload.itemName=ci.title;payload.price=Number(ci.price||0);}
     try{await fetch(`${PURCHASE_API}?${new URLSearchParams({...payload,action:ci.useQuacks?"payWithQuacks":""})}`);}catch{}
   }
   showToast(isRedeemOnly?"✅ Redemption logged!":"✅ Purchase logged!","success",4000);
+  cart=[];updateCartUI();
 }
 
 async function addToCartWithQuacks(productId,quacksCost){
@@ -577,9 +806,8 @@ async function addToCartWithQuacks(productId,quacksCost){
   if(!product){showToast("Product not found","error");return;}
   const ce=document.getElementById(`custom_${productId}`);const customInput=ce?ce.value.trim():"";
   if((product.CustomInput||product.customInput)&&!customInput){showToast(`Please fill in: ${product.CustomInput}`,"error");ce?.focus();return;}
-  const data=await(await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress.toLowerCase()}`)).json();
-  const row=data.find(u=>(u.address||"").toLowerCase()===userAddress.toLowerCase());
-  if((row?Number(row.quacks_collected||0):0)<quacksCost){showToast(`Need ${quacksCost} Quacks`,"error");return;}
+  await fetchQuacksBalance();
+  if(userQuacksBalance<quacksCost){showToast(`Need ${quacksCost} Quacks — you have ${userQuacksBalance}`,"error");return;}
   cart.push({id:productId,title:product.Title||product.title,price:0,priceUSD:0,q:1,redeem:false,useQuacks:true,quacksCost,variant:document.getElementById(`variant_${productId}`)?.value||"",color:document.getElementById(`color_${productId}`)?.value||"",size:document.getElementById(`size_${productId}`)?.value||"",thumb:product.images?.[0]||product.image||"placeholder.png",customInput});
   updateCartUI();showToast(`🪙 Added using ${quacksCost} Quacks`,"success");openCart();
 }
@@ -597,104 +825,146 @@ async function redeemWithPoints(productId,cost){
   updateCartUI();showToast(`🎉 Added for ${cost} Points`,"success");openCart();
 }
 
+/* ===== LEADERBOARD ===== */
 async function loadLeaderboard(){
-  try{const data=await(await fetch(`${CLAIM_SHEET_API}?leaderboard=true`)).json();const c=document.getElementById("leaderboard");if(!c)return;c.innerHTML="";data.forEach((user,i)=>{const row=document.createElement("div");row.className="leaderboard-row";row.innerHTML=`<span class="lb-rank">#${i+1}</span><span class="lb-addr">${user.address.slice(0,6)}...${user.address.slice(-4)}</span><span class="lb-score">${user.quacks} 🦆</span>`;c.appendChild(row);});}catch(err){console.error("Leaderboard error:",err);}
+  try{
+    const data=await(await fetch(`${CLAIM_SHEET_API}?leaderboard=true`)).json();
+    const c=document.getElementById("leaderboard");if(!c)return;c.innerHTML="";
+    data.forEach((user,i)=>{
+      const row=document.createElement("div");row.className="leaderboard-row";
+      const name=user.display_name||shortenAddr(user.address);
+      row.innerHTML=`<span class="lb-rank">#${i+1}</span><span class="lb-addr">${name}</span><span class="lb-score">${user.quacks} 🦆</span>`;
+      c.appendChild(row);
+    });
+  }catch(err){console.error("Leaderboard error:",err);}
 }
 
+/* ===== ORDER HISTORY ===== */
 async function loadOrderHistory(){
   const wallet=(userAddress||"").toLowerCase(),orderList=document.getElementById("orderList"),btn=document.getElementById("loadOrdersBtn");
   if(!wallet){showToast("Connect wallet first","error");orderList.innerHTML="<p>Connect wallet to view orders.</p>";return;}
   if(orderList.dataset.visible==="true"){orderList.style.maxHeight="0";orderList.style.opacity="0";orderList.dataset.visible="false";btn.textContent="View My Orders";return;}
-  btn.textContent="Loading…";orderList.innerHTML="<p>Loading orders…</p>";
+  btn.textContent="Loading…";orderList.innerHTML="<p>Loading…</p>";
   try{
     const data=await(await fetch(`${PURCHASE_API}?action=getOrders&wallet=${wallet}`)).json();
     if(!data.success){orderList.innerHTML=`<p style="color:#ff6b6b">Error: ${data.error||"Unknown"}</p>`;btn.textContent="View My Orders";return;}
-    const orders=data.orders||[];if(!orders.length){orderList.innerHTML="<p>No orders found.</p>";orderList.dataset.visible="true";orderList.style.maxHeight="400px";orderList.style.opacity="1";btn.textContent="Hide Orders";return;}
+    const orders=data.orders||[];
+    if(!orders.length){orderList.innerHTML="<p>No orders found.</p>";orderList.dataset.visible="true";orderList.style.maxHeight="400px";orderList.style.opacity="1";btn.textContent="Hide Orders";return;}
     const grouped={};orders.forEach(o=>{if(!grouped[o.Timestamp])grouped[o.Timestamp]=[];grouped[o.Timestamp].push(o);});
-    const groupedOrders=Object.entries(grouped).reverse().map(([ts,items])=>({ts,items,total:items.reduce((s,x)=>s+(Number(x.Price)||0),0),points:items.reduce((s,x)=>s+(Number(x.PointsCost)||0),0),quacks:items.reduce((s,x)=>s+(Number(x.QuacksCost)||0),0),progress:items[0].Progress||"Not Shipped"}));
+    const groupedOrders=Object.entries(grouped).reverse().map(([ts,items])=>({ts,items,points:items.reduce((s,x)=>s+(Number(x.PointsCost)||0),0),quacks:items.reduce((s,x)=>s+(Number(x.QuacksCost)||0),0),progress:items[0].Progress||"Not Shipped",type:items[0].Price==="WON (Auction)"||items[0]["Item Name"]?.includes("WON")?"auction":items[0].PointsCost>0?"points":items[0].QuacksCost>0?"quacks":"eth"}));
     orderList.innerHTML=groupedOrders.map(o=>{
-      let spent=o.points>0?`${o.points} pts`:o.quacks>0?`${o.quacks} 🦆`:`$${o.total.toFixed(2)}`;
-      return `<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px"><span>${new Date(o.ts).toLocaleDateString()}</span><span style="color:var(--green)">${o.progress}</span></div><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:14px">${o.items.length} item${o.items.length>1?"s":""}</span><span style="color:var(--orange-light);font-weight:700">${spent}</span></div><button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'" style="margin-top:8px;background:transparent;border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer">Details</button><div style="display:none;margin-top:8px">${o.items.map(it=>`<div style="font-size:12px;color:var(--muted);padding:4px 0;border-top:1px solid var(--border)">${it["Item Name"]||it.Item} — ${it.Progress}</div>`).join("")}</div></div>`;
+      const typeIcon=o.type==="auction"?"🏆":o.type==="points"?"⭐":o.type==="quacks"?"🦆":"💎";
+      const spent=o.type==="auction"?"Auction Win":o.points>0?`${o.points} pts`:o.quacks>0?`${o.quacks} 🦆`:"ETH";
+      return `<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px"><span>${new Date(o.ts).toLocaleDateString()}</span><span style="color:var(--green)">${o.progress}</span></div><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:14px">${typeIcon} ${o.items.length} item${o.items.length>1?"s":""}</span><span style="color:var(--orange-light);font-weight:700">${spent}</span></div><button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'" style="margin-top:8px;background:transparent;border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer">Details</button><div style="display:none;margin-top:8px">${o.items.map(it=>`<div style="font-size:12px;color:var(--muted);padding:4px 0;border-top:1px solid var(--border)">${it["Item Name"]||it.Item||"Unknown"} — ${it.Progress}</div>`).join("")}</div></div>`;
     }).join("");
-    orderList.dataset.visible="true";orderList.style.maxHeight="400px";orderList.style.opacity="1";btn.textContent="Hide Orders";
+    orderList.dataset.visible="true";orderList.style.maxHeight="500px";orderList.style.opacity="1";btn.textContent="Hide Orders";
   }catch{orderList.innerHTML=`<p style="color:#ff6b6b">Error loading orders.</p>`;btn.textContent="View My Orders";}
 }
 
-const msgs=["🚚 Free Shipping on orders above $70!","💳 Pay with ETH, USDC, or USDT","🦆 Collect Daily Quacks to redeem items","⚠️ Shipping available in US and Canada only"];
+/* ===== SHIPPING NOTICE ROTATOR ===== */
+const msgs=["🚚 Free Shipping on orders above $70!","💳 Pay with ETH, USDC, or USDT","🦆 Collect Daily Quacks to redeem items or bid in auctions!","⚠️ Shipping available in US and Canada only"];
 let msgIdx=0;const noticeEl=document.getElementById("shippingNotice");
 if(noticeEl){noticeEl.style.transition="opacity .5s";setInterval(()=>{noticeEl.style.opacity="0";setTimeout(()=>{noticeEl.textContent=msgs[msgIdx=(msgIdx+1)%msgs.length];noticeEl.style.opacity="1";},500);},5000);}
 
-let web3,provider,web3Modal,userAddress=null;
+/* ===== WEB3 ===== */
 const PROVIDER_OPTIONS={injected:{package:null},walletconnect:{package:null,options:{rpc:{1:"https://rpc.ankr.com/eth",137:"https://rpc.ankr.com/polygon",8453:"https://mainnet.base.org"},qrcode:true}}};
-
 function initWeb3Modal(){try{if(window.WalletConnectProvider?.default)PROVIDER_OPTIONS.walletconnect.package=window.WalletConnectProvider.default;web3Modal=new window.Web3Modal.default({cacheProvider:false,providerOptions:PROVIDER_OPTIONS,disableInjectedProvider:false,theme:"dark",network:"mainnet"});}catch(err){console.error("Web3Modal init error:",err);}}
+async function connectWallet(){
+  try{
+    if(!web3Modal)initWeb3Modal();
+    provider=await web3Modal.connect();if(!provider)return;
+    web3=new Web3(provider);const accounts=await web3.eth.getAccounts();if(!accounts?.length)return;
+    userAddress=accounts[0].toLowerCase();
+    document.getElementById("connectBtn").style.display="none";
+    document.getElementById("profileBtn").style.display="inline-flex";
+    // Load user data
+    await fetchQuacksBalance();
+    await updatePointsDisplay();
+    if(provider.on){provider.on("accountsChanged",a=>{if(a?.length){userAddress=a[0].toLowerCase();fetchQuacksBalance();updatePointsDisplay();}else disconnectWallet();});provider.on("disconnect",disconnectWallet);}
+  }catch(err){console.error(err);}
+}
+function disconnectWallet(){
+  if(web3Modal?.clearCachedProvider)web3Modal.clearCachedProvider();if(provider?.disconnect)provider.disconnect();
+  web3=provider=userAddress=null;userQuacksBalance=0;userDisplayName="";
+  document.getElementById("connectBtn").style.display="inline-flex";
+  document.getElementById("profileBtn").style.display="none";
+  document.getElementById("profileSection").style.display="none";
+  document.getElementById("quacksDisplay").style.display="none";
+}
 
-async function connectWallet(){try{if(!web3Modal)initWeb3Modal();provider=await web3Modal.connect();if(!provider)return;web3=new Web3(provider);const accounts=await web3.eth.getAccounts();if(!accounts?.length)return;userAddress=accounts[0].toLowerCase();document.getElementById("connectBtn").style.display="none";document.getElementById("profileBtn").style.display="inline-flex";if(provider.on){provider.on("accountsChanged",a=>{if(a?.length)userAddress=a[0].toLowerCase();else disconnectWallet();});provider.on("disconnect",disconnectWallet);}}catch(err){console.error(err);}}
-
-function disconnectWallet(){if(web3Modal?.clearCachedProvider)web3Modal.clearCachedProvider();if(provider?.disconnect)provider.disconnect();web3=provider=userAddress=null;document.getElementById("connectBtn").style.display="inline-flex";document.getElementById("profileBtn").style.display="none";document.getElementById("profileSection").style.display="none";}
-
+/* ===== INTRO ===== */
 document.body.classList.add("loading");
-document.getElementById("enterBtn").addEventListener("click",()=>{const intro=document.getElementById("introScreen");intro.style.opacity="0";intro.style.visibility="hidden";document.body.classList.remove("loading");setTimeout(()=>intro.remove(),900);});
+document.getElementById("enterBtn").addEventListener("click",()=>{
+  const intro=document.getElementById("introScreen");intro.style.opacity="0";intro.style.visibility="hidden";
+  document.body.classList.remove("loading");setTimeout(()=>intro.remove(),900);
+});
 
+/* ===== SHOP MENU ===== */
 document.addEventListener("DOMContentLoaded",()=>{
-  // Move shopMenu to body once so it never affects header layout
-  const _sm = document.getElementById("shopMenu");
-  if(_sm) document.body.appendChild(_sm);
-
+  // Move shopMenu to body once — keeps it out of header layout
+  const _sm=document.getElementById("shopMenu");if(_sm)document.body.appendChild(_sm);
   const menuBtn=document.getElementById("menuBtn"),shopMenu=document.getElementById("shopMenu");
   if(menuBtn&&shopMenu){
     menuBtn.addEventListener("click",(e)=>{
       e.stopPropagation();
-      if(shopMenu.classList.contains("open")){
-        shopMenu.classList.remove("open");
-        return;
-      }
-      const r = menuBtn.getBoundingClientRect();
-      shopMenu.style.setProperty("top",  (r.bottom + 6) + "px", "important");
-      shopMenu.style.setProperty("left", r.left + "px", "important");
+      if(shopMenu.classList.contains("open")){shopMenu.classList.remove("open");return;}
+      const r=menuBtn.getBoundingClientRect();
+      shopMenu.style.setProperty("top",(r.bottom+6)+"px","important");
+      shopMenu.style.setProperty("left",r.left+"px","important");
       shopMenu.classList.add("open");
     });
-    document.addEventListener("click",(e)=>{
-      if(!shopMenu.contains(e.target) && e.target!==menuBtn){
-        shopMenu.classList.remove("open");
-      }
-    });
-    shopMenu.addEventListener("click",(e)=>{
-      if(e.target.classList.contains("dropdown-item")){
-        shopMenu.classList.remove("open");
-      }
-    });
+    document.addEventListener("click",(e)=>{if(!shopMenu.contains(e.target)&&e.target!==menuBtn)shopMenu.classList.remove("open");});
+    shopMenu.addEventListener("click",(e)=>{if(e.target.classList.contains("dropdown-item"))shopMenu.classList.remove("open");});
   }
 
+  /* PROFILE */
   const pb=document.getElementById("profileBtn"),ps=document.getElementById("profileSection");
   if(pb&&ps){
     pb.addEventListener("click",async(e)=>{
-      e.stopPropagation();if(ps.style.display==="block"){ps.style.display="none";return;}
-      document.body.appendChild(ps);ps.style.position="fixed";ps.style.zIndex="999999";ps.style.display="block";
-      const r=pb.getBoundingClientRect();ps.style.top=`${r.bottom+6}px`;ps.style.left=`${r.right-(ps.offsetWidth||260)}px`;
-      if(userAddress){try{const d=await loadProfile(userAddress);const nc=document.getElementById("nftCount"),qc=document.getElementById("quacksCount"),pv=document.getElementById("pointsValue");if(nc)nc.innerText="Quacker Friends Held: "+d.quackerBalance;if(qc)qc.innerText="Quacks Balance: "+d.dailyQuacks;if(pv)pv.textContent=d.referralPoints;}catch{}}
+      e.stopPropagation();
+      if(ps.style.display==="block"){ps.style.display="none";return;}
+      if(ps.parentElement!==document.body)document.body.appendChild(ps);
+      ps.style.position="fixed";ps.style.zIndex="110000";ps.style.display="block";
+      const r=pb.getBoundingClientRect();ps.style.top=`${r.bottom+6}px`;ps.style.left=`${Math.max(4,r.right-(ps.offsetWidth||270))}px`;
+      // Load NFT count
+      if(userAddress){
+        try{const d=await loadProfile(userAddress);const nc=document.getElementById("nftCount");if(nc)nc.innerText="Quacker Friends Held: "+d.quackerBalance;}catch{}
+        await fetchQuacksBalance();
+        await updatePointsDisplay();
+        const inp=document.getElementById("displayNameInput");
+        if(inp&&userDisplayName)inp.value=userDisplayName;
+      }
     });
     document.addEventListener("click",(e)=>{if(!ps.contains(e.target)&&e.target!==pb)ps.style.display="none";});
   }
 
+  /* TOOLTIP */
   document.querySelectorAll(".info-container").forEach(c=>{
     const icon=c.querySelector(".info-icon"),tip=c.querySelector(".tooltip-text");if(!icon||!tip)return;
-    icon.addEventListener("mouseenter",()=>{document.body.appendChild(tip);const r=icon.getBoundingClientRect();tip.style.cssText=`position:fixed;top:${r.bottom+8}px;left:${r.left+r.width/2}px;transform:translateX(-50%);visibility:visible;opacity:1;pointer-events:auto;z-index:9999999`;});
+    icon.addEventListener("mouseenter",()=>{document.body.appendChild(tip);const r=icon.getBoundingClientRect();tip.style.cssText=`position:fixed;top:${r.bottom+8}px;left:${r.left+r.width/2}px;transform:translateX(-50%);visibility:visible;opacity:1;pointer-events:auto;z-index:200000`;});
     icon.addEventListener("mouseleave",()=>{tip.style.opacity="0";tip.style.visibility="hidden";tip.style.pointerEvents="none";c.appendChild(tip);});
   });
 
+  /* LEADERBOARD */
   loadLeaderboard();
   const toggle=document.getElementById("leaderboardToggle"),panel=document.getElementById("leaderboardPanel"),close=document.getElementById("closeLeaderboard");
   toggle?.addEventListener("click",()=>{panel.classList.add("open");toggle.style.display="none";});
   close?.addEventListener("click",()=>{panel.classList.remove("open");toggle.style.display="block";});
 });
 
+/* ===== INIT ===== */
 document.addEventListener("DOMContentLoaded",async()=>{
   await loadProducts();
+  await loadAuctions();
   const cs=document.getElementById("shippingCountry");if(cs){window.selectedCountry=cs.value;cs.addEventListener("change",e=>window.selectedCountry=e.target.value);}
 });
 
-window.addEventListener("load",()=>{setTimeout(()=>{initWeb3Modal();document.getElementById("connectBtn")?.addEventListener("click",connectWallet);},500);});
+window.addEventListener("load",()=>{
+  setTimeout(()=>{
+    initWeb3Modal();
+    document.getElementById("connectBtn")?.addEventListener("click",connectWallet);
+  },500);
+});
 </script>
 </body>
 </html>
