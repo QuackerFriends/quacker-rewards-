@@ -75,17 +75,19 @@
     body.blur-bg #blurOverlay{opacity:1;pointer-events:auto}
     header,#shippingNotice,main,#auctionSection,footer,#profileSection,.cart-modal,.modal-backdrop,#shopMenu,#toast-container{position:relative;z-index:200}
 
-    /* MAIN — shop items float over page, don't push content down */
+    /* MAIN */
     main{padding:0;max-width:var(--max-w);margin:0 auto;width:100%;position:relative;z-index:10}
-    #shopOverlay{position:fixed;top:66px;left:0;right:0;bottom:0;z-index:9000;pointer-events:none;overflow-y:auto}
-    #shopOverlay.active{pointer-events:auto}
-    #shopOverlayInner{max-width:var(--max-w);margin:0 auto;padding:24px 24px 40px;min-height:100%}
-    #shopOverlayBg{position:fixed;top:66px;left:0;right:0;bottom:0;background:rgba(13,17,25,.96);backdrop-filter:blur(6px);z-index:8999;opacity:0;pointer-events:none;transition:opacity .25s}
-    #shopOverlayBg.active{opacity:1;pointer-events:auto}
-    .shop-close-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
-    .shop-close-bar h3{font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:700;color:#fff}
+
+    /* SHOP OVERLAY — hidden until a category is picked */
+    #shopOverlayBg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(13,17,25,.92);backdrop-filter:blur(6px);z-index:8999}
+    #shopOverlayBg.active{display:block}
+    #shopOverlay{display:none;position:fixed;top:66px;left:0;right:0;bottom:0;z-index:9000;overflow-y:auto}
+    #shopOverlay.active{display:block}
+    #shopOverlayInner{max-width:var(--max-w);margin:0 auto;padding:24px 24px 60px}
+    .shop-close-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+    .shop-close-bar h3{font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;color:#fff}
     .shop-close-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(255,255,255,.08);border:1px solid var(--border-hover);border-radius:var(--r-xl);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
-    .shop-close-btn:hover{background:rgba(255,255,255,.14);color:#fff}
+    .shop-close-btn:hover{background:rgba(255,255,255,.16);color:#fff}
     .shop-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
 
     /* PRODUCT CARD */
@@ -362,15 +364,11 @@
   <!-- Shop overlay content -->
   <div id="shopOverlay">
     <div id="shopOverlayInner">
-      <div class="shop-close-bar">
-        <h3 id="shopCategoryTitle">Shop</h3>
-        <button class="shop-close-btn" onclick="closeShopOverlay()">✕ Close Shop</button>
-      </div>
       <section id="items" class="shop-container"></section>
     </div>
   </div>
 
-  <!-- Main (empty placeholder so page structure holds) -->
+  <!-- Main placeholder -->
   <main id="mainContent" style="display:none"></main>
 
   <!-- Auction Section -->
@@ -551,13 +549,14 @@ async function loadProducts(){
 function openShopOverlay(catName){
   document.getElementById("shopOverlay").classList.add("active");
   document.getElementById("shopOverlayBg").classList.add("active");
-  document.getElementById("shopCategoryTitle").textContent=catName;
+  document.getElementById("menuBtn").textContent="✕ Close";
   document.body.style.overflow="hidden";
 }
 function closeShopOverlay(){
   document.getElementById("shopOverlay").classList.remove("active");
   document.getElementById("shopOverlayBg").classList.remove("active");
   document.getElementById("items").innerHTML="";
+  document.getElementById("menuBtn").textContent="Shop ▾";
   document.body.style.overflow="";
   currentCategory=null;
 }
@@ -946,9 +945,14 @@ document.addEventListener("DOMContentLoaded",()=>{
   if(menuBtn&&shopMenu){
     menuBtn.addEventListener("click",(e)=>{
       e.stopPropagation();
+      // If shop overlay is open, clicking the button closes it
+      if(document.getElementById("shopOverlay").classList.contains("active")){
+        closeShopOverlay();
+        return;
+      }
+      // Toggle dropdown
       if(shopMenu.classList.contains("open")){shopMenu.classList.remove("open");return;}
       const r=menuBtn.getBoundingClientRect();
-      // Always position relative to button bottom — header is sticky so r.bottom is always correct
       shopMenu.style.setProperty("top",(r.bottom+6)+"px","important");
       shopMenu.style.setProperty("left",r.left+"px","important");
       shopMenu.classList.add("open");
