@@ -27,7 +27,6 @@
     body::before{content:"";position:fixed;inset:0;background:url('https://quackerfriends.github.io/quackheads-assets/images/brandimages/Inside.png') center/cover no-repeat;opacity:.06;z-index:0;pointer-events:none}
     body::after{content:"";position:fixed;inset:0;background:radial-gradient(ellipse 90% 55% at 50% -5%,rgba(31,191,115,.1) 0%,transparent 65%),radial-gradient(ellipse 55% 40% at 95% 85%,rgba(255,123,44,.07) 0%,transparent 60%);z-index:0;pointer-events:none}
 
-    /* INTRO */
     #introScreen{position:fixed;inset:0;background:var(--dark);display:flex;align-items:center;justify-content:center;z-index:9000;transition:opacity .9s,visibility .9s}
     #introScreen::before{content:"";position:absolute;inset:0;background:url('https://quackerfriends.github.io/quackheads-assets/images/brandimages/Enter.png') center/cover no-repeat;opacity:.3}
     .intro-content{position:relative;display:flex;flex-direction:column;align-items:center;gap:24px;text-align:center}
@@ -37,17 +36,14 @@
     .enter-btn{display:inline-flex;align-items:center;gap:10px;padding:14px 36px;background:var(--green);color:#fff;border:none;border-radius:var(--r-xl);font-family:'Inter',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:all .25s;box-shadow:0 8px 30px var(--green-glow)}
     .enter-btn:hover{background:var(--green-dark);transform:translateY(-2px)}
 
-    /* SHIPPING NOTICE */
     #shippingNotice{position:relative;z-index:200;background:rgba(31,191,115,.1);border-bottom:1px solid rgba(31,191,115,.18);color:var(--green);text-align:center;padding:9px 20px;font-size:13px;font-weight:500;transition:opacity .5s}
 
-    /* HEADER */
     header{position:sticky;top:0;z-index:100000;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:var(--teal);border-bottom:1px solid rgba(0,0,0,.1);box-shadow:0 4px 20px rgba(0,0,0,.15)}
     .header-brand{display:flex;align-items:center;gap:11px;text-decoration:none}
     .header-logo{height:36px;width:auto;border-radius:9px}
     .header-title{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:#fff;letter-spacing:-.02em}
     .header-actions{display:flex;align-items:center;gap:9px;flex-wrap:nowrap}
 
-    /* BUTTONS */
     .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border:none;border-radius:var(--r-xl);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
     .btn-primary{background:var(--orange);color:#fff;box-shadow:0 4px 16px var(--orange-glow)}
     .btn-primary:hover{background:var(--orange-light);transform:translateY(-1px)}
@@ -56,32 +52,25 @@
     .btn-green{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3)}
     .btn-green:hover{background:rgba(255,255,255,.32);transform:translateY(-1px)}
 
-    /* ===== SHOP MENU ===== */
     .shop-controls{position:relative;display:inline-block}
     #shopMenu{position:fixed !important;top:80px;left:0;background:#1a2535;border:1px solid rgba(255,255,255,0.18);border-radius:var(--r-md);padding:6px;min-width:190px;z-index:99998;flex-direction:column;gap:2px;box-shadow:0 16px 50px rgba(0,0,0,.65);display:none}
     #shopMenu.open{display:flex !important}
     .dropdown-item{padding:11px 15px;border:none;background:transparent;text-align:left;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#c8cfe0;border-radius:var(--r-sm);transition:background .15s,color .15s;width:100%}
     .dropdown-item:hover{background:rgba(31,191,115,.15);color:var(--green)}
-    
-    /* HEADER BADGES */
+
     .info-container{display:inline-flex;align-items:center;gap:7px;color:#fff;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.2);padding:7px 13px;border-radius:var(--r-xl);font-size:13px;font-weight:500;position:relative;cursor:default;white-space:nowrap}
     .info-icon{font-size:14px}
     .info-icon.orange{color:#ffe0a0}
     .info-icon.yellow{color:#ffd700}
     .tooltip-text{visibility:hidden;opacity:0;position:fixed;background:#16202e;border:1px solid var(--border-hover);color:var(--text);text-align:center;padding:8px 12px;border-radius:var(--r-sm);font-size:12px;width:210px;transition:opacity .2s;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.4);z-index:200000;line-height:1.5}
 
-    /* BLUR */
     #blurOverlay{position:fixed;inset:0;backdrop-filter:blur(12px) brightness(.5);background:rgba(0,0,0,.4);z-index:50;opacity:0;pointer-events:none;transition:opacity .3s}
     body.blur-bg #blurOverlay{opacity:1;pointer-events:auto}
     header,#shippingNotice,main,#auctionSection,footer,#profileSection,.cart-modal,.modal-backdrop,#shopMenu,#toast-container{position:relative;z-index:200}
 
-    /* MAIN */
     main{flex:1;padding:40px 24px 40px;max-width:var(--max-w);margin:0 auto;width:100%}
-
-    /* SHOP GRID */
     .shop-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
 
-    /* PRODUCT CARD */
     .item{background:var(--dark-card);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;display:flex;flex-direction:column;transition:border-color .25s,transform .25s,box-shadow .25s;animation:card-in .4s ease both}
     @keyframes card-in{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
     .item:nth-child(2){animation-delay:.05s}.item:nth-child(3){animation-delay:.1s}.item:nth-child(4){animation-delay:.15s}.item:nth-child(5){animation-delay:.2s}.item:nth-child(6){animation-delay:.25s}
@@ -123,7 +112,6 @@
     .btn-size-guide{width:100%;padding:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s}
     .btn-size-guide:hover{border-color:var(--border-hover);color:var(--text)}
 
-    /* TOAST — highest z-index so it's always on top */
     #toast-container{position:fixed;top:80px;right:16px;z-index:999999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
     .toast{padding:12px 18px;border-radius:var(--r-md);color:#fff;display:flex;gap:10px;align-items:center;font-size:14px;font-weight:500;backdrop-filter:blur(12px);animation:toast-in .3s ease;max-width:320px;box-shadow:0 8px 30px rgba(0,0,0,.4);pointer-events:auto}
     @keyframes toast-in{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
@@ -131,7 +119,6 @@
     .toast.success{background:rgba(18,150,80,.92);border:1px solid rgba(31,191,115,.3)}
     .toast.error{background:rgba(195,40,40,.9);border:1px solid rgba(255,100,100,.25)}
 
-    /* PROFILE */
     #profileSection{display:none;background:#16202e;border:1px solid var(--border-hover);color:var(--text);padding:20px;border-radius:var(--r-lg);box-shadow:0 24px 60px rgba(0,0,0,.55);min-width:270px;max-width:310px;z-index:110000;overflow-y:auto;max-height:85vh}
     #profileSection h3{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;margin-bottom:12px;color:#fff}
     #profileSection p{font-size:13px;color:var(--muted);margin-bottom:6px}
@@ -146,7 +133,6 @@
     .name-save-btn{padding:8px 14px;background:var(--green);color:#fff;border:none;border-radius:var(--r-sm);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:0!important;width:auto!important}
     .name-save-btn:hover{background:var(--green-dark)}
 
-    /* CART */
     .cart-modal{position:fixed;right:0;top:0;height:100vh;width:420px;background:#111621;border-left:1px solid var(--border);transform:translateX(110%);transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:3000!important;padding:24px 22px;display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.5)}
     .cart-modal.open{transform:translateX(0)}
     .cart-modal h3{font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:700;color:#fff;margin-bottom:18px}
@@ -175,7 +161,6 @@
     .checkout-btn{width:100%;margin-top:15px;padding:14px;background:var(--orange);color:#fff;border:none;border-radius:var(--r-md);font-family:'Inter',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:0 6px 22px var(--orange-glow)}
     .checkout-btn:hover{background:var(--orange-light);transform:translateY(-1px)}
 
-    /* MODALS */
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:3000;backdrop-filter:blur(5px)}
     .modal-backdrop.open{display:flex}
     .modal-card{background:#16202e;border:1px solid var(--border-hover);border-radius:var(--r-lg);padding:20px;max-width:720px;width:92%;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.6);animation:modal-in .25s ease}
@@ -185,7 +170,6 @@
     .modal-close{position:absolute;right:14px;top:14px;background:rgba(255,255,255,.08);border:1px solid var(--border);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;color:var(--muted);transition:all .2s}
     .modal-close:hover{background:rgba(255,255,255,.14);color:#fff}
 
-    /* AUCTION SECTION */
     #auctionSection{width:100%;background:linear-gradient(180deg,rgba(255,123,44,.04) 0%,transparent 100%);border-top:1px solid rgba(255,123,44,.15);padding:50px 24px 60px;position:relative;overflow:hidden}
     #auctionSection::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(255,123,44,.06) 0%,transparent 70%);pointer-events:none}
     .auction-inner{max-width:var(--max-w);margin:0 auto;position:relative;z-index:1}
@@ -196,8 +180,6 @@
     .auction-subtitle{color:var(--muted);font-size:14px;margin-bottom:36px;max-width:520px;line-height:1.6}
     .auction-subtitle strong{color:var(--orange-light)}
     .auction-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px}
-
-    /* AUCTION CARD */
     .auction-card{background:linear-gradient(145deg,#16202e,#1a1f2e);border:1px solid rgba(255,123,44,.2);border-radius:var(--r-lg);overflow:hidden;display:flex;flex-direction:column;transition:all .3s;animation:card-in .5s ease both;position:relative}
     .auction-card::before{content:"";position:absolute;inset:0;border-radius:var(--r-lg);background:linear-gradient(145deg,rgba(255,123,44,.04),transparent);pointer-events:none}
     .auction-card:hover{border-color:rgba(255,123,44,.5);transform:translateY(-5px);box-shadow:0 25px 60px rgba(0,0,0,.4),0 0 30px rgba(255,123,44,.08)}
@@ -233,7 +215,45 @@
     .your-win{background:linear-gradient(135deg,rgba(31,191,115,.15),rgba(31,191,115,.08));border-color:rgba(31,191,115,.4);color:var(--green)}
     .auction-empty{text-align:center;padding:60px 20px;color:var(--muted);font-size:15px}
 
-    /* LEADERBOARD */
+    /* REVIEWS */
+    .reviews-section{margin-top:12px;border-top:1px solid var(--border);padding-top:12px}
+    .reviews-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .reviews-avg{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+    .reviews-avg strong{color:#ffd700;font-size:15px}
+    .reviews-toggle{background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:var(--r-xl);font-size:12px;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
+    .reviews-toggle:hover{border-color:var(--border-hover);color:var(--text)}
+    .reviews-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;max-height:260px;overflow-y:auto}
+    .review-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px}
+    .review-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+    .review-name{font-size:13px;font-weight:600;color:#fff}
+    .review-date{font-size:11px;color:var(--dim)}
+    .review-stars{color:#ffd700;font-size:13px;letter-spacing:1px;margin-bottom:4px}
+    .review-comment{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:6px}
+    .review-images{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+    .review-images img{width:64px;height:64px;object-fit:cover;border-radius:var(--r-sm);cursor:zoom-in;border:1px solid var(--border);transition:transform .2s}
+    .review-images img:hover{transform:scale(1.06)}
+    .review-form{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-top:8px;display:flex;flex-direction:column;gap:8px}
+    .review-form-title{font-size:12px;font-weight:600;color:var(--text);text-transform:uppercase;letter-spacing:.06em}
+    .star-picker{display:flex;gap:4px}
+    .star-picker span{font-size:24px;cursor:pointer;color:var(--dim);transition:color .15s;line-height:1;user-select:none}
+    .star-picker span.active{color:#ffd700}
+    .review-name-input,.review-textarea{width:100%;padding:8px 10px;background:#1e2a3a;border:1px solid rgba(255,255,255,.15);border-radius:var(--r-sm);color:#eef0f5;font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
+    .review-name-input:focus,.review-textarea:focus{border-color:var(--green)}
+    .review-textarea{resize:vertical;min-height:60px}
+    .review-image-upload{display:flex;flex-direction:column;gap:6px}
+    .review-image-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+    .review-image-input{display:none}
+    .review-image-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;background:rgba(255,255,255,.05);border:1px dashed rgba(255,255,255,.2);border-radius:var(--r-sm);color:var(--muted);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;transition:all .2s;width:fit-content}
+    .review-image-btn:hover{border-color:var(--green);color:var(--green)}
+    .review-image-previews{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+    .preview-wrap{position:relative;width:64px;height:64px}
+    .preview-wrap img{width:64px;height:64px;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--border)}
+    .preview-remove{position:absolute;top:-5px;right:-5px;background:#c32828;color:#fff;border:none;border-radius:50%;width:16px;height:16px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+    .review-submit-btn{padding:9px 16px;background:var(--green);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;align-self:flex-start}
+    .review-submit-btn:hover{background:var(--green-dark)}
+    .reviews-empty{font-size:13px;color:var(--dim);padding:8px 0}
+    .hidden{display:none!important}
+
     .leaderboard-toggle{position:fixed;right:20px;top:118px;z-index:2000;padding:10px 17px;border-radius:var(--r-xl);border:1px solid rgba(31,191,115,.28);cursor:pointer;background:rgba(31,191,115,.1);color:var(--green);font-family:'Inter',sans-serif;font-weight:600;font-size:13px;transition:all .2s;backdrop-filter:blur(8px)}
     .leaderboard-toggle:hover{background:var(--green);color:#fff}
     .leaderboard-panel{position:fixed;right:-360px;top:0;width:340px;height:100vh;background:#111621;border-left:1px solid var(--border);transition:right .35s cubic-bezier(.4,0,.2,1);z-index:2500;padding:24px 20px;overflow-y:auto;box-shadow:-16px 0 50px rgba(0,0,0,.5)}
@@ -247,13 +267,11 @@
     .lb-addr{color:var(--muted);font-family:monospace;font-size:13px}
     .lb-score{color:var(--green);font-weight:600}
 
-    /* FOOTER */
     footer{background:rgba(8,10,16,.9);border-top:1px solid var(--border);padding:18px 0;text-align:center;color:var(--muted);font-size:13px;position:relative;z-index:1000}
     footer p{margin-bottom:10px}
     footer a{margin:0 12px;color:var(--muted);text-decoration:none;transition:color .2s;font-size:18px}
     footer a:hover{color:var(--green)}
 
-    /* LOADING */
     body.loading header,body.loading main,body.loading #auctionSection,body.loading footer,body.loading #shippingNotice{opacity:0;transition:opacity .5s}
     body:not(.loading) header,body:not(.loading) main,body:not(.loading) #auctionSection,body:not(.loading) footer{opacity:1}
 
@@ -300,13 +318,11 @@
         <button class="btn btn-ghost" id="menuBtn">Shop ▾</button>
         <div id="shopMenu"></div>
       </div>
-      <!-- Referral Points Badge -->
       <div id="pointsDisplay" class="info-container">
         <i class="fa-solid fa-circle-info info-icon orange"></i>
         <span class="tooltip-text">Earn points every time a friend checks out with your address as referral!</span>
         <span>Points: <strong id="pointsValue" style="color:#fff">—</strong></span>
       </div>
-      <!-- Quacks Balance Badge -->
       <div id="quacksDisplay" class="info-container" style="display:none">
         <i class="fa-solid fa-coins info-icon yellow"></i>
         <span class="tooltip-text">Your Quacks balance. Collect daily and spend on items or bid in auctions!</span>
@@ -322,10 +338,8 @@
 
   <div id="toast-container"></div>
 
-  <!-- Profile Panel -->
   <div id="profileSection" aria-hidden="true">
     <h3>Your Profile</h3>
-    <!-- Display Name -->
     <div style="margin-bottom:10px">
       <p style="margin-bottom:4px;color:var(--text);font-weight:600">Display Name</p>
       <div class="name-row">
@@ -337,9 +351,6 @@
     <p id="nftCount">Quacker Friends Held: …</p>
     <p id="quacksCount">🦆 Quacks Balance: 0</p>
     <p id="tierDisplay" style="color:var(--orange-light);font-size:12px"></p>
-    <div style="margin-top:10px">
-      <button id="claimQuacksBtn" style="background:var(--green)!important;color:#fff!important;border-color:var(--green)!important">🦆 Collect Quacks</button>
-    </div>
     <hr>
     <div id="myOrdersSection" style="margin-top:4px">
       <p style="font-weight:600;color:var(--text);margin-bottom:8px">📦 My Orders</p>
@@ -349,12 +360,10 @@
     <button class="disconnect" onclick="disconnectWallet()">❌ Disconnect</button>
   </div>
 
-  <!-- Main Shop -->
   <main id="mainContent">
     <section id="items" class="shop-container"></section>
   </main>
 
-  <!-- Auction Section -->
   <section id="auctionSection">
     <div class="auction-inner">
       <div class="auction-heading">
@@ -368,7 +377,6 @@
     </div>
   </section>
 
-  <!-- Cart -->
   <div id="cartModal" class="cart-modal" aria-hidden="true">
     <button class="close-x" onclick="closeCart()">✕</button>
     <h3>Your Cart</h3>
@@ -389,17 +397,14 @@
     <button id="checkoutBtn" class="checkout-btn">Checkout →</button>
   </div>
 
-  <!-- Size Guide Modal -->
   <div id="sizeGuideModal" class="modal-backdrop" aria-hidden="true" onclick="if(event.target===this)closeSizeGuide()">
     <div class="modal-card"><button class="modal-close" onclick="closeSizeGuide()">✕</button><img id="sizeGuideImage" src="" alt="Size guide"/></div>
   </div>
 
-  <!-- Item Zoom Modal -->
   <div id="itemModal" class="modal-backdrop" aria-hidden="true" onclick="if(event.target===this)closeItemModal()">
     <div class="modal-card" onclick="event.stopPropagation()"><button class="modal-close" onclick="closeItemModal()">✕</button><div id="itemModalContent"></div></div>
   </div>
 
-  <!-- Leaderboard -->
   <button id="leaderboardToggle" class="leaderboard-toggle">🏆 Leaderboard</button>
   <div id="leaderboardPanel" class="leaderboard-panel">
     <div class="leaderboard-header"><span>🏆 Quacks Leaderboard</span><button id="closeLeaderboard">✕</button></div>
@@ -432,7 +437,6 @@ let auctionTimers={};
 function addBlur(){blurCount++;document.body.classList.add("blur-bg")}
 function removeBlur(){blurCount=Math.max(0,blurCount-1);if(!blurCount)document.body.classList.remove("blur-bg")}
 
-/* ===== TOAST — always on top ===== */
 function showToast(msg,type="info",duration=3200){
   const c=document.getElementById("toast-container");if(!c)return;
   const el=document.createElement("div");
@@ -442,7 +446,6 @@ function showToast(msg,type="info",duration=3200){
   setTimeout(()=>el.remove(),duration);
 }
 
-/* ===== ETH PRICE ===== */
 async function getEthRate(){
   if(cachedEthRate&&Date.now()-lastRateFetch<60000)return cachedEthRate;
   try{const r=await fetch("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd");const d=await r.json();cachedEthRate=d?.ethereum?.usd||3000;}catch{cachedEthRate=3000;}
@@ -451,7 +454,6 @@ async function getEthRate(){
 function formatPrice(usd,rate){if(!rate||!usd)return usd>0?`$${usd}`:"";return `$${usd} <span style="color:var(--muted);font-weight:400;font-size:12px">≈${(usd/rate).toFixed(4)} ETH</span>`;}
 function getProductUsd(p){if(p.priceUSD)return p.priceUSD;if(Array.isArray(p.variants)&&typeof p.variants[0]==="object"&&p.variants[0].priceUSD)return p.variants[0].priceUSD;return 0;}
 
-/* ===== SHIPPING ===== */
 const SHIPPING_RULES={USA:{fee:5,freeOver:70},Canada:{fee:10,freeOver:70}};
 function calcSubtotalUSD(){return cart.reduce((s,ci)=>s+(Number(ci.priceUSD||0)*ci.q),0)}
 function getShippingCharge(country,sub){const r=SHIPPING_RULES[country]||SHIPPING_RULES.USA;return sub>=r.freeOver?0:r.fee}
@@ -467,34 +469,21 @@ function initCheckoutUI(){
   updateCheckoutDisplay();
 }
 
-/* ===== QUACKS BALANCE ===== */
 async function fetchQuacksBalance(){
   if(!userAddress)return 0;
   try{
     const r=await fetch(`${CLAIM_SHEET_API}?wallet=${userAddress.toLowerCase()}`);
     const d=await r.json();
     userQuacksBalance=Number(d.quacks_collected||0);
-    // Update header badge
-    const hv=document.getElementById("quacksHeaderValue");
-    if(hv)hv.textContent=userQuacksBalance;
-    const qd=document.getElementById("quacksDisplay");
-    if(qd)qd.style.display="inline-flex";
-    // Update profile
-    const qc=document.getElementById("quacksCount");
-    if(qc)qc.innerText=`🦆 Quacks Balance: ${userQuacksBalance}`;
-    const td=document.getElementById("tierDisplay");
-    if(td&&d.tier)td.innerText=`Tier: ${d.tier} · Daily rate: ${d.daily_rate||0}/day`;
-    // Also grab display name if stored
-    if(d.display_name){
-      userDisplayName=d.display_name;
-      const inp=document.getElementById("displayNameInput");
-      if(inp)inp.value=d.display_name;
-    }
+    const hv=document.getElementById("quacksHeaderValue");if(hv)hv.textContent=userQuacksBalance;
+    const qd=document.getElementById("quacksDisplay");if(qd)qd.style.display="inline-flex";
+    const qc=document.getElementById("quacksCount");if(qc)qc.innerText=`🦆 Quacks Balance: ${userQuacksBalance}`;
+    const td=document.getElementById("tierDisplay");if(td&&d.tier)td.innerText=`Tier: ${d.tier} · Daily rate: ${d.daily_rate||0}/day`;
+    if(d.display_name){userDisplayName=d.display_name;const inp=document.getElementById("displayNameInput");if(inp)inp.value=d.display_name;}
     return userQuacksBalance;
   }catch{return 0;}
 }
 
-/* ===== DISPLAY NAME ===== */
 async function saveDisplayName(){
   if(!userAddress){showToast("Connect wallet first","error");return;}
   const inp=document.getElementById("displayNameInput");
@@ -510,7 +499,6 @@ async function saveDisplayName(){
   }catch{showToast("Failed to save name","error");}
 }
 
-/* ===== LOAD PRODUCTS ===== */
 async function loadProducts(){
   try{
     const res=await fetch(`${PURCHASE_API}?action=getItems`);const data=await res.json();
@@ -529,7 +517,6 @@ async function loadProducts(){
   }catch(err){console.error("Error fetching items:",err)}
 }
 
-/* ===== RENDER CATEGORY ===== */
 async function showCategory(cat){
   const shopMenu=document.getElementById("shopMenu");if(shopMenu)shopMenu.classList.remove("open");
   if(currentCategory===cat){document.getElementById("items").innerHTML="";currentCategory=null;removeBlur();return;}
@@ -562,6 +549,10 @@ async function showCategory(cat){
       const sizeGuideBtn=p.sizeGuide?`<button class="btn-size-guide" onclick="openSizeGuide('${p.sizeGuide}')">📏 Size Guide</button>`:"";
       el.innerHTML=`${imageHTML}<div class="item-body"><div class="item-title">${p.title}</div>${p.description?`<div class="item-desc">${p.description}</div>`:""}<div class="item-price" id="price_${productId}">${formatPrice(usd,ethRate)}</div><div class="item-selects">${variantHTML}${colorHTML}${sizeHTML}${customHTML}</div>${sizeGuideBtn}<div class="item-actions">${buyBtn}${quacksBtn}${redeemBtn}</div></div>`;
       container.appendChild(el);
+
+      // Add reviews section below each product card
+      el.appendChild(buildReviewSection(p.id));
+
       const vs=el.querySelector(`#variant_${p.id}`);
       if(vs){vs.addEventListener("change",async(e)=>{const sel=e.target.value,rate=await getEthRate();let newUsd=getProductUsd(p);if(Array.isArray(p.variants)&&typeof p.variants[0]==="object"){const m=p.variants.find(v=>v.name===sel);if(m?.priceUSD)newUsd=m.priceUSD;}else if(p.variantPricesMap?.[sel]!=null){newUsd=p.variantPricesMap[sel];}const pe=el.querySelector(`#price_${productId}`);if(pe)pe.innerHTML=formatPrice(newUsd,rate);});}
     });
@@ -570,35 +561,20 @@ async function showCategory(cat){
 
 /* ===== AUCTIONS ===== */
 async function loadAuctions(){
-  const grid=document.getElementById("auctionGrid");
-  if(!grid)return;
+  const grid=document.getElementById("auctionGrid");if(!grid)return;
   try{
     const r=await fetch(`${PURCHASE_API}?action=getAuctions`);
     const d=await r.json();
-    if(!d.success||!d.auctions||!d.auctions.length){
-      grid.innerHTML=`<div class="auction-empty">🦆 No live auctions right now. Check back soon!</div>`;
-      return;
-    }
-    // Clear existing timers
-    Object.values(auctionTimers).forEach(t=>clearInterval(t));
-    auctionTimers={};
-    grid.innerHTML="";
-    d.auctions.forEach((a,idx)=>{
-      const card=buildAuctionCard(a,idx);
-      grid.appendChild(card);
-      startCountdown(a.AuctionID,a.EndTime,a.Status);
-    });
-  }catch(err){
-    console.error("Auction load error:",err);
-    grid.innerHTML=`<div class="auction-empty">Could not load auctions. Try again soon.</div>`;
-  }
+    if(!d.success||!d.auctions||!d.auctions.length){grid.innerHTML=`<div class="auction-empty">🦆 No live auctions right now. Check back soon!</div>`;return;}
+    Object.values(auctionTimers).forEach(t=>clearInterval(t));auctionTimers={};grid.innerHTML="";
+    d.auctions.forEach((a,idx)=>{const card=buildAuctionCard(a,idx);grid.appendChild(card);startCountdown(a.AuctionID,a.EndTime,a.Status);});
+  }catch(err){console.error("Auction load error:",err);grid.innerHTML=`<div class="auction-empty">Could not load auctions. Try again soon.</div>`;}
 }
 
 function buildAuctionCard(a,idx){
   const el=document.createElement("div");
   const isEnded=a.Status==="ended"||a.Status==="Ended";
-  el.className=`auction-card${isEnded?" ended":""}`;
-  el.style.animationDelay=`${idx*.08}s`;
+  el.className=`auction-card${isEnded?" ended":""}`;el.style.animationDelay=`${idx*.08}s`;
   const currentBid=Number(a.CurrentBid)||Number(a.StartingBid)||0;
   const hasLeader=a.CurrentLeader&&a.CurrentLeader.trim();
   const leaderDisplay=a.CurrentLeaderName||shortenAddr(a.CurrentLeader||"");
@@ -606,46 +582,13 @@ function buildAuctionCard(a,idx){
   const imgSrc=a.ImageURL||"https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
   let actionHTML="";
   if(isEnded){
-    if(hasLeader){
-      const winnerName=a.WinnerName||shortenAddr(a.Winner||a.CurrentLeader||"");
-      const isMyWin=userAddress&&(a.Winner||a.CurrentLeader||"").toLowerCase()===userAddress.toLowerCase();
-      actionHTML=`<div class="auction-winner-banner${isMyWin?" your-win":""}">${isMyWin?"🏆 You won this auction!":"🏆 Won by "+winnerName}</div>`;
-    }else{
-      actionHTML=`<div class="auction-winner-banner">No bids — auction ended.</div>`;
-    }
+    if(hasLeader){const winnerName=a.WinnerName||shortenAddr(a.Winner||a.CurrentLeader||"");const isMyWin=userAddress&&(a.Winner||a.CurrentLeader||"").toLowerCase()===userAddress.toLowerCase();actionHTML=`<div class="auction-winner-banner${isMyWin?" your-win":""}">${isMyWin?"🏆 You won this auction!":"🏆 Won by "+winnerName}</div>`;}
+    else{actionHTML=`<div class="auction-winner-banner">No bids — auction ended.</div>`;}
   }else{
     const minBid=currentBid+1;
-    actionHTML=`
-      <div class="bid-row">
-        <input class="bid-input" id="bidInput_${a.AuctionID}" type="number" min="${minBid}" placeholder="Min: ${minBid} 🦆"/>
-        <button class="bid-btn" onclick="placeBid('${a.AuctionID}',${currentBid})" ${isMyLead?"disabled":""}>
-          ${isMyLead?"Leading!":"Place Bid"}
-        </button>
-      </div>`;
+    actionHTML=`<div class="bid-row"><input class="bid-input" id="bidInput_${a.AuctionID}" type="number" min="${minBid}" placeholder="Min: ${minBid} 🦆"/><button class="bid-btn" onclick="placeBid('${a.AuctionID}',${currentBid})" ${isMyLead?"disabled":""}>${isMyLead?"Leading!":"Place Bid"}</button></div>`;
   }
-  el.innerHTML=`
-    <div class="auction-img-wrap">
-      <img src="${imgSrc}" alt="${a.Title}" loading="lazy" onclick="openItemModal('<img src=\\'${imgSrc}\\'/><h3 style=\\'margin-top:14px;text-align:center;font-family:Space Grotesk,sans-serif\\'>${a.Title}</h3>')"/>
-      ${isEnded?`<div class="auction-ended-badge">Ended</div>`:`<div class="auction-exclusive">Exclusive</div>`}
-    </div>
-    <div class="auction-body">
-      <div class="auction-title">${a.Title}</div>
-      ${a.Description?`<div class="auction-desc">${a.Description}</div>`:""}
-      <div class="auction-stats">
-        <div class="auction-stat">
-          <div class="auction-stat-label">Current Bid</div>
-          <div class="auction-stat-value quacks">${currentBid} 🦆</div>
-        </div>
-        <div class="auction-stat">
-          <div class="auction-stat-label">Time Left</div>
-          <div class="countdown" id="countdown_${a.AuctionID}">${isEnded?"Ended":"Loading…"}</div>
-        </div>
-      </div>
-      <div class="auction-leader ${hasLeader?"":"nobody"}">
-        ${hasLeader?`🥇 Leading: <span class="auction-leader-name">${leaderDisplay}</span>${isMyLead?" (You!)":""}`:isEnded?"No bids placed":"🦆 No bids yet — be first!"}
-      </div>
-      ${actionHTML}
-    </div>`;
+  el.innerHTML=`<div class="auction-img-wrap"><img src="${imgSrc}" alt="${a.Title}" loading="lazy" onclick="openItemModal('<img src=\\'${imgSrc}\\'/><h3 style=\\'margin-top:14px;text-align:center;font-family:Space Grotesk,sans-serif\\'>${a.Title}</h3>')"/>${isEnded?`<div class="auction-ended-badge">Ended</div>`:`<div class="auction-exclusive">Exclusive</div>`}</div><div class="auction-body"><div class="auction-title">${a.Title}</div>${a.Description?`<div class="auction-desc">${a.Description}</div>`:""}<div class="auction-stats"><div class="auction-stat"><div class="auction-stat-label">Current Bid</div><div class="auction-stat-value quacks">${currentBid} 🦆</div></div><div class="auction-stat"><div class="auction-stat-label">Time Left</div><div class="countdown" id="countdown_${a.AuctionID}">${isEnded?"Ended":"Loading…"}</div></div></div><div class="auction-leader ${hasLeader?"":"nobody"}">${hasLeader?`🥇 Leading: <span class="auction-leader-name">${leaderDisplay}</span>${isMyLead?" (You!)":""}`:isEnded?"No bids placed":"🦆 No bids yet — be first!"}</div>${actionHTML}</div>`;
   return el;
 }
 
@@ -660,8 +603,7 @@ function startCountdown(id,endTimeStr,status){
     el.textContent=h>0?`${h}h ${m}m ${s}s`:`${m}m ${s}s`;
     el.className=diff<300000?"countdown urgent":"countdown";
   }
-  update();
-  auctionTimers[id]=setInterval(update,1000);
+  update();auctionTimers[id]=setInterval(update,1000);
 }
 
 async function placeBid(auctionId,currentBid){
@@ -669,7 +611,6 @@ async function placeBid(auctionId,currentBid){
   const inp=document.getElementById(`bidInput_${auctionId}`);
   const bid=parseInt(inp?.value||"0",10);
   if(!bid||bid<=currentBid){showToast(`Bid must be higher than ${currentBid} Quacks`,"error");return;}
-  // Check balance
   await fetchQuacksBalance();
   if(userQuacksBalance<bid){showToast(`Not enough Quacks! You have ${userQuacksBalance} 🦆`,"error");return;}
   const displayName=userDisplayName||shortenAddr(userAddress);
@@ -679,7 +620,7 @@ async function placeBid(auctionId,currentBid){
     const d=await r.json();
     if(!d.success){showToast(d.error||"Bid failed","error");return;}
     showToast(`🔥 Bid of ${bid} Quacks placed! You're leading!`,"success");
-    loadAuctions(); // Refresh cards
+    loadAuctions();
   }catch(err){showToast("Failed to place bid","error");console.error(err);}
 }
 
@@ -747,24 +688,6 @@ async function updatePointsDisplay(){
   try{const r=await(await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`)).json();el.textContent=r.success?r.points:"—";}catch{el.textContent="—";}
 }
 
-/* ===== CLAIM QUACKS ===== */
-document.getElementById("claimQuacksBtn")?.addEventListener("click",async()=>{
-  if(!userAddress){showToast("Connect wallet first","warn");return;}
-  try{
-    const ABI=[{"constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"type":"function"}];
-    let quackerCount=0;const ownsContracts=[];
-    try{const c=new web3.eth.Contract(ABI,CONTRACT_ADDRESS);quackerCount=Number(await c.methods.balanceOf(userAddress).call());if(quackerCount>0)ownsContracts.push(CONTRACT_ADDRESS.toLowerCase());}catch{}
-    await Promise.all(["0x50372c1153170840ecce9129c6cc70b912f34273"].map(async addr=>{try{const c=new web3.eth.Contract(ABI,addr);if(Number(await c.methods.balanceOf(userAddress).call())>0)ownsContracts.push(addr.toLowerCase());}catch{}}));
-    const q=new URLSearchParams({wallet:userAddress,claim:"true",nftCount:String(quackerCount),ownsContracts:ownsContracts.join(",")});
-    const data=await(await fetch(`${CLAIM_SHEET_API}?${q}`)).json();
-    if(data.error){showToast(data.error,"warn");return;}
-    userQuacksBalance=Number(data.new_quacks_total||0);
-    const qc=document.getElementById("quacksCount");if(qc)qc.innerText=`🦆 Quacks Balance: ${userQuacksBalance}`;
-    const hv=document.getElementById("quacksHeaderValue");if(hv)hv.textContent=userQuacksBalance;
-    showToast(`🦆 Quacks Collected! Balance: ${userQuacksBalance}`,"success");
-  }catch{showToast("Error collecting quacks","error");}
-});
-
 /* ===== CHECKOUT ===== */
 document.getElementById("checkoutBtn")?.addEventListener("click",checkout);
 async function checkout(){
@@ -825,6 +748,132 @@ async function redeemWithPoints(productId,cost){
   updateCartUI();showToast(`🎉 Added for ${cost} Points`,"success");openCart();
 }
 
+/* ===== REVIEWS ===== */
+async function uploadImageToDrive(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=async(e)=>{
+      try{
+        const base64=e.target.result.split(",")[1];
+        const params=new URLSearchParams({action:"uploadReviewImage",imageData:base64,mimeType:file.type,fileName:file.name});
+        const r=await fetch(`${PURCHASE_API}?${params}`);
+        const d=await r.json();
+        if(d.success)resolve(d.url);else reject(d.error||"Upload failed");
+      }catch(err){reject(err.message);}
+    };
+    reader.onerror=()=>reject("File read failed");
+    reader.readAsDataURL(file);
+  });
+}
+
+async function loadReviews(productId,container){
+  try{
+    const r=await fetch(`${PURCHASE_API}?action=getReviews&itemId=${productId}`);
+    const d=await r.json();if(!d.success)return;
+    const reviews=d.reviews||[];
+    const listEl=container.querySelector(".reviews-list");
+    const avgEl=container.querySelector(".reviews-avg");
+    const toggleEl=container.querySelector(".reviews-toggle");
+    if(!reviews.length){
+      listEl.innerHTML=`<div class="reviews-empty">No reviews yet. Be the first!</div>`;
+      if(avgEl)avgEl.innerHTML=`<strong>—</strong> No ratings yet`;
+      if(toggleEl)toggleEl.textContent="Show Reviews";
+      return;
+    }
+    const avg=(reviews.reduce((s,rv)=>s+rv.rating,0)/reviews.length).toFixed(1);
+    const stars="★".repeat(Math.round(avg))+"☆".repeat(5-Math.round(avg));
+    if(avgEl)avgEl.innerHTML=`<strong>${avg}</strong> ${stars} <span>(${reviews.length})</span>`;
+    if(toggleEl)toggleEl.textContent=`Reviews (${reviews.length})`;
+    listEl.innerHTML=reviews.map(rv=>{
+      const filled="★".repeat(rv.rating);const empty="☆".repeat(5-rv.rating);
+      const date=rv.timestamp?new Date(rv.timestamp).toLocaleDateString():"";
+      const imgs=(rv.images||[]).map(url=>`<img src="${url}" alt="Review image" loading="lazy" onclick="openItemModal('<img src=\\'${url}\\'/>')">`).join("");
+      return `<div class="review-card"><div class="review-top"><span class="review-name">${rv.displayName}</span><span class="review-date">${date}</span></div><div class="review-stars">${filled}${empty}</div><div class="review-comment">${rv.comment}</div>${imgs?`<div class="review-images">${imgs}</div>`:""}</div>`;
+    }).join("");
+  }catch(err){console.error("Reviews load error:",err);}
+}
+
+async function submitReview(productId,container){
+  const form=container.querySelector(".review-form");
+  const rating=parseInt(form.dataset.rating||"0");
+  const comment=container.querySelector(".review-textarea").value.trim();
+  const displayName=container.querySelector(".review-name-input").value.trim()||"Anonymous";
+  const fileInput=container.querySelector(".review-image-input");
+  const files=Array.from(fileInput?.files||[]).slice(0,3);
+  if(!rating){showToast("Please pick a star rating","error");return;}
+  if(!comment){showToast("Please write a comment","error");return;}
+  const btn=container.querySelector(".review-submit-btn");
+  btn.textContent="Uploading…";btn.disabled=true;
+  try{
+    const imageUrls=[];
+    for(const file of files){
+      showToast(`Uploading image ${imageUrls.length+1} of ${files.length}…`,"info",2000);
+      const url=await uploadImageToDrive(file);imageUrls.push(url);
+    }
+    btn.textContent="Submitting…";
+    const params=new URLSearchParams({action:"submitReview",itemId:productId,rating,comment,displayName,wallet:userAddress||"",images:imageUrls.join(",")});
+    const r=await fetch(`${PURCHASE_API}?${params}`);
+    const d=await r.json();
+    if(!d.success){showToast(d.error||"Failed to submit","error");btn.textContent="Submit Review";btn.disabled=false;return;}
+    showToast("✅ Review submitted!","success");
+    container.querySelector(".review-textarea").value="";
+    container.querySelector(".review-name-input").value="";
+    form.dataset.rating="0";
+    container.querySelectorAll(".star-picker span").forEach(s=>s.classList.remove("active"));
+    container.querySelector(".review-image-previews").innerHTML="";
+    if(fileInput)fileInput.value="";
+    await loadReviews(productId,container);
+  }catch(err){showToast("Failed to submit: "+err,"error");btn.textContent="Submit Review";btn.disabled=false;}
+}
+
+function buildReviewSection(productId){
+  const section=document.createElement("div");
+  section.className="reviews-section";
+  section.innerHTML=`
+    <div class="reviews-header">
+      <div class="reviews-avg"><strong>—</strong> No ratings yet</div>
+      <button class="reviews-toggle" onclick="const body=this.closest('.reviews-section').querySelector('.reviews-body');body.classList.toggle('hidden');this.textContent=body.classList.contains('hidden')?(this.dataset.count||'Show Reviews'):'Hide Reviews';">Show Reviews</button>
+    </div>
+    <div class="reviews-body hidden">
+      <div class="reviews-list"></div>
+      <div class="review-form" data-rating="0">
+        <div class="review-form-title">Leave a Review</div>
+        <input class="review-name-input" type="text" placeholder="Your name (optional)" maxlength="24"/>
+        <div class="star-picker">
+          ${[1,2,3,4,5].map(n=>`<span data-star="${n}" onclick="this.closest('.review-form').dataset.rating='${n}';this.closest('.star-picker').querySelectorAll('span').forEach((s,i)=>s.classList.toggle('active',i<${n}));">☆</span>`).join("")}
+        </div>
+        <textarea class="review-textarea" placeholder="Share your thoughts about this item..." maxlength="300"></textarea>
+        <div class="review-image-upload">
+          <span class="review-image-label">📷 Photos (up to 3)</span>
+          <label class="review-image-btn"><i class="fa-solid fa-image"></i> Choose Images<input class="review-image-input" type="file" accept="image/*" multiple/></label>
+          <div class="review-image-previews"></div>
+        </div>
+        <button class="review-submit-btn" onclick="submitReview('${productId}',this.closest('.reviews-section'))">Submit Review</button>
+      </div>
+    </div>`;
+
+  if(userAddress&&userDisplayName){
+    section.querySelector(".review-name-input").value=userDisplayName;
+  }
+
+  const fileInput=section.querySelector(".review-image-input");
+  const previewEl=section.querySelector(".review-image-previews");
+  fileInput.addEventListener("change",()=>{
+    const files=Array.from(fileInput.files).slice(0,3);
+    previewEl.innerHTML="";
+    files.forEach(file=>{
+      const url=URL.createObjectURL(file);
+      const wrap=document.createElement("div");wrap.className="preview-wrap";
+      wrap.innerHTML=`<img src="${url}" alt="Preview"/><button class="preview-remove" onclick="this.closest('.preview-wrap').remove()">✕</button>`;
+      previewEl.appendChild(wrap);
+    });
+    if(files.length===3)showToast("Max 3 images allowed","info");
+  });
+
+  loadReviews(productId,section);
+  return section;
+}
+
 /* ===== LEADERBOARD ===== */
 async function loadLeaderboard(){
   try{
@@ -862,7 +911,7 @@ async function loadOrderHistory(){
 }
 
 /* ===== SHIPPING NOTICE ROTATOR ===== */
-const msgs=["🚚 Free Shipping on orders above $70!","💳 Pay with ETH, USDC, or USDT","🦆 Collect Daily Quacks to redeem items or bid in auctions!","⚠️ Shipping available in US and Canada only"];
+const msgs=["🚚 Free Shipping on orders above $70!","💳 Pay with ETH, USDC, or USDT","🦆 Earn Quacks daily just by holding — spend on items or bid in auctions!","⚠️ Shipping available in US and Canada only"];
 let msgIdx=0;const noticeEl=document.getElementById("shippingNotice");
 if(noticeEl){noticeEl.style.transition="opacity .5s";setInterval(()=>{noticeEl.style.opacity="0";setTimeout(()=>{noticeEl.textContent=msgs[msgIdx=(msgIdx+1)%msgs.length];noticeEl.style.opacity="1";},500);},5000);}
 
@@ -877,7 +926,6 @@ async function connectWallet(){
     userAddress=accounts[0].toLowerCase();
     document.getElementById("connectBtn").style.display="none";
     document.getElementById("profileBtn").style.display="inline-flex";
-    // Load user data
     await fetchQuacksBalance();
     await updatePointsDisplay();
     if(provider.on){provider.on("accountsChanged",a=>{if(a?.length){userAddress=a[0].toLowerCase();fetchQuacksBalance();updatePointsDisplay();}else disconnectWallet();});provider.on("disconnect",disconnectWallet);}
@@ -901,7 +949,6 @@ document.getElementById("enterBtn").addEventListener("click",()=>{
 
 /* ===== SHOP MENU ===== */
 document.addEventListener("DOMContentLoaded",()=>{
-  // Move shopMenu to body once — keeps it out of header layout
   const _sm=document.getElementById("shopMenu");if(_sm)document.body.appendChild(_sm);
   const menuBtn=document.getElementById("menuBtn"),shopMenu=document.getElementById("shopMenu");
   if(menuBtn&&shopMenu){
@@ -917,7 +964,6 @@ document.addEventListener("DOMContentLoaded",()=>{
     shopMenu.addEventListener("click",(e)=>{if(e.target.classList.contains("dropdown-item"))shopMenu.classList.remove("open");});
   }
 
-  /* PROFILE */
   const pb=document.getElementById("profileBtn"),ps=document.getElementById("profileSection");
   if(pb&&ps){
     pb.addEventListener("click",async(e)=>{
@@ -926,7 +972,6 @@ document.addEventListener("DOMContentLoaded",()=>{
       if(ps.parentElement!==document.body)document.body.appendChild(ps);
       ps.style.position="fixed";ps.style.zIndex="110000";ps.style.display="block";
       const r=pb.getBoundingClientRect();ps.style.top=`${r.bottom+6}px`;ps.style.left=`${Math.max(4,r.right-(ps.offsetWidth||270))}px`;
-      // Load NFT count
       if(userAddress){
         try{const d=await loadProfile(userAddress);const nc=document.getElementById("nftCount");if(nc)nc.innerText="Quacker Friends Held: "+d.quackerBalance;}catch{}
         await fetchQuacksBalance();
@@ -938,14 +983,12 @@ document.addEventListener("DOMContentLoaded",()=>{
     document.addEventListener("click",(e)=>{if(!ps.contains(e.target)&&e.target!==pb)ps.style.display="none";});
   }
 
-  /* TOOLTIP */
   document.querySelectorAll(".info-container").forEach(c=>{
     const icon=c.querySelector(".info-icon"),tip=c.querySelector(".tooltip-text");if(!icon||!tip)return;
     icon.addEventListener("mouseenter",()=>{document.body.appendChild(tip);const r=icon.getBoundingClientRect();tip.style.cssText=`position:fixed;top:${r.bottom+8}px;left:${r.left+r.width/2}px;transform:translateX(-50%);visibility:visible;opacity:1;pointer-events:auto;z-index:200000`;});
     icon.addEventListener("mouseleave",()=>{tip.style.opacity="0";tip.style.visibility="hidden";tip.style.pointerEvents="none";c.appendChild(tip);});
   });
 
-  /* LEADERBOARD */
   loadLeaderboard();
   const toggle=document.getElementById("leaderboardToggle"),panel=document.getElementById("leaderboardPanel"),close=document.getElementById("closeLeaderboard");
   toggle?.addEventListener("click",()=>{panel.classList.add("open");toggle.style.display="none";});
