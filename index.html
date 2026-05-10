@@ -754,20 +754,18 @@ async function uploadImageToDrive(file) {
     const reader = new FileReader();
     reader.onload = async (e) => {
       try {
-        const base64 = e.target.result.split(",")[1];
-        const r = await fetch(PURCHASE_API, {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", "Quacker Reviews");
+        formData.append("cloud_name", "dzi1poauh");
+
+        const r = await fetch("https://api.cloudinary.com/v1_1/dzi1poauh/image/upload", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action:    "uploadReviewImage",
-            imageData: base64,
-            mimeType:  file.type,
-            fileName:  file.name
-          })
+          body: formData
         });
         const d = await r.json();
-        if (d.success) resolve(d.url);
-        else reject(d.error || "Upload failed");
+        if (d.secure_url) resolve(d.secure_url);
+        else reject(d.error?.message || "Upload failed");
       } catch(err) { reject(err.message); }
     };
     reader.onerror = () => reject("File read failed");
