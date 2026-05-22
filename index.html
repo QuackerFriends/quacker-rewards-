@@ -579,16 +579,39 @@ function buildAuctionCard(a,idx){
   const hasLeader=a.CurrentLeader&&a.CurrentLeader.trim();
   const leaderDisplay=a.CurrentLeaderName||shortenAddr(a.CurrentLeader||"");
   const isMyLead=userAddress&&a.CurrentLeader&&a.CurrentLeader.toLowerCase()===userAddress.toLowerCase();
-  const imgSrc=a.ImageURL||"https://quackerfriends.github.io/quackheads-assets/images/placeholder.png";
+
+  // Support multiple images via ImageURLs (comma-separated) or fall back to ImageURL
+  const rawImgs = a.ImageURLs || a.ImageURL || "";
+  const imgList = rawImgs.split(",").map(u=>u.trim()).filter(Boolean);
+  if(!imgList.length) imgList.push("https://quackerfriends.github.io/quackheads-assets/images/placeholder.png");
+
+  const auctionId = a.AuctionID;
+  let imgHTML = "";
+  if(imgList.length > 1){
+    imgHTML = `<div class="image-slider" id="aslider_${auctionId}">
+      ${imgList.map((url,i)=>`<img src="${url}" alt="${a.Title}" class="slide ${i===0?"active":""}" loading="lazy" onclick="openItemModal('<img src=\\'${url}\\'/><h3 style=\\'margin-top:14px;text-align:center;font-family:Space Grotesk,sans-serif\\'>${a.Title}</h3>')"/>`).join("")}
+      <button class="slider-btn prev" onclick="prevSlide('aslider_${auctionId}',true)">‹</button>
+      <button class="slider-btn next" onclick="nextSlide('aslider_${auctionId}',true)">›</button>
+      <div class="slide-dots">${imgList.map((_,i)=>`<div class="slide-dot ${i===0?"active":""}" onclick="goToSlide('aslider_${auctionId}',${i},true)"></div>`).join("")}</div>
+      ${isEnded?`<div class="auction-ended-badge">Ended</div>`:`<div class="auction-exclusive">Exclusive</div>`}
+    </div>`;
+  } else {
+    imgHTML = `<div class="auction-img-wrap">
+      <img src="${imgList[0]}" alt="${a.Title}" loading="lazy" onclick="openItemModal('<img src=\\'${imgList[0]}\\'/><h3 style=\\'margin-top:14px;text-align:center;font-family:Space Grotesk,sans-serif\\'>${a.Title}</h3>')"/>
+      ${isEnded?`<div class="auction-ended-badge">Ended</div>`:`<div class="auction-exclusive">Exclusive</div>`}
+    </div>`;
+  }
+
   let actionHTML="";
   if(isEnded){
     if(hasLeader){const winnerName=a.WinnerName||shortenAddr(a.Winner||a.CurrentLeader||"");const isMyWin=userAddress&&(a.Winner||a.CurrentLeader||"").toLowerCase()===userAddress.toLowerCase();actionHTML=`<div class="auction-winner-banner${isMyWin?" your-win":""}">${isMyWin?"🏆 You won this auction!":"🏆 Won by "+winnerName}</div>`;}
     else{actionHTML=`<div class="auction-winner-banner">No bids — auction ended.</div>`;}
   }else{
     const minBid=currentBid+1;
-    actionHTML=`<div class="bid-row"><input class="bid-input" id="bidInput_${a.AuctionID}" type="number" min="${minBid}" placeholder="Min: ${minBid} 🦆"/><button class="bid-btn" onclick="placeBid('${a.AuctionID}',${currentBid})" ${isMyLead?"disabled":""}>${isMyLead?"Leading!":"Place Bid"}</button></div>`;
+    actionHTML=`<div class="bid-row"><input class="bid-input" id="bidInput_${auctionId}" type="number" min="${minBid}" placeholder="Min: ${minBid} 🦆"/><button class="bid-btn" onclick="placeBid('${auctionId}',${currentBid})" ${isMyLead?"disabled":""}>${isMyLead?"Leading!":"Place Bid"}</button></div>`;
   }
-  el.innerHTML=`<div class="auction-img-wrap"><img src="${imgSrc}" alt="${a.Title}" loading="lazy" onclick="openItemModal('<img src=\\'${imgSrc}\\'/><h3 style=\\'margin-top:14px;text-align:center;font-family:Space Grotesk,sans-serif\\'>${a.Title}</h3>')"/>${isEnded?`<div class="auction-ended-badge">Ended</div>`:`<div class="auction-exclusive">Exclusive</div>`}</div><div class="auction-body"><div class="auction-title">${a.Title}</div>${a.Description?`<div class="auction-desc">${a.Description}</div>`:""}<div class="auction-stats"><div class="auction-stat"><div class="auction-stat-label">Current Bid</div><div class="auction-stat-value quacks">${currentBid} 🦆</div></div><div class="auction-stat"><div class="auction-stat-label">Time Left</div><div class="countdown" id="countdown_${a.AuctionID}">${isEnded?"Ended":"Loading…"}</div></div></div><div class="auction-leader ${hasLeader?"":"nobody"}">${hasLeader?`🥇 Leading: <span class="auction-leader-name">${leaderDisplay}</span>${isMyLead?" (You!)":""}`:isEnded?"No bids placed":"🦆 No bids yet — be first!"}</div>${actionHTML}</div>`;
+
+  el.innerHTML=`${imgHTML}<div class="auction-body"><div class="auction-title">${a.Title}</div>${a.Description?`<div class="auction-desc">${a.Description}</div>`:""}<div class="auction-stats"><div class="auction-stat"><div class="auction-stat-label">Current Bid</div><div class="auction-stat-value quacks">${currentBid} 🦆</div></div><div class="auction-stat"><div class="auction-stat-label">Time Left</div><div class="countdown" id="countdown_${auctionId}">${isEnded?"Ended":"Loading…"}</div></div></div><div class="auction-leader ${hasLeader?"":"nobody"}">${hasLeader?`🥇 Leading: <span class="auction-leader-name">${leaderDisplay}</span>${isMyLead?" (You!)":""}`:isEnded?"No bids placed":"🦆 No bids yet — be first!"}</div>${actionHTML}</div>`;
   return el;
 }
 
@@ -627,10 +650,25 @@ async function placeBid(auctionId,currentBid){
 function shortenAddr(addr){if(!addr||addr.length<10)return addr;return addr.slice(0,6)+"…"+addr.slice(-4);}
 
 /* ===== SLIDER ===== */
-function nextSlide(id){const sl=document.querySelectorAll(`#slider_${id} .slide`),dt=document.querySelectorAll(`#slider_${id} .slide-dot`);if(!sl.length)return;let cur=Array.from(sl).findIndex(s=>s.classList.contains("active"));sl[cur].classList.remove("active");if(dt[cur])dt[cur].classList.remove("active");const next=(cur+1)%sl.length;sl[next].classList.add("active");if(dt[next])dt[next].classList.add("active");}
-function prevSlide(id){const sl=document.querySelectorAll(`#slider_${id} .slide`),dt=document.querySelectorAll(`#slider_${id} .slide-dot`);if(!sl.length)return;let cur=Array.from(sl).findIndex(s=>s.classList.contains("active"));sl[cur].classList.remove("active");if(dt[cur])dt[cur].classList.remove("active");const prev=(cur-1+sl.length)%sl.length;sl[prev].classList.add("active");if(dt[prev])dt[prev].classList.add("active");}
-function goToSlide(id,idx){document.querySelectorAll(`#slider_${id} .slide`).forEach((s,i)=>s.classList.toggle("active",i===idx));document.querySelectorAll(`#slider_${id} .slide-dot`).forEach((d,i)=>d.classList.toggle("active",i===idx));}
-
+function nextSlide(id, isRaw){
+  const prefix = isRaw ? "" : "slider_";
+  const sl=document.querySelectorAll(`#${prefix}${id} .slide`),dt=document.querySelectorAll(`#${prefix}${id} .slide-dot`);
+  if(!sl.length)return;let cur=Array.from(sl).findIndex(s=>s.classList.contains("active"));
+  sl[cur].classList.remove("active");if(dt[cur])dt[cur].classList.remove("active");
+  const next=(cur+1)%sl.length;sl[next].classList.add("active");if(dt[next])dt[next].classList.add("active");
+}
+function prevSlide(id, isRaw){
+  const prefix = isRaw ? "" : "slider_";
+  const sl=document.querySelectorAll(`#${prefix}${id} .slide`),dt=document.querySelectorAll(`#${prefix}${id} .slide-dot`);
+  if(!sl.length)return;let cur=Array.from(sl).findIndex(s=>s.classList.contains("active"));
+  sl[cur].classList.remove("active");if(dt[cur])dt[cur].classList.remove("active");
+  const prev=(cur-1+sl.length)%sl.length;sl[prev].classList.add("active");if(dt[prev])dt[prev].classList.add("active");
+}
+function goToSlide(id,idx,isRaw){
+  const prefix = isRaw ? "" : "slider_";
+  document.querySelectorAll(`#${prefix}${id} .slide`).forEach((s,i)=>s.classList.toggle("active",i===idx));
+  document.querySelectorAll(`#${prefix}${id} .slide-dot`).forEach((d,i)=>d.classList.toggle("active",i===idx));
+}
 /* ===== MODALS ===== */
 function openSizeGuide(url){const m=document.getElementById("sizeGuideModal");document.getElementById("sizeGuideImage").src=url;m.classList.add("open");addBlur();}
 function closeSizeGuide(){const m=document.getElementById("sizeGuideModal");m.classList.remove("open");removeBlur();}
