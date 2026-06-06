@@ -480,6 +480,23 @@ async function fetchQuacksBalance(){
     const qc=document.getElementById("quacksCount");if(qc)qc.innerText=`🦆 Quacks Balance: ${userQuacksBalance}`;
     const td=document.getElementById("tierDisplay");if(td&&d.tier)td.innerText=`Tier: ${d.tier} · Daily rate: ${d.daily_rate||0}/day`;
     if(d.display_name){userDisplayName=d.display_name;const inp=document.getElementById("displayNameInput");if(inp)inp.value=d.display_name;}
+
+    // ===== QUACKS EARNED NOTIFICATION =====
+    if(d.auto_added>0){
+      if(d.new_user){
+        showToast(`👋 Welcome! You just earned your first ${d.auto_added} 🦆 Quacks as a ${d.tier}!`,"success",5000);
+      } else if(d.tier==="partner"){
+        showToast(`🤝 Welcome back! You collected ${d.auto_added} 🦆 Quacks as a partner holder.`,"success",5000);
+      } else {
+        let msg=`🦆 You collected ${d.auto_added} Quacks! Your daily rate is ${d.daily_rate}/day.`;
+        if(d.streak_bonus>0) msg+=` 🔥 Streak bonus: +${d.streak_bonus} Quacks!`;
+        showToast(msg,"success",5000);
+      }
+    } else if(d.new_user){
+      showToast(`👋 Welcome! You earned your first ${d.daily_rate} 🦆 Quacks as a ${d.tier}!`,"success",5000);
+    }
+    // ======================================
+
     return userQuacksBalance;
   }catch{return 0;}
 }
