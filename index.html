@@ -349,6 +349,7 @@
     </div>
     <hr>
     <p id="nftCount">Quacker Friends Held: …</p>
+    <p id="streakCount">🔥 Login Streak: 0 days</p>
     <p id="quacksCount">🦆 Quacks Balance: 0</p>
     <p id="tierDisplay" style="color:var(--orange-light);font-size:12px"></p>
     <hr>
@@ -1035,12 +1036,53 @@ document.addEventListener("DOMContentLoaded",()=>{
       ps.style.position="fixed";ps.style.zIndex="110000";ps.style.display="block";
       const r=pb.getBoundingClientRect();ps.style.top=`${r.bottom+6}px`;ps.style.left=`${Math.max(4,r.right-(ps.offsetWidth||270))}px`;
       if(userAddress){
-        try{const d=await loadProfile(userAddress);const nc=document.getElementById("nftCount");if(nc)nc.innerText="Quacker Friends Held: "+d.quackerBalance;}catch{}
-        await fetchQuacksBalance();
-        await updatePointsDisplay();
-        const inp=document.getElementById("displayNameInput");
-        if(inp&&userDisplayName)inp.value=userDisplayName;
-      }
+  try{
+    const d = await loadProfile(userAddress);
+
+    const nc = document.getElementById("nftCount");
+    if(nc) {
+      nc.innerText = "Quacker Friends Held: " + d.quackerBalance;
+    }
+  }catch(err){
+    console.warn("Profile load error:", err);
+  }
+
+  // ===== LOAD QUACKS + STREAK =====
+  try{
+    const qRes = await fetch(
+      `${CLAIM_SHEET_API}?wallet=${userAddress.toLowerCase()}`
+    );
+
+    const qData = await qRes.json();
+
+    console.log("🦆 Profile Quacks data:", qData);
+
+    const streakEl = document.getElementById("streakCount");
+
+    if(streakEl){
+      const streak = Number(qData.streak) || 0;
+
+      streakEl.innerText =
+        `🔥 Login Streak: ${streak} day${streak === 1 ? "" : "s"}`;
+    }
+
+  }catch(err){
+    console.warn("Could not load Quacks streak:", err);
+
+    const streakEl = document.getElementById("streakCount");
+    if(streakEl){
+      streakEl.innerText = "🔥 Login Streak: —";
+    }
+  }
+
+  await fetchQuacksBalance();
+  await updatePointsDisplay();
+
+  const inp = document.getElementById("displayNameInput");
+  if(inp && userDisplayName) {
+    inp.value = userDisplayName;
+  }
+}
     });
     document.addEventListener("click",(e)=>{if(!ps.contains(e.target)&&e.target!==pb)ps.style.display="none";});
   }
