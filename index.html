@@ -733,12 +733,36 @@ document.getElementById("openCartBtn").addEventListener("click",openCart);
 
 /* ===== PROFILE ===== */
 async function loadProfile(wallet){
-  if(!web3||!wallet)return null;
-  let quackerBalance=0;
-  try{const c=new web3.eth.Contract(CONTRACT_ABI,CONTRACT_ADDRESS);quackerBalance=await c.methods.balanceOf(wallet).call();}catch{}
-  return{wallet,quackerBalance:Number(quackerBalance)};
-}
+  if(!wallet) return null;
+  try{
+    const res = await fetch(
+      `${CLAIM_SHEET_API}?wallet=${wallet.toLowerCase()}`
+    );
 
+    const data = await res.json();
+
+    if(data.error){
+      console.warn("Profile API error:", data.error);
+      return {
+        wallet,
+        quackerBalance: 0
+      };
+    }
+
+    return {
+      wallet,
+      quackerBalance: Number(data.nft_count) || 0
+    };
+
+  }catch(err){
+    console.warn("Could not load profile:", err);
+
+    return {
+      wallet,
+      quackerBalance: 0
+    };
+  }
+}
 async function updatePointsDisplay(){
   const wallet=(userAddress||"").toLowerCase(),el=document.getElementById("pointsValue");if(!el||!wallet)return;
   try{const r=await(await fetch(`${PURCHASE_API}?wallet=${wallet}&checkPoints=true`)).json();el.textContent=r.success?r.points:"—";}catch{el.textContent="—";}
